@@ -14,7 +14,7 @@ File: Custom Bootstrap Css File
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
 :root {
-  --bs-blue: #038edc;
+  --bs-blue: #0096ff;
   --bs-indigo: #564ab1;
   --bs-purple: #1f58c7;
   --bs-pink: #e83e8c;
@@ -36,7 +36,7 @@ File: Custom Bootstrap Css File
   --bs-gray-700: #545965;
   --bs-gray-800: #3F4452;
   --bs-gray-900: #35415a;
-  --bs-primary: #1f58c7;
+  --bs-primary: #0096ff;
   --bs-secondary: #a4a9b4;
   --bs-success: #28b765;
   --bs-info: #52c6ea;
