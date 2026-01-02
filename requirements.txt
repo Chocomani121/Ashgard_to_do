@@ -65,7 +65,7 @@ shell
 six
 SQLAlchemy
 sympy
-tokenizers
+# tokenizers
 torch
 torchaudio
 torchvision
