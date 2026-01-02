@@ -259,13 +259,13 @@
                                 <a class="dropdown-item" href="pages-faqs.html"><i class="mdi mdi-lifebuoy text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Help</span></a>
                         
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="auth-logout.html"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Logout</span></a>
+                                <a class="dropdown-item" href="{{ url_for('main.login') }}"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Logout</span></a>
                             </div>
                         </div>
                     </div>
                 </div>
             </header>
-        <main role="main" class="containerh="100">
+        <main role="main" class="containerh=100">
             {% block content %}
             {% endblock content %}
         </main>
