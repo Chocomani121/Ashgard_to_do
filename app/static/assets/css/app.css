@@ -6030,3 +6030,56 @@ body[data-layout-mode="dark"] .categories-filter .list-inline-item a {
 
 body[data-layout-mode="dark"] .gallery-box .box-content {
   background-color: #1f2224; }
+
+  .thread-container {
+            background-color: #ffffff;
+            padding: 20px;
+            font-family: sans-serif;
+        }
+        .thread-title {
+            color: #7a7a7a;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 25px;
+        }
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .bg-teal { background-color: #008080; }
+        .bg-blue-grey { background-color: #7a8ca5; }
+
+        /* The Box Styling */
+        .activity-box {
+            background-color: #f8f8f8;
+            border: 1px solid #dcdcdc;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .author-name {
+            color: #4b3b8b;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .task-label {
+            color: #7a7a7a;
+            font-weight: bold;
+        }
+        .task-content {
+            color: #a0a0a0;
+        }
+        /* Indentation for Subtasks */
+        .subtask-thread {
+            margin-left: 55px;
+        }
