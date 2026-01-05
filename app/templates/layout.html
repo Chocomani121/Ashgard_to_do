@@ -73,7 +73,7 @@
                             </li>
 
                             <li>
-                                <a href="javascript: void(0);" class="has-arrow">
+                                <a href="{{ url_for('static', filename='all_division.html') }}" class="has-arrow">
                                     <i class="bx bx-grid-alt icon nav-icon"></i> 
                                     <span class="menu-item" data-key="t-departments">Departments</span>
                                 </a>
@@ -270,6 +270,7 @@
                         </div>
                     </div>
                 </div>
+                
             </header>
         <main role="main" class="containerh=100">
             {% block content %}
