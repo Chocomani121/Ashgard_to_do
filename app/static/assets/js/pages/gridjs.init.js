@@ -32,3 +32,17 @@ new gridjs.Grid({
     }
 }).render(document.getElementById("table2-gridjs"));
 
+
+//task table
+new gridjs.Grid({
+    from: document.getElementById("projectsTableTask"),
+    pagination: {
+        limit: 5
+    },
+    sort: true,
+    search: true,
+    className: {
+        table: "table table-striped table-centered align-middle"
+    }
+}).render(document.getElementById("table3-gridjs"));
+
