@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% block page_title %}Members{% endblock %}
    {% block content %}
             <!-- Start right Content here -->
             <!-- ============================================================== -->
@@ -13,34 +14,6 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
-                                    <div>
-                                        <ul class="nav nav-pills">
-                                            <li class="nav-item">
-                                                <a class="nav-link active" href="contacts-list.html" data-bs-toggle="tooltip" data-bs-placement="top" title="" data-bs-original-title="List" aria-label="List"><i class="bx bx-list-ul"></i></a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a class="nav-link" href="contacts-grid.html" data-bs-toggle="tooltip" data-bs-placement="top" title="" data-bs-original-title="Grid" aria-label="Grid"><i class="bx bx-grid-alt"></i></a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <a href="#" data-bs-toggle="modal" data-bs-target=".add-new" class="btn btn-primary"><i class="bx bx-plus me-1"></i> Add New</a>
-                                    </div>
-                                    <div class="dropdown">
-                                        <a class="btn btn-link text-muted py-1 font-size-16 shadow-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bx bx-dots-horizontal-rounded"></i>
-                                        </a>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><a class="dropdown-item" href="#">Action</a></li>
-                                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                                            <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-
-                            </div>
                         </div>
 
                         <!-- end row -->
@@ -52,33 +25,20 @@
                                         <div class="table-responsive">
                                             <table class="table table-nowrap align-middle">
                                                 <thead class="table-light">
-                                                    <tr>
-                                                        <th scope="col" class="ps-4" style="width: 50px;">
-                                                            <div class="form-check font-size-16">
-                                                                <input type="checkbox" class="form-check-input" id="contacusercheck">
-                                                                <label class="form-check-label" for="contacusercheck"></label>
-                                                            </div>
-                                                        </th>
+                                                    <tr>                                                    
                                                         <th scope="col">Name</th>
                                                         <th scope="col">Position</th>
                                                         <th scope="col">Department</th>
                                                         <th scope="col" style="width: 200px;">Action</th>
                                                       </tr>
-                                                </thead>
-    
+                                                </thead>   
                                                 <tbody>
                                                     <tr>
-                                                        <th scope="row" class="ps-4">
-                                                            <div class="form-check font-size-16">
-                                                                <input type="checkbox" class="form-check-input" id="contacusercheck1">
-                                                                <label class="form-check-label" for="contacusercheck1"></label>
-                                                            </div>
-                                                        </th>
                                                         <td>
                                                             <div class="d-flex align-items-center">
                                                             <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
                                                             <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                                <h5 class="font-size-15 mb-1 text-truncate">Marilyn Horton</h5>
+                                                                <h5 class="font-size-15 mb-1 text-truncate">Horton Horton</h5>
                                                                 <p class="text-muted text-truncate mb-0">MarilynHorton@minible.com</p>
                                                             </div>
                                                         </td>
@@ -92,28 +52,11 @@
                                                                 <li class="list-inline-item">
                                                                     <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a>
                                                                 </li>
-                                                                <li class="list-inline-item dropdown">
-                                                                    <a class="text-muted dropdown-toggle font-size-18 px-2" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true">
-                                                                        <i class="bx bx-dots-vertical-rounded"></i>
-                                                                    </a>
-                                                                
-                                                                    <div class="dropdown-menu dropdown-menu-end">
-                                                                        <a class="dropdown-item" href="#">Action</a>
-                                                                        <a class="dropdown-item" href="#">Another action</a>
-                                                                        <a class="dropdown-item" href="#">Something else here</a>
-                                                                    </div>
-                                                                </li>
                                                             </ul>
                                                         </td>
                                                     </tr>
     
                                                     <tr>
-                                                        <th scope="row" class="ps-4">
-                                                            <div class="form-check font-size-16">
-                                                                <input type="checkbox" class="form-check-input" id="contacusercheck2">
-                                                                <label class="form-check-label" for="contacusercheck2"></label>
-                                                            </div>
-                                                        </th>
                                                         <td>
                                                             <div class="d-flex align-items-center">
                                                             <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
@@ -132,28 +75,11 @@
                                                                 <li class="list-inline-item">
                                                                     <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a>
                                                                 </li>
-                                                                <li class="list-inline-item dropdown">
-                                                                    <a class="text-muted dropdown-toggle font-size-18 px-2" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true">
-                                                                        <i class="bx bx-dots-vertical-rounded"></i>
-                                                                    </a>
-                                                                
-                                                                    <div class="dropdown-menu dropdown-menu-end">
-                                                                        <a class="dropdown-item" href="#">Action</a>
-                                                                        <a class="dropdown-item" href="#">Another action</a>
-                                                                        <a class="dropdown-item" href="#">Something else here</a>
-                                                                    </div>
-                                                                </li>
                                                             </ul>
                                                         </td>
                                                     </tr>
     
                                                     <tr>
-                                                        <th scope="row" class="ps-4">
-                                                            <div class="form-check font-size-16">
-                                                                <input type="checkbox" class="form-check-input" id="contacusercheck5">
-                                                                <label class="form-check-label" for="contacusercheck5"></label>
-                                                            </div>
-                                                        </th>
                                                         <td>
                                                             <div class="d-flex align-items-center">
                                                             <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
@@ -172,28 +98,11 @@
                                                                 <li class="list-inline-item">
                                                                     <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a>
                                                                 </li>
-                                                                <li class="list-inline-item dropdown">
-                                                                    <a class="text-muted dropdown-toggle font-size-18 px-2" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true">
-                                                                        <i class="bx bx-dots-vertical-rounded"></i>
-                                                                    </a>
-                                                                
-                                                                    <div class="dropdown-menu dropdown-menu-end">
-                                                                        <a class="dropdown-item" href="#">Action</a>
-                                                                        <a class="dropdown-item" href="#">Another action</a>
-                                                                        <a class="dropdown-item" href="#">Something else here</a>
-                                                                    </div>
-                                                                </li>
                                                             </ul>
                                                         </td>
                                                       </tr>
     
                                                       <tr>
-                                                        <th scope="row" class="ps-4">
-                                                            <div class="form-check font-size-16">
-                                                                <input type="checkbox" class="form-check-input" id="contacusercheck4">
-                                                                <label class="form-check-label" for="contacusercheck4"></label>
-                                                            </div>
-                                                        </th>
                                                         <td>
                                                             <div class="d-flex align-items-center">
                                                             <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
@@ -212,28 +121,11 @@
                                                                 <li class="list-inline-item">
                                                                     <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a>
                                                                 </li>
-                                                                <li class="list-inline-item dropdown">
-                                                                    <a class="text-muted dropdown-toggle font-size-18 px-2" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true">
-                                                                        <i class="bx bx-dots-vertical-rounded"></i>
-                                                                    </a>
-                                                                
-                                                                    <div class="dropdown-menu dropdown-menu-end">
-                                                                        <a class="dropdown-item" href="#">Action</a>
-                                                                        <a class="dropdown-item" href="#">Another action</a>
-                                                                        <a class="dropdown-item" href="#">Something else here</a>
-                                                                    </div>
-                                                                </li>
                                                             </ul>
                                                         </td>
                                                       </tr>
     
                                                       <tr>
-                                                        <th scope="row" class="ps-4">
-                                                            <div class="form-check font-size-16">
-                                                                <input type="checkbox" class="form-check-input" id="contacusercheck5">
-                                                                <label class="form-check-label" for="contacusercheck5"></label>
-                                                            </div>
-                                                        </th>
                                                         <td>
                                                             <div class="d-flex align-items-center">
                                                             <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
@@ -252,28 +144,11 @@
                                                                 <li class="list-inline-item">
                                                                     <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a>
                                                                 </li>
-                                                                <li class="list-inline-item dropdown">
-                                                                    <a class="text-muted dropdown-toggle font-size-18 px-2" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true">
-                                                                        <i class="bx bx-dots-vertical-rounded"></i>
-                                                                    </a>
-                                                                
-                                                                    <div class="dropdown-menu dropdown-menu-end">
-                                                                        <a class="dropdown-item" href="#">Edit</a>
-                                                                        <a class="dropdown-item" href="#">Action</a>
-                                                                        <a class="dropdown-item" href="#">Remove</a>
-                                                                    </div>
-                                                                </li>
                                                             </ul>
                                                         </td>
                                                       </tr>
     
                                                       <tr>
-                                                        <th scope="row" class="ps-4">
-                                                            <div class="form-check font-size-16">
-                                                                <input type="checkbox" class="form-check-input" id="contacusercheck6">
-                                                                <label class="form-check-label" for="contacusercheck6"></label>
-                                                            </div>
-                                                        </th>
                                                         <td>
                                                             <div class="d-flex align-items-center">
                                                             <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar img-thumbnail" alt="">
@@ -292,28 +167,11 @@
                                                                 <li class="list-inline-item">
                                                                     <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a>
                                                                 </li>
-                                                                <li class="list-inline-item dropdown">
-                                                                    <a class="text-muted dropdown-toggle font-size-18 px-2" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true">
-                                                                        <i class="bx bx-dots-vertical-rounded"></i>
-                                                                    </a>
-                                                                
-                                                                    <div class="dropdown-menu dropdown-menu-end">
-                                                                        <a class="dropdown-item" href="#">Action</a>
-                                                                        <a class="dropdown-item" href="#">Another action</a>
-                                                                        <a class="dropdown-item" href="#">Something else here</a>
-                                                                    </div>
-                                                                </li>
                                                             </ul>
                                                         </td>
                                                       </tr>
     
                                                       <tr>
-                                                        <th scope="row" class="ps-4">
-                                                            <div class="form-check font-size-16">
-                                                                <input type="checkbox" class="form-check-input" id="contacusercheck7">
-                                                                <label class="form-check-label" for="contacusercheck7"></label>
-                                                            </div>
-                                                        </th>
                                                         <td>
                                                             <div class="d-flex align-items-center">
                                                             <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
@@ -332,28 +190,11 @@
                                                                 <li class="list-inline-item">
                                                                     <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a>
                                                                 </li>
-                                                                <li class="list-inline-item dropdown">
-                                                                    <a class="text-muted dropdown-toggle font-size-18 px-2" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true">
-                                                                        <i class="bx bx-dots-vertical-rounded"></i>
-                                                                    </a>
-                                                                
-                                                                    <div class="dropdown-menu dropdown-menu-end">
-                                                                        <a class="dropdown-item" href="#">Action</a>
-                                                                        <a class="dropdown-item" href="#">Another action</a>
-                                                                        <a class="dropdown-item" href="#">Something else here</a>
-                                                                    </div>
-                                                                </li>
                                                             </ul>
                                                         </td>
                                                       </tr>
     
                                                       <tr>
-                                                        <th scope="row" class="ps-4">
-                                                            <div class="form-check font-size-16">
-                                                                <input type="checkbox" class="form-check-input" id="contacusercheck8">
-                                                                <label class="form-check-label" for="contacusercheck8"></label>
-                                                            </div>
-                                                        </th>
                                                         <td>
                                                             <div class="d-flex align-items-center">
                                                             <img src="../static/assets/images/users/avatar-4.jpg" class="rounded-circle avatar img-thumbnail" alt="">
@@ -367,22 +208,16 @@
                                                         <td>
                                                             <ul class="list-inline mb-0">
                                                                 <li class="list-inline-item">
-                                                                    <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit" class="px-2 text-primary"><i class="bx bx-pencil font-size-18"></i></a>
+                                                                    <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Accept" class="px-2 text-success"><i class="bx bxs-user-check font-size-20"></i></a>
                                                                 </li>
                                                                 <li class="list-inline-item">
-                                                                    <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a>
+                                                                    <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Decline" class="px-2 text-danger"><i class="bx bxs-user-x font-size-20"></i></a>
                                                                 </li>
                                                             </ul>
                                                         </td>
                                                       </tr>
     
                                                       <tr>
-                                                        <th scope="row" class="ps-4">
-                                                            <div class="form-check font-size-16">
-                                                                <input type="checkbox" class="form-check-input" id="contacusercheck9">
-                                                                <label class="form-check-label" for="contacusercheck9"></label>
-                                                            </div>
-                                                        </th>
                                                         <td>
                                                             <div class="d-flex align-items-center">
                                                             <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
@@ -396,10 +231,10 @@
                                                         <td>
                                                             <ul class="list-inline mb-0">
                                                                 <li class="list-inline-item">
-                                                                    <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit" class="px-2 text-primary"><i class="bx bx-pencil font-size-18"></i></a>
+                                                                    <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Accept" class="px-2 text-success"><i class="bx bxs-user-check font-size-20"></i></a>
                                                                 </li>
                                                                 <li class="list-inline-item">
-                                                                    <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a>
+                                                                    <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Decline" class="px-2 text-danger"><i class="bx bxs-user-x font-size-20"></i></a>
                                                                 </li>
                                                             </ul>
                                                         </td>
