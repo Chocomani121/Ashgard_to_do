@@ -14,11 +14,11 @@ def projects():
 
 @main.route("/tasks") 
 def tasks():
-    return render_template('tasks.html')
+    return render_template('tasks.html', title="Tasks Info")
 
 @main.route("/members")
 def members():
-    return render_template('members.html')
+    return render_template('members.html', title="Members")
 
 
 @main.route("/register") 
