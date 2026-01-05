@@ -1,0 +1,23 @@
+[33m519d603[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: commit (merge): message
+[33m6f7be2d[m HEAD@{1}: commit: Save correct version before sync
+[33m01f14cc[m HEAD@{2}: reset: moving to 01f14cc
+[33me61ff64[m HEAD@{3}: pull --rebase origin main (finish): returning to refs/heads/main
+[33me61ff64[m HEAD@{4}: pull --rebase origin main (pick): Restore work lost during pull
+[33m65c8521[m HEAD@{5}: pull --rebase origin main (start): checkout 65c85214207216706b2f13dd0f8db970e6ff2b11
+[33ma3df812[m HEAD@{6}: commit: Restore work lost during pull
+[33m01f14cc[m HEAD@{7}: reset: moving to 01f14cc
+[33m65c8521[m HEAD@{8}: pull: Fast-forward
+[33m01f14cc[m HEAD@{9}: reset: moving to 01f14cc
+[33m65c8521[m HEAD@{10}: pull origin main: Fast-forward
+[33m01f14cc[m HEAD@{11}: reset: moving to 01f14cc
+[33m65c8521[m HEAD@{12}: commit: My Updates
+[33mf69df22[m HEAD@{13}: pull: Fast-forward
+[33mdf340d2[m HEAD@{14}: commit: My Updates
+[33ma397ad2[m HEAD@{15}: pull: Fast-forward
+[33m01f14cc[m HEAD@{16}: commit: My Changes
+[33ma8adcfe[m HEAD@{17}: pull: Fast-forward
+[33m45f1293[m HEAD@{18}: commit (merge): Merge branch 'main' of https://github.com/Anen0/ashgard-todo-app
+[33m1fd0076[m HEAD@{19}: commit (merge): Resolved merge conflicts and removed pyc files from repo
+[33m4ea4242[m HEAD@{20}: commit: My local changes
+[33mae4603c[m HEAD@{21}: pull: Fast-forward
+[33m807fe13[m HEAD@{22}: clone: from https://github.com/Anen0/ashgard-todo-app.git
