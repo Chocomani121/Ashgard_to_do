@@ -72,27 +72,27 @@
                                     <i class="bx bx-list-check icon nav-icon"></i>
                                     <span class="menu-item" data-key="t-calendar">Tasks</span>
                                 </a>
-                            </li>
+                            </li>   
 
                             <li>
-                                <a href="javascript: void(0);" class="has-arrow">
+                                <a href="#" class="has-arrow">
                                     <i class="bx bx-grid-alt icon nav-icon"></i> 
                                     <span class="menu-item" data-key="t-departments">Departments</span>
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
-                                    <li><a href="email-inbox.html" data-key="t-inbox">MDC</a></li>
-                                    <li><a href="email-read.html" data-key="t-read-email">Legal</a></li>
-                                    <li><a href="email-read.html" data-key="t-read-email">Cyber</a></li>
-                                    <li><a href="email-read.html" data-key="t-read-email">Airmed</a></li>
-                                    <li><a href="email-read.html" data-key="t-read-email">Valkyrie Security</a></li>
-                                    <li><a href="email-read.html" data-key="t-read-email">Snarem Shipbuilding services</a></li>
-                                    <li><a href="email-read.html" data-key="t-read-email">Lars Motors</a></li>
-                                    <li><a href="email-read.html" data-key="t-read-email">Lorraine Dev’t corp</a></li>
+                                    <li><a href="mdc.html" data-key="t-mdc">MDC</a></li>
+                                    <li><a href="legal.html" data-key="t-legal">Legal</a></li>
+                                    <li><a href="cyber.html" data-key="t-cyber">Cyber</a></li>
+                                    <li><a href="airmed.html" data-key="t-airmed">Airmed</a></li>
+                                    <li><a href="valkyrie.html" data-key="t-valkyrie">Valkyrie Security</a></li>
+                                    <li><a href="snarem.html" data-key="t-snarem">Snarem Shipbuilding Services</a></li>
+                                    <li><a href="lars.html" data-key="t-lars">Lars Motors</a></li>
+                                    <li><a href="lorraine.html" data-key="t-lorraine">Lorraine Dev’t Corp</a></li>
                                 </ul>
                             </li>
 
                             <li>
-                                 <a href="{{ url_for('main.members') }}">
+                                 <a href="{{ url_for('main.members') }}" >
                                     <i class="bx bx-group icon nav-icon"></i>
                                     <span class="menu-item" data-key="t-todo">Members</span>
                                 </a>
@@ -294,7 +294,6 @@
 
         <script src="{{ url_for('static', filename='assets/js/pages/dashboard.init.js') }}"></script>
         
-        <script src="{{ url_for('static', filename='assets/js/app.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/js/tables.js') }}"></script>
 
         <!-- gridjs js -->
