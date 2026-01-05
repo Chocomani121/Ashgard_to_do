@@ -17,7 +17,7 @@
                                                     <div class="pb-3 pb-xl-0">
                                                         <form class="email-search">
                                                             <div class="position-relative">
-                                                                <input type="text" class="form-control bg-light" placeholder="Search...">
+                                                                <input type="text" id="customSearch" class="form-control bg-light" placeholder="Search...">
                                                                 <span class="bx bx-search font-size-18"></span>
                                                             </div>
                                                         </form>
@@ -33,11 +33,9 @@
                                             </div>
                                         </div>
 
-                                        <div class="card-body">
-                                            <div id="table-gridjs"></div>
-
-                                            <!-- ORIGINAL TABLE (hidden but used by Grid.js) -->
-                                            <table id="projectsTable" class="table d-none">
+                                        <div class="table-responsive">
+                                            <div id="table3-gridjs"></div>
+                                            <table id="projectsTableTask" class="table table-nowrap align-middle mb-0">
                                                 <thead>
                                                     <tr>
                                                         <!-- <th style="width: 30px;">
@@ -63,7 +61,7 @@
                                                 </thead>
                                                 <tbody>
                                                     <tr>
-                                                        <td style="width: 40px;">
+                                                    <td style="width: 40px;">
                                                        <div class="d-flex justify-content-center">
                                                                         <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #8B1A1A; display: inline-block;" title="High Priority"></span>
                                                                     </div>
@@ -97,7 +95,7 @@
                                                             <p class="mb-0">Lurs</p>
                                                         </td>
                                                         <td>
-                                                            <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                                            <div class="badge badge-soft-danger font-size-12">Rejcted</div>
                                                         </td>
                                                         <td>
                                                             <p class="mb-0">11 / 12 / 2024 :23:00</p>
@@ -121,9 +119,7 @@
                                                             <td>
                                                             <p class="mb-0">4/12</p>
                                                         </td>
-                                                        
                                                     </tr>
-
                                                  <tr>
                                                         <td style="width: 40px;">
                                                        <div class="d-flex justify-content-center">
@@ -378,6 +374,7 @@
                                                 </tbody>
                                             </table>
                                         </div>
+
                                     </div>
                                 </div>
                             </div>
