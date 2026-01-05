@@ -4,13 +4,21 @@
             <div class="main-content">
                 <div class="page-content">
                     <div class="container-fluid">
+                        <nav aria-label="breadcrumb" class="mb-3">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{{ url_for('main.projects') }}">Home</a></li>
+                                <li class="breadcrumb-item"><a href="{{ url_for('main.projects') }}">Projects</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Project Details</li>
+                            </ol>
+                        </nav>
+
                         <div class="mb-3">
                             <a href="{{ url_for('main.projects') }}" class="btn btn-secondary d-inline-flex align-items-center">
                                 <i class="mdi mdi-arrow-left-bold me-1"></i> Back
                             </a>
                         </div>
                         <!-- <div class="row">
-                           
+                           `
                         </div> -->
                         <!-- end row -->
 
@@ -20,51 +28,52 @@
                                     <div class="card-body">
                                         <div class="d-flex align-items-start">
                                             <div class="flex-grow-1 overflow-hidden">
-                                                <h5 class="card-title mb-4 text-truncate">Top Selling Categories</h5>
+                                                <h5 class="card-title mb-4 text-truncate">Project Summary</h5>
                                             </div>
-                                            <div class="flex-shrink-0 ms-2">
-                                                <div class="dropdown">
-                                                    <a class="dropdown-toggle text-reset" href="#" data-bs-toggle="dropdown"
-                                                        aria-haspopup="true" aria-expanded="false">
-                                                        <span class="fw-semibold">Sort By:</span> <span
-                                                            class="text-muted">Weekly<i
-                                                                class="mdi mdi-chevron-down ms-1"></i></span>
-                                                    </a>
-                                                    <div class="dropdown-menu dropdown-menu-end">
-                                                        <a class="dropdown-item" href="#">Yearly</a>
-                                                        <a class="dropdown-item" href="#">Monthly</a>
-                                                        <a class="dropdown-item" href="#">Weekly</a>
+                                        </div>
+                                         <div class="flex-shrink-0 ms-4">
+                                            <small class="text-muted d-block mb-3">Assigned Members</small>
+
+                                            <div class="d-flex gap-3"> <div class="d-flex flex-column align-items-center text-center">
+                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="Patrick">
+                                                    <div class="mt-1">
+                                                        Patrick
                                                     </div>
+                                                </div>
+
+                                                <div class="d-flex flex-column align-items-center text-center">
+                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="Neil">
+                                                    <div class="mt-1">
+                                                        Neil
+                                                    </div>
+                                                </div>
+
+                                                 <div class="d-flex flex-column align-items-center text-center">
+                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="Windyl">
+                                                    <div class="mt-1">
+                                                        Windyl
+                                                    </div>
+                                                </div>
+
+                                                 <div class="d-flex flex-column align-items-center text-center">
+                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="Kathrina">
+                                                    <div class="mt-1">
+                                                        Kathrina
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                     <div class="flex-shrink-0 ms-4 mt-4"> 
+                                        <small class="text-muted">Status Breakdown</small>
+                                    </div>
+                                    <div class="card-body">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-6">
+                                                    <canvas id="pieChart" class="chartjs-chart" data-colors='["#1f58c7", "#4976cf", "#6a92e1", "#e6ecf9"]' height="260"></canvas>
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div id="saleing-categories" data-colors='["#1f58c7", "#4976cf","#6a92e1", "#e6ecf9"]' class="apex-charts" dir="ltr"></div> 
-
-                                        <div class="row mt-3 pt-1">
-                                            <div class="col-md-6">
-                                                <div class="px-2 mt-2">
-                                                    <div class="d-flex align-items-center mt-sm-0 mt-2">
-                                                        <i class="mdi mdi-circle font-size-10 text-primary"></i>
-                                                        <div class="flex-grow-1 ms-2 overflow-hidden">
-                                                            <p class="font-size-15 mb-1 text-truncate">Men Fashion</p>
-                                                        </div>
-                                                        <div class="flex-shrink-0 ms-2">
-                                                            <span class="fw-bold">34.3%</span>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="d-flex align-items-center mt-2">
-                                                        <i class="mdi mdi-circle font-size-10 text-success"></i>
-                                                        <div class="flex-grow-1 ms-2 overflow-hidden">
-                                                            <p class="font-size-15 mb-0 text-truncate">Women Clothing</p>
-                                                        </div>
-                                                        <div class="flex-shrink-0 ms-2">
-                                                            <span class="fw-bold">25.7%</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
 
                                             <div class="col-md-6">
                                                 <div class="px-2 mt-2">
@@ -101,7 +110,7 @@
                                             <div class="card-body">
                                                 <div class="d-flex align-items-start mb-2">
                                                     <div class="flex-grow-1">
-                                                        <h5 class="card-title">Popular Products</h5>
+                                                        <h5 class="card-title">Project notes / Activity threads</h5>
                                                     </div>
                                                     <div class="flex-shrink-0">
                                                         <div class="dropdown">
