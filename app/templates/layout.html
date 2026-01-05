@@ -17,6 +17,9 @@
         <link href="{{ url_for('static', filename='assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
         <!-- App Css-->
         <link href="{{ url_for('static', filename='assets/css/app.min.css') }}" id="app-style" rel="stylesheet" type="text/css" />
+
+        <!-- gridjs css -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/gridjs/theme/mermaid.min.css') }}">
     </head>
     <body>
     <!-- ========== Left Sidebar Start ========== -->
@@ -72,7 +75,7 @@
                             </li>
 
                             <li>
-                                <a href="javascript: void(0);" class="has-arrow">
+                                <a href="{{ url_for('main.all_departments') }}" class="has-arrow">
                                     <i class="bx bx-grid-alt icon nav-icon"></i> 
                                     <span class="menu-item" data-key="t-departments">Departments</span>
                                 </a>
@@ -275,6 +278,7 @@
             {% endblock content %}
         </main>
 
+         
         <script src="{{ url_for('static', filename='assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/metismenujs/metismenujs.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/simplebar/simplebar.min.js') }}"></script>
@@ -290,7 +294,15 @@
         <script src="{{ url_for('static', filename='assets/js/pages/dashboard.init.js') }}"></script>
         
         <script src="{{ url_for('static', filename='assets/js/app.js') }}"></script>
+        <script src="{{ url_for('static', filename='assets/js/tables.js') }}"></script>
 
+        <!-- gridjs js -->
+        <script src="{{ url_for('static', filename='assets/libs/gridjs/gridjs.umd.js') }}"></script>
+        <script src="{{ url_for('static', filename='assets/js/pages/gridjs.init.js') }}"></script>
+        <script src="{{ url_for('static', filename='assets/js/app.js') }}"></script>
+      
     </body>
+
+        <!-- gridjs js -->
 
 </html>
