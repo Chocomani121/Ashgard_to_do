@@ -280,6 +280,10 @@
             {% endblock content %}
         </main>
 
+        <!-- gridjs js -->
+        <script src="{{ url_for('static', filename='assets/libs/gridjs/gridjs.umd.js') }}"></script>
+        <script src="{{ url_for('static', filename='assets/js/pages/gridjs.init.js') }}"></script> 
+        
         <script src="{{ url_for('static', filename='assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/metismenujs/metismenujs.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/simplebar/simplebar.min.js') }}"></script>
@@ -287,17 +291,19 @@
 
         <script src="{{ url_for('static', filename='assets/libs/apexcharts/apexcharts.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/chart.js/chart.min.js') }}"></script>
+        
 
         <script src="{{ url_for('static', filename='assets/libs/jsvectormap/js/jsvectormap.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/jsvectormap/maps/world-merc.js') }}"></script>
 
         <script src="{{ url_for('static', filename='assets/js/pages/dashboard.init.js') }}"></script>
         
-        <script src="{{ url_for('static', filename='assets/js/tables.js') }}"></script>
+        <script src="{{ url_for('static', filename='assets/js/app.js') }}"></script>
 
-        <!-- gridjs js -->
-        <script src="{{ url_for('static', filename='assets/libs/gridjs/gridjs.umd.js') }}"></script>
-        <script src="{{ url_for('static', filename='assets/js/pages/gridjs.init.js') }}"></script>
+        
+
+
+        
       
     </body>
 
