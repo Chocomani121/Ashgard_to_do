@@ -17,8 +17,8 @@ def tasks():
     return render_template('tasks.html', title="Tasks Info")
 
 @main.route("/departments") 
-def all_divisions():
-    return render_template('all_division.html')
+def departments():
+    return render_template('all_departments.html')
 
 @main.route("/members")
 def members():
