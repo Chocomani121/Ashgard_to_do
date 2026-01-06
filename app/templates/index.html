@@ -4,65 +4,83 @@
                 <div class="page-content">
                     <div class="container-fluid">
 
-                       <div class="row">
-                            <div class="col-xl-12">
-                               <div class="row">
-                                        <div class="col-xl-4 col-md-4">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <div class="d-flex align-items-center justify-content-between">
-                                                        <div>
-                                                            <h6 class="mb-2 text-muted font-size-15">Pending Projects</h6>
-                                                            <h4 class="mb-0 font-size-22 fw-bold">5</h4>
+                        <div class="row">
+                            <div class="col-md-6 col-xl-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                                    <div>
+                                                        <h6 class="mb-2 text-muted font-size-15">Pending Projects</h6>
+                                                        <h4 class="mb-0 font-size-22 fw-bold">5</h4>
+                                                    </div>
+                                                    <div class="avatar-md">
+                                                        <div class="avatar-title rounded bg-soft-warning">
+                                                            <i class="mdi mdi-clock-outline font-size-24 text-warning" style="color: #856404 !important;"></i>
                                                         </div>
-                                                        <div class="avatar-md">
-                                                            <div class="avatar-title rounded bg-soft-warning">
-                                                                <i class="mdi mdi-clock-outline font-size-24 text-warning" style="color: #856404 !important;"></i>
-                                                            </div>
-                                                        </div>
+                                                    </div>
+                                                </div>
+                                         </div>
+                               
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-xl-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                          <div class="d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <h6 class="mb-2 text-muted font-size-15">Priority</h6>
+                                                    <h4 class="mb-0 font-size-22 fw-bold">3</h4>
+                                                </div>
+                                                <div class="avatar-md">
+                                                    <div class="avatar-title rounded bg-soft-danger">
+                                                        <i class="mdi mdi-alert-octagon font-size-24 text-danger" style="color: #8B1A1A !important;"></i>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+                                  
+                                </div>
+                            </div>
 
-                                        <div class="col-xl-4 col-md-4">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <div class="d-flex align-items-center justify-content-between">
-                                                        <div>
-                                                            <h6 class="mb-2 text-muted font-size-15">Priority</h6>
-                                                            <h4 class="mb-0 font-size-22 fw-bold">3</h4>
-                                                        </div>
-                                                        <div class="avatar-md">
-                                                            <div class="avatar-title rounded bg-soft-danger">
-                                                                <i class="mdi mdi-alert-octagon font-size-24 text-danger" style="color: #8B1A1A !important;"></i>
-                                                            </div>
-                                                        </div>
+                            <div class="col-md-6 col-xl-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <h6 class="mb-2 text-muted font-size-15">Completed</h6>
+                                                    <h4 class="mb-0 font-size-22 fw-bold">2</h4>
+                                                </div>
+                                                <div class="avatar-md">
+                                                    <div class="avatar-title rounded bg-soft-success">
+                                                        <i class="mdi mdi-check-decagram font-size-24 text-success" style="color: #155724 !important;"></i>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+                               
+                                </div>
+                            </div>
 
-                                        <div class="col-xl-4 col-md-4">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <div class="d-flex align-items-center justify-content-between">
-                                                        <div>
-                                                            <h6 class="mb-2 text-muted font-size-15">Completed</h6>
-                                                            <h4 class="mb-0 font-size-22 fw-bold">2</h4>
-                                                        </div>
-                                                        <div class="avatar-md">
-                                                            <div class="avatar-title rounded bg-soft-success">
-                                                                <i class="mdi mdi-check-decagram font-size-24 text-success" style="color: #155724 !important;"></i>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                            <div class="col-md-6 col-xl-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                         <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <h6 class="mb-2 text-muted font-size-15">On Hold</h6>
+                                                <h4 class="mb-0 font-size-22 fw-bold">2</h4>
+                                            </div>
+
+                                            <div class="avatar-md">
+                                                <div class="avatar-title rounded bg-soft-secondary">
+                                                    <i class="bx bx-stopwatch font-size-24 text-secondary" style="color: #2e2e2e !important;"></i>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
                          </div>  <!-- end row -->
 
                         <div class="row"> 
@@ -711,13 +729,13 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">Start Date</label>
-                                        <input type="text" class="form-control" placeholder="Select Start Date" id="CreateTask-start-date" >
+                                        <input type="date" class="form-control" placeholder="Select Start Date" id="CreateTask-start-date" >
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                      <div class="mb-3">
                                         <label class="form-label">Deadline</label>
-                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date">
+                                        <input type="date" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
