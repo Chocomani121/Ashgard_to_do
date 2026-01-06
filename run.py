@@ -1,5 +1,10 @@
+import sys
+import os
+
+# This forces Python to look in the current folder for the 'app' module
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
 from app import create_app
-from flask import Flask, render_template
 
 app = create_app()
 
