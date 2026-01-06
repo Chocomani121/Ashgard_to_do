@@ -40,3 +40,6 @@ def profile():
 def all_departments():
     return render_template('all_division.html')
 
+@main.route("/task details")
+def task_details():
+    return render_template('task_details.html')

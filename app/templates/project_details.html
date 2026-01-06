@@ -115,7 +115,7 @@
                                             </div>
 
                                             <!-- Thread Container -->
-                                            <div class="mx-n4 px-4" data-simplebar style="max-height: 380px;">
+                                            <div class="mx-n4 px-4" data-simplebar style="max-height: 500px;">
 
                                                 <!-- PROJECT -->
                                                 <div class="d-flex mb-4">
@@ -172,14 +172,7 @@
                                                     </div>
                                                 </div>
 
-                                                <!-- SUBTASK NOTE -->
-                                                <div class="d-flex mb-3 ms-6">
-                                                    <div class="flex-grow-1">
-                                                        <p class="text-muted mb-0 small fst-italic">
-                                                            Note: Column overflow handled using min-width and scroll container.
-                                                        </p>
-                                                    </div>
-                                                </div>
+                                                
 
                                                 <!-- SUBTASK -->
                                                 <div class="d-flex mb-3 ms-5">
@@ -201,23 +194,89 @@
                                                     </div>
                                                 </div>
 
-                                                <!-- TASK NOTE -->
-                                                <div class="d-flex mb-4 ms-5">
+                                   
+                                                 <div class="d-flex mb-4 ms-4">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <span class="avatar-sm rounded-circle bg-info text-white d-flex align-items-center justify-content-center">
+                                                            T
+                                                        </span>
+                                                    </div>
                                                     <div class="flex-grow-1">
-                                                        <p class="text-muted mb-0 small fst-italic">
-                                                            Status updated after QA review.
-                                                        </p>
+                                                        <div class="border rounded p-3">
+                                                            <div class="d-flex justify-content-between">
+                                                                <h6 class="mb-1">Login Form</h6>
+                                                                <span class="badge badge-soft-warning">Ongoing</span>
+                                                            </div>
+                                                            <p class="text-muted mb-0">
+                                                                Update layout, tables, and responsiveness.
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                 </div>
-
+                                                   <!-- SUBTASK -->
+                                                <div class="d-flex mb-3 ms-5">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">
+                                                            S
+                                                        </span>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="bg-light rounded p-3">
+                                                            <div class="d-flex justify-content-between">
+                                                                <h6 class="mb-1">Login UI</h6>
+                                                                <span class="badge badge-soft-success">Done</span>
+                                                            </div>
+                                                            <p class="text-muted mb-0">
+                                                               Login Done
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- SUBTASK -->
+                                                <div class="d-flex mb-3 ms-5">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">
+                                                            S
+                                                        </span>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="bg-light rounded p-3">
+                                                            <div class="d-flex justify-content-between">
+                                                                <h6 class="mb-1">Login Backend</h6>
+                                                                <span class="badge badge-soft-danger">Rejected</span>
+                                                            </div>
+                                                            <p class="text-muted mb-0">
+                                                                Can't Register, please fixed
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                 <div class="d-flex mb-3 ms-5">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">
+                                                            S
+                                                        </span>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="bg-light rounded p-3">
+                                                            <div class="d-flex justify-content-between">
+                                                                <h6 class="mb-1">Login Backend</h6>
+                                                                <span class="badge badge-soft-success">Done</span>
+                                                            </div>
+                                                            <p class="text-muted mb-0">
+                                                                Fixed, is running
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 <!-- FINAL STATUS -->
-                                                <div class="d-flex ms-4">
+                                                <!-- <div class="d-flex ms-4">
                                                     <div class="flex-grow-1">
                                                         <div class="alert alert-light border mb-0">
                                                             <strong>Overall:</strong> Task is on track, pending final review.
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </div> -->
 
                                             </div>
 
@@ -263,7 +322,7 @@
                                                         </thead>
                                                         <tbody>
                                                             <tr>
-                                                                <td class="fw-semibold">API integration</td>
+                                                                <td class="fw-semibold"><a href="{{ url_for('main.task_details') }}" class="text-dark">API integration</a>
                                                                 <td style="width: 190px;">
                                                                     <div class="d-flex align-items-center">
                                                                         <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
@@ -281,7 +340,7 @@
                                                             </tr>   
                                                             
                                                             <tr>
-                                                                <td class="fw-semibold">Login Interface</td>
+                                                                <td class="fw-semibold"><a href="#" class="text-dark">Login Form</a>
                                                                 <td style="width: 190px;">
                                                                     <div class="d-flex align-items-center">
                                                                         <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
@@ -300,7 +359,7 @@
                                                             </tr>   
 
                                                             <tr>
-                                                                <td class="fw-semibold">UI</td>
+                                                                <td class="fw-semibold"><a href="#" class="text-dark">UI Redesign</a>
                                                                 <td style="width: 190px;">
                                                                     <div class="d-flex align-items-center">
                                                                         <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
