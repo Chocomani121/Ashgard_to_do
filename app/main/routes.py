@@ -18,7 +18,7 @@ def tasks():
 
 @main.route("/departments") 
 def all_divisions():
-    return render_template('all_division.html', title="Departments")
+    return render_template('all_division.html')
 
 @main.route("/members")
 def members():
