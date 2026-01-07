@@ -27,10 +27,17 @@ def project_details():
 def profile():
     return render_template('profile.html')
 
+<<<<<<< HEAD
 @main.route("/all_departments")
 def all_departments():
-    return render_template('all_division.html')
+    return render_template('all_departments.html')
+=======
 
 @main.route("/task details")
 def task_details():
     return render_template('task_details.html')
+
+@main.route("department")
+def departments():
+    return render_template('departments.html')
+>>>>>>> fed2daa1289f7913d526d36f3569a4104236491f
