@@ -11,6 +11,8 @@
         <link rel="shortcut icon" href="{{ url_for('static', filename='assets/images/ashgard_favicon.png') }}">
         <!-- plugin css -->
         <link href="{{ url_for('static', filename='assets/libs/jsvectormap/css/jsvectormap.min.css') }}" rel="stylesheet" type="text/css" />
+        <!-- gridjs css -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/gridjs/theme/mermaid.min.css') }}">
         <!-- Bootstrap Css -->
         <link href="{{ url_for('static', filename='assets/css/bootstrap.min.css') }}" id="bootstrap-style" rel="stylesheet" type="text/css" />
         <!-- Icons Css -->
@@ -18,8 +20,6 @@
         <!-- App Css-->
         <link href="{{ url_for('static', filename='assets/css/app.min.css') }}" id="app-style" rel="stylesheet" type="text/css" />
 
-        <!-- gridjs css -->
-        <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/gridjs/theme/mermaid.min.css') }}">
     </head>
     <body>
     <!-- ========== Left Sidebar Start ========== -->
@@ -72,27 +72,28 @@
                                     <i class="bx bx-list-check icon nav-icon"></i>
                                     <span class="menu-item" data-key="t-calendar">Tasks</span>
                                 </a>
-                            </li>
+                            </li>   
 
                             <li>
-                                <a href="javascript: void(0);" class="has-arrow">
+                                <a href="#" class="has-arrow">
                                     <i class="bx bx-grid-alt icon nav-icon"></i> 
                                     <span class="menu-item" data-key="t-departments">Departments</span>
                                 </a>
                                 <ul class="sub-menu" aria-expanded="false">
-                                    <li><a href="email-inbox.html" data-key="t-inbox">MDC</a></li>
-                                    <li><a href="email-read.html" data-key="t-read-email">Legal</a></li>
-                                    <li><a href="email-read.html" data-key="t-read-email">Cyber</a></li>
-                                    <li><a href="email-read.html" data-key="t-read-email">Airmed</a></li>
-                                    <li><a href="email-read.html" data-key="t-read-email">Valkyrie Security</a></li>
-                                    <li><a href="email-read.html" data-key="t-read-email">Snarem Shipbuilding services</a></li>
-                                    <li><a href="email-read.html" data-key="t-read-email">Lars Motors</a></li>
-                                    <li><a href="email-read.html" data-key="t-read-email">Lorraine Dev’t corp</a></li>
-                                </ul>
+                                <li><a href="{{ url_for('main.departments') }}" class="dept-filter" data-department="ALL">ALL</a></li>
+                                <li><a href="#" class="dept-filter" data-department="MDC">MDC</a></li>
+                                <li><a href="#" class="dept-filter" data-department="LEGAL">Legal</a></li>
+                                <li><a href="#" class="dept-filter" data-department="CYBER">Cyber</a></li>
+                                <li><a href="#" class="dept-filter" data-department="AIRMED">Airmed</a></li>
+                                <li><a href="#" class="dept-filter" data-department="VALKYRIE">Valkyrie Security</a></li>
+                                <li><a href="#" class="dept-filter" data-department="SNAREM">Snarem Shipbuilding Services</a></li>
+                                <li><a href="#" class="dept-filter" data-department="LARS">Lars Motors</a></li>
+                                <li><a href="#" class="dept-filter" data-department="LORRAINE">Lorraine Dev’t Corp</a></li>
+                            </ul>
                             </li>
 
                             <li>
-                                 <a href="{{ url_for('main.members') }}">
+                                 <a href="{{ url_for('main.members') }}" >
                                     <i class="bx bx-group icon nav-icon"></i>
                                     <span class="menu-item" data-key="t-todo">Members</span>
                                 </a>
@@ -259,7 +260,7 @@
                             </button>
                             <div class="dropdown-menu dropdown-menu-end pt-0">
                                 <div class="p-3 border-bottom">
-                                    <h6 class="mb-0">Martin Gurley</h6>
+                                    <h6 class="mb-0">{{ current_user.email }}</h6>
                                     <p class="mb-0 font-size-11 text-muted">martin.gurley@email.com</p>
                                 </div>
                                 <a class="dropdown-item" href="{{ url_for('main.profile') }}"><i class="mdi mdi-account-circle text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Profile</span></a>
@@ -267,18 +268,22 @@
                                 <a class="dropdown-item" href="pages-faqs.html"><i class="mdi mdi-lifebuoy text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Help</span></a>
                         
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ url_for('users.login') }}"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Logout</span></a>
+                                <a class="dropdown-item" href="{{ url_for('users.logout') }}"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Logout</span></a>
                             </div>
                         </div>
                     </div>
                 </div>
+                
             </header>
         <main role="main" class="containerh=100">
             {% block content %}
             {% endblock content %}
         </main>
 
-         
+        <!-- gridjs js -->
+        <script src="{{ url_for('static', filename='assets/libs/gridjs/gridjs.umd.js') }}"></script>
+        <script src="{{ url_for('static', filename='assets/js/pages/gridjs.init.js') }}"></script> 
+
         <script src="{{ url_for('static', filename='assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/metismenujs/metismenujs.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/simplebar/simplebar.min.js') }}"></script>
@@ -294,11 +299,11 @@
         <script src="{{ url_for('static', filename='assets/js/pages/dashboard.init.js') }}"></script>
         
         <script src="{{ url_for('static', filename='assets/js/app.js') }}"></script>
-        <script src="{{ url_for('static', filename='assets/js/tables.js') }}"></script>
 
-        <!-- gridjs js -->
-        <script src="{{ url_for('static', filename='assets/libs/gridjs/gridjs.umd.js') }}"></script>
-        <script src="{{ url_for('static', filename='assets/js/pages/gridjs.init.js') }}"></script>
+        
+
+
+        
       
     </body>
 

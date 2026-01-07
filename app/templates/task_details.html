@@ -1,0 +1,373 @@
+{% extends "layout.html" %}
+{% block page_title %}TASK DETAILS{% endblock %}
+   {% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.projects') }}">Projects</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.project_details') }}">Projects</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Task Details</li>
+                </ol>
+            </nav>
+
+            <div class="row">
+                <!-- LEFT CONTENT -->
+             <div class="col-xl-8">
+                <!-- PROJECT OVERVIEW -->
+                <div class="card mb-4">
+                    <div class="card-body">
+
+                            <!-- Top Info Section -->
+                        <div class="row mb-3 g-3">
+                            <!-- Project Manager -->
+                            <div class="col-md-3 col-sm-6">
+                                <span class="text-muted">Project Manager:</span> 
+                                <strong class="ms-1">Lurs</strong>
+                            </div>
+
+                            <!-- Priority -->
+                            <div class="col-md-3 col-sm-6">
+                                <span class="text-muted">Priority:</span> 
+                                <span class="badge bg-soft-danger text-danger ms-1">High</span>
+                            </div>
+
+                            <!-- Start Date -->
+                            <div class="col-md-3 col-sm-6">
+                                <span class="text-muted">Start date:</span> 
+                                <strong class="ms-1">24, June 2023</strong>
+                            </div>
+
+                            <!-- End Date -->
+                            <div class="col-md-3 col-sm-6">
+                                <span class="text-muted">End date:</span> 
+                                <strong class="ms-1">24, June 2023</strong>
+                            </div>
+
+                            <!-- Task ID -->
+                            <div class="col-md-3 col-sm-6">
+                                <span class="text-muted">Task ID:</span> 
+                                <strong class="ms-1">#112</strong>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="col-md-3 col-sm-6">
+                                <span class="text-muted">Progress:</span>
+                                <div class="progress mt-1" style="height: 20px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                                        75%
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Man-hours -->
+                            <div class="col-md-3 col-sm-6">
+                                <span class="text-muted">Man-hours:</span> 
+                                <strong class="ms-1">45H:35M:45S</strong>
+                            </div>
+
+                            <!-- Assigned Members -->
+                            <div class="col-md-3 col-sm-6">
+                                <span class="text-muted">Assigned to / Members:</span> 
+                                <strong class="ms-1">John, Jane, Lurs</strong>
+                            </div>
+                        </div>
+
+
+                        <!-- Description -->
+                        <h6>Description</h6>
+                        <p class="text-muted">
+                            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Delectus, vitae mollitia! Consequatur, nihil voluptates.
+                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, vitae voluptates? Sit odio alias tenetur blanditiis laboriosam facere quibusdam quidem! Accusantium eveniet voluptatibus ex laborum in ipsa voluptatem laboriosam dicta.    
+                            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magni a voluptate nostrum ipsam, itaque veritatis eaque minus, inventore fugit quam veniam et, ad nihil perferendis blanditiis vel. Aspernatur, facere eum!
+                            Lorem ipsum, dolor sit amet consectetur adipisicing elit. Error minima molestiae ipsa nostrum nihil asperiores reprehenderit totam et ipsum voluptas nisi, suscipit harum ea excepturi. Veniam, iste voluptatem. Quis, consequuntur?
+                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores, sapiente corporis? 
+                        </p>
+
+                        <!-- Expandable Section -->
+                        <div class="collapse" id="projectDetails">
+                            <h6 class="mb-2">Key tasks:</h6>
+                            <ul class="text-muted mb-0">
+                                <li>Website design</li>
+                                <li>Develop wireframes and mockups</li>
+                                <li>Conduct a final review</li>
+                            </ul>
+                        </div>
+
+                        <!-- Expand Toggle -->
+                        <a class="text-primary fw-medium mt-2 d-inline-block"
+                        data-bs-toggle="collapse"
+                        href="#projectDetails"
+                        role="button"
+                        aria-expanded="false"
+                        aria-controls="projectDetails">
+                            <i class="mdi mdi-chevron-down me-1"></i> Expand
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+                <!-- RIGHT SIDEBAR -->
+                <div class="col-xl-4">
+                    <div class="position-sticky" style="top: 90px;">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title mb-0">Task Overview</h5>
+                                <small class="text-muted">Project → Tasks → Subtasks</small>
+
+                                <div class="mt-3" data-simplebar style="max-height: 50vh;">
+                                    <!-- PROJECT -->
+                                    <div class="d-flex mb-4">
+                                        <div class="flex-shrink-0 me-3">
+                                            <span class="avatar-sm rounded-circle bg-primary text-white d-flex align-items-center justify-content-center">P</span>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">Project: OSINT Platform</h6>
+                                            <p class="text-muted mb-0">Central dashboard and task tracking system</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- TASK -->
+                                    <div class="d-flex mb-4 ms-4">
+                                        <div class="flex-shrink-0 me-3">
+                                            <span class="avatar-sm rounded-circle bg-info text-white d-flex align-items-center justify-content-center">T</span>
+                                        </div>
+                                        <div class="border rounded p-3 w-100">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-1">UI Redesign</h6>
+                                                <span class="badge bg-soft-warning text-warning">Ongoing</span>
+                                            </div>
+                                            <p class="text-muted mb-0">Update layout, tables, and responsiveness.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- SUBTASK -->
+                                    <div class="d-flex mb-3 ms-5">
+                                        <div class="flex-shrink-0 me-3">
+                                            <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
+                                        </div>
+                                        <div class="bg-light rounded p-3 w-100">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-1">Grid.js Table Layout</h6>
+                                                <span class="badge bg-soft-success text-success">Done</span>
+                                            </div>
+                                            <p class="text-muted mb-0">Ensured all headers display with horizontal scroll.</p>
+                                        </div>
+                                    </div>
+                                      <div class="d-flex mb-4 ms-4">
+                                        <div class="flex-shrink-0 me-3">
+                                            <span class="avatar-sm rounded-circle bg-info text-white d-flex align-items-center justify-content-center">T</span>
+                                        </div>
+                                        <div class="border rounded p-3 w-100">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-1">UI Redesign</h6>
+                                                <span class="badge bg-soft-warning text-warning">Ongoing</span>
+                                            </div>
+                                            <p class="text-muted mb-0">Update layout, tables, and responsiveness.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- SUBTASK -->
+                                    <div class="d-flex mb-3 ms-5">
+                                        <div class="flex-shrink-0 me-3">
+                                            <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
+                                        </div>
+                                        <div class="bg-light rounded p-3 w-100">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-1">Grid.js Table Layout</h6>
+                                                <span class="badge bg-soft-success text-success">Done</span>
+                                            </div>
+                                            <p class="text-muted mb-0">Ensured all headers display with horizontal scroll.</p>
+                                        </div>
+                                    </div>
+                                      <div class="d-flex mb-4 ms-4">
+                                        <div class="flex-shrink-0 me-3">
+                                            <span class="avatar-sm rounded-circle bg-info text-white d-flex align-items-center justify-content-center">T</span>
+                                        </div>
+                                        <div class="border rounded p-3 w-100">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-1">UI Redesign</h6>
+                                                <span class="badge bg-soft-warning text-warning">Ongoing</span>
+                                            </div>
+                                            <p class="text-muted mb-0">Update layout, tables, and responsiveness.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- SUBTASK -->
+                                    <div class="d-flex mb-3 ms-5">
+                                        <div class="flex-shrink-0 me-3">
+                                            <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
+                                        </div>
+                                        <div class="bg-light rounded p-3 w-100">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-1">Grid.js Table Layout</h6>
+                                                <span class="badge bg-soft-success text-success">Done</span>
+                                            </div>
+                                            <p class="text-muted mb-0">Ensured all headers display with horizontal scroll.</p>
+                                        </div>
+                                    </div>
+                                      <div class="d-flex mb-4 ms-4">
+                                        <div class="flex-shrink-0 me-3">
+                                            <span class="avatar-sm rounded-circle bg-info text-white d-flex align-items-center justify-content-center">T</span>
+                                        </div>
+                                        <div class="border rounded p-3 w-100">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-1">UI Redesign</h6>
+                                                <span class="badge bg-soft-warning text-warning">Ongoing</span>
+                                            </div>
+                                            <p class="text-muted mb-0">Update layout, tables, and responsiveness.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- SUBTASK -->
+                                    <div class="d-flex mb-3 ms-5">
+                                        <div class="flex-shrink-0 me-3">
+                                            <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
+                                        </div>
+                                        <div class="bg-light rounded p-3 w-100">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-1">Grid.js Table Layout</h6>
+                                                <span class="badge bg-soft-success text-success">Done</span>
+                                            </div>
+                                            <p class="text-muted mb-0">Ensured all headers display with horizontal scroll.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- SUBTASK TABLE -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center">
+                            <h4 class="card-title mb-0">Sub-Task [1/6]</h4>
+                            <div class="ms-auto">
+                                <button class="btn btn-primary btn-rounded" data-bs-toggle="modal" data-bs-target=".create-task">
+                                    <i class="mdi mdi-plus me-1"></i> Add Sub-Task
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div id="table-gridjs"></div>
+
+                            <table id="projectsTable" class="table d-none">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Sub-Task Name</th>
+                                        <th>Owner</th>
+                                        <th>Status</th>
+                                        <th>Timestamp</th>
+                                        <th>Notes</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">H20</a></td>
+                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">Login Interface</a></td>
+                                        <td>Lurs</td>
+                                        <td><span class="badge bg-soft-warning text-warning">Ongoing</span></td>
+                                        <td>11/12/2024 23:00</td>
+                                        <td>Lopre Lorem - it may work(?) Lmao -windyl 12/25/2025(edit)</td>
+                                        <td class="text-nowrap">
+                                            <a href="#" class="btn btn-sm btn-soft-primary me-1"><i class="mdi mdi-pencil"></i></a>
+                                            <a href="#" class="btn btn-sm btn-soft-danger"><i class="mdi mdi-delete"></i></a>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">H21</a></td>
+                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">Backend</a></td>
+                                        <td>Lurs</td>
+                                        <td><span class="badge bg-soft-warning text-warning">Ongoing</span></td>
+                                        <td>11/12/2024 23:00</td>
+                                        <td>Lopre Lorem - it may work(?) Lmao -windyl 12/25/2025(edit)</td>
+                                        <td class="text-nowrap">
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                                <div class="dropdown-menu dropdown-menu-end shadow">
+                                                    <a class="dropdown-item" href="#">Edit</a>
+                                                    <a class="dropdown-item text-danger" href="#">Delete</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- Repeat more subtasks as needed -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+    <!-- Add Sub-Task Modal -->
+<div class="modal fade create-task" tabindex="-1" aria-labelledby="createTaskLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="createTaskLabel">Add Sub-Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body">
+                <form id="subTaskForm">
+
+                    <div class="mb-3">
+                        <label class="form-label">Sub-Task Name</label>
+                        <input type="text" class="form-control" placeholder="Enter sub-task name" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Owner</label>
+                            <input type="text" class="form-control" placeholder="Assigned to">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select">
+                                <option selected>Ongoing</option>
+                                <option>Completed</option>
+                                <option>Pending</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" rows="3" placeholder="Optional notes..."></textarea>
+                    </div>
+
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="subTaskForm" class="btn btn-primary">
+                    <i class="mdi mdi-check me-1"></i> Save Sub-Task
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+   {% endblock content %}

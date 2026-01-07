@@ -7,59 +7,39 @@
                 <div class="page-content">
                     <div class="container-fluid">
                         <div class="row">
-                            <div class="col-xl-12">
+                            <div class="col-lg-12">
                                 <div class="card">
-                                    <div class="card-body">
+                                    <div class="card-header d-flex align-items-center">
+                                        <h4 class="card-title mb-0">Tasks </h4>
 
-                                        <div class="">
-                                            <div class="row mb-2">
-                                                <div class="col-xl-3 col-md-12">
-                                                    <div class="pb-3 pb-xl-0">
-                                                        <form class="email-search">
-                                                            <div class="position-relative">
-                                                                <input type="text" id="customSearch" class="form-control bg-light" placeholder="Search...">
-                                                                <span class="bx bx-search font-size-18"></span>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                                <div class="col-xl-9 col-md-12">
-                                                    <div class="text-sm-end">
-                                                        <button type="button" class="btn btn-primary btn-rounded waves-effect waves-light mb-2 me-2" data-bs-toggle="modal" data-bs-target=".create-task"><i class="mdi mdi-plus me-1"></i> Create Task</button>
-            
-                                                     </div>
-                                            
-                                                </div>
-                                            </div>
+                                        <div class="ms-auto d-flex gap-2">
+                                            <button type="button" class="btn btn-primary btn-rounded waves-effect waves-light mb-2 me-2" data-bs-toggle="modal" data-bs-target=".create-task"><i class="mdi mdi-plus me-1"></i> Create Task</button>
                                         </div>
+                                    </div>
 
-                                        <div class="table-responsive">
-                                            <div id="table3-gridjs"></div>
-                                            <table id="projectsTableTask" class="table table-nowrap align-middle mb-0">
+                                    <div class="card-body">
+                                        <div id="table-gridjs"></div>
+
+                                        <!-- ORIGINAL TABLE (hidden but used by Grid.js) -->
+                                        <table id="projectsTable" class="table d-none">
                                                 <thead>
-                                                    <tr>
-                                                        <!-- <th style="width: 30px;">
-                                                            <div class="form-check font-size-16">
-                                                                <input type="checkbox" name="check" class="form-check-input" id="checkAll">
-                                                                <label class="form-check-label" for="checkAll"></label>
-                                                            </div>
-                                                        </th> -->
-                                                        <th>Priority</th>
-                                                        <th style="width: 190px;">Project</th>
-                                                        <th>Tasks</th>
-                                                        <th>Department</th>
-                                                        <th>Assigned To</th>
-                                                        <th>Project Manager</th>
-                                                        <th>Status</th>
-                                                        <th>Start Due</th>
-                                                        <th>Deadline</th>
-                                                        <th>Progress</th>
-                                                        <th>Manhours</th>
-                                                        <th>Notes</th>
-                                                        <th>Latest Tasks</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
+                                                        <tr>
+                                                            <th>Priority</th>
+                                                            <th style="width: 190px;">Project</th>
+                                                            <th>Tasks</th>
+                                                            <th>Department</th>
+                                                            <th>Assigned To</th>
+                                                            <th>Project Manager</th>
+                                                            <th>Status</th>
+                                                            <th>Start Due</th>
+                                                            <th>Deadline</th>
+                                                            <th>Progress</th>
+                                                            <th>Manhours</th>
+                                                            <th>Notes</th>
+                                                            <th>Latest Tasks</th>
+                                                        </tr>
+                                                    </thead>
+                                                 <tbody>
                                                     <tr>
                                                     <td style="width: 40px;">
                                                        <div class="d-flex justify-content-center">
@@ -71,7 +51,7 @@
                                                             <h5 class="text-truncate font-size-14 m-0"><a href="javascript: void(0);" class="text-dark">Osint</a></h5>
                                                         </td>
                                                         <td>
-                                                           <p class="mb-0">UI</p>
+                                                           <p class="mb-0">Dashboard</p>
                                                         </td>
                                                         <td>
                                                             <p class="mb-0">MDC</p>
@@ -104,7 +84,7 @@
                                                             <p class="mb-0">02 / 15 / 2025 :11:23</p>
                                                         </td>
                                                             <td>
-                                                            <p class="mb-0">80%</p>
+                                                            <p class="mb-0">50%</p>
                                                         </td>
                                                         
                                                             <td>
@@ -245,7 +225,7 @@
                                                         </td>
                                                
                                                     </tr>
-<tr>
+                                                    <tr>
                                                         <td style="width: 40px;">
                                                        <div class="d-flex justify-content-center">
                                                                         <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #8B1A1A; display: inline-block;" title="High Priority"></span>
@@ -366,20 +346,14 @@
                                                         
                                                             <td>
                                                             <p class="mb-0">4/12</p>
-                                                        </td>
-                                                        
-                                                        
-                                                        
+                                                        </td>     
                                                     </tr>
                                                 </tbody>
-                                            </table>
-                                        </div>
-
+                                        </table>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                     <!-- container-fluid -->
                 </div>
@@ -469,21 +443,7 @@
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
                 
-
-                <!-- <footer class="footer">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <script>document.write(new Date().getFullYear())</script> © webadmin.
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="text-sm-end d-none d-sm-block">
-                                    Crafted with <i class="mdi mdi-heart text-danger"></i> by <a href="https://Themesdesign.com/" target="_blank" class="text-reset">Themesdesign</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </footer> -->
+            
             </div>
             <!-- end main content-->
 

@@ -45,3 +45,4 @@ new gridjs.Grid({
         table: "table table-striped table-centered align-middle"
     }
 }).render(document.getElementById("table3-gridjs"));
+

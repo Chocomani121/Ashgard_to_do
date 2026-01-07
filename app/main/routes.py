@@ -11,6 +11,10 @@ def projects():
 def tasks():
     return render_template('tasks.html', title="Tasks Info")
 
+@main.route("/departments") 
+def departments():
+    return render_template('all_departments.html')
+
 @main.route("/members")
 def members():
     return render_template('members.html', title="Members")
@@ -26,3 +30,4 @@ def profile():
 @main.route("/all_departments")
 def all_departments():
     return render_template('all_division.html')
+

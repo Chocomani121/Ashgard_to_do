@@ -42,7 +42,11 @@ def login():
 @users.route("/logout")
 def logout():
     logout_user()
-    return redirect(url_for('main.projects'))
+    return redirect(url_for('users.login'))
+
+@users.route("/reset_password")
+def reset_password():
+    return render_template('auth-recoverpw.html', title='Reset Password')
 
 @users.route("/profile")
 @login_required
