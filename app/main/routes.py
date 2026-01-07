@@ -1,20 +1,17 @@
 from flask import render_template, Blueprint
-from flask_login import login_required 
 
 main = Blueprint('main', __name__)
 
 @main.route("/")
-@login_required
-def login():
-    return render_template('login.html')
+@main.route("/projects") 
+def projects():
+    return render_template('index.html')
 
-@main.route("/tasks")
-@login_required 
+@main.route("/tasks") 
 def tasks():
     return render_template('tasks.html', title="Tasks Info")
 
-@main.route("/departments")
-@login_required 
+@main.route("/departments") 
 def departments():
     return render_template('all_departments.html')
 
