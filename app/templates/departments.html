@@ -1,0 +1,411 @@
+{% extends "layout.html" %}
+{% block page_title %}MDC Department{% endblock %}
+   {% block content %}
+      <div class="main-content">
+                <div class="page-content">
+
+                       <div class="row">
+                            <div class="col-xl-12">
+                               <div class="row">
+
+                                        <div class="col-xl-3 col-md-3">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <div>
+                                                            <h6 class="mb-2 text-muted font-size-15">Total Projects</h6>
+                                                            <h4 class="mb-0 font-size-22 fw-bold">5</h4>
+                                                        </div>
+                                                        <div class="avatar-md">
+                                                            <div class="avatar-title rounded bg-soft-warning">
+                                                                <i class="mdi mdi-clock-outline font-size-24 text-warning" style="color: #856404 !important;"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-xl-3 col-md-3">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <div>
+                                                            <h6 class="mb-2 text-muted font-size-15">Completed Projects</h6>
+                                                            <h4 class="mb-0 font-size-22 fw-bold">3</h4>
+                                                        </div>
+                                                        <div class="avatar-md">
+                                                            <div class="avatar-title rounded bg-soft-danger">
+                                                                <i class="mdi mdi-alert-octagon font-size-24 text-danger" style="color: #8B1A1A !important;"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-xl-3 col-md-3">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <div>
+                                                            <h6 class="mb-2 text-muted font-size-15">Ongoing Projects</h6>
+                                                            <h4 class="mb-0 font-size-22 fw-bold">2</h4>
+                                                        </div>
+                                                        <div class="avatar-md">
+                                                            <div class="avatar-title rounded bg-soft-success">
+                                                                <i class="mdi mdi-check-decagram font-size-24 text-success" style="color: #155724 !important;"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-xl-3 col-md-3">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <div>
+                                                            <h6 class="mb-2 text-muted font-size-15">Total Members</h6>
+                                                            <h4 class="mb-0 font-size-22 fw-bold">10</h4>
+                                                        </div>
+                                                        <div class="avatar-md">
+                                                            <div class="avatar-title rounded bg-info">
+                                                                <i class="bx bxs-group font-size-24 text-success" style="color: #ffffff !important;"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                         </div>  <!-- end row -->
+
+                        <div class="row">    
+                             <div class="col-lg-12">
+                                <div class="card">
+                                     <div class="card-header d-flex align-items-center">
+                                        <h4 class="card-title mb-0">Department-Wide Projects</h4>
+
+                                         <div class="ms-auto d-flex gap-2">                                              
+                                                 
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Primary <i class="mdi mdi-chevron-down"></i></button>
+                                                        <div class="dropdown-menu">
+                                                            <a class="dropdown-item" href="#">MDC</a>
+                                                            <a class="dropdown-item" href="#">Legal</a>
+                                                            <a class="dropdown-item" href="#">Cyber</a>
+                                                            <a class="dropdown-item" href="#">Airmed</a>
+                                                            <a class="dropdown-item" href="#">Valkyrie Security</a>
+                                                            <a class="dropdown-item" href="#">Sanrem Shipbuilding Services</a>
+                                                            <a class="dropdown-item" href="#">Mars Motors</a>
+                                                            <a class="dropdown-item" href="#">Lorraine Dev’t Corp</a>
+                                                        </div>
+                                                    </div><!-- /btn-group -->
+                                          </div>
+                                     </div>
+
+                                            <div class="card-body">
+                                                <div id="table-gridjs"></div>
+
+                                                <!-- ORIGINAL TABLE (hidden but used by Grid.js) -->
+                                                <table id="projectsTable" class="table d-none">
+                                                      <thead>
+                                                                <tr>
+                                                                    <th>ID</th>
+                                                                    <th style="width: 190px;">Department</th>
+                                                                    <th>Project</th>
+                                                                    <th>Client</th>
+                                                                    <th>Deadline</th>
+                                                                    <th>Status</th>
+                                                                </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                 <td style="width: 190px;">
+                                                                    <div class="d-flex align-items-center">#SK2540</div>
+                                                                </td>
+                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">MDC</a>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">Lorem</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">Kathrina</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center"> 11 / 12 / 2024 :  23:00
+                                                                        </div>
+                                                                    </td>                                                         
+                                                                    <!-- <td>
+                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                                                    </td> -->
+                                                                    <td>
+                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                    </td>
+                                                            </tr>                                              
+                                                            <tr>
+                                                                 <td style="width: 190px;">
+                                                                    <div class="d-flex align-items-center">#SK2541</div>
+                                                                </td>
+                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">CYBER</a>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">Osint</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">Patrick</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center"> 11 / 11 / 2024 
+                                                                            :  23:00
+                                                                        </div>
+                                                                    </td>                                                         
+                                                                    <td>
+                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                                                    </td>
+                                                                    <!-- <td>
+                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                    </td> -->
+                                                            </tr>                                              
+                                                            <tr>
+                                                                 <td style="width: 190px;">
+                                                                    <div class="d-flex align-items-center">#SK2542</div>
+                                                                </td>
+                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">LEGAL</a>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">Osint</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">Neil</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center"> 11 / 12 / 2024 
+                                                                            :  23:00
+                                                                        </div>
+                                                                    </td>                                                         
+                                                                    <td>
+                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                                                    </td>
+                                                                    <!-- <td>
+                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                    </td> -->
+                                                            </tr>                                              
+                                                            <tr>
+                                                                 <td style="width: 190px;">
+                                                                    <div class="d-flex align-items-center">#SK2543</div>
+                                                                </td>
+                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">LORRAINE</a>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">Osint</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">WindyL</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center"> 11 / 12 / 2024 
+                                                                            :  23:00
+                                                                        </div>
+                                                                    </td>                                                         
+                                                                    <td>
+                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                                                    </td>
+                                                                    <!-- <td>
+                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                    </td> -->
+                                                            </tr>                                              
+                                                            <tr>
+                                                                 <td style="width: 190px;">
+                                                                    <div class="d-flex align-items-center">#SK2544</div>
+                                                                </td>
+                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">MDC</a>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">Osint</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">Lurs</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center"> 11 / 12 / 2024 
+                                                                            :  23:00
+                                                                        </div>
+                                                                    </td>                                                         
+                                                                    <!-- <td>
+                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                                                    </td> -->
+                                                                    <td>
+                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                    </td>
+                                                            </tr>                                              
+                                                            <tr>
+                                                                 <td style="width: 190px;">
+                                                                    <div class="d-flex align-items-center">#SK2545</div>
+                                                                </td>
+                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">MARS</a>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">Osint</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">Lurs</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center"> 11 / 12 / 2024 
+                                                                            :  23:00
+                                                                        </div>
+                                                                    </td>                                                         
+                                                                    <td>
+                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                                                    </td>
+                                                                    <!-- <td>
+                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                    </td> -->
+                                                            </tr>                                              
+                                                            <tr>
+                                                                 <td style="width: 190px;">
+                                                                    <div class="d-flex align-items-center">#SK2546</div>
+                                                                </td>
+                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">CYBER</a>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">Osint</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">Kathrina</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center"> 11 / 12 / 2024 
+                                                                            :  23:00
+                                                                        </div>
+                                                                    </td>                                                         
+                                                                    <td>
+                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                                                    </td>
+                                                                    <!-- <td>
+                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                    </td> -->
+                                                            </tr>                                              
+                                                            <tr>
+                                                                 <td style="width: 190px;">
+                                                                    <div class="d-flex align-items-center">#SK2547</div>
+                                                                </td>
+                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">MDC</a>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">Osint</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center">Kathrina</div>
+                                                                    </td>
+                                                                    <td style="width: 190px;">
+                                                                        <div class="d-flex align-items-center"> 11 / 12 / 2024 
+                                                                            :  23:00
+                                                                        </div>
+                                                                    </td>                                                         
+                                                                    <!-- <td>
+                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                                                    </td> -->
+                                                                    <td>
+                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                    </td>
+                                                            </tr>                                              
+                                                        </tbody>
+                                                </table>
+                                            </div>       
+                                </div>          
+                             </div>                                            
+                        </div>
+                        <!-- end main content-->
+
+        </div>
+         <!--  Extra Large modal example -->
+            <div class="modal fade create-task" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="myExtraLargeModalLabel">Create Project</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                           <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="CreateTask-Task-Name">Project Name</label>
+                                        <input type="text" class="form-control" placeholder="Enter Project Name" id="CreateTask-Task-Name">
+                                    </div>
+                                </div>
+                                 <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="CreateTask-Category">Priority</label>
+                                        <select class="form-select">
+                                            <option  selected> Select </option>
+                                            <option>High</option>
+                                            <option>Medium</option>
+                                            <option>Low</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Start Date</label>
+                                        <input type="text" class="form-control" placeholder="Select Start Date" id="CreateTask-start-date" >
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                     <div class="mb-3">
+                                        <label class="form-label">Deadline</label>
+                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Client</label>
+                                        <input type="text" class="form-control" placeholder="Client Name" id="CreateTask-due-date">
+                                    </div>
+                                </div>
+                               <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="CreateTask-Category">Department</label>
+                                        <select class="form-select">
+                                            <option  selected> Select </option>
+                                            <option>Cyber</option>
+                                            <option>MDC</option>
+                                            <option>Mars</option>
+                                            <option>Sanrem</option>
+                                        </select>
+                                    </div>
+                                </div>
+                               <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="CreateTask-Category">Assign Members</label>
+                                        <select class="form-select">
+                                            <option  selected> Select </option>
+                                            <option>Niel</option>
+                                            <option>Patrick</option>
+                                            <option>Windyl</option>
+                                            <option>Kathrina</option>
+                                        </select>
+                                    </div>
+                                </div>
+                           </div>
+                           <div class="row mt-2">
+                            <div class="col-12 text-end">
+                                <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal"><i class="bx bx-x me-1 align-middle"></i> Cancel</button>
+                                <button type="submit" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#success-btn" id="btn-save-event"><i class="bx bx-check me-1 align-middle"></i> Confirm</button>
+                            </div>
+                        </div>
+
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+   {% endblock content %}
+
+
