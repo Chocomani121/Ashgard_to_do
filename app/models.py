@@ -1,4 +1,4 @@
-from app import db, login_manager # Import the manager you just set up
+from app import db, login_manager 
 from flask_login import UserMixin
 from datetime import datetime
 from itsdangerous import URLSafeTimedSerializer 
@@ -11,13 +11,21 @@ from flask_login import UserMixin
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-
 class User(db.Model, UserMixin):
+    __tablename__ = 'members'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
+    department_id = db.Column(db.Integer, db.ForeignKey('department.id'))
+    name = db.Column(db.String(255), nullable=False, default='New Member')
+    # We keep 'username' for your registration logic and 'email' for login
+    username = db.Column(db.String(20), unique=True, nullable=False) 
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
-    role = db.Column(db.String(20), default='user')
+    account_type = db.Column(db.String(20), default='user')
+    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
+    
+    # Relationships
+    project_links = db.relationship('ProjectMembers', backref='member', lazy=True)
+    notes = db.relationship('Notes', backref='author', lazy=True)
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
@@ -59,19 +67,6 @@ class PrevDateList(db.Model):
 
 # --- Main Tables ---
 
-class User(db.Model, UserMixin):
-    __tablename__ = 'members' # Matching your 'members' table name
-    id = db.Column(db.Integer, primary_key=True)
-    department_id = db.Column(db.Integer, db.ForeignKey('department.id'))
-    name = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False) # Added for login
-    password = db.Column(db.String(60), nullable=False)           # Added for login
-    account_type = db.Column(db.String(255), default='user')
-    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
-    # Relationships
-    project_links = db.relationship('ProjectMembers', backref='member', lazy=True)
-    notes = db.relationship('Notes', backref='author', lazy=True)
-
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     department_id = db.Column(db.Integer, db.ForeignKey('department.id'))
@@ -82,10 +77,11 @@ class Project(db.Model):
     progress = db.Column(db.String(255))
     # Relationships
     tasks = db.relationship('Task', backref='project', lazy=True)
-    members = db.relationship('ProjectMembers', backref='project', lazy=True)
+    members = db.relationship('ProjectMembers', backref='project_parent', lazy=True)
 
 class ProjectMembers(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
     member_id = db.Column(db.Integer, db.ForeignKey('members.id'))
     role = db.Column(db.String(255))
     generated_code = db.Column(db.String(255))

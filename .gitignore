@@ -11,3 +11,5 @@ __pycache__/
 
 *.code-workspace
 ashgard-todo-app.code-workspace
+
+instance/
