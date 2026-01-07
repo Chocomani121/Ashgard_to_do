@@ -14,23 +14,28 @@ def projects():
 def tasks():
     return render_template('tasks.html', title="Tasks Info")
 
-@main.route("/departments") 
+@main.route("/departments")
+@login_required
 def departments():
     return render_template('all_departments.html')
 
 @main.route("/members")
+@login_required
 def members():
     return render_template('members.html', title="Members")
 
 @main.route("/project_details")
+@login_required
 def project_details():
     return render_template('project_details.html')
 
 @main.route("/profile")
+@login_required
 def profile():
     return render_template('profile.html')
 
 @main.route("/all_departments")
+@login_required
 def all_departments():
     return render_template('all_division.html')
 
