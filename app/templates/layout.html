@@ -26,7 +26,7 @@
 
                 <!-- LOGO -->
                 <div class="navbar-brand-box">
-                    <a href="index.html" class="logo">
+                    <a href="{{ url_for('main.projects') }}" class="logo">
                         <span class="logo-sm">
                             <img src="../static/assets/images/ashgard-logo.png" alt="" height="26">
                         </span>
@@ -197,7 +197,7 @@
                                     <a href="#!" class="text-reset notification-item">
                                         <div class="d-flex">
                                             <div class="flex-shrink-0 avatar-sm me-3">
-                                                <span class="avatar-title bg-primary rounded-circle font-size-18">
+                                              <a class="dropdown-item" href="{{ url_for('users.login') }}"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Logout</span></a>
                                                     <i class="bx bx-cart"></i>
                                                 </span>
                                             </div>
@@ -267,7 +267,7 @@
                                 <a class="dropdown-item" href="pages-faqs.html"><i class="mdi mdi-lifebuoy text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Help</span></a>
                         
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ url_for('main.login') }}"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Logout</span></a>
+                                <a class="dropdown-item" href="{{ url_for('users.login') }}"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Logout</span></a>
                             </div>
                         </div>
                     </div>
