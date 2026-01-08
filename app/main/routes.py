@@ -52,7 +52,7 @@ def projects():
 def tasks():
     return render_template('tasks.html', title="Tasks Info")
 
-@main.route("/departments") 
+@main.route("/all_departments") 
 def all_departments():
     return render_template('all_departments.html')
 
