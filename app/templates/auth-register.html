@@ -42,7 +42,7 @@
                             <img src="assets/images/logo-light.png" alt="" height="30" class="auth-logo-light me-start">
                         </a>
                     </div>
-
+                    
                         <form method="POST" action="{{ url_for('users.register') }}" class="col-12 col-md-6">
                             {{ form.hidden_tag() }}
                             <div class="card">
@@ -78,17 +78,11 @@
                                     </div>
 
                                     <div class="mb-3">
-                                            <label class="form-label" for="confirmPassword-input">Confirm Password</label>
-                                            <div class="position-relative auth-pass-inputgroup input-custom-icon">
-                                                <span class="bx bx-lock-alt"></span>
-                                                
-                                                <input type="password" class="form-control" id="confirmPassword-input" placeholder="Confirm password">
-                                                
-                                                <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted" type="button" id="confirmPassword-addon">
-                                                    <i class="ri-eye-fill align-middle"></i>
-                                                </button>
-                                            </div>
-                                        </div>
+                                        <label class="form-label">Confirm Password</label>
+                                        <div class="position-relative auth-pass-inputgroup input-custom-icon">
+                                            <span class="bx bx-lock-alt"></span>
+                                            {{ form.confirm_password(class="form-control", placeholder="Confirm password") }}
+                                    </div>
 
                                     <div class="mt-3">
                                         {{ form.submit(class="btn btn-primary w-100 waves-effect waves-light") }}
