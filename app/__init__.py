@@ -22,6 +22,14 @@ def create_app():
     bcrypt.init_app(app)
     login_manager.init_app(app)
 
+    @app.after_request
+    def add_header(response):
+        # This forces the browser to check the server every time the back button is clicked
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+
     # 4. Import and Register Blueprints (Crucial step!)
     from .users.routes import users as users_blueprint
     from .main.routes import main as main_blueprint

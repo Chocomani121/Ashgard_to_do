@@ -14,8 +14,7 @@ def projects():
 def tasks():
     return render_template('tasks.html', title="Tasks Info")
 
-@main.route("/departments")
-@login_required
+@main.route("/departments") 
 def departments():
     return render_template('all_departments.html')
 
@@ -39,3 +38,7 @@ def profile():
 def all_departments():
     return render_template('all_division.html')
 
+@main.route("/dashboard")
+@login_required
+def dashboard():  # This function must have a different name
+    return render_template('layout.html')
