@@ -1,13 +1,16 @@
 from flask import render_template, Blueprint
+from flask_login import login_required
 
 main = Blueprint('main', __name__)
 
 @main.route("/")
 @main.route("/projects") 
+@login_required
 def projects():
     return render_template('index.html')
 
 @main.route("/tasks") 
+@login_required
 def tasks():
     return render_template('tasks.html', title="Tasks Info")
 
@@ -34,11 +37,6 @@ def profile():
 @login_required
 def all_departments():
     return render_template('all_division.html')
-
-@main.route("/projects")
-@login_required
-def projects():  # Make sure this name only appears ONCE in this file
-    return render_template('layout.html')
 
 @main.route("/dashboard")
 @login_required
