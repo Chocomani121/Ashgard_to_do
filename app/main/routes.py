@@ -15,6 +15,7 @@ def tasks():
     return render_template('tasks.html', title="Tasks Info")
 
 @main.route("/departments") 
+@login_required
 def departments():
     return render_template('all_departments.html')
 
