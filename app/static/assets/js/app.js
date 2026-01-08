@@ -285,3 +285,12 @@
     )
 }();
 
+    function toggleReply(btn) {
+        const box = btn.closest('.flex-grow-1').querySelector('.reply-box');
+        box.classList.toggle('d-none');
+    }
+
+    function toggleEdit(btn) {
+        const box = btn.closest('.flex-grow-1').querySelector('.edit-box');
+        box.classList.toggle('d-none');
+    }

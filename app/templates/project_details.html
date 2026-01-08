@@ -1,6 +1,12 @@
 {% extends "layout.html" %}
 {% block page_title %}PROJECT DETAILS{% endblock %}
    {% block content %}
+   <script>
+       function toggleReply(button) {
+           // Toggle reply form visibility or implement reply functionality
+           console.log('Reply button clicked');
+       }
+   </script>
             <div class="main-content">
                 <div class="page-content">
                     <div class="container-fluid">
@@ -130,7 +136,6 @@
                            <div class="col-xl-6">
                                     <div class="card">
                                         <div class="card-body">
-
                                             <!-- Header -->
                                             <div class="d-flex align-items-center mb-3">
                                                 <div class="flex-grow-1">
@@ -173,9 +178,30 @@
                                                                 Update layout, tables, and responsiveness.
                                                             </p>
                                                         </div>
+                                                        <div class="note-actions">
+                                                            <button class="btn btn-sm btn-link p-0 me-2" onclick="toggleReply(this)">
+                                                                Reply
+                                                            </button>
+                                                            <button class="btn btn-sm btn-link p-0" onclick="toggleEdit(this)">
+                                                                Edit
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                <!-- 
+                                                  <div class="edit-box d-none mt-2">
+                                                        <textarea class="form-control form-control-sm mb-2">Can't register users on the login backend. Please fix ASAP.</textarea>
+                                                        <button class="btn btn-sm btn-primary me-2">Save</button>
+                                                        <button class="btn btn-sm btn-light" onclick="toggleEdit(this)">Cancel</button>
+                                                    </div>
 
+                                                  
+                                                    <div class="reply-box d-none mt-3">
+                                                        <textarea class="form-control form-control-sm mb-2" rows="2"
+                                                            placeholder="Write a reply..."></textarea>
+                                                        <button class="btn btn-sm btn-primary me-2">Reply</button>
+                                                        <button class="btn btn-sm btn-light" onclick="toggleReply(this)">Cancel</button>
+                                                    </div> -->
                                                 <!-- SUBTASK -->
                                                 <div class="d-flex mb-3 ms-5">
                                                     <div class="flex-shrink-0 me-3">
@@ -192,6 +218,14 @@
                                                             <p class="text-muted mb-0">
                                                                 Ensured all headers display with horizontal scroll.
                                                             </p>
+                                                        </div>
+                                                         <div class="note-actions">
+                                                            <button class="btn btn-sm btn-link p-0 me-2" onclick="toggleReply(this)">
+                                                                Reply
+                                                            </button>
+                                                            <button class="btn btn-sm btn-link p-0" onclick="toggleEdit(this)">
+                                                                Edit
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -213,6 +247,14 @@
                                                                 Adjust spacing for smaller breakpoints.
                                                             </p>
                                                         </div>
+                                                         <div class="note-actions">
+                                                            <button class="btn btn-sm btn-link p-0 me-2" onclick="toggleReply(this)">
+                                                                Reply
+                                                            </button>
+                                                            <button class="btn btn-sm btn-link p-0" onclick="toggleEdit(this)">
+                                                                Edit
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
 
@@ -233,6 +275,14 @@
                                                                 Update layout, tables, and responsiveness.
                                                             </p>
                                                         </div>
+                                                         <div class="note-actions">
+                                                            <button class="btn btn-sm btn-link p-0 me-2" onclick="toggleReply(this)">
+                                                                Reply
+                                                            </button>
+                                                            <button class="btn btn-sm btn-link p-0" onclick="toggleEdit(this)">
+                                                                Edit
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                    <!-- SUBTASK -->
@@ -251,6 +301,14 @@
                                                             <p class="text-muted mb-0">
                                                                Login Done
                                                             </p>
+                                                        </div>
+                                                         <div class="note-actions">
+                                                            <button class="btn btn-sm btn-link p-0 me-2" onclick="toggleReply(this)">
+                                                                Reply
+                                                            </button>
+                                                            <button class="btn btn-sm btn-link p-0" onclick="toggleEdit(this)">
+                                                                Edit
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -271,6 +329,14 @@
                                                                 Can't Register, please fixed
                                                             </p>
                                                         </div>
+                                                         <div class="note-actions">
+                                                            <button class="btn btn-sm btn-link p-0 me-2" onclick="toggleReply(this)">
+                                                                Reply
+                                                            </button>
+                                                            <button class="btn btn-sm btn-link p-0" onclick="toggleEdit(this)">
+                                                                Edit
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                  <div class="d-flex mb-3 ms-5">
@@ -289,6 +355,14 @@
                                                                 Fixed, is running
                                                             </p>
                                                         </div>
+                                                         <div class="note-actions">
+                                                            <button class="btn btn-sm btn-link p-0 me-2" onclick="toggleReply(this)">
+                                                                Reply
+                                                            </button>
+                                                            <button class="btn btn-sm btn-link p-0" onclick="toggleEdit(this)">
+                                                                Edit
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <!-- FINAL STATUS -->
@@ -304,7 +378,8 @@
 
                                         </div>
                                     </div>
-                                </div>
+                           </div>
+
                         </div>
                             <div class="row mt-2">
                                 <div class="col-12">
