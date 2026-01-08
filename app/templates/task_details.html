@@ -13,113 +13,107 @@
                 </ol>
             </nav>
 
-            <div class="row">
+             <div class="row">
                 <!-- LEFT CONTENT -->
-             <div class="col-xl-8">
-                <!-- PROJECT OVERVIEW -->
-                <div class="card mb-4">
-                    <div class="card-body">
+                        <div class="col-xl-8">
+                    <!-- PROJECT OVERVIEW (Sticky Card) -->
+                    <div class="position-sticky" style="top: 90px;">
+                        <div class="card mb-4">
 
-                            <!-- Top Info Section -->
-                        <div class="row mb-3 g-3">
-                            <!-- Project Manager -->
-                            <div class="col-md-3 col-sm-6">
-                                <span class="text-muted">Project Manager:</span> 
-                                <strong class="ms-1">Lurs</strong>
-                            </div>
-
-                            <!-- Priority -->
-                            <div class="col-md-3 col-sm-6">
-                                <span class="text-muted">Priority:</span> 
-                                <span class="badge bg-soft-danger text-danger ms-1">High</span>
-                            </div>
-
-                            <!-- Start Date -->
-                            <div class="col-md-3 col-sm-6">
-                                <span class="text-muted">Start date:</span> 
-                                <strong class="ms-1">24, June 2023</strong>
-                            </div>
-
-                            <!-- End Date -->
-                            <div class="col-md-3 col-sm-6">
-                                <span class="text-muted">End date:</span> 
-                                <strong class="ms-1">24, June 2023</strong>
-                            </div>
-
-                            <!-- Task ID -->
-                            <div class="col-md-3 col-sm-6">
-                                <span class="text-muted">Task ID:</span> 
-                                <strong class="ms-1">#112</strong>
-                            </div>
-
-                            <!-- Progress Bar -->
-                            <div class="col-md-3 col-sm-6">
-                                <span class="text-muted">Progress:</span>
-                                <div class="progress mt-1" style="height: 20px;">
-                                    <div class="progress-bar bg-success" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
-                                        75%
+                            <!-- Card Header with Button -->
+                            <div class="card-header d-flex align-items-center justify-content-between">
+                                <h4 class="card-title mb-0">Task Details</h4>
+                                <div class="dropdown">
+                                    <button class="btn btn-light" data-bs-toggle="dropdown">
+                                        <i class="mdi mdi-dots-vertical"></i>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end">
+                                        <a class="dropdown-item" href="#">Edit Task</a>
+                                        <a class="dropdown-item" href="#">Delete Task</a>
+                                        <a class="dropdown-item" href="#">View History</a>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Man-hours -->
-                            <div class="col-md-3 col-sm-6">
-                                <span class="text-muted">Man-hours:</span> 
-                                <strong class="ms-1">45H:35M:45S</strong>
-                            </div>
+                            <!-- Card Body -->
+                            <div class="card-body d-flex flex-column" style="max-height: 80vh;">
 
-                            <!-- Assigned Members -->
-                            <div class="col-md-3 col-sm-6">
-                                <span class="text-muted">Assigned to / Members:</span> 
-                                <strong class="ms-1">John, Jane, Lurs</strong>
+                                <!-- Top Info Section -->
+                                <div class="row mb-3 g-3 flex-shrink-0">
+                                    <div class="col-md-3 col-sm-6">
+                                        <span class="text-muted">Project Manager:</span> 
+                                        <strong class="ms-1">Lurs</strong>
+                                    </div>
+
+                                    <div class="col-md-3 col-sm-6">
+                                        <span class="text-muted">Priority:</span> 
+                                        <span class="badge bg-soft-danger text-danger ms-1">High</span>
+                                    </div>
+
+                                    <div class="col-md-3 col-sm-6">
+                                        <span class="text-muted">Start date:</span> 
+                                        <strong class="ms-1">24, June 2023</strong>
+                                    </div>
+
+                                    <div class="col-md-3 col-sm-6">
+                                        <span class="text-muted">End date:</span> 
+                                        <strong class="ms-1">24, June 2023</strong>
+                                    </div>
+
+                                    <div class="col-md-3 col-sm-6">
+                                        <span class="text-muted">Task ID:</span> 
+                                        <strong class="ms-1">#112</strong>
+                                    </div>
+
+                                    <div class="col-md-3 col-sm-6">
+                                        <span class="text-muted">Progress:</span>
+                                        <div class="progress mt-1" style="height: 20px;">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                                                75%
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 col-sm-6">
+                                        <span class="text-muted">Man-hours:</span> 
+                                        <strong class="ms-1">45H:35M:45S</strong>
+                                    </div>
+
+                                    <div class="col-md-3 col-sm-6">
+                                        <span class="text-muted">Assigned to / Members:</span> 
+                                        <strong class="ms-1">John, Jane, Lurs</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Scrollable Description -->
+                                <div class="flex-grow-1" data-simplebar style="overflow-y: auto;">
+                                    <h6>Description</h6>
+                                    <p class="text-muted mb-0">
+                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Delectus, vitae mollitia! Consequatur, nihil voluptates.
+                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, vitae voluptates? Sit odio alias tenetur blanditiis laboriosam facere quibusdam quidem!
+                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni a voluptate nostrum ipsam.
+                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Error minima molestiae ipsa nostrum nihil asperiores.
+                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores, sapiente corporis?
+                                        <!-- Add more content as needed -->
+                                    </p>
+                                </div>
+
                             </div>
                         </div>
-
-
-                        <!-- Description -->
-                        <h6>Description</h6>
-                        <p class="text-muted">
-                            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Delectus, vitae mollitia! Consequatur, nihil voluptates.
-                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, vitae voluptates? Sit odio alias tenetur blanditiis laboriosam facere quibusdam quidem! Accusantium eveniet voluptatibus ex laborum in ipsa voluptatem laboriosam dicta.    
-                            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Magni a voluptate nostrum ipsam, itaque veritatis eaque minus, inventore fugit quam veniam et, ad nihil perferendis blanditiis vel. Aspernatur, facere eum!
-                            Lorem ipsum, dolor sit amet consectetur adipisicing elit. Error minima molestiae ipsa nostrum nihil asperiores reprehenderit totam et ipsum voluptas nisi, suscipit harum ea excepturi. Veniam, iste voluptatem. Quis, consequuntur?
-                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores, sapiente corporis? 
-                        </p>
-
-                        <!-- Expandable Section -->
-                        <div class="collapse" id="projectDetails">
-                            <h6 class="mb-2">Key tasks:</h6>
-                            <ul class="text-muted mb-0">
-                                <li>Website design</li>
-                                <li>Develop wireframes and mockups</li>
-                                <li>Conduct a final review</li>
-                            </ul>
-                        </div>
-
-                        <!-- Expand Toggle -->
-                        <a class="text-primary fw-medium mt-2 d-inline-block"
-                        data-bs-toggle="collapse"
-                        href="#projectDetails"
-                        role="button"
-                        aria-expanded="false"
-                        aria-controls="projectDetails">
-                            <i class="mdi mdi-chevron-down me-1"></i> Expand
-                        </a>
                     </div>
                 </div>
-            </div>
 
                 <!-- RIGHT SIDEBAR -->
                 <div class="col-xl-4">
                     <div class="position-sticky" style="top: 90px;">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title mb-0">Task Overview</h5>
-                                <small class="text-muted">Project → Tasks → Subtasks</small>
+                                <h5 class="card-title mb-0">Notes</h5>
+                                <small class="text-muted">Tasks → Subtasks</small>
 
                                 <div class="mt-3" data-simplebar style="max-height: 50vh;">
                                     <!-- PROJECT -->
-                                    <div class="d-flex mb-4">
+                                    <!-- <div class="d-flex mb-4">
                                         <div class="flex-shrink-0 me-3">
                                             <span class="avatar-sm rounded-circle bg-primary text-white d-flex align-items-center justify-content-center">P</span>
                                         </div>
@@ -127,7 +121,7 @@
                                             <h6 class="mb-1">Project: OSINT Platform</h6>
                                             <p class="text-muted mb-0">Central dashboard and task tracking system</p>
                                         </div>
-                                    </div>
+                                    </div> -->
 
                                     <!-- TASK -->
                                     <div class="d-flex mb-4 ms-4">
@@ -156,16 +150,18 @@
                                             <p class="text-muted mb-0">Ensured all headers display with horizontal scroll.</p>
                                         </div>
                                     </div>
-                                      <div class="d-flex mb-4 ms-4">
+                                   
+                                    <!-- SUBTASK -->
+                                    <div class="d-flex mb-3 ms-5">
                                         <div class="flex-shrink-0 me-3">
-                                            <span class="avatar-sm rounded-circle bg-info text-white d-flex align-items-center justify-content-center">T</span>
+                                            <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
                                         </div>
-                                        <div class="border rounded p-3 w-100">
+                                        <div class="bg-light rounded p-3 w-100">
                                             <div class="d-flex justify-content-between">
-                                                <h6 class="mb-1">UI Redesign</h6>
-                                                <span class="badge bg-soft-warning text-warning">Ongoing</span>
+                                                <h6 class="mb-1">Grid.js Table Layout</h6>
+                                                <span class="badge bg-soft-success text-success">Done</span>
                                             </div>
-                                            <p class="text-muted mb-0">Update layout, tables, and responsiveness.</p>
+                                            <p class="text-muted mb-0">Ensured all headers display with horizontal scroll.</p>
                                         </div>
                                     </div>
 
@@ -182,45 +178,6 @@
                                             <p class="text-muted mb-0">Ensured all headers display with horizontal scroll.</p>
                                         </div>
                                     </div>
-                                      <div class="d-flex mb-4 ms-4">
-                                        <div class="flex-shrink-0 me-3">
-                                            <span class="avatar-sm rounded-circle bg-info text-white d-flex align-items-center justify-content-center">T</span>
-                                        </div>
-                                        <div class="border rounded p-3 w-100">
-                                            <div class="d-flex justify-content-between">
-                                                <h6 class="mb-1">UI Redesign</h6>
-                                                <span class="badge bg-soft-warning text-warning">Ongoing</span>
-                                            </div>
-                                            <p class="text-muted mb-0">Update layout, tables, and responsiveness.</p>
-                                        </div>
-                                    </div>
-
-                                    <!-- SUBTASK -->
-                                    <div class="d-flex mb-3 ms-5">
-                                        <div class="flex-shrink-0 me-3">
-                                            <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
-                                        </div>
-                                        <div class="bg-light rounded p-3 w-100">
-                                            <div class="d-flex justify-content-between">
-                                                <h6 class="mb-1">Grid.js Table Layout</h6>
-                                                <span class="badge bg-soft-success text-success">Done</span>
-                                            </div>
-                                            <p class="text-muted mb-0">Ensured all headers display with horizontal scroll.</p>
-                                        </div>
-                                    </div>
-                                      <div class="d-flex mb-4 ms-4">
-                                        <div class="flex-shrink-0 me-3">
-                                            <span class="avatar-sm rounded-circle bg-info text-white d-flex align-items-center justify-content-center">T</span>
-                                        </div>
-                                        <div class="border rounded p-3 w-100">
-                                            <div class="d-flex justify-content-between">
-                                                <h6 class="mb-1">UI Redesign</h6>
-                                                <span class="badge bg-soft-warning text-warning">Ongoing</span>
-                                            </div>
-                                            <p class="text-muted mb-0">Update layout, tables, and responsiveness.</p>
-                                        </div>
-                                    </div>
-
                                     <!-- SUBTASK -->
                                     <div class="d-flex mb-3 ms-5">
                                         <div class="flex-shrink-0 me-3">
@@ -240,8 +197,6 @@
                     </div>
                 </div>
             </div>
-
-
             <!-- SUBTASK TABLE -->
             <div class="row mt-4">
                 <div class="col-12">
