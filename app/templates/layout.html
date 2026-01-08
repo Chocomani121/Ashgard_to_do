@@ -9,6 +9,8 @@
         <meta content="Themesdesign" name="author" />
         <!-- App favicon -->
         <link rel="shortcut icon" href="{{ url_for('static', filename='assets/images/ashgard_favicon.png') }}">
+           <!-- Sweet Alert-->
+        <link href="{{ url_for('static', filename='assets/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
         <!-- plugin css -->
         <link href="{{ url_for('static', filename='assets/libs/jsvectormap/css/jsvectormap.min.css') }}" rel="stylesheet" type="text/css" />
         <!-- gridjs css -->
@@ -74,7 +76,7 @@
                             </li>   
 
                             <li>
-                                <a href="{{ url_for('main.departments') }}" >
+                                <a href="{{ url_for('main.all_departments') }}" >
                                     <i class="bx bx-grid-alt icon nav-icon"></i> 
                                     <span class="menu-item" data-key="t-departments">Departments</span>
                                 </a>
@@ -314,6 +316,11 @@
         
         <script src="{{ url_for('static', filename='assets/js/app.js') }}"></script>
       
+        <!-- Sweet Alerts js -->
+        <script src="{{ url_for('static', filename='assets/libs/sweetalert2/sweetalert2.min.js') }}"></script>
+   
+        <!-- Sweet alert init js-->
+        <script src="{{ url_for('static', filename='assets/js/pages/sweet-alerts.init.js') }}"></script>
     </body>
 
 </html>

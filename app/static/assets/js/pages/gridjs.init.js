@@ -46,3 +46,15 @@ new gridjs.Grid({
     }
 }).render(document.getElementById("table3-gridjs"));
 
+//profile table
+new gridjs.Grid({
+    from: document.getElementById("projectsTableProfile"),
+    pagination: {
+        limit: 5
+    },
+    sort: true,
+    search: true,
+    className: {
+        table: "table table-striped table-centered align-middle"
+    }
+}).render(document.getElementById("table4-gridjs"));

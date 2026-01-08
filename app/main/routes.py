@@ -72,6 +72,3 @@ def profile():
 def task_details():
     return render_template('task_details.html')
 
-@main.route("/department")
-def departments():
-    return render_template('departments.html')

@@ -44,7 +44,7 @@ def logout():
     logout_user()
     return redirect(url_for('main.projects'))
 
-@users.route("/profile")
-@login_required
-def profile():
-    return render_template('profile.html', title='Profile')
+# @users.route("/profile")
+# @login_required
+# def profile():
+#     return render_template('profile.html', title='Profile')
