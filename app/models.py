@@ -53,8 +53,12 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
 
-    @staticmethod
-    def verify_reset_token(token, expires_sec=1800):
+def get_reset_token(self):
+        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        return s.dumps({'user_id': self.id})
+
+@staticmethod
+def verify_reset_token(token, expires_sec=1800):
         s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
         try:
             user_id = s.loads(token, max_age=expires_sec)['user_id']
