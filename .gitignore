@@ -1,6 +1,8 @@
 /venv
 instance/
 
+**/__init__.py
+
 *.pyc
 __pycache__/
 /__pycache__
