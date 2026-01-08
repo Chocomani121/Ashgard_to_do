@@ -1,8 +1,9 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint
-from app import db, bcrypt
+from app import db, bcrypt, mail
 from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm
 from app.models import User
 from flask_login import login_user, current_user, logout_user, login_required
+from flask_mail import Message
 
 users = Blueprint('users', __name__)
 
@@ -45,7 +46,22 @@ def logout():
 def profile():
     return render_template('profile.html', title='Profile')
 
-# --- PASSWORD RESET ROUTES ---
+# --- PASSWORD RESET LOGIC ---
+
+def send_reset_email(user):
+    token = user.get_reset_token()
+    msg = Message('Password Reset Request',
+                  sender='noreply@ashgard-todo.com',
+                  recipients=[user.email])
+    
+    reset_url = url_for('users.reset_token', token=token, _external=True)
+    
+    msg.body = f'''To reset your password, visit the following link:
+{reset_url}
+
+If you did not make this request, simply ignore this email and no changes will be made.
+'''
+    mail.send(msg)
 
 @users.route("/reset_password", methods=['GET', 'POST'])
 def reset_request():
@@ -54,12 +70,7 @@ def reset_request():
     form = RequestResetForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-        token = user.get_reset_token() # This calls the method you added to models.py
-        
-        # LOGIC NOTE: This is where you would send the actual email.
-        # For now, we will print the link to the terminal so you can test it.
-        print(f"Reset Link: {url_for('users.reset_token', token=token, _external=True)}")
-        
+        send_reset_email(user)
         flash('An email has been sent with instructions to reset your password.', 'info')
         return redirect(url_for('users.login'))
     return render_template('auth-recoverpw.html', title='Reset Password', form=form)
@@ -69,7 +80,6 @@ def reset_token(token):
     if current_user.is_authenticated:
         return redirect(url_for('main.projects'))
     
-    # Verify the token using the static method in models.py
     user = User.verify_reset_token(token)
     if user is None:
         flash('That is an invalid or expired token', 'warning')
@@ -83,5 +93,4 @@ def reset_token(token):
         flash('Your password has been updated! You are now able to log in', 'success')
         return redirect(url_for('users.login'))
     
-    # You will need to create a simple 'reset_token.html' with password/confirm password fields
     return render_template('reset_token.html', title='Reset Password', form=form)

@@ -1,5 +1,5 @@
 from datetime import datetime
-from itsdangerous import URLSafeTimedSerializer 
+from itsdangerous import URLSafeTimedSerializer as Serializer
 from flask import current_app
 from app import db, login_manager
 from flask_login import UserMixin
@@ -39,10 +39,10 @@ class User(db.Model, UserMixin):
     __tablename__ = 'members' 
     id = db.Column(db.Integer, primary_key=True)
     department_id = db.Column(db.Integer, db.ForeignKey('department.id'))
-    username = db.Column(db.String(20), unique=True, nullable=False) # Keep this for login
+    username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
-    name = db.Column(db.String(255)) # From your second definition
+    name = db.Column(db.String(255)) 
     account_type = db.Column(db.String(255), default='user')
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     
@@ -50,21 +50,25 @@ class User(db.Model, UserMixin):
     project_links = db.relationship('ProjectMembers', backref='member', lazy=True)
     notes = db.relationship('Notes', backref='author', lazy=True)
 
-    def __repr__(self):
-        return f"User('{self.username}', '{self.email}')"
+    # --- PASSWORD RESET METHODS (Now correctly indented) ---
 
-def get_reset_token(self):
-        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    def get_reset_token(self):
+        """Generates a secure, timed token for password reset."""
+        s = Serializer(current_app.config['SECRET_KEY'])
         return s.dumps({'user_id': self.id})
 
-@staticmethod
-def verify_reset_token(token, expires_sec=1800):
-        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    @staticmethod
+    def verify_reset_token(token, expires_sec=1800):
+        """Checks if the token is valid and not expired."""
+        s = Serializer(current_app.config['SECRET_KEY'])
         try:
             user_id = s.loads(token, max_age=expires_sec)['user_id']
         except Exception:
             return None
         return User.query.get(user_id)
+
+    def __repr__(self):
+        return f"User('{self.username}', '{self.email}')"
 
 # --- Project & Task Tables ---
 
