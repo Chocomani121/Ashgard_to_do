@@ -15,7 +15,7 @@ new gridjs.Grid({
     sort: true,
     search: true,
     className: {
-        table: "table table-striped table-centered align-middle"
+        table: "table table-centered align-middle"
     }
 }).render(document.getElementById("table-gridjs"));
 
@@ -28,7 +28,7 @@ new gridjs.Grid({
     sort: true,
     search: true,
     className: {
-        table: "table table-striped table-centered align-middle"
+        table: "table table-centered align-middle"
     }
 }).render(document.getElementById("table2-gridjs"));
 
@@ -42,7 +42,7 @@ new gridjs.Grid({
     sort: true,
     search: true,
     className: {
-        table: "table table-striped table-centered align-middle"
+        table: "table table-centered align-middle"
     }
 }).render(document.getElementById("table3-gridjs"));
 
@@ -55,6 +55,6 @@ new gridjs.Grid({
     sort: true,
     search: true,
     className: {
-        table: "table table-striped table-centered align-middle"
+        table: "table table-centered align-middle"
     }
 }).render(document.getElementById("table4-gridjs"));

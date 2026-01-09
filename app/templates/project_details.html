@@ -12,7 +12,6 @@
                     <div class="container-fluid">
                         <nav aria-label="breadcrumb" class="mb-3">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ url_for('main.projects') }}">Home</a></li>
                                 <li class="breadcrumb-item"><a href="{{ url_for('main.projects') }}">Projects</a></li>
                                 <li class="breadcrumb-item active" aria-current="page">Project Details</li>
                             </ol>
@@ -139,8 +138,8 @@
                                             <!-- Header -->
                                             <div class="d-flex align-items-center mb-3">
                                                 <div class="flex-grow-1">
-                                                    <h5 class="card-title mb-0">Notes</h5>
-                                                    <small class="text-muted">Tasks → Subtasks</small>
+                                                    <h5 class="card-title mb-0">Activity Threads</h5>
+                                                    <!-- <small class="text-muted">Tasks → Subtasks</small> -->
                                                 </div>
                                             </div>
                                             <!-- Thread Container -->
@@ -172,7 +171,7 @@
                                                         <div class="border rounded p-3">
                                                             <div class="d-flex justify-content-between">
                                                                 <h6 class="mb-1">UI Redesign</h6>
-                                                                <span class="badge badge-soft-warning">Ongoing</span>
+                                                                
                                                             </div>
                                                             <p class="text-muted mb-0">
                                                                 Update layout, tables, and responsiveness.
@@ -188,21 +187,6 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <!-- 
-                                                  <div class="edit-box d-none mt-2">
-                                                        <textarea class="form-control form-control-sm mb-2">Can't register users on the login backend. Please fix ASAP.</textarea>
-                                                        <button class="btn btn-sm btn-primary me-2">Save</button>
-                                                        <button class="btn btn-sm btn-light" onclick="toggleEdit(this)">Cancel</button>
-                                                    </div>
-
-                                                  
-                                                    <div class="reply-box d-none mt-3">
-                                                        <textarea class="form-control form-control-sm mb-2" rows="2"
-                                                            placeholder="Write a reply..."></textarea>
-                                                        <button class="btn btn-sm btn-primary me-2">Reply</button>
-                                                        <button class="btn btn-sm btn-light" onclick="toggleReply(this)">Cancel</button>
-                                                    </div> -->
-                                                <!-- SUBTASK -->
                                                 <div class="d-flex mb-3 ms-5">
                                                     <div class="flex-shrink-0 me-3">
                                                         <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">
@@ -213,7 +197,7 @@
                                                         <div class="bg-light rounded p-3">
                                                             <div class="d-flex justify-content-between">
                                                                 <h6 class="mb-1">Grid.js Table Layout</h6>
-                                                                <span class="badge badge-soft-success">Done</span>
+                                                      
                                                             </div>
                                                             <p class="text-muted mb-0">
                                                                 Ensured all headers display with horizontal scroll.
@@ -241,7 +225,7 @@
                                                         <div class="bg-light rounded p-3">
                                                             <div class="d-flex justify-content-between">
                                                                 <h6 class="mb-1">Mobile Header Fix</h6>
-                                                                <span class="badge badge-soft-warning">In Progress</span>
+                                                   
                                                             </div>
                                                             <p class="text-muted mb-0">
                                                                 Adjust spacing for smaller breakpoints.
@@ -269,7 +253,7 @@
                                                         <div class="border rounded p-3">
                                                             <div class="d-flex justify-content-between">
                                                                 <h6 class="mb-1">Login Form</h6>
-                                                                <span class="badge badge-soft-warning">Ongoing</span>
+                                                               
                                                             </div>
                                                             <p class="text-muted mb-0">
                                                                 Update layout, tables, and responsiveness.
@@ -296,7 +280,7 @@
                                                         <div class="bg-light rounded p-3">
                                                             <div class="d-flex justify-content-between">
                                                                 <h6 class="mb-1">Login UI</h6>
-                                                                <span class="badge badge-soft-success">Done</span>
+                                                     
                                                             </div>
                                                             <p class="text-muted mb-0">
                                                                Login Done
@@ -323,7 +307,7 @@
                                                         <div class="bg-light rounded p-3">
                                                             <div class="d-flex justify-content-between">
                                                                 <h6 class="mb-1">Login Backend</h6>
-                                                                <span class="badge badge-soft-danger">Rejected</span>
+                                                              
                                                             </div>
                                                             <p class="text-muted mb-0">
                                                                 Can't Register, please fixed
@@ -349,7 +333,7 @@
                                                         <div class="bg-light rounded p-3">
                                                             <div class="d-flex justify-content-between">
                                                                 <h6 class="mb-1">Login Backend</h6>
-                                                                <span class="badge badge-soft-success">Done</span>
+                                                      
                                                             </div>
                                                             <p class="text-muted mb-0">
                                                                 Fixed, is running
