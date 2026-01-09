@@ -262,9 +262,9 @@
                         </div>
 
                         <div class="card-body">
-                            <div id="table-gridjs"></div>
+                            <div id="table5-gridjs" class="projectsTableTaskDetails"></div>
 
-                            <table id="projectsTable" class="table d-none">
+                            <table id="projectsTableTaskDetails" class="table d-none">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
@@ -281,18 +281,42 @@
                                         <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">H20</a></td>
                                         <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">Login Interface</a></td>
                                         <td>Lurs</td>
-                                        <td><span class="badge bg-soft-warning text-warning">Ongoing</span></td>
+                                        <td><span class="badge bg-soft-primary text-primary">Ongoing</span></td>
                                         <td>11/12/2024 23:00</td>
-                                        <td class="notes-cell">
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Delectus, vitae mollitia! Consequatur, nihil voluptates.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, vitae voluptates? Sit odio alias tenetur blanditiis laboriosam facere quibusdam quidem!
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni a voluptate nostrum ipsam.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Error minima molestiae ipsa nostrum nihil asperiores.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores, sapiente corporis? -windyl 12/25/2025(edit)
+                                       <td style="width: 400px;">
+                                        <div style="
+                                            max-height: 120px;
+                                            overflow-y: auto;
+                                            overflow-x: hidden;
+                                            white-space: normal;
+                                            line-height: 1.4;
+                                        ">
+                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Delectus, vitae mollitia! Consequatur, nihil voluptates.
+                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, vitae voluptates? Sit odio alias tenetur blanditiis laboriosam facere quibusdam quidem!
+                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni a voluptate nostrum ipsam.
+                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Error minima molestiae ipsa nostrum nihil asperiores.
+                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores, sapiente corporis? -windyl 12/25/2025(edit)
+                                        </div>
                                         </td>
-                                        <td class="text-nowrap">
-                                            <a href="#" class="btn btn-sm btn-soft-primary me-1"><i class="mdi mdi-pencil"></i></a>
-                                            <a href="#" class="btn btn-sm btn-soft-danger"><i class="mdi mdi-delete"></i></a>
+
+                                          <td class="text-nowrap">
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                                <div class="dropdown-menu dropdown-menu-end shadow">
+                                                    <a class="dropdown-item"
+                                                       data-bs-toggle="modal" 
+                                                       data-bs-target=".notes-modal">
+                                                        Submit
+                                                    </a>
+                                                    <a class="dropdown-item"
+                                                       data-bs-toggle="modal" 
+                                                       data-bs-target=".notes-modal">
+                                                        Edit
+                                                    </a>
+                                                    <a class="dropdown-item" href="#">Hold</a>
+                                                    <a class="dropdown-item text-danger" href="#">Delete</a>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
 
@@ -300,17 +324,64 @@
                                         <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">H21</a></td>
                                         <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">Backend</a></td>
                                         <td>Lurs</td>
-                                        <td><span class="badge bg-soft-warning text-warning">Ongoing</span></td>
+                                        <td><span class="badge bg-soft-warning text-warning">To be reviewed</span></td>
+                                        <td>11/12/2024 23:00</td>
+                                        <td>Lopre Lorem - it may work(?) Lmao -windyl 12/25/2025(edit)</td>
+                                        <td class="text-nowrap">
+                                           
+                                        </td>
+                                    </tr>
+                                      <tr>
+                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">H21</a></td>
+                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">Backend</a></td>
+                                        <td>Lurs</td>
+                                        <td><span class="badge bg-soft-danger text-danger">Rejected</span></td>
+                                        <td>11/12/2024 23:00</td>
+                                        <td>Lopre Lorem - it may work(?) Lmao -windyl 12/25/2025(edit)</td>
+                                        <td class="text-nowrap">
+                                            <button class="btn btn-sm btn-primary"
+                                                    onclick="openNotes('notes-H21', 'Re-Submit')">
+                                            Re-Submit
+                                            </button>
+                                        </td>
+                                    </tr>
+                                      <tr>
+                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">H21</a></td>
+                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">Backend</a></td>
+                                        <td>Lurs</td>
+                                        <td><span class="badge bg-soft-secondary text-secondary">On Hold</span></td>
                                         <td>11/12/2024 23:00</td>
                                         <td>Lopre Lorem - it may work(?) Lmao -windyl 12/25/2025(edit)</td>
                                         <td class="text-nowrap">
                                             <div class="dropdown">
                                                 <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
                                                 <div class="dropdown-menu dropdown-menu-end shadow">
-                                                    <a class="dropdown-item" href="#">Edit</a>
+                                                    <a class="dropdown-item"
+                                                       data-bs-toggle="modal" 
+                                                       data-bs-target=".notes-modal">
+                                                        Resume
+                                                    </a>
+                                                    <a class="dropdown-item"
+                                                       data-bs-toggle="modal" 
+                                                       data-bs-target=".notes-modal">
+                                                        Edit
+                                                    </a>
                                                     <a class="dropdown-item text-danger" href="#">Delete</a>
                                                 </div>
                                             </div>
+                                        </td>
+                                    </tr>
+                                         <tr>
+                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">H21</a></td>
+                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">Backend</a></td>
+                                        <td>Lurs</td>
+                                        <td><span class="badge bg-soft-success text-success">Approved</span></td>
+                                        <td>11/12/2024 23:00</td>
+                                        <td>Lopre Lorem - it may work(?) Lmao -windyl 12/25/2025(edit)</td>
+                                        <td>
+                                           Approved on : 11/11/2026 20:00
+                                           </br>
+                                           -Lurs 
                                         </td>
                                     </tr>
                                     <!-- Repeat more subtasks as needed -->
@@ -445,5 +516,31 @@
         </div>
     </div>
 </div>
+
+<!-- Notes Modal -->
+<div class="modal fade " id="note-modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Note</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <textarea id="notesInput" class="form-control" rows="4"
+          placeholder="Enter your note here..."></textarea>
+
+        <input type="hidden" id="activeNotesTarget">
+        <input type="hidden" id="actionType">
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary" onclick="saveNote()">Save Note</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 {% endblock content %}
