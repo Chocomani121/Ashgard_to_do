@@ -25,7 +25,7 @@ const table2Res = document.getElementById("table2-gridjs");
 if (table2Req && table2Res) {
     new gridjs.Grid({
         from: table2Req,
-        pagination: { limit: 5 },
+        pagination: { limit: 10 },
         sort: true,
         search: true,
         className: { table: "table table-centered align-middle" }
