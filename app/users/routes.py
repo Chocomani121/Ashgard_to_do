@@ -21,6 +21,7 @@ def register():
         return redirect(url_for('users.login'))
     return render_template('auth-register.html', title='Register', form=form)
 
+@users.route("/")
 @users.route("/login", methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -33,6 +34,7 @@ def login():
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('main.projects'))
         else:
+            # THIS FLASHES THE RED ERROR MESSAGE
             flash('Login Unsuccessful. Please check email and password', 'danger')
     return render_template('auth-login.html', title='Login', form=form)
 
@@ -40,6 +42,8 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('users.login'))
+
+# ... [Keep your send_reset_email, reset_request, and reset_token functions here] ...
 
 @users.route("/profile")
 @login_required
