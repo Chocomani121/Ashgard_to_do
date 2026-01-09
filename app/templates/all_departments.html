@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block page_title %}All Divisions{% endblock %}
+{% block page_title %}All Departments{% endblock %}
 
 {% block content %}
 <div class="main-content">
@@ -77,6 +77,18 @@
             <div class="col-lg-12">
                 <div class="card">             
 
+                    <div class="card-header d-flex align-items-center">
+
+                        <div class="ms-auto d-flex gap-2">
+
+                            <button type="button"
+                                class="btn btn-primary btn-rounded"
+                                data-bs-toggle="modal"
+                                data-bs-target=".create-task">
+                                <i class="mdi mdi-plus me-1"></i> Add Department
+                            </button>
+                        </div>
+                    </div>
                     <div class="card-body">
                         <table id="firstRowOnlyTable" class="table table-bordered">
                             <thead>
@@ -89,9 +101,9 @@
                             </thead>
                             <tbody>
 
-                                <tr data-category="ALL">
-                                    <td>ALL</td>
-                                    <td>40</td>
+                                <tr>
+                                    <td>MDC</td>
+                                    <td>10</td>
                                     <td>December 2017</td>
                                     <td>
                                         <div class="dropdown">
@@ -103,24 +115,10 @@
                                         </div>
                                     </td>
                                 </tr>
-                                <tr data-category="MDC">
-                                    <td>MDC</td>
-                                    <td>20</td>
-                                    <td>December 2019</td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
-                                                <div class="dropdown-menu dropdown-menu-end shadow">
-                                                    <a class="dropdown-item" href="#">Edit</a>
-                                                    <a class="dropdown-item text-danger" href="#">Delete</a>
-                                                </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr data-category="LEGAL">
+                                <tr>
                                     <td>LEGAL</td>
-                                    <td>20</td>
-                                    <td>December 2019</td>
+                                    <td>5</td>
+                                    <td>December 2017</td>
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
@@ -131,11 +129,10 @@
                                         </div>
                                     </td>
                                 </tr>
-                                
-                                <tr data-category="CYBER">
+                                <tr>
                                     <td>CYBER</td>
-                                    <td>20</td>
-                                    <td>December 2019</td>
+                                    <td>5</td>
+                                    <td>December 2017</td>
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
@@ -146,6 +143,77 @@
                                         </div>
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td>Airmed</td>
+                                    <td>2</td>
+                                    <td>December 2017</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                                <div class="dropdown-menu dropdown-menu-end shadow">
+                                                    <a class="dropdown-item" href="#">Edit</a>
+                                                    <a class="dropdown-item text-danger" href="#">Delete</a>
+                                                </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Valkyrie Security</td>
+                                    <td>10</td>
+                                    <td>December 2017</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                                <div class="dropdown-menu dropdown-menu-end shadow">
+                                                    <a class="dropdown-item" href="#">Edit</a>
+                                                    <a class="dropdown-item text-danger" href="#">Delete</a>
+                                                </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Mars Motors</td>
+                                    <td>2</td>
+                                    <td>December 2017</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                                <div class="dropdown-menu dropdown-menu-end shadow">
+                                                    <a class="dropdown-item" href="#">Edit</a>
+                                                    <a class="dropdown-item text-danger" href="#">Delete</a>
+                                                </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Lorraine Dev’t corp</td>
+                                    <td>4</td>
+                                    <td>December 2017</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                                <div class="dropdown-menu dropdown-menu-end shadow">
+                                                    <a class="dropdown-item" href="#">Edit</a>
+                                                    <a class="dropdown-item text-danger" href="#">Delete</a>
+                                                </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Snarem Shipbuilding services</td>
+                                    <td>2</td>
+                                    <td>December 2017</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                                <div class="dropdown-menu dropdown-menu-end shadow">
+                                                    <a class="dropdown-item" href="#">Edit</a>
+                                                    <a class="dropdown-item text-danger" href="#">Delete</a>
+                                                </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                               
                             </tbody>
                         </table>
                     </div>
@@ -234,55 +302,47 @@
 
     </div>
 </div>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    // Department table rows
-    const deptRows = document.querySelectorAll("#firstRowOnlyTable tbody tr");
-    // Projects table rows
-    const projectRows = document.querySelectorAll("#itemTable tbody tr");
-
-    // 1️⃣ Department table: show only first row
-    deptRows.forEach((row, index) => { 
-        if (index > 0) row.style.display = "none"; 
-    });
-
-    // 2️⃣ Projects table: show all rows initially (as if "All" is selected)
-    projectRows.forEach((row) => { 
-        row.style.display = ""; 
-    });
-
-    // 3️⃣ Dropdown
-    const categorySelect = document.getElementById("categorySelect");
-
-    categorySelect.addEventListener("change", function () {
-        const selectedCategory = this.value;
-
-        // Filter Projects table
-        projectRows.forEach(row => {
-            const rowCategory = row.getAttribute("data-category");
-            if (selectedCategory === "All") {
-                row.style.display = ""; // show all
-            } else {
-                row.style.display = (rowCategory === selectedCategory) ? "" : "none";
-            }
-        });
-
-        // Filter Department table (first-row behavior kept)
-        deptRows.forEach((row, index) => {
-            const rowCategory = row.getAttribute("data-category");
-            if (selectedCategory !== "All" && rowCategory === selectedCategory) {
-                row.style.display = "";
-            } else if (index === 0 && selectedCategory === "All") {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
-        });
-    });
-
-});
-</script>
-
+<!--  Extra Large modal example -->
+<div class="modal fade create-task" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
+   <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title" id="myExtraLargeModalLabel">Add Department</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <div class="row">
+               <div class="col-md-6">
+                  <div class="mb-3">
+                     <label class="form-label" for="CreateTask-Task-Name">Department Name</label>
+                     <input type="text" class="form-control" placeholder="Enter Department Name" id="CreateTask-Task-Name">
+                  </div>
+               </div>
+               <div class="col-md-6">
+                  <div class="mb-3">
+                     <label class="form-label">Created On</label>
+                     <input type="date" class="form-control" placeholder="Select Start Date" id="CreateTask-start-date" >
+                  </div>
+               </div>
+               <div class="col-md-6">
+                  <div class="mb-3">
+                     <label class="form-label">Total Members</label>
+                     <input type="text" class="form-control" placeholder="Enter Total Members" id="CreateTask-due-date">
+                  </div>
+               </div>               
+            </div>
+            <div class="row mt-2">
+               <div class="col-12 text-end">
+                  <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal"><i class="bx bx-x me-1 align-middle"></i> Cancel</button>
+                  <button type="submit" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#success-btn" id="btn-save-event"><i class="bx bx-check me-1 align-middle"></i> Confirm</button>
+               </div>
+            </div>
+         </div>
+      </div>
+      <!-- /.modal-content -->
+   </div>
+   <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
 
 {% endblock content %}

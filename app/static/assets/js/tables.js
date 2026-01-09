@@ -1,22 +1,15 @@
 // Filtering tables based on dropdown selection
 document.addEventListener("DOMContentLoaded", function () {
 
-    // Department table rows
-    const deptRows = document.querySelectorAll("#firstRowOnlyTable tbody tr");
     // Projects table rows
     const projectRows = document.querySelectorAll("#itemTable tbody tr");
 
-    // 1️⃣ Department table: show only first row
-    deptRows.forEach((row, index) => { 
-        if (index > 0) row.style.display = "none"; 
+    // Show all rows initially (as if "All" is selected)
+    projectRows.forEach(row => {
+        row.style.display = "";
     });
 
-    // 2️⃣ Projects table: show all rows initially (as if "All" is selected)
-    projectRows.forEach((row) => { 
-        row.style.display = ""; 
-    });
-
-    // 3️⃣ Dropdown
+    // Dropdown
     const categorySelect = document.getElementById("categorySelect");
 
     categorySelect.addEventListener("change", function () {
@@ -25,22 +18,11 @@ document.addEventListener("DOMContentLoaded", function () {
         // Filter Projects table
         projectRows.forEach(row => {
             const rowCategory = row.getAttribute("data-category");
+
             if (selectedCategory === "All") {
-                row.style.display = ""; // show all
+                row.style.display = "";
             } else {
                 row.style.display = (rowCategory === selectedCategory) ? "" : "none";
-            }
-        });
-
-        // Filter Department table (first-row behavior kept)
-        deptRows.forEach((row, index) => {
-            const rowCategory = row.getAttribute("data-category");
-            if (selectedCategory !== "All" && rowCategory === selectedCategory) {
-                row.style.display = "";
-            } else if (index === 0 && selectedCategory === "All") {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
             }
         });
     });
