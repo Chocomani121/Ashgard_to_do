@@ -419,9 +419,35 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="mb-3 position-relative">
                             <label class="form-label">Owner</label>
-                            <input type="text" class="form-control" placeholder="Assigned to">
+
+                            <!-- Input / Selected chips -->
+                            <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
+                                id="ownerInput"
+                                data-bs-toggle="dropdown">
+
+                                <span class="text-muted small">Select owner(s)</span>
+                            </div>
+
+                            <!-- Dropdown -->
+                            <div class="dropdown-menu p-3 shadow owner-dropdown">
+                                <input type="text"
+                                    class="form-control mb-2"
+                                    id="ownerSearch"
+                                    placeholder="Search colleague">
+
+                                <small class="text-muted">Contacts</small>
+
+                                <div class="list-group mt-2 owner-list"></div>
+
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <a href="#" id="clearOwners" class="text-muted small">Clear</a>
+                                    <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">
+                                        Confirm
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-6 mb-3">
