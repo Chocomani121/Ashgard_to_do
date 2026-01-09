@@ -17,6 +17,23 @@ def tasks():
 @main.route("/departments") 
 @login_required
 def departments():
+    return render_template('departments.html')
+
+from flask import render_template, Blueprint
+
+main = Blueprint('main', __name__)
+
+@main.route("/")
+@main.route("/projects") 
+def projects():
+    return render_template('index.html')
+
+@main.route("/tasks") 
+def tasks():
+    return render_template('tasks.html', title="Tasks Info")
+
+@main.route("/all_departments") 
+def all_departments():
     return render_template('all_departments.html')
 
 @main.route("/members")

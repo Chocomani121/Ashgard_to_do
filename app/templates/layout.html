@@ -9,6 +9,8 @@
         <meta content="Themesdesign" name="author" />
         <!-- App favicon -->
         <link rel="shortcut icon" href="{{ url_for('static', filename='assets/images/ashgard_favicon.png') }}">
+           <!-- Sweet Alert-->
+        <link href="{{ url_for('static', filename='assets/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
         <!-- plugin css -->
         <link href="{{ url_for('static', filename='assets/libs/jsvectormap/css/jsvectormap.min.css') }}" rel="stylesheet" type="text/css" />
         <!-- gridjs css -->
@@ -19,7 +21,9 @@
         <link href="{{ url_for('static', filename='assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
         <!-- App Css-->
         <link href="{{ url_for('static', filename='assets/css/app.min.css') }}" id="app-style" rel="stylesheet" type="text/css" />
+
     </head>
+
     <body>
     <!-- ========== Left Sidebar Start ========== -->
             <div class="vertical-menu">
@@ -74,7 +78,7 @@
                             </li>   
 
                             <li>
-                                <a href="{{ url_for('main.departments') }}" >
+                                <a href="{{ url_for('main.all_departments') }}" >
                                     <i class="bx bx-grid-alt icon nav-icon"></i> 
                                     <span class="menu-item" data-key="t-departments">Departments</span>
                                 </a>
@@ -274,6 +278,7 @@
         <script src="{{ url_for('static', filename='assets/js/pages/gridjs.init.js') }}"></script> 
 
         <!-- javascript -->
+         <script src="{{ url_for('static', filename='assets/js/tables.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/metismenujs/metismenujs.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/simplebar/simplebar.min.js') }}"></script>
@@ -301,6 +306,7 @@
 
         <!-- Candlestick  -->
         <script src="https://apexcharts.com/samples/assets/ohlc.js"></script>
+        
         <!-- for Category x-axis chart -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.8.17/dayjs.min.js"></script>
 
@@ -313,7 +319,14 @@
         <script src="{{ url_for('static', filename='assets/js/pages/dashboard.init.js') }}"></script>
         
         <script src="{{ url_for('static', filename='assets/js/app.js') }}"></script>
+        
+        
       
+        <!-- Sweet Alerts js -->
+        <script src="{{ url_for('static', filename='assets/libs/sweetalert2/sweetalert2.min.js') }}"></script>
+   
+        <!-- Sweet alert init js-->
+        <script src="{{ url_for('static', filename='assets/js/pages/sweet-alerts.init.js') }}"></script>
     </body>
 
 </html>

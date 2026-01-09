@@ -33,22 +33,22 @@
                                     <p class="text-muted">Please fill your information below</p>
                                 </div>
                                 
-                                    <div class="p-2 mt-4">
-                                        <form method="POST" action="{{ url_for('users.login') }}">
-                                            {{ form.hidden_tag() }}
-                                                <div class="mb-3">
-                                                    <label class="form-label" for="email">Email</label>
-                                                    <div class="position-relative input-custom-icon">
-                                                        {{ form.email(class="form-control " + ("is-invalid" if form.email.errors else ""), placeholder="Enter email") }}
-                                                        <span class="bx bx-user"></span>
-                                                    </div>
-                                                    {% if form.email.errors %}
-                                                        {% for error in form.email.errors %}
-                                                            <div class="text-danger small mt-1">{{ error }}</div>
-                                                        {% endfor %}
-                                                    {% endif %}
-                                                </div>
+                                <div class="p-2 mt-4">
+                                    <form method="POST" action="{{ url_for('users.login') }}">
+                                        {{ form.hidden_tag() }} 
+
+                                        <div class="mb-3">
+                                            <label class="form-label" for="email">Email</label>
+                                            <div class="position-relative input-custom-icon">
+                                                {{ form.email(class="form-control", placeholder="Enter email") }}
+                                                <span class="bx bx-user"></span>
                                             </div>
+                                            {% if form.email.errors %}
+                                                {% for error in form.email.errors %}
+                                                    <span class="text-danger small">{{ error }}</span>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </div>
 
                                     <div class="mb-3">
                                         <div class="float-end">
