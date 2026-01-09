@@ -43,61 +43,64 @@
                         </a>
                     </div>
                     
-                        <form method="POST" action="{{ url_for('users.register') }}" class="col-12 col-md-6">
-                            {{ form.hidden_tag() }}
-                            <div class="card">
-                                <div class="card-body p-4">
+                                    <form method="POST" action="{{ url_for('users.register') }}" class="col-12 col-md-9 col-lg-8">
+                                    {{ form.hidden_tag() }}
+                                    <div class="card shadow-sm">
+                                        <div class="card-body p-4">
 
-                                    <div class="mt-2 text-center">
-                                        <h5>Register Account</h5>
-                                        <p class="text-muted">Sign up to create your account</p>
-                                    </div>
+                                            <div class="mt-2 text-center">
+                                                <h5>Register Account</h5>
+                                                <p class="text-muted">Sign up to create your account</p>
+                                            </div>
 
-                                    <div class="mb-3">
-                                        <label class="form-label">Email</label>
-                                        <div class="position-relative input-custom-icon">
-                                            {{ form.email(class="form-control", placeholder="Enter email") }}
-                                            <span class="bx bx-mail-send"></span>
+                                            <div class="mb-3">
+                                                <label class="form-label">Email</label>
+                                                <div class="position-relative input-custom-icon">
+                                                    {{ form.email(class="form-control " + ("is-invalid" if form.email.errors else ""), placeholder="Enter email") }}
+                                                    <span class="bx bx-mail-send"></span>
+                                                </div>
+                                                {% for error in form.email.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label">Username</label>
+                                                <div class="position-relative input-custom-icon">
+                                                    {{ form.username(class="form-control " + ("is-invalid" if form.username.errors else ""), placeholder="Enter username") }}
+                                                    <span class="bx bx-user"></span>
+                                                </div>
+                                                {% for error in form.username.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label">Password</label>
+                                                <div class="position-relative auth-pass-inputgroup input-custom-icon">
+                                                    <span class="bx bx-lock-alt"></span>
+                                                    {{ form.password(class="form-control " + ("is-invalid" if form.password.errors else ""), placeholder="Enter password") }}
+                                                </div>
+                                                {% for error in form.password.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label">Confirm Password</label>
+                                                <div class="position-relative auth-pass-inputgroup input-custom-icon">
+                                                    <span class="bx bx-lock-alt"></span>
+                                                    {{ form.confirm_password(class="form-control " + ("is-invalid" if form.confirm_password.errors else ""), placeholder="Confirm password") }}
+                                                </div> {% for error in form.confirm_password.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                                            </div>
+
+                                            <div class="mt-4">
+                                                {{ form.submit(class="btn btn-primary w-100 waves-effect waves-light") }}
+                                            </div>
+
+                                            <div class="mt-4 text-center">
+                                                <p class="mb-0">
+                                                    Already have an account?
+                                                    <a href="{{ url_for('users.login') }}" class="fw-medium text-primary">Login</a>
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label">Username</label>
-                                        <div class="position-relative input-custom-icon">
-                                            {{ form.username(class="form-control", placeholder="Enter username") }}
-                                            <span class="bx bx-user"></span>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label">Password</label>
-                                        <div class="position-relative auth-pass-inputgroup input-custom-icon">
-                                            <span class="bx bx-lock-alt"></span>
-                                            {{ form.password(class="form-control", placeholder="Enter password") }}
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label">Confirm Password</label>
-                                        <div class="position-relative auth-pass-inputgroup input-custom-icon">
-                                            <span class="bx bx-lock-alt"></span>
-                                            {{ form.confirm_password(class="form-control", placeholder="Confirm password") }}
-                                    </div>
-
-                                    <div class="mt-3">
-                                        {{ form.submit(class="btn btn-primary w-100 waves-effect waves-light") }}
-                                    </div>
-
-                                    <div class="mt-4 text-center">
-                                        <p class="mb-0">
-                                            Already have an account?
-                                            <a href="{{ url_for('users.login') }}" class="fw-medium text-primary">Login</a>
-                                        </p>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </form>
+                                </form>
                         
                             </div>
                         </div>
