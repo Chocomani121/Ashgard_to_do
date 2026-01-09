@@ -7,6 +7,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
         <meta content="Themesdesign" name="author" />
+        
+         <!-- Custom CSS -->
+        <link href="{{ url_for('static', filename='assets/custom/style.css') }}" id="app-style" rel="stylesheet" type="text/css" />
         <!-- App favicon -->
         <link rel="shortcut icon" href="{{ url_for('static', filename='assets/images/ashgard_favicon.png') }}">
            <!-- Sweet Alert-->
@@ -22,9 +25,6 @@
         <!-- App Css-->
         <!-- <link href="{{ url_for('static', filename='assets/css/app.min.css') }}" id="app-style" rel="stylesheet" type="text/css" /> -->
         <link href="{{ url_for('static', filename='assets/css/app.css') }}" id="app-style" rel="stylesheet" type="text/css" />
-
-         <!-- Custom CSS -->
-        <link href="{{ url_for('static', filename='assets/custom/style.css') }}" id="app-style" rel="stylesheet" type="text/css" />
         
     </head>
     </head>
@@ -277,6 +277,9 @@
             {% block content %}
             {% endblock content %}
         </main>
+        
+        <!-- Custom Js -->
+         <script src="{{ url_for('static', filename='assets/custom/script.js') }}"></script>
 
         <!-- gridjs js -->
         <script src="{{ url_for('static', filename='assets/libs/gridjs/gridjs.umd.js') }}"></script>
@@ -330,9 +333,6 @@
    
         <!-- Sweet alert init js-->
         <script src="{{ url_for('static', filename='assets/js/pages/sweet-alerts.init.js') }}"></script>
-
-        <!-- Custom Js -->
-         <script src="{{ url_for('static', filename='assets/custom/script.js') }}"></script>
     </body>
 
 </html>
