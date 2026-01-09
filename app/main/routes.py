@@ -3,7 +3,7 @@ from flask_login import login_required
 
 main = Blueprint('main', __name__)
 
-@main.route("/")
+
 @main.route("/projects") 
 @login_required
 def projects():
