@@ -339,10 +339,13 @@
                                         <td>11/12/2024 23:00</td>
                                         <td>Lopre Lorem - it may work(?) Lmao -windyl 12/25/2025(edit)</td>
                                         <td class="text-nowrap">
-                                            <button class="btn btn-sm btn-primary"
-                                                    onclick="openNotes('notes-H21', 'Re-Submit')">
+                                        <button class="btn btn-sm btn-primary"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target=".notes-modal"
+                                                    form="notesForm">
                                             Re-Submit
                                             </button>
+
                                         </td>
                                     </tr>
                                       <tr>
@@ -518,7 +521,7 @@
 </div>
 
 <!-- Notes Modal -->
-<div class="modal fade " id="note-modal" tabindex="-1" aria-hidden="true">
+<div class="modal fade notes-modal" id="note-modal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
