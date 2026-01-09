@@ -6113,7 +6113,6 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
 .projectsTableTaskDetails .gridjs-td:nth-child(7) {
   width: 120px;
   max-width: 120px;
-  white-space: nowrap;
 }
 
 /* Scrollable Notes column */
