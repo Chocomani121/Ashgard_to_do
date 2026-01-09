@@ -6083,10 +6083,42 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
   .subtask-thread {
       margin-left: 55px;
   }
- /* for  */
+ /* for a column */
   .notes-cell {
   max-width: 320px;
   max-height: 90px;
+  overflow-y: auto;
+  white-space: normal;
+}
+
+.projectsTableTaskDetails .gridjs-th:nth-child(1),
+.projectsTableTaskDetails .gridjs-td:nth-child(1) {
+  width: 60px;
+  max-width: 60px;
+}
+
+.projectsTableTaskDetails .gridjs-th:nth-child(2),
+.projectsTableTaskDetails .gridjs-td:nth-child(2) {
+  width: 180px;
+  max-width: 180px;
+}
+
+.projectsTableTaskDetails .gridjs-th:nth-child(6),
+.projectsTableTaskDetails .gridjs-td:nth-child(6) {
+  width: 400px;
+  max-width: 400px;
+}
+
+.projectsTableTaskDetails .gridjs-th:nth-child(7),
+.projectsTableTaskDetails .gridjs-td:nth-child(7) {
+  width: 120px;
+  max-width: 120px;
+  white-space: nowrap;
+}
+
+/* Scrollable Notes column */
+.projectsTableTaskDetails td.notes-cell {
+  max-height: 120px;
   overflow-y: auto;
   white-space: normal;
 }
