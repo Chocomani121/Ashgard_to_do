@@ -133,235 +133,184 @@
                             </div>
 
                            <div class="col-xl-6">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <!-- Header -->
-                                            <div class="d-flex align-items-center mb-3">
+                             <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="flex-grow-1">
+                                                <h5 class="card-title mb-0">Activity Threads</h5>
+                                            </div>
+                                            <!-- <div class="flex-shrink-0">
+                                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTopicModal">
+                                                    <i class="mdi mdi-plus me-1"></i> Add Topic
+                                                </button>
+                                            </div> -->
+                                        </div>
+
+                                        <div class="mx-n4 px-4" data-simplebar style="max-height: 500px;">
+
+                                            <div class="d-flex mb-4">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <span class="avatar-sm rounded-circle bg-primary text-white d-flex align-items-center justify-content-center">P</span>
+                                                </div>
                                                 <div class="flex-grow-1">
-                                                    <h5 class="card-title mb-0">Activity Threads</h5>
-                                                    <!-- <small class="text-muted">Tasks → Subtasks</small> -->
+                                                    <h6 class="mb-1">Project: OSINT Platform</h6>
+                                                    <p class="text-muted mb-0">Central dashboard and task tracking system</p>
                                                 </div>
                                             </div>
-                                            <!-- Thread Container -->
-                                            <div class="mx-n4 px-4" data-simplebar style="max-height: 500px;">
 
-                                                <!-- PROJECT -->
-                                                <div class="d-flex mb-4">
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <span class="avatar-sm rounded-circle bg-primary text-white d-flex align-items-center justify-content-center">
-                                                            P
-                                                        </span>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <h6 class="mb-1">Project: OSINT Platform</h6>
-                                                        <p class="text-muted mb-0">
-                                                            Central dashboard and task tracking system
-                                                        </p>
-                                                    </div>
+                                            <div class="d-flex mb-4 ms-4">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <span class="avatar-sm rounded-circle bg-info text-white d-flex align-items-center justify-content-center">T</span>
                                                 </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="border rounded p-3">
+                                                        <h6 class="mb-1">UI Redesign</h6>
+                                                        <p class="text-muted mb-0">Update layout, tables, and responsiveness.</p>
+                                                    </div>
+                                                    
+                                                    <div class="reply-box d-none mt-2">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" class="form-control" placeholder="Write a reply...">
+                                                            <button class="btn btn-primary">Send</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="edit-box d-none mt-2">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" class="form-control" value="Update layout, tables, and responsiveness.">
+                                                            <button class="btn btn-success">Update</button>
+                                                        </div>
+                                                    </div>
 
-                                                <!-- MAIN TASK -->
-                                                <div class="d-flex mb-4 ms-4">
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <span class="avatar-sm rounded-circle bg-info text-white d-flex align-items-center justify-content-center">
-                                                            T
-                                                        </span>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <div class="border rounded p-3">
-                                                            <div class="d-flex justify-content-between">
-                                                                <h6 class="mb-1">UI Redesign</h6>
-                                                                
-                                                            </div>
-                                                            <p class="text-muted mb-0">
-                                                                Update layout, tables, and responsiveness.
-                                                            </p>
-                                                        </div>
-                                                        <div class="note-actions">
-                                                            <button class="btn btn-sm btn-link p-0 me-2" onclick="toggleReply(this)">
-                                                                Reply
-                                                            </button>
-                                                            <button class="btn btn-sm btn-link p-0" onclick="toggleEdit(this)">
-                                                                Edit
-                                                            </button>
-                                                        </div>
+                                                    <div class="note-actions mt-1">
+                                                        <button class="btn btn-sm btn-link p-0 me-2 text-decoration-none" onclick="toggleInput(this, '.reply-box')">Reply</button>
+                                                        <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="toggleInput(this, '.edit-box')">Edit</button>
                                                     </div>
                                                 </div>
-                                                <div class="d-flex mb-3 ms-5">
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">
-                                                            S
-                                                        </span>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <div class="bg-light rounded p-3">
-                                                            <div class="d-flex justify-content-between">
-                                                                <h6 class="mb-1">Grid.js Table Layout</h6>
-                                                      
-                                                            </div>
-                                                            <p class="text-muted mb-0">
-                                                                Ensured all headers display with horizontal scroll.
-                                                            </p>
-                                                        </div>
-                                                         <div class="note-actions">
-                                                            <button class="btn btn-sm btn-link p-0 me-2" onclick="toggleReply(this)">
-                                                                Reply
-                                                            </button>
-                                                            <button class="btn btn-sm btn-link p-0" onclick="toggleEdit(this)">
-                                                                Edit
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                            </div>
 
-                                                <!-- SUBTASK -->
-                                                <div class="d-flex mb-3 ms-5">
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">
-                                                            S
-                                                        </span>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <div class="bg-light rounded p-3">
-                                                            <div class="d-flex justify-content-between">
-                                                                <h6 class="mb-1">Mobile Header Fix</h6>
-                                                   
-                                                            </div>
-                                                            <p class="text-muted mb-0">
-                                                                Adjust spacing for smaller breakpoints.
-                                                            </p>
-                                                        </div>
-                                                         <div class="note-actions">
-                                                            <button class="btn btn-sm btn-link p-0 me-2" onclick="toggleReply(this)">
-                                                                Reply
-                                                            </button>
-                                                            <button class="btn btn-sm btn-link p-0" onclick="toggleEdit(this)">
-                                                                Edit
-                                                            </button>
-                                                        </div>
-                                                    </div>
+                                            <div class="d-flex mb-3 ms-5">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
                                                 </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="bg-light rounded p-3">
+                                                
+                                                        <p class="text-muted mb-0">NO nO no</p>
+                                                    </div>
 
-                                   
-                                                 <div class="d-flex mb-4 ms-4">
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <span class="avatar-sm rounded-circle bg-info text-white d-flex align-items-center justify-content-center">
-                                                            T
-                                                        </span>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <div class="border rounded p-3">
-                                                            <div class="d-flex justify-content-between">
-                                                                <h6 class="mb-1">Login Form</h6>
-                                                               
-                                                            </div>
-                                                            <p class="text-muted mb-0">
-                                                                Update layout, tables, and responsiveness.
-                                                            </p>
-                                                        </div>
-                                                         <div class="note-actions">
-                                                            <button class="btn btn-sm btn-link p-0 me-2" onclick="toggleReply(this)">
-                                                                Reply
-                                                            </button>
-                                                            <button class="btn btn-sm btn-link p-0" onclick="toggleEdit(this)">
-                                                                Edit
-                                                            </button>
+                                                    <div class="reply-box d-none mt-2">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" class="form-control" placeholder="Write a reply...">
+                                                            <button class="btn btn-primary">Send</button>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                   <!-- SUBTASK -->
-                                                <div class="d-flex mb-3 ms-5">
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">
-                                                            S
-                                                        </span>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <div class="bg-light rounded p-3">
-                                                            <div class="d-flex justify-content-between">
-                                                                <h6 class="mb-1">Login UI</h6>
-                                                     
-                                                            </div>
-                                                            <p class="text-muted mb-0">
-                                                               Login Done
-                                                            </p>
-                                                        </div>
-                                                         <div class="note-actions">
-                                                            <button class="btn btn-sm btn-link p-0 me-2" onclick="toggleReply(this)">
-                                                                Reply
-                                                            </button>
-                                                            <button class="btn btn-sm btn-link p-0" onclick="toggleEdit(this)">
-                                                                Edit
-                                                            </button>
+                                                    <div class="edit-box d-none mt-2">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" class="form-control" value="Fixed, is running">
+                                                            <button class="btn btn-success">Update</button>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <!-- SUBTASK -->
-                                                <div class="d-flex mb-3 ms-5">
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">
-                                                            S
-                                                        </span>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <div class="bg-light rounded p-3">
-                                                            <div class="d-flex justify-content-between">
-                                                                <h6 class="mb-1">Login Backend</h6>
-                                                              
-                                                            </div>
-                                                            <p class="text-muted mb-0">
-                                                                Can't Register, please fixed
-                                                            </p>
-                                                        </div>
-                                                         <div class="note-actions">
-                                                            <button class="btn btn-sm btn-link p-0 me-2" onclick="toggleReply(this)">
-                                                                Reply
-                                                            </button>
-                                                            <button class="btn btn-sm btn-link p-0" onclick="toggleEdit(this)">
-                                                                Edit
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                 <div class="d-flex mb-3 ms-5">
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">
-                                                            S
-                                                        </span>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <div class="bg-light rounded p-3">
-                                                            <div class="d-flex justify-content-between">
-                                                                <h6 class="mb-1">Login Backend</h6>
-                                                      
-                                                            </div>
-                                                            <p class="text-muted mb-0">
-                                                                Fixed, is running
-                                                            </p>
-                                                        </div>
-                                                         <div class="note-actions">
-                                                            <button class="btn btn-sm btn-link p-0 me-2" onclick="toggleReply(this)">
-                                                                Reply
-                                                            </button>
-                                                            <button class="btn btn-sm btn-link p-0" onclick="toggleEdit(this)">
-                                                                Edit
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <!-- FINAL STATUS -->
-                                                <!-- <div class="d-flex ms-4">
-                                                    <div class="flex-grow-1">
-                                                        <div class="alert alert-light border mb-0">
-                                                            <strong>Overall:</strong> Task is on track, pending final review.
-                                                        </div>
-                                                    </div>
-                                                </div> -->
 
+                                                    <div class="note-actions mt-1">
+                                                        <button class="btn btn-sm btn-link p-0 me-2 text-decoration-none" onclick="toggleInput(this, '.reply-box')">Reply</button>
+                                                        <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="toggleInput(this, '.edit-box')">Edit</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                             <div class="d-flex mb-3 ms-5">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="bg-light rounded p-3">
+                                             
+                                                        <p class="text-muted mb-0">HI HI HI </p>
+                                                    </div>
+
+                                                    <div class="reply-box d-none mt-2">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" class="form-control" placeholder="Write a reply...">
+                                                            <button class="btn btn-primary">Send</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="edit-box d-none mt-2">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" class="form-control" value="Fixed, is running">
+                                                            <button class="btn btn-success">Update</button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="note-actions mt-1">
+                                                        <button class="btn btn-sm btn-link p-0 me-2 text-decoration-none" onclick="toggleInput(this, '.reply-box')">Reply</button>
+                                                        <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="toggleInput(this, '.edit-box')">Edit</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                             <div class="d-flex mb-3 ms-5">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="bg-light rounded p-3">
+                                                        
+                                                        <p class="text-muted mb-0">Fixed, is running</p>
+                                                    </div>
+
+                                                    <div class="reply-box d-none mt-2">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" class="form-control" placeholder="Write a reply...">
+                                                            <button class="btn btn-primary">Send</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="edit-box d-none mt-2">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" class="form-control" value="Fixed, is running">
+                                                            <button class="btn btn-success">Update</button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="note-actions mt-1">
+                                                        <button class="btn btn-sm btn-link p-0 me-2 text-decoration-none" onclick="toggleInput(this, '.reply-box')">Reply</button>
+                                                        <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="toggleInput(this, '.edit-box')">Edit</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                             <div class="d-flex mb-3 ms-5">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="bg-light rounded p-3">
+                                                        
+                                                        <p class="text-muted mb-0">Fixed, is running</p>
+                                                    </div>
+
+                                                    <div class="reply-box d-none mt-2">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" class="form-control" placeholder="Write a reply...">
+                                                            <button class="btn btn-primary">Send</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="edit-box d-none mt-2">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" class="form-control" value="Fixed, is running">
+                                                            <button class="btn btn-success">Update</button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="note-actions mt-1">
+                                                        <button class="btn btn-sm btn-link p-0 me-2 text-decoration-none" onclick="toggleInput(this, '.reply-box')">Reply</button>
+                                                        <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="toggleInput(this, '.edit-box')">Edit</button>
+                                                    </div>
+                                                </div>
                                             </div>
 
                                         </div>
                                     </div>
+                                </div>
                            </div>
 
                         </div>
