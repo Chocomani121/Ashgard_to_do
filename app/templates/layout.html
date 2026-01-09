@@ -7,7 +7,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
         <meta content="Themesdesign" name="author" />
-        
+        <!-- Select2 CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet">
          <!-- Custom CSS -->
         <link href="{{ url_for('static', filename='assets/custom/style.css') }}" id="app-style" rel="stylesheet" type="text/css" />
         <!-- App favicon -->
@@ -277,7 +278,8 @@
             {% block content %}
             {% endblock content %}
         </main>
-        
+        <!-- Select2 JS -->
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
         <!-- Custom Js -->
          <script src="{{ url_for('static', filename='assets/custom/script.js') }}"></script>
 
