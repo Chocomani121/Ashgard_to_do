@@ -9,13 +9,13 @@ main = Blueprint('main', __name__)
 def projects():
     return render_template('index.html')
 
-@main.route("/tasks") 
-@login_required
+@main.route("/tasks")
+@login_required 
 def tasks():
     login_required
     return render_template('tasks.html', title="Tasks Info")
 
-@main.route("/all_departments") 
+@main.route("/all_departments")
 @login_required
 def all_departments():
     login_required
