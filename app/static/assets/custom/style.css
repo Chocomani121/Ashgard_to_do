@@ -1,3 +1,4 @@
+/* Hover for MOdal that is clickable */
 div#myModal {
     align-content: center;
 }
@@ -5,8 +6,8 @@ div#myModal {
 tr:has(a[href]):hover {
   background-color: #f0f4ff;
 } 
-
 /* End */
+
 .owner-input {
     min-height: 42px;
     cursor: pointer;
