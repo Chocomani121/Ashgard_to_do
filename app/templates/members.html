@@ -298,6 +298,7 @@
     id="myModal"
     class="modal fade"
     tabindex="-1"
+    data-bs-backdrop="static"
     aria-labelledby="myModalLabel"
     data-bs-scroll="true"
     aria-hidden="true"
@@ -319,8 +320,10 @@
             <div class="card-body">
                 <form>
 
-                    <div class="mb-3">
-                        <label for="formrow-fullname-input" class="form-label">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="formrow-fullname-input" class="form-label">
                             Enter Full Name
                         </label>
                         <input
@@ -329,19 +332,34 @@
                             placeholder="Full Name"
                             id="formrow-fullname-input"
                         >
-                    </div>
+                            </div>
+                        </div>
 
-                    <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="formrow-username-input" class="form-label">
                                     Username
                                 </label>
                                 <input
+                                    type="username"
+                                    class="form-control"
+                                    placeholder="Enter Username"
+                                    id="formrow-username-input"
+                                >
+                            </div>
+                        </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="formrow-email-input" class="form-label">
+                                    Email
+                                </label>
+                                <input
                                     type="email"
                                     class="form-control"
-                                    placeholder="Username"
-                                    id="formrow-username-input"
+                                    placeholder="Email"
+                                    id="formrow-email-input"
                                 >
                             </div>
                         </div>
@@ -362,36 +380,22 @@
 
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="formrow-email-input" class="form-label">
-                                    Enter Email
+                                <label for="formrow-position-input" class="form-label">
+                                    Position
                                 </label>
-                                <input
-                                    type="email"
-                                    class="form-control"
-                                    placeholder="Email"
-                                    id="formrow-email-input"
-                                >
+                                <select id="formrow-inputState" class="form-select">
+                                    <option value="" selected disabled>Choose...</option>
+                                    <option>Full Stack Developer</option>
+                                    <option>Frontend Developer</option>
+                                    <option>Backend Developer</option>
+                                    <option>Secretary</option>
+                                    <option>HR</option>
+                                    <option>Paralegal</option>
+                                    <option>N/A</option>
+                                </select>
                             </div>
                         </div>
-
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="formrow-email-input" class="form-label">
-                                    Enter Email
-                                </label>
-                                <input
-                                    type="email"
-                                    class="form-control"
-                                    placeholder="Email"
-                                    id="formrow-email-input"
-                                >
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="row">
-                        <div class="col-lg-12">
                             <div class="mb-3">
                                 <label for="formrow-inputState" class="form-label">
                                     Department
@@ -406,6 +410,7 @@
                                     <option>MARS MOTORS</option>
                                     <option>LORRAINE DEV'T CORP</option>
                                     <option>SANREM SHIPBUILDING SERVICES</option>
+                                    <option>N/A</option>
                                 </select>
                             </div>
                         </div>
