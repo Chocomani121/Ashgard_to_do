@@ -753,26 +753,35 @@
                                         </select>
                                     </div>
                                 </div>
-                               <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label" for="CreateTask-Category">Assign Members</label>
-                                        <select class="form-select">
-                                            <option  selected> Select </option>
-                                            <option>Niel</option>
-                                            <option>Patrick</option>
-                                            <option>Windyl</option>
-                                            <option>Kathrina</option>
-                                        </select>
+                                
+                                <div class="mb-3 position-relative" style="max-width: 400px;">
+                                    <label class="form-label">Assign Members</label>
+                                    <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
+                                        id="ownerInput"
+                                        data-bs-toggle="dropdown"
+                                        style="max-height: 100px; overflow-y: auto;">
+                                    </div>
+                                    <!-- Dropdown -->
+                                    <div class="dropdown-menu p-3 shadow owner-dropdown">
+                                        <input type="text"
+                                            class="form-control mb-2"
+                                            id="ownerSearch"
+                                            placeholder="Search colleague">
+                                        <small class="text-muted">Contacts</small>
+                                        <div class="list-group mt-2 owner-list"></div>
+                                        <div class="d-flex justify-content-between align-items-center mt-3">
+                                            <a href="#" id="clearOwners" class="text-muted small">Clear</a>
+                                            <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">Confirm</button>
+                                        </div>
                                     </div>
                                 </div>
-                           </div>
-                           <div class="row mt-2">
-                            <div class="col-12 text-end">
-                                <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal"><i class="bx bx-x me-1 align-middle"></i> Cancel</button>
-                                <button type="submit" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#success-btn" id="btn-save-event"><i class="bx bx-check me-1 align-middle"></i> Confirm</button>
-                            </div>
-                        </div>
-
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12 text-end">
+                                        <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal"><i class="bx bx-x me-1 align-middle"></i> Cancel</button>
+                                        <button type="submit" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#success-btn" id="btn-save-event"><i class="bx bx-check me-1 align-middle"></i> Confirm</button>
+                                    </div>
+                                </div>
                         </div>
                     </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->

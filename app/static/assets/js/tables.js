@@ -1,50 +1,46 @@
-// Filtering tables based on dropdown selection
-document.addEventListener("DOMContentLoaded", function () {
 
-    // Department table rows
-    const deptRows = document.querySelectorAll("#firstRowOnlyTable tbody tr");
-    // Projects table rows
-    const projectRows = document.querySelectorAll("#itemTable tbody tr");
+document.addEventListener('DOMContentLoaded', () => {
+    const tableData = [];
+    const rows = document.querySelectorAll('#projectsTable tbody tr');
 
-    // 1️⃣ Department table: show only first row
-    deptRows.forEach((row, index) => { 
-        if (index > 0) row.style.display = "none"; 
+    // Extract data from hidden table
+    rows.forEach(row => {
+        const category = row.getAttribute('data-category');
+        const cells = row.querySelectorAll('td');
+        tableData.push([
+            cells[0].innerText.trim(),  // Department Name
+            cells[1].innerText.trim(),  // Total Members
+            cells[2].innerText.trim(),  // Created On
+            cells[3].innerHTML.trim(),  // Action buttons
+            category                    // for filtering
+        ]);
     });
 
-    // 2️⃣ Projects table: show all rows initially (as if "All" is selected)
-    projectRows.forEach((row) => { 
-        row.style.display = ""; 
+    // Initialize Grid.js
+    const grid = new gridjs.Grid({
+        columns: ["Department Name", "Total Members", "Created On", "Action"],
+        data: tableData,
+        search: true,
+        pagination: {
+            enabled: true,
+            limit: 5
+        },
+        sort: true,
+        style: {
+            table: { 'width': '100%' },
+            th: { 'text-align': 'left' }
+        }
+    }).render(document.getElementById("table-gridjs"));
+
+    // Filter by dropdown
+    const select = document.getElementById('categorySelect');
+    select.addEventListener('change', () => {
+        const selected = select.value;
+
+        grid.updateConfig({
+            data: tableData.filter(row => selected === "All" || row[4] === selected)
+        }).forceRender();
     });
-
-    // 3️⃣ Dropdown
-    const categorySelect = document.getElementById("categorySelect");
-
-    categorySelect.addEventListener("change", function () {
-        const selectedCategory = this.value;
-
-        // Filter Projects table
-        projectRows.forEach(row => {
-            const rowCategory = row.getAttribute("data-category");
-            if (selectedCategory === "All") {
-                row.style.display = ""; // show all
-            } else {
-                row.style.display = (rowCategory === selectedCategory) ? "" : "none";
-            }
-        });
-
-        // Filter Department table (first-row behavior kept)
-        deptRows.forEach((row, index) => {
-            const rowCategory = row.getAttribute("data-category");
-            if (selectedCategory !== "All" && rowCategory === selectedCategory) {
-                row.style.display = "";
-            } else if (index === 0 && selectedCategory === "All") {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
-        });
-    });
-
 });
 
 
