@@ -56,7 +56,7 @@ function renderSelected() {
     ownerInput.innerHTML = "";
 
     if (selectedOwners.length === 0) {
-        ownerInput.innerHTML = `<span class="text-muted small">Select owner(s)</span>`;
+        ownerInput.innerHTML = `<span class="text-muted small">Select Members</span>`;
         return;
     }
 
