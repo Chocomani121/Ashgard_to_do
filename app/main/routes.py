@@ -13,7 +13,7 @@ def tasks():
 
 @main.route("/all_departments") 
 def all_departments():
-    return render_template('all_departments.html')
+    return render_template('all_departments.html', title="All Departments")
 
 @main.route("/members")
 def members():
