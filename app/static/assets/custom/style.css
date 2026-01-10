@@ -6,6 +6,12 @@ tr:has(a[href]):hover {
   background-color: #f0f4ff;
 } 
 
+.page-title-box h4 {
+    font-size: 45px !important;
+    text-transform: uppercase;
+    color: #1F1A73;
+}
+
 /* End */
 .owner-input {
     min-height: 42px;
