@@ -1,10 +1,11 @@
 div#myModal {
     align-content: center;
 }
-tr.gridjs-tr:has(a[href]):hover {
+
+tr:has(a[href]):hover {
   background-color: #f0f4ff;
-  cursor: pointer;
-}
+} 
+
 /* End */
 .owner-input {
     min-height: 42px;

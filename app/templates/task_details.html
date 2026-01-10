@@ -7,8 +7,8 @@
             <!-- Breadcrumb -->
             <nav aria-label="breadcrumb" class="mb-3">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('main.projects') }}">Projects</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('main.project_details') }}">Project Details</a></li>
+                    <li class="breadcrumb-item">Projects</li>
+                    <li class="breadcrumb-item">Project Details</li>
                     <li class="breadcrumb-item active" aria-current="page">Task Details</li>
                 </ol>
             </nav>
@@ -29,12 +29,11 @@
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-end">
                                         <a class="dropdown-item"
-                                            href="#"
                                             data-bs-toggle="modal"
                                             data-bs-target="#editTaskModal">
                                             Edit Task
                                         </a>
-                                        <a class="dropdown-item" href="#" id="sa-params">Delete Task</a>
+                                        <a class="dropdown-item" id="sa-params">Delete Task</a>
                                     </div>
                                 </div>
                             </div>
@@ -278,8 +277,8 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">H20</a></td>
-                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">Login Interface</a></td>
+                                        <td class="fw-semibold">H20</td>
+                                        <td class="fw-semibold">Login Interface</td>
                                         <td>Lurs</td>
                                         <td><span class="badge bg-soft-primary text-primary">Ongoing</span></td>
                                         <td>11/12/2024 23:00</td>
@@ -313,16 +312,16 @@
                                                        data-bs-target=".notes-modal">
                                                         Edit
                                                     </a>
-                                                    <a class="dropdown-item" href="#">Hold</a>
-                                                    <a class="dropdown-item text-danger" href="#">Delete</a>
+                                                        Hold
+                                                    <a class="dropdown-item text-danger">Delete</a>
                                                 </div>
                                             </div>
                                         </td>
                                     </tr>
 
                                     <tr>
-                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">H21</a></td>
-                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">Backend</a></td>
+                                        <td class="fw-semibold">H21</td>
+                                        <td class="fw-semibold">Backend</td>
                                         <td>Lurs</td>
                                         <td><span class="badge bg-soft-warning text-warning">To be reviewed</span></td>
                                         <td>11/12/2024 23:00</td>
@@ -332,8 +331,8 @@
                                         </td>
                                     </tr>
                                       <tr>
-                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">H21</a></td>
-                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">Backend</a></td>
+                                        <td class="fw-semibold">H21</td>
+                                        <td class="fw-semibold">Backend</td>
                                         <td>Lurs</td>
                                         <td><span class="badge bg-soft-danger text-danger">Rejected</span></td>
                                         <td>11/12/2024 23:00</td>
@@ -349,8 +348,8 @@
                                         </td>
                                     </tr>
                                       <tr>
-                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">H21</a></td>
-                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">Backend</a></td>
+                                        <td class="fw-semibold">H21</td>
+                                        <td class="fw-semibold">Backend</td>
                                         <td>Lurs</td>
                                         <td><span class="badge bg-soft-secondary text-secondary">On Hold</span></td>
                                         <td>11/12/2024 23:00</td>
@@ -369,14 +368,14 @@
                                                        data-bs-target=".notes-modal">
                                                         Edit
                                                     </a>
-                                                    <a class="dropdown-item text-danger" href="#">Delete</a>
+                                                    <a class="dropdown-item text-danger">Delete</a>
                                                 </div>
                                             </div>
                                         </td>
                                     </tr>
                                          <tr>
-                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">H21</a></td>
-                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">Backend</a></td>
+                                        <td class="fw-semibold">H21</td>
+                                        <td class="fw-semibold">Backend</td>
                                         <td>Lurs</td>
                                         <td><span class="badge bg-soft-success text-success">Approved</span></td>
                                         <td>11/12/2024 23:00</td>
@@ -442,7 +441,7 @@
                                 <div class="list-group mt-2 owner-list"></div>
 
                                 <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <a href="#" id="clearOwners" class="text-muted small">Clear</a>
+                                    Clear
                                     <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">
                                         Confirm
                                     </button>
@@ -543,7 +542,7 @@
                                 <div class="list-group mt-2 owner-list" value="John, Jane, Lurs"></div>
 
                                 <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <a href="#" id="clearOwners" class="text-muted small">Clear</a>
+                                    Clear
                                     <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">
                                         Confirm
                                     </button>
