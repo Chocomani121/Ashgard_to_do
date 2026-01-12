@@ -57,7 +57,7 @@ function renderSelected() {
     ownerInput.innerHTML = "";
 
     if (selectedOwners.length === 0) {
-        ownerInput.innerHTML = `<span class="text-muted small">Select owner(s)</span>`;
+        ownerInput.innerHTML = `<span class="text-muted small">Select Members</span>`;
         return;
     }
 
@@ -118,3 +118,44 @@ function toggleInput(btn, className) {
         target.querySelector('input').focus();
     }
 }
+
+
+// FOr Department project in departments UI
+document.addEventListener("DOMContentLoaded", function() {
+    const select = document.getElementById('categorySelect');
+    const tableElement = document.getElementById('projectsTableDept');
+    
+    // 1. Extract data and wrap HTML strings in gridjs.html()
+    const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
+    const allData = tableRows.map(tr => {
+        return {
+            category: tr.getAttribute('data-category'),
+            // Use gridjs.html() so the browser renders the tags instead of printing them
+            cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML))
+        };
+    });
+
+    // 2. Initialize Grid.js
+    const grid = new gridjs.Grid({
+        columns: ["ID", "Projects", "Department", "Client", "Deadline", "Status"],
+        data: allData.map(row => row.cells),
+        pagination: { limit: 10 },
+        sort: true,
+        className: {
+            table: 'table table-bordered'
+        }
+    }).render(document.getElementById("tableDept-gridjs"));
+
+    // 3. Filter Logic (This remains the same)
+    select.addEventListener('change', function() {
+        const selectedValue = this.value;
+        const filteredData = allData.filter(row => {
+            if (selectedValue === "All") return true;
+            return row.category === selectedValue;
+        });
+
+        grid.updateConfig({
+            data: filteredData.map(row => row.cells)
+        }).forceRender();
+    });
+});
