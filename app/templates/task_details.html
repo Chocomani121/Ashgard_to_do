@@ -12,7 +12,6 @@
                     <li class="breadcrumb-item active" aria-current="page">Task Details</li>
                 </ol>
             </nav>
-
              <div class="row">
                 <!-- LEFT CONTENT -->
                 <div class="col-xl-8">
@@ -33,7 +32,9 @@
                                             data-bs-target="#editTaskModal">
                                             Edit Task
                                         </a>
-                                        <a class="dropdown-item" id="sa-params">Delete Task</a>
+                                        <a class="dropdown-item" 
+                                            href="javascript:void(0);" 
+                                            onclick="confirmDelete('UI Redisgn task')">Delete Task</a>
                                     </div>
                                 </div>
                             </div>
@@ -312,7 +313,9 @@
                                                        data-bs-target=".notes-modal">
                                                         Edit
                                                     </a>
-                                                    <a class="dropdown-item text-danger">Delete</a>
+                                                <a class="dropdown-item text-danger" 
+                                                href="javascript:void(0);" 
+                                                onclick="confirmDelete('H20')">Delete</a>
                                                 </div>
                                             </div>
                                         </td>
@@ -370,7 +373,9 @@
                                                        data-bs-target=".notes-modal">
                                                         Edit
                                                     </a>
-                                                    <a class="dropdown-item text-danger">Delete</a>
+                                                       <a class="dropdown-item text-danger" 
+                                                        href="javascript:void(0);" 
+                                                        onclick="confirmDelete('H20')">Delete</a>
                                                 </div>
                                             </div>
                                         </td>
@@ -462,7 +467,9 @@
                                                         Edit
                                                     </a>
                                                     <a class="dropdown-item">Hold</a>
-                                                    <a class="dropdown-item text-danger">Delete</a>
+                                                    <a class="dropdown-item text-danger" 
+                                                    href="javascript:void(0);" 
+                                                    onclick="confirmDelete('H20')">Delete</a>
                                                 </div>
                                             </div>
                                         </td>
@@ -706,7 +713,6 @@
                             </textarea>
                         </div>
                     </div>
-
                 </form>
             </div>
 
