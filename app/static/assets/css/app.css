@@ -6121,3 +6121,35 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
   overflow-y: auto;
   white-space: normal;
 }
+
+/* For PM in Task Details */
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(1),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(1) {
+  width: 60px;
+  max-width: 60px;
+}
+
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(2),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(2) {
+  width: 180px;
+  max-width: 180px;
+}
+
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(6),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(6) {
+  width: 400px;
+  max-width: 400px;
+}
+
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(7),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(7) {
+  width: 120px;
+  max-width: 120px;
+}
+
+/* Scrollable Notes column */
+.projectsTableTaskDetailsPM td.notes-cell {
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: normal;
+}
