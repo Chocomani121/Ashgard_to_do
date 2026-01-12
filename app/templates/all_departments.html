@@ -121,8 +121,15 @@
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
                                             <div class="dropdown-menu dropdown-menu-end shadow">
-                                                <a class="dropdown-item">Edit</a>
-                                                <a class="dropdown-item text-danger">Delete</a>
+                                                <div class="ms-auto">
+                                                    <button class="btn dropdown-item" data-bs-toggle="modal" data-bs-target=".create-task">
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                                <a class="dropdown-item text-danger" 
+                                                href="javascript:void(0);" 
+                                                onclick="confirmDelete('H20')">Delete</a>
+                                                </div>
                                             </div>
                                     </div>
                                 </td>
@@ -286,7 +293,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+     
         </div>     
         
          <!-- Department Projects Table -->
@@ -535,15 +542,114 @@
                     </div>
 
                 </form>
-            </div>
+            </div>  <!-- /.modal-content -->
+        </div>  <!-- /.modal-dialog -->
+    </div>    <!-- /.modal -->
 
-            <!-- /.modal-content -->
+</div><!-- end preview -->
+
+    <!-- Add Sub-Task Modal -->
+    <div class="modal fade create-task" data-bs-backdrop="static" tabindex="-1" aria-labelledby="createTaskLabel" aria-hidden="true" id="myModal">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+    
+                    <div class="modal-content">
+            
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="myModalLabel">Add Department</h5>
+                            <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                            ></button>
+                        </div>
+            
+                        <div class="card-body">
+                            <form>
+            
+                                <div class="mb-3">
+                                    <label for="formrow-departmentname-input" class="form-label">
+                                        Enter Department Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        placeholder="Department Name"
+                                        id="formrow-departmentname-input"
+                                    >
+                                </div>
+            
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="mb-3">
+                                            <label for="formrow-inputState" class="form-label">
+                                                Enter Members
+                                            </label>
+                                             <!-- Input / Selected chips -->
+                                        <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
+                                            id="ownerInput"
+                                            data-bs-toggle="dropdown">
+            
+                                            <span class="text-muted small">Select owner(s)</span>
+                                        </div>
+            
+                                        <!-- Dropdown -->
+                                        <div class="dropdown-menu p-3 shadow owner-dropdown">
+                                            <input type="text"
+                                                class="form-control mb-2"
+                                                id="ownerSearch"
+                                                placeholder="Search colleague">
+            
+                                            <small class="text-muted">Contacts</small>
+            
+                                            <div class="list-group mt-2 owner-list"></div>
+            
+                                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                                <a href="#" id="clearOwners" class="text-muted small">Clear</a>
+                                                <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">
+                                                    Confirm
+                                                </button>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+            
+                                <div class="row mt-2">
+                                    <div class="col-12 text-end">
+                                        <button
+                                            type="button"
+                                            class="btn btn-danger me-1"
+                                            data-bs-dismiss="modal"
+                                        >
+                                            <i class="bx bx-x me-1 align-middle"></i>
+                                            Cancel
+                                        </button>
+            
+                                        <button
+                                            type="submit"
+                                            class="btn btn-success"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#success-btn"
+                                            id="btn-save-event"
+                                        >
+                                            <i class="bx bx-check me-1 align-middle"></i>
+                                            Confirm
+                                        </button>
+                                    </div>
+                                </div>
+            
+                            </form>
+                        </div>  <!-- /.modal-content -->
+            </div>  <!-- /.modal-content -->
+        </div>  <!-- /.modal-dialog -->
+    </div>    <!-- /.modal -->
+    
+        
+            </div>
         </div>
-        <!-- /.modal-dialog -->
-    </div>
-    <!-- /.modal -->
-</div>
-<!-- end preview -->
+    </div><!--  Modal end -->
+    
 </div> <!-- end page-content -->
 </div> <!-- end container-fluid -->
 {% endblock content %}
