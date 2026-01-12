@@ -5,6 +5,7 @@
 {% block content %}
 <div class="main-content">
     <div class="page-content">
+        <div class="container-fluid">
 
         <!-- Stats Row -->
         <div class="row">
@@ -299,13 +300,17 @@
                         <div class="d-flex align-items-center">
                             <h4 class="card-title mb-0">Department Projects</h4>
                             <div class="ms-auto">
-                                <select id="categorySelect" class="btn btn-primary">
-                                    <option value="" selected disabled hidden>View Departments</option>
-                                    <option value="All">All</option>
-                                    <option value="MDC">MDC</option>
-                                    <option value="CYBER">Cyber</option>
-                                    <option value="LEGAL">Legal</option>
-                                </select>
+                                <div class="btn-group">
+                                    <button id="categorySelect" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                        View Departments <i class="mdi mdi-chevron-down"></i>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="#" data-value="All">All</a>
+                                        <a class="dropdown-item" href="#" data-value="MDC">MDC</a>
+                                        <a class="dropdown-item" href="#" data-value="CYBER">Cyber</a>
+                                        <a class="dropdown-item" href="#" data-value="LEGAL">Legal</a>
+                                    </div>
+                                </div><!-- /btn-group -->
                             </div>
                         </div>
                     </div>
@@ -428,7 +433,7 @@
                 </div>
             </div>
         </div>
-
+        
 
 <!-- sample modal content -->
 <div
@@ -539,5 +544,6 @@
     <!-- /.modal -->
 </div>
 <!-- end preview -->
-
+</div> <!-- end page-content -->
+</div> <!-- end container-fluid -->
 {% endblock content %}

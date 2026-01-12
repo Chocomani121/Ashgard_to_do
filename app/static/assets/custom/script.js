@@ -1,4 +1,3 @@
-
 const owners = [
     { id: 1, name: "Kathrina Mirasol", initials: "KM", color: "#6f42c1" },
     { id: 2, name: "Windyl Orbeta", initials: "WO", color: "#0d6efd" },
@@ -120,22 +119,21 @@ function toggleInput(btn, className) {
 }
 
 
-// FOr Department project in departments UI
+// Department projects filter using dropdown
 document.addEventListener("DOMContentLoaded", function() {
-    const select = document.getElementById('categorySelect');
+    const dropdownButton = document.getElementById('categorySelect');
+    const dropdownMenu = dropdownButton?.closest('.btn-group')?.querySelectorAll('.dropdown-item') || [];
     const tableElement = document.getElementById('projectsTableDept');
-    
-    // 1. Extract data and wrap HTML strings in gridjs.html()
-    const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
-    const allData = tableRows.map(tr => {
-        return {
-            category: tr.getAttribute('data-category'),
-            // Use gridjs.html() so the browser renders the tags instead of printing them
-            cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML))
-        };
-    });
 
-    // 2. Initialize Grid.js
+    if (!dropdownButton || dropdownMenu.length === 0 || !tableElement) return;
+
+    // Extract data and wrap HTML strings in gridjs.html()
+    const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
+    const allData = tableRows.map(tr => ({
+        category: tr.getAttribute('data-category'),
+        cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML))
+    }));
+
     const grid = new gridjs.Grid({
         columns: ["ID", "Projects", "Department", "Client", "Deadline", "Status"],
         data: allData.map(row => row.cells),
@@ -146,16 +144,17 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }).render(document.getElementById("tableDept-gridjs"));
 
-    // 3. Filter Logic (This remains the same)
-    select.addEventListener('change', function() {
-        const selectedValue = this.value;
-        const filteredData = allData.filter(row => {
-            if (selectedValue === "All") return true;
-            return row.category === selectedValue;
-        });
+    const updateGrid = (selectedValue) => {
+        const filteredData = allData.filter(row => selectedValue === "All" ? true : row.category === selectedValue);
+        grid.updateConfig({ data: filteredData.map(row => row.cells) }).forceRender();
+    };
 
-        grid.updateConfig({
-            data: filteredData.map(row => row.cells)
-        }).forceRender();
+    dropdownMenu.forEach(item => {
+        item.addEventListener('click', function(event) {
+            event.preventDefault();
+            const selectedValue = this.getAttribute('data-value');
+            dropdownButton.innerHTML = `${this.textContent} <i class="mdi mdi-chevron-down"></i>`;
+            updateGrid(selectedValue || "All");
+        });
     });
 });
