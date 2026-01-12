@@ -158,3 +158,21 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 });
+
+//Delete sweet Alert
+function confirmDelete(taskId) {
+ Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#51d28c",
+        cancelButtonColor: "#f34e4e",
+        confirmButtonText: "Yes, delete it!"
+      }).then(function (result) {
+        if (result.value) {
+          Swal.fire("Deleted!", "Deleted Successfully.", "success"
+          );
+        }
+    });
+}
