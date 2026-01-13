@@ -31,10 +31,10 @@
                                             data-bs-toggle="modal"
                                             data-bs-target="#editTaskModal">
                                             Edit Task
-                                        </a>
+                                        </a>                                
                                         <a class="dropdown-item" 
                                             href="javascript:void(0);" 
-                                            onclick="confirmDelete('UI Redisgn task')">Delete Task</a>
+                                            onclick="confirmDelete('UI Redisgn task')">Delete</a>
                                     </div>
                                 </div>
                             </div>
@@ -283,22 +283,30 @@
                                         <td>Lurs</td>
                                         <td><span class="badge bg-soft-primary text-primary">Ongoing</span></td>
                                         <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;">
-                                        <div style="
-                                            max-height: 120px;
-                                            overflow-y: auto;
-                                            overflow-x: hidden;
-                                            white-space: normal;
-                                            line-height: 1.4;
-                                        ">
-                                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Delectus, vitae mollitia! Consequatur, nihil voluptates.
-                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, vitae voluptates? Sit odio alias tenetur blanditiis laboriosam facere quibusdam quidem!
-                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni a voluptate nostrum ipsam.
-                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Error minima molestiae ipsa nostrum nihil asperiores.
-                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores, sapiente corporis?</p>
-                                            <footer class="blockquote-footer">-windyl 12/25/2025(edit)</footer>
-                                        </div>
-                                     </td>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                                <a href="javascript:void(0)"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#notes-modal-preview"
+                                                onclick="prepareNoteModal('H20', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!', '-windyl 12/25/2025(edit)')">
+
+
+                                                    <div style="
+                                                        max-height: 120px;
+                                                        overflow-y: auto;
+                                                        overflow-x: hidden;
+                                                        white-space: normal;
+                                                        line-height: 1.4;
+                                                    ">
+                                                        <p class="text-dark">
+                                                            ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!
+                                                        </p>
+                                                        <footer class="blockquote-footer">
+                                                            -windyl 12/25/2025(edit)
+                                                        </footer>
+                                                    </div>
+
+                                                </a>
+                                            </td>
                                           <td class="text-nowrap">
                                             <div class="dropdown">
                                                 <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
@@ -314,7 +322,6 @@
                                                         Edit
                                                     </a>
                                                 <a class="dropdown-item text-danger" 
-                                                href="javascript:void(0);" 
                                                 onclick="confirmDelete('H20')">Delete</a>
                                                 </div>
                                             </div>
@@ -327,10 +334,28 @@
                                         <td>Lurs</td>
                                         <td><span class="badge bg-soft-warning text-warning">To be reviewed</span></td>
                                         <td>11/12/2024 23:00</td>
-                                        <td><p>Lopre Lorem - it may work(?)</p>
-                                            <footer class="blockquote-footer">-windyl 12/25/2025(edit)</footer></td>
-                                        <td class="text-nowrap">
-                                           
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                            <a href="javascript:void(0)"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#notes-modal-preview"
+                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+
+                                            <div style="
+                                                max-height: 120px;
+                                                overflow-y: auto;
+                                                overflow-x: hidden;
+                                                white-space: normal;
+                                                line-height: 1.4;
+                                            ">
+                                                <p class="text-dark">
+                                                    Lopre Lorem - it may work(?)
+                                                </p>
+                                                <footer class="blockquote-footer">
+                                                    -windyl 12/25/2025(edit)
+                                                </footer>
+                                            </div>
+
+                                            </a>
                                         </td>
                                     </tr>
                                       <tr>
@@ -339,13 +364,35 @@
                                         <td>Lurs</td>
                                         <td><span class="badge bg-soft-danger text-danger">Rejected</span></td>
                                         <td>11/12/2024 23:00</td>
-                                        <td><p>Lopre Lorem - it may work(?)</p>
-                                            <footer class="blockquote-footer">-windyl 12/25/2025(edit)</footer></td>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                            <a href="javascript:void(0)"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#notes-modal-preview"
+                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+
+
+                                                <div style="
+                                                    max-height: 120px;
+                                                    overflow-y: auto;
+                                                    overflow-x: hidden;
+                                                    white-space: normal;
+                                                    line-height: 1.4;
+                                                ">
+                                                    <p class="text-dark">
+                                                        Lopre Lorem - it may work(?)
+                                                    </p>
+                                                    <footer class="blockquote-footer">
+                                                        -windyl 12/25/2025(edit)
+                                                    </footer>
+                                                </div>
+
+                                            </a>
+                                        </td>
                                         <td class="text-nowrap">
                                         <button class="btn btn-sm btn-primary"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target=".notes-modal"
-                                                    form="notesForm">
+                                            data-bs-toggle="modal"
+                                            data-bs-target=".notes-modal"
+                                            form="notesForm">
                                             Re-Submit
                                             </button>
 
@@ -357,8 +404,30 @@
                                         <td>Lurs</td>
                                         <td><span class="badge bg-soft-secondary text-secondary">On Hold</span></td>
                                         <td>11/12/2024 23:00</td>
-                                        <td><p>Lopre Lorem - it may work(?)</p>
-                                            <footer class="blockquote-footer">-windyl 12/25/2025(edit)</footer></td>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                                <a href="javascript:void(0)"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#notes-modal-preview"
+                                                onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+
+
+                                                    <div style="
+                                                        max-height: 120px;
+                                                        overflow-y: auto;
+                                                        overflow-x: hidden;
+                                                        white-space: normal;
+                                                        line-height: 1.4;
+                                                    ">
+                                                        <p class="text-dark">
+                                                            Lopre Lorem - it may work(?)
+                                                        </p>
+                                                        <footer class="blockquote-footer">
+                                                            -windyl 12/25/2025(edit)
+                                                        </footer>
+                                                    </div>
+
+                                                </a>
+                                            </td>
                                         <td class="text-nowrap">
                                             <div class="dropdown">
                                                 <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
@@ -386,9 +455,30 @@
                                         <td>Lurs</td>
                                         <td><span class="badge bg-soft-success text-success">Approved</span></td>
                                         <td>11/12/2024 23:00</td>
-                                        <td><p>Lopre Lorem - it may work(?)</p>
-                                            <footer class="blockquote-footer">-windyl 12/25/2025(edit)</footer></td>
-                                        <td>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                                <a href="javascript:void(0)"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#notes-modal-preview"
+                                                onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+
+
+                                                    <div style="
+                                                        max-height: 120px;
+                                                        overflow-y: auto;
+                                                        overflow-x: hidden;
+                                                        white-space: normal;
+                                                        line-height: 1.4;
+                                                    ">
+                                                        <p class="text-dark">
+                                                            Lopre Lorem - it may work(?)
+                                                        </p>
+                                                        <footer class="blockquote-footer">
+                                                            -windyl 12/25/2025(edit)
+                                                        </footer>
+                                                    </div>
+
+                                                </a>
+                                            </td>
                                         <p>Approved on : 11/11/2026 20:00</p> 
                                             <footer class="blockquote-footer">  -Lurs </footer>
                                         </td>
@@ -436,22 +526,30 @@
                                         <td>Lurs</td>
                                         <td><span class="badge bg-soft-primary text-primary">Ongoing</span></td>
                                         <td>11/12/2024 23:00</td>
-                                    <td style="width: 400px;">
-                                        <div style="
-                                            max-height: 120px;
-                                            overflow-y: auto;
-                                            overflow-x: hidden;
-                                            white-space: normal;
-                                            line-height: 1.4;
-                                        ">
-                                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Delectus, vitae mollitia! Consequatur, nihil voluptates.
-                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, vitae voluptates? Sit odio alias tenetur blanditiis laboriosam facere quibusdam quidem!
-                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni a voluptate nostrum ipsam.
-                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Error minima molestiae ipsa nostrum nihil asperiores.
-                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores, sapiente corporis?</p>
-                                            <footer class="blockquote-footer">-windyl 12/25/2025(edit)</footer>
-                                        </div>
-                                    </td>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                            <a href="javascript:void(0)"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#notes-modal-preview"
+                                            onclick="prepareNoteModal('H20', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!', '-windyl 12/25/2025(edit)')">
+
+
+                                                <div style="
+                                                    max-height: 120px;
+                                                    overflow-y: auto;
+                                                    overflow-x: hidden;
+                                                    white-space: normal;
+                                                    line-height: 1.4;
+                                                ">
+                                                    <p class="text-dark">
+                                                        ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!
+                                                    </p>
+                                                    <footer class="blockquote-footer">
+                                                        -windyl 12/25/2025(edit)
+                                                    </footer>
+                                                </div>
+
+                                            </a>
+                                        </td>
                                           <td class="text-nowrap">
                                             <div class="dropdown">
                                                 <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
@@ -468,7 +566,7 @@
                                                     </a>
                                                     <a class="dropdown-item">Hold</a>
                                                     <a class="dropdown-item text-danger" 
-                                                    href="javascript:void(0);" 
+                                               
                                                     onclick="confirmDelete('H20')">Delete</a>
                                                 </div>
                                             </div>
@@ -481,11 +579,32 @@
                                         <td>Lurs</td>
                                         <td><span class="badge bg-soft-warning text-warning">To be reviewed</span></td>
                                         <td>11/12/2024 23:00</td>
-                                        <td><p>Lopre Lorem - it may work(?)</p>
-                                            <footer class="blockquote-footer">-windyl 12/25/2025(edit)</footer>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                            <a href="javascript:void(0)"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#notes-modal-preview"
+                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+
+
+                                                <div style="
+                                                    max-height: 120px;
+                                                    overflow-y: auto;
+                                                    overflow-x: hidden;
+                                                    white-space: normal;
+                                                    line-height: 1.4;
+                                                ">
+                                                    <p class="text-dark">
+                                                        Lopre Lorem - it may work(?)
+                                                    </p>
+                                                    <footer class="blockquote-footer">
+                                                        -windyl 12/25/2025(edit)
+                                                    </footer>
+                                                </div>
+
+                                            </a>
                                         </td>
                                         <td class="text-nowrap">
-                                            <button class="btn btn-sm btn-success me-1" data-bs-toggle="modal" data-bs-target=".notes-modal" title="Approve">
+                                            <button class="btn btn-sm btn-success me-1" data-bs-toggle="modal" data-bs-target=".notes-modal-approve" title="Approve" onclick="approveNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
                                                 <i class="mdi mdi-check"></i>
                                             </button>
                                             <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target=".notes-modal" title="Disapprove">
@@ -499,8 +618,27 @@
                                         <td>Lurs</td>
                                         <td><span class="badge bg-soft-danger text-danger">Rejected</span></td>
                                         <td>11/12/2024 23:00</td>
-                                        <td><p>Lopre Lorem - it may work(?)</p>
-                                            <footer class="blockquote-footer">-windyl 12/25/2025(edit)</footer>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                            <a href="javascript:void(0)"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#notes-modal-preview"
+                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+                                                <div style="
+                                                    max-height: 120px;
+                                                    overflow-y: auto;
+                                                    overflow-x: hidden;
+                                                    white-space: normal;
+                                                    line-height: 1.4;
+                                                ">
+                                                    <p class="text-dark">
+                                                        Lopre Lorem - it may work(?)
+                                                    </p>
+                                                    <footer class="blockquote-footer">
+                                                        -windyl 12/25/2025(edit)
+                                                    </footer>
+                                                </div>
+
+                                            </a>
                                         </td>
                                         <td class="text-nowrap">
                                         <button class="btn btn-sm btn-primary"
@@ -517,8 +655,27 @@
                                         <td>Lurs</td>
                                         <td><span class="badge bg-soft-secondary text-secondary">On Hold</span></td>
                                         <td>11/12/2024 23:00</td>
-                                        <td><p>Lopre Lorem - it may work(?)</p>
-                                            <footer class="blockquote-footer">-windyl 12/25/2025(edit)</footer>
+                                       <td style="width: 400px;" class="notes-preview-cell">
+                                            <a href="javascript:void(0)"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#notes-modal-preview"
+                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+                                                <div style="
+                                                    max-height: 120px;
+                                                    overflow-y: auto;
+                                                    overflow-x: hidden;
+                                                    white-space: normal;
+                                                    line-height: 1.4;
+                                                ">
+                                                    <p class="text-dark">
+                                                        Lopre Lorem - it may work(?)
+                                                    </p>
+                                                    <footer class="blockquote-footer">
+                                                        -windyl 12/25/2025(edit)
+                                                    </footer>
+                                                </div>
+
+                                            </a>
                                         </td>
                                         <td class="text-nowrap">
                                             <button class="btn btn-sm btn-primary"
@@ -528,15 +685,35 @@
                                                 Follow Up
                                             </button>
                                         </td>
-                                    </tr>
+                                     </tr>
                                          <tr>
                                         <td class="fw-semibold">H21</td>
                                         <td class="fw-semibold">Backend</td>
                                         <td>Lurs</td>
                                         <td><span class="badge bg-soft-success text-success">Approved</span></td>
                                         <td>11/12/2024 23:00</td>
-                                        <td><p>Lopre Lorem - it may work(?)</p>
-                                            <footer class="blockquote-footer">-windyl 12/25/2025(edit)</footer>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                            <a href="javascript:void(0)"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#notes-modal-preview"
+                                            onclick="prepareNoteModal('H20', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+
+                                                <div style="
+                                                    max-height: 120px;
+                                                    overflow-y: auto;
+                                                    overflow-x: hidden;
+                                                    white-space: normal;
+                                                    line-height: 1.4;
+                                                ">
+                                                    <p class="text-dark">
+                                                        Lopre Lorem - it may work(?)
+                                                    </p>
+                                                    <footer class="blockquote-footer">
+                                                        -windyl 12/25/2025(edit)
+                                                    </footer>
+                                                </div>
+
+                                            </a>
                                         </td>
                                         <td>
                                         <p>Approved on : 11/11/2026 20:00</p> 
@@ -751,5 +928,42 @@
   </div>
 </div>
 
+<!-- Notes Preview -->
+<div class="modal fade" id="notes-modal-preview" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="preview-note-title">Sub-Task Notes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="preview-note-body" class="text-dark" style="white-space: pre-wrap;"></p>
+                <footer id="preview-note-footer" class="blockquote-footer mt-3"></footer>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade notes-modal-approve" data-bs-backdrop="static" id="notes-modal-approve" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="approve-note-title">Approve Note</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+          <p id="approve-note-body" class="text-dark" style="white-space: pre-wrap;"></p>
+          <footer id="approve-note-footer" class="blockquote-footer mt-3"></footer>
+      </div>
+      <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" onclick="saveNote()">Confirm Approval</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock content %}
