@@ -25,7 +25,7 @@ def create_app():
     password = urllib.parse.quote_plus('Jhayg3309]]:P') 
     mysql_url = 'vultr-prod-85f8d360-5bbf-4d05-ad2d-01cc47768728-vultr-prod-995c.vultrdb.com'
     port_num = '16751'
-    db_name = 'sample_crud'
+    db_name = 'ashgard_todo'
 
     
     app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{user}:{password}@{mysql_url}:{port_num}/{db_name}'
