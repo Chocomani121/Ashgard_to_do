@@ -369,8 +369,6 @@
                                             data-bs-toggle="modal"
                                             data-bs-target="#notes-modal-preview"
                                             onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-
-
                                                 <div style="
                                                     max-height: 120px;
                                                     overflow-y: auto;
@@ -638,12 +636,11 @@
                                             </a>
                                         </td>
                                         <td class="text-nowrap">
-                                        <button class="btn btn-sm btn-primary"
+                                          <button class="btn btn-sm btn-primary"
                                                     data-bs-toggle="modal"
-                                                    data-bs-target=".notes-modal"
-                                                    form="notesForm">
-                                            Revert
-                                        </button>
+                                                    data-bs-target="#revertModal">
+                                                Revert
+                                            </button>
                                         </td>
                                     </tr>
                                       <tr>
@@ -952,6 +949,30 @@
           <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           <button class="btn btn-primary" onclick="saveNote()">Confirm Approval</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Revert modal -->
+<div class="modal fade" id="revertModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Revert Task</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <p class="mb-2">
+          This will move the task back to <strong>“To be reviewed”</strong>.
+        </p>
+
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary">Confirm Revert</button>
+      </div>
+
     </div>
   </div>
 </div>
