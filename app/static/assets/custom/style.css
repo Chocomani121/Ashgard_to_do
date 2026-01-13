@@ -1,5 +1,6 @@
-/* modal align - small */
-div#myModal {
+
+/* modal alignment */
+.modal, div#myModal {
     align-content: center;
 }
 
@@ -7,6 +8,8 @@ tr:has(a[href]):hover {
   background-color: #f0f4ff;
 } 
 
+
+/* Page Title */
 .page-title-box h4 {
     font-size: 45px !important;
     text-transform: uppercase;
