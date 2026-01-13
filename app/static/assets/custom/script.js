@@ -201,3 +201,17 @@ function approveNoteModal(taskId, description, footer) {
     // Updates the <footer>
     document.getElementById('approve-note-footer').innerText = footer;
 }
+
+//JS for PIN in activity threads
+document.querySelectorAll('.pin-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+        e.stopPropagation();
+
+        const box = btn.closest('.message-box');
+        box.classList.toggle('pinned');
+
+        const icon = btn.querySelector('i');
+        icon.classList.toggle('mdi-pin-outline');
+        icon.classList.toggle('mdi-pin');
+    });
+});
