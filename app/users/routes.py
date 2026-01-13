@@ -1,6 +1,6 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint
 from app import db, bcrypt, mail
-from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm
+from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm, UpdateAccountForm
 from app.models import User
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
@@ -21,7 +21,7 @@ def register():
     form.department.choices = [(d.department_id, d.department_name) for d in all_departments]
 
     if form.validate_on_submit():
-        # 1. Hash the password for security
+        
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         
         # 2. Create the User instance matching your models.py columns
@@ -41,7 +41,6 @@ def register():
             return redirect(url_for('users.login'))
         except Exception as e:
             db.session.rollback()
-            # This will show you if there's a specific DB error like a duplicate email
             print(f"DATABASE ERROR: {e}")
             flash('An error occurred. Please try a different username or email.', 'danger')
 
@@ -103,12 +102,6 @@ def logout():
     logout_user()
     return redirect(url_for('users.login'))
 
-# -------------------- PROFILE --------------------
-@users.route("/profile")
-@login_required
-def profile():
-    return render_template('profile.html', title='Profile')
-
 # -------------------- PASSWORD RESET --------------------
 def send_reset_email(user):
     token = user.get_reset_token()
@@ -158,3 +151,43 @@ def reset_token(token):
         return redirect(url_for('users.login'))
 
     return render_template('reset_token.html', title='Reset Password', form=form)
+
+@users.route("/profile")
+@login_required
+def profile():
+    form = UpdateAccountForm()
+    
+    # This pre-fills the modal inputs with the current data from the DB
+    form.name.data = current_user.name
+    form.username.data = current_user.username
+    form.email.data = current_user.email
+    
+    # We MUST pass 'form=form' here so the HTML can see it
+    return render_template('profile.html', title='Profile', form=form)
+
+@users.route("/profile/update", methods=['POST'])
+@login_required
+def update_profile():
+    form = UpdateAccountForm()
+    if form.validate_on_submit():
+        # Alter the database record for the logged-in user
+        current_user.name = form.name.data
+        current_user.username = form.username.data
+        current_user.email = form.email.data
+        
+        # If you have the save_picture function ready:
+        # if form.picture.data:
+        #     picture_file = save_picture(form.picture.data)
+        #     current_user.image_file = picture_file
+
+        db.session.commit() 
+        flash('Your profile has been updated!', 'success')
+        return redirect(url_for('users.profile'))
+    
+    # Show validation errors (like "Username already taken")
+    if form.errors:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
+
+    return redirect(url_for('users.profile'))
