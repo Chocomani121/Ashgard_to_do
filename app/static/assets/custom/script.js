@@ -1,3 +1,4 @@
+
 const owners = [
     { id: 1, name: "Kathrina Mirasol", initials: "KM", color: "#6f42c1" },
     { id: 2, name: "Windyl Orbeta", initials: "WO", color: "#0d6efd" },
@@ -117,3 +118,100 @@ function toggleInput(btn, className) {
         target.querySelector('input').focus();
     }
 }
+
+
+// FOr Department project in departments UI
+document.addEventListener("DOMContentLoaded", function() {
+    const select = document.getElementById('categorySelect');
+    const tableElement = document.getElementById('projectsTableDept');
+    
+    // 1. Extract data and wrap HTML strings in gridjs.html()
+    const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
+    const allData = tableRows.map(tr => {
+        return {
+            category: tr.getAttribute('data-category'),
+            // Use gridjs.html() so the browser renders the tags instead of printing them
+            cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML))
+        };
+    });
+
+    // 2. Initialize Grid.js
+    const grid = new gridjs.Grid({
+        columns: ["ID", "Projects", "Department", "Client", "Deadline", "Status"],
+        data: allData.map(row => row.cells),
+        pagination: { limit: 10 },
+        sort: true,
+        className: {
+            table: 'table table-bordered'
+        }
+    }).render(document.getElementById("tableDept-gridjs"));
+
+    // 3. Filter Logic (This remains the same)
+    select.addEventListener('change', function() {
+        const selectedValue = this.value;
+        const filteredData = allData.filter(row => {
+            if (selectedValue === "All") return true;
+            return row.category === selectedValue;
+        });
+
+        grid.updateConfig({
+            data: filteredData.map(row => row.cells)
+        }).forceRender();
+    });
+});
+
+//Delete sweet Alert
+function confirmDelete(taskId) {
+ Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#51d28c",
+        cancelButtonColor: "#f34e4e",
+        confirmButtonText: "Yes, delete it!"
+      }).then(function (result) {
+        if (result.value) {
+          Swal.fire("Deleted!", "Deleted Successfully.", "success"
+          );
+        }
+    });
+}
+
+// notes view modal
+function prepareNoteModal(taskId, description, footer) {
+    // Update the title
+    document.getElementById('preview-note-title').innerText = "Details for " + taskId;
+    
+    // Update the description/body
+    document.getElementById('preview-note-body').innerText = description;
+    
+    // Update the footer
+    document.getElementById('preview-note-footer').innerText = footer;
+}
+
+//approve notes modal
+function approveNoteModal(taskId, description, footer) {
+    // Updates the <h5> title
+    document.getElementById('approve-note-title').innerText = "Approve Sub-Task: " + taskId;
+    
+    // Updates the <p> description
+    document.getElementById('approve-note-body').innerText = description;
+    
+    // Updates the <footer>
+    document.getElementById('approve-note-footer').innerText = footer;
+}
+
+//JS for PIN in activity threads
+document.querySelectorAll('.pin-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+        e.stopPropagation();
+
+        const box = btn.closest('.message-box');
+        box.classList.toggle('pinned');
+
+        const icon = btn.querySelector('i');
+        icon.classList.toggle('mdi-pin-outline');
+        icon.classList.toggle('mdi-pin');
+    });
+});

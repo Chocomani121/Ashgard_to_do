@@ -70,3 +70,16 @@ if (table5Req && table5Res) {
         className: { table: "table table-centered align-middle" }
     }).render(table5Res);
 }
+
+// 5. Task Details Table PM
+const table6Req = document.getElementById("projectsTableTaskDetailsPM");
+const table6Res = document.getElementById("table6-gridjs");
+if (table6Req && table6Res) {
+    new gridjs.Grid({
+        from: table6Req,
+        pagination: { limit: 5 },
+        sort: true,
+        search: true,
+        className: { table: "table table-centered align-middle" }
+    }).render(table6Res);
+}
