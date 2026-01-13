@@ -255,12 +255,12 @@
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <img class="rounded-circle header-profile-user" src="../static/assets/images/users/avatar-3.jpg"
                                 alt="Header Avatar">
-                                <span class="d-none d-xl-inline-block ms-2 fw-medium font-size-15">Martin Gurley</span>
+                                <!-- <span class="d-none d-xl-inline-block ms-2 fw-medium font-size-15">{{ current_user.username}}</span> -->
                             </button>
                             <div class="dropdown-menu dropdown-menu-end pt-0">
                                 <div class="p-3 border-bottom">
-                                    <h6 class="mb-0">{{ current_user.email }}</h6>
-                                    <p class="mb-0 font-size-11 text-muted">martin.gurley@email.com</p>
+                                    <!-- <h6 class="mb-0">{{ current_user.email }}</h6>
+                                    <p class="mb-0 font-size-11 text-muted">{{ current_user.username}}</p> -->
                                 </div>
                                 <a class="dropdown-item" href="{{ url_for('main.profile') }}"><i class="mdi mdi-account-circle text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Profile</span></a>
                                 <a class="dropdown-item" href="apps-chat.html"><i class="mdi mdi-message-text-outline text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Messages</span></a>

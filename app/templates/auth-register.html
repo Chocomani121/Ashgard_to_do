@@ -72,6 +72,16 @@
                                             </div>
 
                                             <div class="mb-3">
+                                                <label class="form-label">Department</label>
+                                                <div class="position-relative input-custom-icon">
+                                                    {{ form.department(class="form-control " + ("is-invalid" if form.department.errors else "")) }}
+                                                    <span class="bx bx-buildings"></span> </div>
+                                                {% for error in form.department.errors %}
+                                                    <div class="text-danger small">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+
+                                            <div class="mb-3">
                                                 <label class="form-label">Password</label>
                                                 <div class="position-relative auth-pass-inputgroup input-custom-icon">
                                                     <span class="bx bx-lock-alt"></span>
