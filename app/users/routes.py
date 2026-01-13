@@ -4,42 +4,80 @@ from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPass
 from app.models import User
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
+from app.models import Department, User 
 
 users = Blueprint('users', __name__)
 
-# -------------------- REGISTER --------------------
+
 @users.route("/register", methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('users.login'))
+        return redirect(url_for('main.projects'))
 
     form = RegisterForm()
+    
+    # Refresh choices from the DB so the list is never empty
+    all_departments = Department.query.all()
+    form.department.choices = [(d.department_id, d.department_name) for d in all_departments]
 
     if form.validate_on_submit():
+        # 1. Hash the password for security
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         
-        # Creating user with all required columns from your 'members' table
+        # 2. Create the User instance matching your models.py columns
         user = User(
-            name=form.name.data, # Make sure your RegisterForm has a 'name' field
+            name=form.name.data,
             username=form.username.data,
             email=form.email.data,
             password=hashed_password,
-            account_type='user',      # Default value for account_type
-            image_file='default.jpg'  # Default value for image_file
+            department_id=form.department.data,
+            account_type='user' # Defaulting as per your model
         )
         
         try:
             db.session.add(user)
             db.session.commit()
-            flash('Your account has been created!', 'success')
+            flash('Your account has been created! You can now log in.', 'success')
             return redirect(url_for('users.login'))
         except Exception as e:
             db.session.rollback()
-            print(f"Database Error: {e}")
-            flash('An error occurred while saving to the database.', 'danger')
+            # This will show you if there's a specific DB error like a duplicate email
+            print(f"DATABASE ERROR: {e}")
+            flash('An error occurred. Please try a different username or email.', 'danger')
+
+    # This handles the 'silent refresh' by showing you errors in the terminal
+    if request.method == 'POST' and not form.validate():
+        print(f"DEBUG - Form Validation Failed: {form.errors}")
 
     return render_template('auth-register.html', title='Register', form=form)
-# -------------------- LOGIN --------------------
+    
+# @users.route("/register", methods=['GET', 'POST'])
+# def register():
+#     if current_user.is_authenticated:
+#         return redirect(url_for('users.login'))
+
+#     form = RegisterForm()
+#     departments = Department.query.all()
+#     form.department.choices = [(d.department_id, d.department_name) for d in departments]
+
+#     if form.validate_on_submit():
+        
+#         try:
+#             db.session.add(user)
+#             db.session.commit()
+#             flash('Your account has been created!', 'success')
+#             return redirect(url_for('users.login'))
+#         except Exception as e:
+#             db.session.rollback()
+#             print(f"Database Error: {e}")
+#             flash('Database Error', 'danger')
+
+    
+#     if form.errors:
+#         print(f"DEBUG - Form Errors: {form.errors}")
+
+    # return render_template('auth-register.html', title='Register', form=form)
+
 @users.route("/")
 @users.route("/login", methods=['GET', 'POST'])
 def login():
