@@ -69,3 +69,21 @@ tr:has(a[href]):hover {
     color: #fff;
     font-weight: 600;
 }
+
+/* Pin */
+.message-box.pinned {
+    border-left: 4px solid #0d6efd;
+    background-color: #f8fbff;
+}
+
+.message-box.pinned::after {
+    content: "PINNED";
+    position: absolute;
+    top: 8px;
+    left: -4px;
+    background: #0d6efd;
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 0 4px 4px 0;
+}

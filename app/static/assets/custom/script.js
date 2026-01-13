@@ -176,3 +176,41 @@ function confirmDelete(taskId) {
         }
     });
 }
+
+// notes view modal
+function prepareNoteModal(taskId, description, footer) {
+    // Update the title
+    document.getElementById('preview-note-title').innerText = "Details for " + taskId;
+    
+    // Update the description/body
+    document.getElementById('preview-note-body').innerText = description;
+    
+    // Update the footer
+    document.getElementById('preview-note-footer').innerText = footer;
+}
+
+//approve notes modal
+function approveNoteModal(taskId, description, footer) {
+    // Updates the <h5> title
+    document.getElementById('approve-note-title').innerText = "Approve Sub-Task: " + taskId;
+    
+    // Updates the <p> description
+    document.getElementById('approve-note-body').innerText = description;
+    
+    // Updates the <footer>
+    document.getElementById('approve-note-footer').innerText = footer;
+}
+
+//JS for PIN in activity threads
+document.querySelectorAll('.pin-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+        e.stopPropagation();
+
+        const box = btn.closest('.message-box');
+        box.classList.toggle('pinned');
+
+        const icon = btn.querySelector('i');
+        icon.classList.toggle('mdi-pin-outline');
+        icon.classList.toggle('mdi-pin');
+    });
+});
