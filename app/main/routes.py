@@ -1,13 +1,8 @@
-from flask import render_template, request, Blueprint
+from flask import render_template, Blueprint
 
 main = Blueprint('main', __name__)
 
-
 @main.route("/")
-@main.route("/login") 
-def login():
-    return render_template('auth-login.html')
-
 @main.route("/projects") 
 def projects():
     return render_template('index.html')
@@ -16,21 +11,13 @@ def projects():
 def tasks():
     return render_template('tasks.html', title="Tasks Info")
 
-@main.route("/departments") 
+@main.route("/all_departments") 
 def all_departments():
-    return render_template('all_departments.html')
+    return render_template('all_departments.html', title="All Departments")
 
 @main.route("/members")
 def members():
     return render_template('members.html', title="Members")
-
-@main.route("/register") 
-def register():
-    return render_template('auth-register.html')
-
-@main.route("/forgot-password")
-def forgot_password():
-    return render_template('auth-recoverpw.html')
 
 @main.route("/project_details")
 def project_details():
@@ -44,6 +31,3 @@ def profile():
 def task_details():
     return render_template('task_details.html')
 
-@main.route("department")
-def departments():
-    return render_template('departments.html')

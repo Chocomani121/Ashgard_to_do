@@ -1,406 +1,711 @@
 {% extends "layout.html" %}
-{% block page_title %}All Divisions{% endblock %}
-   {% block content %}
-      <div class="main-content">
-                <div class="page-content">
 
-                       <div class="row">
-                            <div class="col-xl-12">
-                               <div class="row">
+{% block page_title %}All Departments{% endblock %}
 
-                                        <div class="col-xl-3 col-md-3">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <div class="d-flex align-items-center justify-content-between">
-                                                        <div>
-                                                            <h6 class="mb-2 text-muted font-size-15">Total Projects</h6>
-                                                            <h4 class="mb-0 font-size-22 fw-bold">5</h4>
-                                                        </div>
-                                                        <div class="avatar-md">
-                                                            <div class="avatar-title rounded bg-soft-warning">
-                                                                <i class="mdi mdi-clock-outline font-size-24 text-warning" style="color: #856404 !important;"></i>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+{% block content %}
+<div class="main-content all_departments">
+    <div class="page-content">
+        <div class="container-fluid">
+
+        <!-- Stats Row -->
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="row">
+
+                    <!-- Total Projects -->
+                    <div class="col-xl-4 col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h6 class="mb-2 text-muted font-size-15">Total Projects</h6>
+                                        <h4 class="mb-0 font-size-22 fw-bold">5</h4>
+                                    </div>
+                                    <div class="avatar-md">
+                                        <div class="avatar-title rounded bg-soft-warning">
+                                            <i class="mdi mdi-clock-outline font-size-24 text-warning"></i>
                                         </div>
-
-                                        <div class="col-xl-3 col-md-3">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <div class="d-flex align-items-center justify-content-between">
-                                                        <div>
-                                                            <h6 class="mb-2 text-muted font-size-15">Completed Projects</h6>
-                                                            <h4 class="mb-0 font-size-22 fw-bold">3</h4>
-                                                        </div>
-                                                        <div class="avatar-md">
-                                                            <div class="avatar-title rounded bg-soft-danger">
-                                                                <i class="mdi mdi-alert-octagon font-size-24 text-danger" style="color: #8B1A1A !important;"></i>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-xl-3 col-md-3">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <div class="d-flex align-items-center justify-content-between">
-                                                        <div>
-                                                            <h6 class="mb-2 text-muted font-size-15">Ongoing Projects</h6>
-                                                            <h4 class="mb-0 font-size-22 fw-bold">2</h4>
-                                                        </div>
-                                                        <div class="avatar-md">
-                                                            <div class="avatar-title rounded bg-soft-success">
-                                                                <i class="mdi mdi-check-decagram font-size-24 text-success" style="color: #155724 !important;"></i>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-xl-3 col-md-3">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <div class="d-flex align-items-center justify-content-between">
-                                                        <div>
-                                                            <h6 class="mb-2 text-muted font-size-15">Members</h6>
-                                                            <h4 class="mb-0 font-size-22 fw-bold">10</h4>
-                                                        </div>
-                                                        <div class="avatar-md">
-                                                            <div class="avatar-title rounded bg-info">
-                                                                <i class="bx bxs-group font-size-24 text-success" style="color: #ffffff !important;"></i>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-
                                     </div>
                                 </div>
-                         </div>  <!-- end row -->
+                            </div>
+                        </div>
+                    </div>
 
-                        <div class="row">    
-                             <div class="col-lg-12">
-                                <div class="card">
-                                     <div class="card-header d-flex align-items-center">
-                                                <h4 class="card-title mb-0">Department-Wide Projects</h4>
+                    <!-- Completed Projects -->
+                    <div class="col-xl-4 col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h6 class="mb-2 text-muted font-size-15">Completed Projects</h6>
+                                        <h4 class="mb-0 font-size-22 fw-bold">3</h4>
+                                    </div>
+                                    <div class="avatar-md">
+                                        <div class="avatar-title rounded bg-soft-danger">
+                                            <i class="mdi mdi-alert-octagon font-size-24 text-danger"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                                <div class="ms-auto d-flex gap-2">
-                                             
-                                                    
-                                                    <button type="button"
-                                                        class="btn btn-primary btn-rounded"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target=".create-task">
-                                                        <i class="mdi mdi-plus me-1"></i> Create Project
-                                                        
+                    <!-- Ongoing Projects -->
+                    <div class="col-xl-4 col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h6 class="mb-2 text-muted font-size-15">Ongoing Projects</h6>
+                                        <h4 class="mb-0 font-size-22 fw-bold">2</h4>
+                                    </div>
+                                    <div class="avatar-md">
+                                        <div class="avatar-title rounded bg-soft-success">
+                                            <i class="mdi mdi-check-decagram font-size-24 text-success"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    
+<!-- 2. Company Table  projectsTableCompany / table2-gridjs -->
+        <div class="row">
+        <div class="col-12">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                     <!-- Card Header -->
+                        <div class="card-header d-flex align-items-center">
+
+                            <div class="ms-auto d-flex gap-2">
+                                <button
+                                    type="button"
+                                    class="btn btn-primary waves-effect waves-light"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#myModal">
+                                    <i class="mdi mdi-plus me-1"></i>Add Department
+                                </button>
+                            </div>
+                        </div>
+                    <div class="card-body">
+                    <!-- Company Table  projectsTableCompany / table2-gridjs -->
+                    <div id="table2-gridjs"></div>
+                    <table id="projectsTableCompany" class="table d-none">
+                        <thead>
+                            <tr>
+                                <th style="width: 190px;">Department Name</th>
+                                <th>Total Members</th>
+                                <th>Created On</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">MDC
+                                </div>
+                                </td>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">10
+                                </div>
+                                </td>
+                                <td>
+                                December 2017
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                            <div class="dropdown-menu dropdown-menu-end shadow">
+                                                <div class="ms-auto">
+                                                    <button class="btn dropdown-item" data-bs-toggle="modal" data-bs-target=".create-task">
+                                                        Edit
                                                     </button>
                                                 </div>
+                                                <a class="dropdown-item text-danger" 
+                                                href="javascript:void(0);" 
+                                                onclick="confirmDelete('H20')">Delete</a>
+                                                </div>
                                             </div>
-
-                                            <div class="card-body">
-                                                <div id="table-gridjs"></div>
-
-                                                <!-- ORIGINAL TABLE (hidden but used by Grid.js) -->
-                                                <table id="projectsTable" class="table d-none">
-                                                      <thead>
-                                                                <tr>
-                                                                    <th>ID</th>
-                                                                    <th style="width: 190px;">Department</th>
-                                                                    <th>Project</th>
-                                                                    <th>Client</th>
-                                                                    <th>Deadline</th>
-                                                                    <th>Status</th>
-                                                                </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                 <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center">#SK2540</div>
-                                                                </td>
-                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">MDC</a>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">Lorem</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">Kathrina</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center"> 11 / 12 / 2024 :  23:00
-                                                                        </div>
-                                                                    </td>                                                         
-                                                                    <!-- <td>
-                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                    </td> -->
-                                                                    <td>
-                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
-                                                                    </td>
-                                                            </tr>                                              
-                                                            <tr>
-                                                                 <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center">#SK2541</div>
-                                                                </td>
-                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">CYBER</a>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">Osint</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">Patrick</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center"> 11 / 11 / 2024 
-                                                                            :  23:00
-                                                                        </div>
-                                                                    </td>                                                         
-                                                                    <td>
-                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                    </td>
-                                                                    <!-- <td>
-                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
-                                                                    </td> -->
-                                                            </tr>                                              
-                                                            <tr>
-                                                                 <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center">#SK2542</div>
-                                                                </td>
-                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">LEGAL</a>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">Osint</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">Neil</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                            :  23:00
-                                                                        </div>
-                                                                    </td>                                                         
-                                                                    <td>
-                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                    </td>
-                                                                    <!-- <td>
-                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
-                                                                    </td> -->
-                                                            </tr>                                              
-                                                            <tr>
-                                                                 <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center">#SK2543</div>
-                                                                </td>
-                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">LORRAINE</a>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">Osint</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">WindyL</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                            :  23:00
-                                                                        </div>
-                                                                    </td>                                                         
-                                                                    <td>
-                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                    </td>
-                                                                    <!-- <td>
-                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
-                                                                    </td> -->
-                                                            </tr>                                              
-                                                            <tr>
-                                                                 <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center">#SK2544</div>
-                                                                </td>
-                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">MDC</a>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">Osint</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">Lurs</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                            :  23:00
-                                                                        </div>
-                                                                    </td>                                                         
-                                                                    <!-- <td>
-                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                    </td> -->
-                                                                    <td>
-                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
-                                                                    </td>
-                                                            </tr>                                              
-                                                            <tr>
-                                                                 <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center">#SK2545</div>
-                                                                </td>
-                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">MARS</a>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">Osint</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">Lurs</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                            :  23:00
-                                                                        </div>
-                                                                    </td>                                                         
-                                                                    <td>
-                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                    </td>
-                                                                    <!-- <td>
-                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
-                                                                    </td> -->
-                                                            </tr>                                              
-                                                            <tr>
-                                                                 <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center">#SK2546</div>
-                                                                </td>
-                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">CYBER</a>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">Osint</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">Kathrina</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                            :  23:00
-                                                                        </div>
-                                                                    </td>                                                         
-                                                                    <td>
-                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                    </td>
-                                                                    <!-- <td>
-                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
-                                                                    </td> -->
-                                                            </tr>                                              
-                                                            <tr>
-                                                                 <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center">#SK2547</div>
-                                                                </td>
-                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">MDC</a>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">Osint</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center">Kathrina</div>
-                                                                    </td>
-                                                                    <td style="width: 190px;">
-                                                                        <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                            :  23:00
-                                                                        </div>
-                                                                    </td>                                                         
-                                                                    <!-- <td>
-                                                                        <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                    </td> -->
-                                                                    <td>
-                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
-                                                                    </td>
-                                                            </tr>                                              
-                                                        </tbody>
-                                                </table>
-                                            </div>       
-                                </div>          
-                             </div>                                            
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">LEGAL
+                                </div>
+                                </td>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">5
+                                </div>
+                                </td>
+                                <td>
+                                December 2018
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                            <div class="dropdown-menu dropdown-menu-end shadow">
+                                                <div class="ms-auto">
+                                                    <button class="btn dropdown-item" data-bs-toggle="modal" data-bs-target=".create-task">
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                                <a class="dropdown-item text-danger" 
+                                                href="javascript:void(0);" 
+                                                onclick="confirmDelete('LEGAL')">Delete</a>
+                                                </div>
+                                            </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">CYBER
+                                </div>
+                                </td>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">5
+                                </div>
+                                </td>
+                                <td>
+                                October 2025
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                            <div class="dropdown-menu dropdown-menu-end shadow">
+                                                <div class="ms-auto">
+                                                    <button class="btn dropdown-item" data-bs-toggle="modal" data-bs-target=".create-task">
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                                <a class="dropdown-item text-danger" 
+                                                href="javascript:void(0);" 
+                                                onclick="confirmDelete('CYBER')">Delete</a>
+                                                </div>
+                                            </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">Airmed
+                                </div>
+                                </td>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">2
+                                </div>
+                                </td>
+                                <td>
+                                December 2019
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                            <div class="dropdown-menu dropdown-menu-end shadow">
+                                                <div class="ms-auto">
+                                                    <button class="btn dropdown-item" data-bs-toggle="modal" data-bs-target=".create-task">
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                                <a class="dropdown-item text-danger" 
+                                                href="javascript:void(0);" 
+                                                onclick="confirmDelete('Airmed')">Delete</a>
+                                                </div>
+                                            </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">Valkyrie Security
+                                </div>
+                                </td>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">10
+                                </div>
+                                </td>
+                                <td>
+                                December 2020
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                            <div class="dropdown-menu dropdown-menu-end shadow">
+                                                <div class="ms-auto">
+                                                    <button class="btn dropdown-item" data-bs-toggle="modal" data-bs-target=".create-task">
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                                <a class="dropdown-item text-danger" 
+                                                href="javascript:void(0);" 
+                                                onclick="confirmDelete('Valkyrie Security')">Delete</a>
+                                                </div>
+                                            </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">Mars Motors
+                                </div>
+                                </td>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">2
+                                </div>
+                                </td>
+                                <td>
+                                December 2020
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                            <div class="dropdown-menu dropdown-menu-end shadow">
+                                                <div class="ms-auto">
+                                                    <button class="btn dropdown-item" data-bs-toggle="modal" data-bs-target=".create-task">
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                                <a class="dropdown-item text-danger" 
+                                                href="javascript:void(0);" 
+                                                onclick="confirmDelete('Mars Motors')">Delete</a>
+                                                </div>
+                                            </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">Lorraine Dev't corp
+                                </div>
+                                </td>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">4
+                                </div>
+                                </td>
+                                <td>
+                                December 2021
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                            <div class="dropdown-menu dropdown-menu-end shadow">
+                                                <div class="ms-auto">
+                                                    <button class="btn dropdown-item" data-bs-toggle="modal" data-bs-target=".create-task">
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                                <a class="dropdown-item text-danger" 
+                                                href="javascript:void(0);" 
+                                                onclick="confirmDelete('Lorraine Dev\'t corp')">Delete</a>
+                                                </div>
+                                            </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">Snarem Shipbuilding services
+                                </div>
+                                </td>
+                                <td style="width: 190px;">
+                                <div class="d-flex align-items-center">2
+                                </div>
+                                </td>
+                                <td>
+                                December 2020
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                            <div class="dropdown-menu dropdown-menu-end shadow">
+                                                <div class="ms-auto">
+                                                    <button class="btn dropdown-item" data-bs-toggle="modal" data-bs-target=".create-task">
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                                <a class="dropdown-item text-danger" 
+                                                href="javascript:void(0);" 
+                                                onclick="confirmDelete('Snarem Shipbuilding services')">Delete</a>
+                                                </div>
+                                            </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+     
+        </div>     
+        
+         <!-- Department Projects Table -->
+    <div class="row">
+    <div class="col-12">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <!-- Card Header -->
+                     <div class="card-header align-items-center">
+                        <div class="d-flex align-items-center">
+                            <h4 class="card-title mb-0">Department Projects</h4>
+                            <div class="ms-auto">
+                                <div class="btn-group">
+                                    <button id="categorySelect" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                        View Departments <i class="mdi mdi-chevron-down"></i>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="#" data-value="All">All</a>
+                                        <a class="dropdown-item" href="#" data-value="MDC">MDC</a>
+                                        <a class="dropdown-item" href="#" data-value="CYBER">Cyber</a>
+                                        <a class="dropdown-item" href="#" data-value="LEGAL">Legal</a>
+                                    </div>
+                                </div><!-- /btn-group -->
+                            </div>
                         </div>
-                        <!-- end main content-->
-
+                    </div>
+                     <!-- Card Header -->
+                    <div class="card-body">
+                    <div id="tableDept-gridjs"></div>
+                    <!-- ORIGINAL TABLE (hidden but used by Grid.js) -->
+                    <table id="projectsTableDept" class="table d-none">
+                        <thead>
+                            <tr>
+                                <th style="width: 190px;">ID</th>
+                                <th>Projects</th>
+                                <th>Department</th>
+                                <th>Client</th>
+                                <th>Deadline</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr data-category="Airmed">
+                                <td>#SK2540</td>
+                                <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                    Osint
+                                    </a>
+                                </td>
+                                <td>AIRMED</td>
+                                <td>Kathrina</td>
+                                <td>11 / 12 / 2024 : 23:00</td>
+                                <td><span class="badge badge-soft-success">Completed</span>
+                                </td>
+                            </tr>
+                            <tr data-category="MDC">
+                                <td>#SK2540</td>
+                                <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                    Lorem
+                                    </a>
+                                </td>
+                                <td>MDC</td>
+                                <td>Kathrina</td>
+                                <td>11 / 12 / 2024 : 23:00</td>
+                                <td><span class="badge badge-soft-success">Completed</span>
+                                </td>
+                            </tr>
+                            <tr data-category="LEGAL">
+                                <td>#SK2540</td>
+                                <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                    Lorem ipsum
+                                    </a>
+                                </td>
+                                <td>LEGAL</td>
+                                <td>Patrick</td>
+                                <td>11 / 12 / 2024 : 03:00</td>
+                                <td><span class="badge badge-soft-success">Completed</span>
+                                </td>
+                            </tr>
+                            <tr data-category="MDC">
+                                <td>#SK2540</td>
+                                <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                    Lorem ipsum dolor sit
+                                    </a>
+                                </td>
+                                <td>MDC</td>
+                                <td>Neil</td>
+                                <td>11 / 12 / 2024 : 13:00</td>
+                                <td><span class="badge badge-soft-success">Completed</span>
+                                </td>
+                            </tr>
+                            <tr data-category="CYBER">
+                                <td>#SK2540</td>
+                                <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                    Lorem ipsum dolor sit amet
+                                    </a>
+                                </td>
+                                <td>CYBER</td>
+                                <td>Windyl</td>
+                                <td>11 / 12 / 2024 : 12:00</td>
+                                <td><span class="badge badge-soft-success">Completed</span>
+                                </td>
+                            </tr>
+                            <tr data-category="MARS">
+                                <td>#SK2540</td>
+                                <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                    Lorem ipsum dolor sit amet consectetur
+                                    </a>
+                                </td>
+                                <td>MARS</td>
+                                <td>Patrick</td>
+                                <td>11 / 12 / 2024 : 21:00</td>
+                                <td><span class="badge badge-soft-success">Completed</span>
+                                </td>
+                            </tr>
+                            <tr data-category="CYBER">
+                                <td>#SK2546</td>
+                                <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                    Lorem ipsum dolor sit amet consectetur, adipisicing
+                                    </a>
+                                </td>
+                                <td>CYBER</td>
+                                <td>Kathrina</td>
+                                <td>11 / 12 / 2024 : 22:00</td>
+                                <td><span class="badge badge-soft-success">Completed</span>
+                                </td>
+                            </tr>
+                            <tr data-category="LEGAL">
+                                <td>#SK2547</td>
+                                <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                                    </a>
+                                </td>
+                                <td>LEGAL</td>
+                                <td>Neil</td>
+                                <td>11 / 12 / 2024 : 24:00</td>
+                                <td><span class="badge badge-soft-success">Completed</span>
+                                </td>
+                            </tr>
+                            
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
         </div>
-         <!--  Extra Large modal example -->
-            <div class="modal fade create-task" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-xl modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="myExtraLargeModalLabel">Create Project</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        
+
+<!-- sample modal content -->
+<div
+    id="myModal"
+    class="modal fade"
+    data-bs-backdrop="static"
+    tabindex="-1"
+    aria-labelledby="myModalLabel"
+    data-bs-scroll="true"
+    aria-hidden="true"
+    style="display: none;"
+>
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="myModalLabel">Add Department</h5>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                ></button>
+            </div>
+
+            <div class="card-body">
+                <form>
+
+                    <div class="mb-3">
+                        <label for="formrow-departmentname-input" class="form-label">
+                            Enter Department Name
+                        </label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            placeholder="Department Name"
+                            id="formrow-departmentname-input"
+                        >
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="mb-3">
+                                <label for="formrow-inputState" class="form-label">
+                                    Enter Members
+                                </label>
+                                 <!-- Input / Selected chips -->
+                            <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
+                                id="ownerInput"
+                                data-bs-toggle="dropdown">
+
+                                <span class="text-muted small">Select owner(s)</span>
+                            </div>
+
+                            <!-- Dropdown -->
+                            <div class="dropdown-menu p-3 shadow owner-dropdown">
+                                <input type="text"
+                                    class="form-control mb-2"
+                                    id="ownerSearch"
+                                    placeholder="Search colleague">
+
+                                <small class="text-muted">Contacts</small>
+
+                                <div class="list-group mt-2 owner-list"></div>
+
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <a href="#" id="clearOwners" class="text-muted small">Clear</a>
+                                    <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">
+                                        Confirm
+                                    </button>
+                                </div>
+                            </div>
+                            </div>
                         </div>
-                        <div class="modal-body">
-                           <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label" for="CreateTask-Task-Name">Project Name</label>
-                                        <input type="text" class="form-control" placeholder="Enter Project Name" id="CreateTask-Task-Name">
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col-12 text-end">
+                            <button
+                                type="button"
+                                class="btn btn-danger me-1"
+                                data-bs-dismiss="modal"
+                            >
+                                <i class="bx bx-x me-1 align-middle"></i>
+                                Cancel
+                            </button>
+
+                            <button
+                                type="submit"
+                                class="btn btn-success"
+                                data-bs-toggle="modal"
+                                data-bs-target="#success-btn"
+                                id="btn-save-event"
+                            >
+                                <i class="bx bx-check me-1 align-middle"></i>
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>  <!-- /.modal-content -->
+        </div>  <!-- /.modal-dialog -->
+    </div>    <!-- /.modal -->
+
+</div><!-- end preview -->
+
+    <!-- Edit Department Modal -->
+    <div
+        class="modal fade create-task"
+        data-bs-backdrop="static"
+        tabindex="-1"
+        aria-labelledby="createTaskLabel"
+        data-bs-scroll="true"
+        aria-hidden="true"
+        style="display: none;"
+    >
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createTaskLabel">Edit Department</h5>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                    ></button>
+                </div>
+
+                <div class="card-body">
+                    <form>
+
+                        <div class="mb-3">
+                            <label for="formrow-updatedepartmentname-input-edit" class="form-label">
+                                Update Department Name
+                            </label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                placeholder="Department Name"
+                                id="formrow-departmentname-input-edit"
+                            >
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="mb-3">
+                                    <label for="formrow-inputState-edit" class="form-label">
+                                        Update Members
+                                    </label>
+                                     <!-- Input / Selected chips -->
+                                <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input-edit"
+                                    id="ownerInputEdit"
+                                    data-bs-toggle="dropdown">
+
+                                    <span class="text-muted small">Select owner(s)</span>
+                                </div>
+
+                                <!-- Dropdown -->
+                                <div class="dropdown-menu p-3 shadow owner-dropdown-edit">
+                                    <input type="text"
+                                        class="form-control mb-2"
+                                        id="ownerSearchEdit"
+                                        placeholder="Search colleague">
+
+                                    <small class="text-muted">Contacts</small>
+
+                                    <div class="list-group mt-2 owner-list-edit"></div>
+
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <a href="#" id="clearOwnersEdit" class="text-muted small">Clear</a>
+                                        <button type="button" class="btn btn-sm btn-primary" id="confirmOwnersEdit">
+                                            Confirm
+                                        </button>
                                     </div>
                                 </div>
-                                 <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label" for="CreateTask-Category">Priority</label>
-                                        <select class="form-select">
-                                            <option  selected> Select </option>
-                                            <option>High</option>
-                                            <option>Medium</option>
-                                            <option>Low</option>
-                                        </select>
-                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Start Date</label>
-                                        <input type="text" class="form-control" placeholder="Select Start Date" id="CreateTask-start-date" >
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                     <div class="mb-3">
-                                        <label class="form-label">Deadline</label>
-                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Client</label>
-                                        <input type="text" class="form-control" placeholder="Client Name" id="CreateTask-due-date">
-                                    </div>
-                                </div>
-                               <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label" for="CreateTask-Category">Department</label>
-                                        <select class="form-select">
-                                            <option  selected> Select </option>
-                                            <option>Cyber</option>
-                                            <option>MDC</option>
-                                            <option>Mars</option>
-                                            <option>Sanrem</option>
-                                        </select>
-                                    </div>
-                                </div>
-                               <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label" for="CreateTask-Category">Assign Members</label>
-                                        <select class="form-select">
-                                            <option  selected> Select </option>
-                                            <option>Niel</option>
-                                            <option>Patrick</option>
-                                            <option>Windyl</option>
-                                            <option>Kathrina</option>
-                                        </select>
-                                    </div>
-                                </div>
-                           </div>
-                           <div class="row mt-2">
-                            <div class="col-12 text-end">
-                                <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal"><i class="bx bx-x me-1 align-middle"></i> Cancel</button>
-                                <button type="submit" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#success-btn" id="btn-save-event"><i class="bx bx-check me-1 align-middle"></i> Confirm</button>
                             </div>
                         </div>
 
+                        <div class="row mt-2">
+                            <div class="col-12 text-end">
+                                <button
+                                    type="button"
+                                    class="btn btn-danger me-1"
+                                    data-bs-dismiss="modal"
+                                >
+                                    <i class="bx bx-x me-1 align-middle"></i>
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-success"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#success-btn"
+                                    id="btn-save-event-edit"
+                                >
+                                    <i class="bx bx-check me-1 align-middle"></i>
+                                    Confirm
+                                </button>
+                            </div>
                         </div>
-                    </div><!-- /.modal-content -->
-                </div><!-- /.modal-dialog -->
-            </div><!-- /.modal -->
-   {% endblock content %}
 
-
+                    </form>
+                </div>  <!-- /.card-body -->
+            </div>  <!-- /.modal-content -->
+        </div>  <!-- /.modal-dialog -->
+    </div>    <!-- /.modal -->
+    
+        
+            </div>
+        </div>
+    </div><!--  Modal end -->
+    
+</div> <!-- end page-content -->
+</div> <!-- end container-fluid -->
+{% endblock content %}

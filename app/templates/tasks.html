@@ -90,8 +90,7 @@
                                                             <td>
                                                             <p class="mb-0">500 hrs</p>
                                                         </td>
-                                                        
-                                                            <td>
+                                                        <td>
                                                             <p class="mb-0">Lorem ipsum 
                                                                 - it may work</p>
                                                         </td>
@@ -152,7 +151,7 @@
                                                         </td>
                                                         
                                                             <td>
-                                                            <p class="mb-0">Lorem ipsum 
+                                                            <p class="mb-0">Lorem ipsum dolor sit amet consectetur adipisicing elit. Ab optio recusandae velit officiis, reiciendis fuga ducimus iste nemo ipsam omnis vel provident eius, fugit, nobis incidunt consectetur minus id dolore? Lorem ipsum dolor sit amet consectetur, adipisicing elit. Veritatis ea recusandae, rem quisquam error odio dignissimos deleniti illum, maiores, voluptatem eius. Neque illum suscipit quos nam veniam beatae ab cumque? Lo 
                                                                 - it may work</p>
                                                         </td>
                                                         
@@ -410,9 +409,32 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6">
+                                    <div class="mb-3 position-relative" style="max-width: 550px;">
+                                        <label class="form-label">Assign Members</label>
+                                        <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
+                                            id="ownerInput"
+                                            data-bs-toggle="dropdown"
+                                            style="max-height: 100px; overflow-y: auto;">
+                                        </div>
+                                        <!-- Dropdown -->
+                                        <div class="dropdown-menu p-3 shadow owner-dropdown">
+                                            <input type="text"
+                                                class="form-control mb-2"
+                                                id="ownerSearch"
+                                                placeholder="Search colleague">
+                                            <small class="text-muted">Contacts</small>
+                                            <div class="list-group mt-2 owner-list"></div>
+                                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                                <a href="#" id="clearOwners" class="text-muted small">Clear</a>
+                                                <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">Confirm</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label" for="CreateTask-Team-Member">Assigned To</label>
-                                        <input type="text" class="form-control" placeholder="Members" id="CreateTask-Team-Member" disabled>
+                                        <label for="topicDescription" class="form-label">Description</label>
+                                        <textarea class="form-control" id="topicDescription" rows="3" placeholder="Enter description"></textarea>
                                     </div>
                                 </div>
                            </div>
