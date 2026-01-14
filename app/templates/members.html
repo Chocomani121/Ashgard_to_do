@@ -1,455 +1,114 @@
 {% extends "layout.html" %}
-
 {% block page_title %}Members{% endblock %}
+   {% block content %}
+            <!-- Start right Content here -->
+            <!-- ============================================================== -->
+            <div class="main-content">
+                <div class="page-content">
+                    <div class="container-fluid">
 
-{% block content %}
-
-<div class="main-content">
-    <div class="page-content">
-        <div class="container-fluid">
-
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-
-                        <!-- Card Header -->
-                        <div class="card-header d-flex align-items-center">
-                            <div class="mb-3">
-                                <h5 class="card-title">
-                                    Contact List
-                                    <span class="text-muted fw-normal ms-2">(834)</span>
-                                </h5>
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <h5 class="card-title">Contact List <span class="text-muted fw-normal ms-2">(834)</span></h5>
+                                </div>
                             </div>
 
-                            <div class="ms-auto d-flex gap-2">
-                                <button
-                                    type="button"
-                                    class="btn btn-primary waves-effect waves-light"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#myModal">
-                                    <i class="mdi mdi-plus me-1"></i>Add Member
-                                </button>
+                        </div>
+
+                        <!-- end row -->
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-nowrap align-middle">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th scope="col">Name</th>
+                                                        <th scope="col">Email</th>
+                                                        <th scope="col">Position</th>
+                                                        <th scope="col">Department</th>
+                                                        <th scope="col" style="width: 200px;">Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for member in members %}
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <img src="{{ url_for('static', filename='profile_pics/' + member.image_file) }}" class="rounded-circle avatar img-thumbnail" alt="">
+                                                                <div class="flex-grow-1 ms-3 overflow-hidden">
+                                                                    <h5 class="font-size-15 mb-1 text-truncate">{{ member.username }}</h5>
+                                                                    <p class="text-muted text-truncate mb-0">{{ member.name }}</p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>{{ member.email }}</td>
+                                                        <td><span class="badge badge-soft-success mb-0">{{ member.position if member.position else 'Staff' }}</span></td>
+                                                        <td>{{ member.dept_info.department_name if member.dept_info else 'N/A' }}</td>
+                                                        <td>
+                                                            <ul class="list-inline mb-0">
+                                                                <li class="list-inline-item">
+                                                                    <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit" class="px-2 text-primary"><i class="bx bx-pencil font-size-18"></i></a>
+                                                                </li>
+                                                                <li class="list-inline-item">
+                                                                    <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a>
+                                                                </li>
+                                                            </ul>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        <!-- end row -->
 
-                        <!-- Card Body -->
-                        <div class="card-body">
-                            <div id="table-gridjs"></div>
-
-                            <!-- Hidden Grid.js Table -->
-                            <table id="projectsTable" class="table d-none">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 190px;">Name</th>
-                                        <th>Email</th>
-                                        <th>Position</th>
-                                        <th>Department</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-
-                                    <!-- ALL 9 TR ROWS – UNCHANGED CONTENT, FIXED STRUCTURE -->
-
-                                    <!-- 1 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">marilynhorton</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>Marilyn Horton
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>MarilynHorton@minible.com</td>
-                                        <td><span class="badge badge-soft-success">Full Stack Developer</span></td>
-                                        <td>Cyber Security</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item">
-                                                    <a class="px-2 text-primary"><i class="bx bx-pencil font-size-18"></i></a>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 2 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">jdoe</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>John Doe
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>john.doe@example.com</td>
-                                        <td><span class="badge badge-soft-info">Frontend Developer</span></td>
-                                        <td>Cyber Security</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item"><a class="px-2 text-primary"><i class="bx bx-pencil font-size-18"></i></a></li>
-                                                <li class="list-inline-item"><a class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a></li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 3 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">mrossi</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>Mario Rossi
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>mario.rossi@example.com</td>
-                                        <td><span class="badge badge-soft-info">Frontend Developer</span></td>
-                                        <td>Mars</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item"><a class="px-2 text-primary"><i class="bx bx-pencil font-size-18"></i></a></li>
-                                                <li class="list-inline-item"><a class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a></li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 4 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">mmuster</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>Max Mustermann
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>max.mustermann@example.com</td>
-                                        <td><span class="badge badge-soft-primary">Backend Developer</span></td>
-                                        <td>Valkyrie Security</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item"><a class="px-2 text-primary"><i class="bx bx-pencil font-size-18"></i></a></li>
-                                                <li class="list-inline-item"><a class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a></li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 5 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">mjohnson</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>Michael Johnson
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>michael.johnson@example.com</td>
-                                        <td><span class="badge badge-soft-danger">Founder</span></td>
-                                        <td></td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item"><a class="px-2 text-primary"><i class="bx bx-pencil font-size-18"></i></a></li>
-                                                <li class="list-inline-item"><a class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a></li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 6 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">wjones</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>William Jone
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>wjones@example.com</td>
-                                        <td><span class="badge badge-soft-primary">Backend Developer</span></td>
-                                        <td>Mars</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item"><a class="px-2 text-primary"><i class="bx bx-pencil font-size-18"></i></a></li>
-                                                <li class="list-inline-item"><a class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a></li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 7 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">jwilliams</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>Jennifer Williams
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>wjones@example.com</td>
-                                        <td><span class="badge badge-soft-primary">Backend Developer</span></td>
-                                        <td>Mars</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item"><a class="px-2 text-primary"><i class="bx bx-pencil font-size-18"></i></a></li>
-                                                <li class="list-inline-item"><a class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a></li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 8 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">alexj</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>Alex Johnson
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>alex.johnson@example.com</td>
-                                        <td><span class="badge badge-soft-primary">Backend Developer</span></td>
-                                        <td>legal</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item">
-                                                    <a class="px-2 text-success"><i class="bx bxs-user-check font-size-20"></i></a>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a class="px-2 text-danger"><i class="bx bxs-user-x font-size-20"></i></a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 9 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">danderson</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>Daniel Anderson
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>daniel.anderson@example.com</td>
-                                        <td><span class="badge badge-soft-success">Full Stack Developer</span></td>
-                                        <td>Ashgard</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item">
-                                                    <a class="px-2 text-success"><i class="bx bxs-user-check font-size-20"></i></a>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a class="px-2 text-danger"><i class="bx bxs-user-x font-size-20"></i></a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                </tbody>
-                            </table>
+                        <div class="row g-0 align-items-center pb-4">
+                            <div class="col-sm-6">
+                                <div>
+                                    <p class="mb-sm-0">Showing 1 to 10 of 57 entries</p>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="float-sm-end">
+                                    <ul class="pagination mb-sm-0">
+                                        <li class="page-item disabled">
+                                            <a href="#" class="page-link"><i class="mdi mdi-chevron-left"></i></a>
+                                        </li>
+                                        <li class="page-item active">
+                                            <a href="#" class="page-link">1</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a href="#" class="page-link">2</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a href="#" class="page-link">3</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a href="#" class="page-link">4</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a href="#" class="page-link">5</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a href="#" class="page-link"><i class="mdi mdi-chevron-right"></i></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
-                        <!-- End Card Body -->
+                        <!-- end row -->
+                       
 
                     </div>
+                    <!-- container-fluid -->
                 </div>
-            </div>
+                <!-- End Page-content -->
 
-        </div>
-    </div>
-</div>
-
-<!-- sample modal content -->
-<div
-    id="myModal"
-    class="modal fade"
-    tabindex="-1"
-    data-bs-backdrop="static"
-    aria-labelledby="myModalLabel"
-    data-bs-scroll="true"
-    aria-hidden="true"
-    style="display: none;"
->
-    <div class="modal-dialog">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5 class="modal-title" id="myModalLabel">Add Member</h5>
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                ></button>
-            </div>
-
-            <div class="card-body">
-                <form>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="formrow-fullname-input" class="form-label">
-                            Enter Full Name
-                        </label>
-                        <input
-                            type="text"
-                            class="form-control"
-                            placeholder="Full Name"
-                            id="formrow-fullname-input"
-                        >
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="formrow-username-input" class="form-label">
-                                    Username
-                                </label>
-                                <input
-                                    type="username"
-                                    class="form-control"
-                                    placeholder="Enter Username"
-                                    id="formrow-username-input"
-                                >
-                            </div>
-                        </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="formrow-email-input" class="form-label">
-                                    Email
-                                </label>
-                                <input
-                                    type="email"
-                                    class="form-control"
-                                    placeholder="Email"
-                                    id="formrow-email-input"
-                                >
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="formrow-password-input" class="form-label">
-                                    Password
-                                </label>
-                                <input
-                                    type="password"
-                                    class="form-control"
-                                    placeholder="Enter Password"
-                                    id="formrow-password-input"
-                                >
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="formrow-position-input" class="form-label">
-                                    Position
-                                </label>
-                                <select id="formrow-inputState" class="form-select">
-                                    <option value="" selected disabled>Choose...</option>
-                                    <option>Full Stack Developer</option>
-                                    <option>Frontend Developer</option>
-                                    <option>Backend Developer</option>
-                                    <option>Secretary</option>
-                                    <option>HR</option>
-                                    <option>Paralegal</option>
-                                    <option>N/A</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="formrow-inputState" class="form-label">
-                                    Department
-                                </label>
-                                <select id="formrow-inputState" class="form-select">
-                                    <option value="" selected disabled>Choose...</option>
-                                    <option>MDC</option>
-                                    <option>CYBER</option>
-                                    <option>LEGAL</option>
-                                    <option>AIRMED</option>
-                                    <option>VALKYRIE SECURITY</option>
-                                    <option>MARS MOTORS</option>
-                                    <option>LORRAINE DEV'T CORP</option>
-                                    <option>SANREM SHIPBUILDING SERVICES</option>
-                                    <option>N/A</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row mt-2">
-                        <div class="col-12 text-end">
-                            <button
-                                type="button"
-                                class="btn btn-danger me-1"
-                                data-bs-dismiss="modal"
-                            >
-                                <i class="bx bx-x me-1 align-middle"></i>
-                                Cancel
-                            </button>
-
-                            <button
-                                type="submit"
-                                class="btn btn-success"
-                                data-bs-toggle="modal"
-                                data-bs-target="#success-btn"
-                                id="btn-save-event"
-                            >
-                                <i class="bx bx-check me-1 align-middle"></i>
-                                Confirm
-                            </button>
-                        </div>
-                    </div>
-
-                </form>
-            </div>
-
-            <!-- /.modal-content -->
-        </div>
-        <!-- /.modal-dialog -->
-    </div>
-    <!-- /.modal -->
-</div>
-<!-- end preview -->
-
-
-{% endblock content %}
+   {% endblock content %}
