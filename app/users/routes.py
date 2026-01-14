@@ -50,33 +50,6 @@ def register():
 
     return render_template('auth-register.html', title='Register', form=form)
     
-# @users.route("/register", methods=['GET', 'POST'])
-# def register():
-#     if current_user.is_authenticated:
-#         return redirect(url_for('users.login'))
-
-#     form = RegisterForm()
-#     departments = Department.query.all()
-#     form.department.choices = [(d.department_id, d.department_name) for d in departments]
-
-#     if form.validate_on_submit():
-        
-#         try:
-#             db.session.add(user)
-#             db.session.commit()
-#             flash('Your account has been created!', 'success')
-#             return redirect(url_for('users.login'))
-#         except Exception as e:
-#             db.session.rollback()
-#             print(f"Database Error: {e}")
-#             flash('Database Error', 'danger')
-
-    
-#     if form.errors:
-#         print(f"DEBUG - Form Errors: {form.errors}")
-
-    # return render_template('auth-register.html', title='Register', form=form)
-
 @users.route("/")
 @users.route("/login", methods=['GET', 'POST'])
 def login():
@@ -191,3 +164,10 @@ def update_profile():
                 flash(f"{field}: {error}", 'danger')
 
     return redirect(url_for('users.profile'))
+
+@users.route("/members")
+@login_required
+def members():
+    # Fetch all users from the 'members' table
+    all_members = User.query.all()
+    return render_template('members.html', title='Members', members=all_members)
