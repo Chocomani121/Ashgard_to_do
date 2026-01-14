@@ -1,28 +1,25 @@
 {% extends "layout.html" %}
 
-{% block page_title %}All Divisions{% endblock %}
+{% block page_title %}All Departments{% endblock %}
 
 {% block content %}
 <div class="main-content">
     <div class="page-content">
 
-        <!-- Stats Row -->
         <div class="row">
             <div class="col-xl-12">
                 <div class="row">
-
-                    <!-- Total Projects -->
                     <div class="col-xl-4 col-md-4">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between">
                                     <div>
-                                        <h6 class="mb-2 text-muted font-size-15">Total Projects</h6>
-                                        <h4 class="mb-0 font-size-22 fw-bold">5</h4>
+                                        <h6 class="mb-2 text-muted font-size-15">Total Departments</h6>
+                                        <h4 class="mb-0 font-size-22 fw-bold">{{ stats.total }}</h4>
                                     </div>
                                     <div class="avatar-md">
                                         <div class="avatar-title rounded bg-soft-warning">
-                                            <i class="mdi mdi-clock-outline font-size-24 text-warning"></i>
+                                            <i class="mdi mdi-office-building font-size-24 text-warning"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -30,14 +27,13 @@
                         </div>
                     </div>
 
-                    <!-- Completed Projects -->
                     <div class="col-xl-4 col-md-4">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between">
                                     <div>
                                         <h6 class="mb-2 text-muted font-size-15">Completed Projects</h6>
-                                        <h4 class="mb-0 font-size-22 fw-bold">3</h4>
+                                        <h4 class="mb-0 font-size-22 fw-bold">{{ stats.completed|default(0) }}</h4>
                                     </div>
                                     <div class="avatar-md">
                                         <div class="avatar-title rounded bg-soft-danger">
@@ -49,14 +45,13 @@
                         </div>
                     </div>
 
-                    <!-- Ongoing Projects -->
                     <div class="col-xl-4 col-md-4">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between">
                                     <div>
                                         <h6 class="mb-2 text-muted font-size-15">Ongoing Projects</h6>
-                                        <h4 class="mb-0 font-size-22 fw-bold">2</h4>
+                                        <h4 class="mb-0 font-size-22 fw-bold">{{ stats.ongoing|default(0) }}</h4>
                                     </div>
                                     <div class="avatar-md">
                                         <div class="avatar-title rounded bg-soft-success">
@@ -67,98 +62,59 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
 
-        <!-- Table Departments -->
         <div class="row">
-            <div class="col-lg-12">
-                <div class="card">             
-
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <div class="ms-auto d-flex gap-2">
+                            <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#myModal">
+                                <i class="mdi mdi-plus me-1"></i>Add Department
+                            </button>
+                        </div>
+                    </div>
                     <div class="card-body">
-                        <table id="firstRowOnlyTable" class="table table-bordered">
+                        <table id="projectsTableCompany" class="table">
                             <thead>
                                 <tr>
-                                    <th>Department Name</th>
+                                    <th style="width: 190px;">Department Name</th>
                                     <th>Total Members</th>
-                                    <th>Created On</th>
+                                    <th>Created Date</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-
-                                <tr data-category="ALL">
-                                    <td>ALL</td>
-                                    <td>40</td>
-                                    <td>December 2017</td>
+                                {% for dept in departments %}
+                                <tr>
+                                    <td style="width: 190px;">{{ dept.department_name }}</td>
+                                    <td>{{ dept.members|length }}</td>
+                                    <td>{{ dept.creation_date.strftime('%Y-%m-%d') if dept.creation_date else 'N/A' }}</td>
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
-                                                <div class="dropdown-menu dropdown-menu-end shadow">
-                                                    <a class="dropdown-item" href="#">Edit</a>
-                                                    <a class="dropdown-item text-danger" href="#">Delete</a>
-                                                </div>
+                                            <div class="dropdown-menu dropdown-menu-end shadow">
+                                                <a class="dropdown-item" href="{{ url_for('main.edit_department', id=dept.department_id) }}">Edit</a>
+                                                <form action="{{ url_for('main.delete_department', id=dept.department_id) }}" method="POST" style="display:inline;">
+                                                    <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
-                                <tr data-category="MDC">
-                                    <td>MDC</td>
-                                    <td>20</td>
-                                    <td>December 2019</td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
-                                                <div class="dropdown-menu dropdown-menu-end shadow">
-                                                    <a class="dropdown-item" href="#">Edit</a>
-                                                    <a class="dropdown-item text-danger" href="#">Delete</a>
-                                                </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr data-category="LEGAL">
-                                    <td>LEGAL</td>
-                                    <td>20</td>
-                                    <td>December 2019</td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
-                                                <div class="dropdown-menu dropdown-menu-end shadow">
-                                                    <a class="dropdown-item" href="#">Edit</a>
-                                                    <a class="dropdown-item text-danger" href="#">Delete</a>
-                                                </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                
-                                <tr data-category="CYBER">
-                                    <td>CYBER</td>
-                                    <td>20</td>
-                                    <td>December 2019</td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
-                                                <div class="dropdown-menu dropdown-menu-end shadow">
-                                                    <a class="dropdown-item" href="#">Edit</a>
-                                                    <a class="dropdown-item text-danger" href="#">Delete</a>
-                                                </div>
-                                        </div>
-                                    </td>
-                                </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
-
                 </div>
             </div>
         </div>
 
-        <!-- Department Summary -->
         <div class="row">
-            <div class="col-lg-12">
+            <div class="col-12">
                 <div class="card">
-
                     <div class="card-header align-items-center">
                         <div class="d-flex align-items-center">
                             <h4 class="card-title mb-0">Department Projects</h4>
@@ -173,12 +129,12 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="card-body">
-                        <table id="itemTable" class="table table-bordered">
+                        <div id="table-gridjs"></div>
+                        <table id="projectsTable" class="table d-none">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
+                                    <th style="width: 190px;">ID</th>
                                     <th>Projects</th>
                                     <th>Department</th>
                                     <th>Client</th>
@@ -187,102 +143,128 @@
                                 </tr>
                             </thead>
                             <tbody>
-
+                                <tr data-category="Airmed">
+                                    <td>#SK2540</td>
+                                    <td><a href="{{ url_for('main.project_details') }}" class="text-dark">Osint</a></td>
+                                    <td style="width: 190px;"><div class="d-flex align-items-center">AIRMED</div></td>
+                                    <td style="width: 190px;">Kathrina</td>
+                                    <td>11 / 12 / 2024 : 23:00</td>
+                                    <td><span class="badge badge-soft-success">Completed</span></td>
+                                </tr>
                                 <tr data-category="MDC">
                                     <td>#SK2540</td>
-                                    <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-semibold">Osint</a></td>
-                                    <td>MDC</td>
-                                    <td>Kathrina</td>
+                                    <td>Osint</td>
+                                    <td style="width: 190px;"><div class="d-flex align-items-center">MDC</div></td>
+                                    <td style="width: 190px;">Kathrina</td>
                                     <td>11 / 12 / 2024 : 23:00</td>
                                     <td><span class="badge badge-soft-success">Completed</span></td>
                                 </tr>
-
-                                <tr data-category="CYBER">
-                                    <td>#SK2541</td>
-                                    <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-semibold">Osint</a></td>
-                                    <td>CYBER</td>
-                                    <td>Patrick</td>
-                                    <td>11 / 11 / 2024 : 23:00</td>
-                                    <td><span class="badge badge-soft-warning">Ongoing</span></td>
-                                </tr>
-
                                 <tr data-category="LEGAL">
-                                    <td>#SK2542</td>
-                                    <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-semibold">Osint</a></td>
-                                    <td>Legal</td>
-                                    <td>Neil</td>
-                                    <td>11 / 12 / 2024 : 23:00</td>
-                                    <td><span class="badge badge-soft-warning">Ongoing</span></td>
-                                </tr>
-
-                                <tr data-category="MDC">
-                                    <td>#SK2544</td>
-                                    <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-semibold">Osint</a></td>
-                                    <td>MDC</td>
-                                    <td>Lurs</td>
-                                    <td>11 / 12 / 2024 : 23:00</td>
+                                    <td>#SK2540</td>
+                                    <td>Osint</td>
+                                    <td style="width: 190px;"><div class="d-flex align-items-center">LEGAL</div></td>
+                                    <td style="width: 190px;">Patrick</td>
+                                    <td>11 / 12 / 2024 : 03:00</td>
                                     <td><span class="badge badge-soft-success">Completed</span></td>
                                 </tr>
-
+                                <tr data-category="MDC">
+                                    <td>#SK2540</td>
+                                    <td>Osint</td>
+                                    <td style="width: 190px;"><div class="d-flex align-items-center">MDC</div></td>
+                                    <td style="width: 190px;">Neil</td>
+                                    <td>11 / 12 / 2024 : 13:00</td>
+                                    <td><span class="badge badge-soft-success">Completed</span></td>
+                                </tr>
+                                <tr data-category="CYBER">
+                                    <td>#SK2540</td>
+                                    <td>Osint</td>
+                                    <td style="width: 190px;"><div class="d-flex align-items-center">CYBER</div></td>
+                                    <td style="width: 190px;">Windyl</td>
+                                    <td>11 / 12 / 2024 : 12:00</td>
+                                    <td><span class="badge badge-soft-success">Completed</span></td>
+                                </tr>
+                                <tr data-category="MARS">
+                                    <td>#SK2540</td>
+                                    <td>Osint</td>
+                                    <td style="width: 190px;"><div class="d-flex align-items-center">MARS</div></td>
+                                    <td style="width: 190px;">Patrick</td>
+                                    <td>11 / 12 / 2024 : 21:00</td>
+                                    <td><span class="badge badge-soft-success">Completed</span></td>
+                                </tr>
+                                <tr data-category="CYBER">
+                                    <td>#SK2546</td>
+                                    <td>Osint</td>
+                                    <td style="width: 190px;"><div class="d-flex align-items-center">CYBER</div></td>
+                                    <td style="width: 190px;">Kathrina</td>
+                                    <td>11 / 12 / 2024 : 22:00</td>
+                                    <td><span class="badge badge-soft-success">Completed</span></td>
+                                </tr>
+                                <tr data-category="LEGAL">
+                                    <td>#SK2547</td>
+                                    <td>Osint</td>
+                                    <td style="width: 190px;"><div class="d-flex align-items-center">LEGAL</div></td>
+                                    <td style="width: 190px;">Neil</td>
+                                    <td>11 / 12 / 2024 : 24:00</td>
+                                    <td><span class="badge badge-soft-success">Completed</span></td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
-
                 </div>
             </div>
         </div>
 
-    </div>
-</div>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
+        <div id="myModal" class="modal fade" data-bs-backdrop="static" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="myModalLabel">Add Department</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
 
-    // Department table rows
-    const deptRows = document.querySelectorAll("#firstRowOnlyTable tbody tr");
-    // Projects table rows
-    const projectRows = document.querySelectorAll("#itemTable tbody tr");
+                    <div class="card-body">
+                        <form action="{{ url_for('main.add_department') }}" method="POST">
+                            <div class="mb-3">
+                                <label for="formrow-departmentname-input" class="form-label">Enter Department Name</label>
+                                <input type="text" name="department_name" class="form-control" placeholder="Department Name" id="formrow-departmentname-input" required>
+                            </div>
 
-    // 1️⃣ Department table: show only first row
-    deptRows.forEach((row, index) => { 
-        if (index > 0) row.style.display = "none"; 
-    });
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="mb-3">
+                                        <label for="ownerInput" class="form-label">Enter Members</label>
+                                        <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input" id="ownerInput" data-bs-toggle="dropdown">
+                                            <span class="text-muted small">Select member(s)</span>
+                                        </div>
+                                        <div class="dropdown-menu p-3 shadow owner-dropdown w-100">
+                                            <input type="text" class="form-control mb-2" id="ownerSearch" placeholder="Search colleague">
+                                            <small class="text-muted">Contacts</small>
+                                            <div class="list-group mt-2 owner-list" style="max-height: 200px; overflow-y: auto;"></div>
+                                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                                <a href="#" id="clearOwners" class="text-muted small">Clear</a>
+                                                <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">Confirm</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-    // 2️⃣ Projects table: show all rows initially (as if "All" is selected)
-    projectRows.forEach((row) => { 
-        row.style.display = ""; 
-    });
+                            <div class="row mt-2">
+                                <div class="col-12 text-end">
+                                    <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal">
+                                        <i class="bx bx-x me-1 align-middle"></i>Cancel
+                                    </button>
+                                    <button type="submit" class="btn btn-success" id="btn-save-event">
+                                        <i class="bx bx-check me-1 align-middle"></i>Confirm
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    // 3️⃣ Dropdown
-    const categorySelect = document.getElementById("categorySelect");
-
-    categorySelect.addEventListener("change", function () {
-        const selectedCategory = this.value;
-
-        // Filter Projects table
-        projectRows.forEach(row => {
-            const rowCategory = row.getAttribute("data-category");
-            if (selectedCategory === "All") {
-                row.style.display = ""; // show all
-            } else {
-                row.style.display = (rowCategory === selectedCategory) ? "" : "none";
-            }
-        });
-
-        // Filter Department table (first-row behavior kept)
-        deptRows.forEach((row, index) => {
-            const rowCategory = row.getAttribute("data-category");
-            if (selectedCategory !== "All" && rowCategory === selectedCategory) {
-                row.style.display = "";
-            } else if (index === 0 && selectedCategory === "All") {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
-        });
-    });
-
-});
-</script>
-
-
+    </div> 
+</div> 
 {% endblock content %}

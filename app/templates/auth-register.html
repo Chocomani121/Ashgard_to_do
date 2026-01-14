@@ -70,7 +70,29 @@
                                                 </div>
                                                 {% for error in form.username.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
                                             </div>
-
+                                                
+                                            <div class="mb-3">
+                                                <label class="form-label">Full Name</label>
+                                                <div class="position-relative input-custom-icon">
+                                                    {{ form.name(class="form-control " + ("is-invalid" if form.name.errors else ""), placeholder="Enter full name") }}
+                                                    <span class="bx bx-user-circle"></span>
+                                                </div>
+                                                {% for error in form.name.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                                            </div>
+                                                  
+                                            <div class="mb-3">
+                                                <label class="form-label">Department</label>
+                                                    <div class="position-relative input-custom-icon">
+                                                        <span class="bx bx-buildings"></span>
+                                                        {{ form.department(class="form-select") }}
+                                                    </div>
+                                                    {% if form.department.errors %}
+                                                        {% for error in form.department.errors %}
+                                                            <span class="text-danger small">{{ error }}</span>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                            </div>
+                                            
                                             <div class="mb-3">
                                                 <label class="form-label">Password</label>
                                                 <div class="position-relative auth-pass-inputgroup input-custom-icon">
