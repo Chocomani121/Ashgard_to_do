@@ -43,7 +43,7 @@ document.getElementById("sa-success").addEventListener("click", function() {
 });
 
 //Warning Message
-document.getElementById("sa-warning").addEventListener("click", function() {
+document.getElementById("sa-warning").addEventListener("click", function () {
     Swal.fire({
         title: "Are you sure?",
         text: "You won't be able to revert this!",
@@ -52,10 +52,13 @@ document.getElementById("sa-warning").addEventListener("click", function() {
         confirmButtonColor: "#51d28c",
         cancelButtonColor: "#f34e4e",
         confirmButtonText: "Yes, delete it!"
-      }).then(function (result) {
-        if (result.value) {
-          Swal.fire("Deleted!", "Your file has been deleted.", "success"
-          );
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire(
+                "Deleted!",
+                "Your file has been deleted.",
+                "success"
+            );
         }
     });
 });

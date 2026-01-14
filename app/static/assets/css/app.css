@@ -121,7 +121,7 @@ body:not([data-sidebar-size=sm]) .app-search {
     background-color: #131516; } }
 
 .page-content {
-  padding: 75px calc(24px / 2) 60px calc(24px / 2); }
+  padding: 100px calc(24px / 2) 60px calc(24px / 2); }
   .page-content .container-fluid {
     max-width: 98%; }
 
@@ -362,8 +362,6 @@ body[data-topbar="hidden"] .page-content {
   .page-title-box .breadcrumb {
     background-color: transparent;
     padding: 0; }
-  .page-title-box h4 {
-    font-size: 21px !important; }
   @media (max-width: 575.98px) {
     .page-title-box .page-title-right {
       display: none; } }
@@ -6117,6 +6115,38 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
 
 /* Scrollable Notes column */
 .projectsTableTaskDetails td.notes-cell {
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: normal;
+}
+
+/* For PM in Task Details */
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(1),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(1) {
+  width: 60px;
+  max-width: 60px;
+}
+
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(2),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(2) {
+  width: 180px;
+  max-width: 180px;
+}
+
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(6),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(6) {
+  width: 400px;
+  max-width: 400px;
+}
+
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(7),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(7) {
+  width: 120px;
+  max-width: 120px;
+}
+
+/* Scrollable Notes column */
+.projectsTableTaskDetailsPM td.notes-cell {
   max-height: 120px;
   overflow-y: auto;
   white-space: normal;

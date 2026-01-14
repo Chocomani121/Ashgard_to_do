@@ -117,3 +117,100 @@ function toggleInput(btn, className) {
         target.querySelector('input').focus();
     }
 }
+
+
+// Department projects filter using dropdown
+document.addEventListener("DOMContentLoaded", function() {
+    const dropdownButton = document.getElementById('categorySelect');
+    const dropdownMenu = dropdownButton?.closest('.btn-group')?.querySelectorAll('.dropdown-item') || [];
+    const tableElement = document.getElementById('projectsTableDept');
+
+    if (!dropdownButton || dropdownMenu.length === 0 || !tableElement) return;
+
+    // Extract data and wrap HTML strings in gridjs.html()
+    const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
+    const allData = tableRows.map(tr => ({
+        category: tr.getAttribute('data-category'),
+        cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML))
+    }));
+
+    const grid = new gridjs.Grid({
+        columns: ["ID", "Projects", "Department", "Client", "Deadline", "Status"],
+        data: allData.map(row => row.cells),
+        pagination: { limit: 10 },
+        sort: true,
+        className: {
+            table: 'table table-bordered'
+        }
+    }).render(document.getElementById("tableDept-gridjs"));
+
+    const updateGrid = (selectedValue) => {
+        const filteredData = allData.filter(row => selectedValue === "All" ? true : row.category === selectedValue);
+        grid.updateConfig({ data: filteredData.map(row => row.cells) }).forceRender();
+    };
+
+    dropdownMenu.forEach(item => {
+        item.addEventListener('click', function(event) {
+            event.preventDefault();
+            const selectedValue = this.getAttribute('data-value');
+            dropdownButton.innerHTML = `${this.textContent} <i class="mdi mdi-chevron-down"></i>`;
+            updateGrid(selectedValue || "All");
+        });
+    });
+});
+
+//Delete sweet Alert
+function confirmDelete(taskId) {
+ Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#51d28c",
+        cancelButtonColor: "#f34e4e",
+        confirmButtonText: "Yes, delete it!"
+      }).then(function (result) {
+        if (result.value) {
+          Swal.fire("Deleted!", "Deleted Successfully.", "success"
+          );
+        }
+    });
+}
+
+// notes view modal
+function prepareNoteModal(taskId, description, footer) {
+    // Update the title
+    document.getElementById('preview-note-title').innerText = "Details for " + taskId;
+    
+    // Update the description/body
+    document.getElementById('preview-note-body').innerText = description;
+    
+    // Update the footer
+    document.getElementById('preview-note-footer').innerText = footer;
+}
+
+//approve notes modal
+function approveNoteModal(taskId, description, footer) {
+    // Updates the <h5> title
+    document.getElementById('approve-note-title').innerText = "Approve Sub-Task: " + taskId;
+    
+    // Updates the <p> description
+    document.getElementById('approve-note-body').innerText = description;
+    
+    // Updates the <footer>
+    document.getElementById('approve-note-footer').innerText = footer;
+}
+
+//JS for PIN in activity threads
+document.querySelectorAll('.pin-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+        e.stopPropagation();
+
+        const box = btn.closest('.message-box');
+        box.classList.toggle('pinned');
+
+        const icon = btn.querySelector('i');
+        icon.classList.toggle('mdi-pin-outline');
+        icon.classList.toggle('mdi-pin');
+    });
+});
