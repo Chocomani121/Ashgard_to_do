@@ -1,4 +1,12 @@
+.env
 /venv
+/instance
+/migrations
+
+**/__init__.py
+instance/
+
+**/__init__.py
 
 *.pyc
 __pycache__/
@@ -11,5 +19,3 @@ __pycache__/
 
 *.code-workspace
 ashgard-todo-app.code-workspace
-
-**/package.json
