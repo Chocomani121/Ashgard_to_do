@@ -129,17 +129,34 @@ def reset_token(token):
 
     return render_template('reset_token.html', title='Reset Password', form=form)
 
-@users.route("/profile")
+@users.route("/profile", methods=['GET', 'POST']) # 1. Allow POST requests
 @login_required
 def profile():
     form = UpdateAccountForm()
     
-    # This pre-fills the modal inputs with the current data from the DB
-    form.name.data = current_user.name
-    form.username.data = current_user.username
-    form.email.data = current_user.email
+    # 2. This block runs when you click "Save Changes"
+    if form.validate_on_submit():
+        if form.picture.data:
+            picture_file = save_picture(form.picture.data)
+            current_user.image_file = picture_file
+        
+        current_user.username = form.username.data
+        current_user.email = form.email.data
+        current_user.name = form.name.data
+        
+        db.session.commit()
+        flash('Your account has been updated!', 'success')
+        # Redirect back to profile to see the changes
+        return redirect(url_for('users.profile'))
     
-    # We MUST pass 'form=form' here so the HTML can see it
+    # 3. This block runs ONLY when you first visit the page (GET request)
+    # It prevents the "reset" problem by checking the request method
+    elif request.method == 'GET':
+        form.name.data = current_user.name
+        form.username.data = current_user.username
+        form.email.data = current_user.email
+    
+    # 4. If validation fails, it skips the IF and ELIF and renders the page with errors
     return render_template('profile.html', title='Profile', form=form)
 
 @users.route("/profile/update", methods=['POST'])
@@ -181,7 +198,7 @@ def save_picture(form_picture):
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
     # Ensure this path matches your project structure
-    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
+    picture_path = os.path.join(app.root_path, 'static/assets/profile_pictures', picture_fn)
 
     # Optional: Resize image to keep storage small
     output_size = (125, 125)
