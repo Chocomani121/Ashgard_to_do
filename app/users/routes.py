@@ -5,6 +5,10 @@ from app.models import User
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 from app.models import Department, User 
+import os
+import secrets
+from PIL import Image
+
 
 users = Blueprint('users', __name__)
 
@@ -171,3 +175,40 @@ def members():
     # Fetch all users from the 'members' table
     all_members = User.query.all()
     return render_template('members.html', title='Members', members=all_members)
+
+def save_picture(form_picture):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    # Ensure this path matches your project structure
+    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
+
+    # Optional: Resize image to keep storage small
+    output_size = (125, 125)
+    i = Image.open(form_picture)
+    i.thumbnail(output_size)
+    i.save(picture_path)
+
+    return picture_fn
+
+@login_required
+def update_profile():
+    form = UpdateAccountForm() # Ensure this matches your Form class name
+    if form.validate_on_submit():
+        if form.picture.data:
+            # Save the new picture and get the filename
+            picture_file = save_picture(form.picture.data)
+            current_user.image_file = picture_file
+        
+        # Update text fields
+        current_user.username = form.username.data
+        current_user.email = form.email.data
+        current_user.name = form.name.data
+        
+        db.session.commit()
+        flash('Your account has been updated!', 'success')
+        return redirect(url_for('users.profile'))
+    
+    # If validation fails
+    flash('Update failed. Please check your data.', 'danger')
+    return redirect(url_for('users.profile'))
