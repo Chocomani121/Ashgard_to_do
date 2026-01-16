@@ -1,12 +1,6 @@
 {% extends "layout.html" %}
 {% block page_title %}PROJECT DETAILS{% endblock %}
    {% block content %}
-   <script>
-       function toggleReply(button) {
-           // Toggle reply form visibility or implement reply functionality
-           console.log('Reply button clicked');
-       }
-   </script>
             <div class="main-content">
                 <div class="page-content">
                     <div class="container-fluid">
@@ -140,8 +134,8 @@
                                                 <h5 class="card-title mb-0">Activity Threads</h5>
                                             </div>
                                             <div class="flex-shrink-0">
-                                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTopicModal">
-                                                    <i class="mdi mdi-plus me-1"></i> Add Topic
+                                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addNotesProjectModal">
+                                                    <i class="mdi mdi-plus me-1"></i> Add Notes
                                                 </button>
                                             </div>
                                         </div>
@@ -191,12 +185,6 @@
                                                             <button class="btn btn-success">Update</button>
                                                         </div>
                                                     </div>
-                                                    <div class="pin-box d-none mt-2">
-                                                        <div class="input-group input-group-sm">
-                                                            <input type="text" class="form-control" value="Fixed, is running">
-                                                            <button class="btn btn-success">Pin</button>
-                                                        </div>
-                                                    </div>
                                                     <div class="note-actions mt-1">
                                                         <button class="btn btn-sm btn-link p-0 me-2 text-decoration-none" onclick="toggleInput(this, '.reply-box')">Reply</button>
                                                         <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="toggleInput(this, '.edit-box')">Edit</button>
@@ -235,12 +223,6 @@
                                                             <button class="btn btn-success">Update</button>
                                                         </div>
                                                     </div>
-                                                    <div class="pin-box d-none mt-2">
-                                                        <div class="input-group input-group-sm">
-                                                            <input type="text" class="form-control" value="Fixed, is running">
-                                                            <button class="btn btn-success">Pin</button>
-                                                        </div>
-                                                    </div>
                                                     <div class="note-actions mt-1">
                                                         <button class="btn btn-sm btn-link p-0 me-2 text-decoration-none" onclick="toggleInput(this, '.reply-box')">Reply</button>
                                                         <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="toggleInput(this, '.edit-box')">Edit</button>
@@ -277,12 +259,6 @@
                                                         <div class="input-group input-group-sm">
                                                             <input type="text" class="form-control" value="Fixed, is running">
                                                             <button class="btn btn-success">Update</button>
-                                                        </div>
-                                                    </div>
-                                                    <div class="pin-box d-none mt-2">
-                                                        <div class="input-group input-group-sm">
-                                                            <input type="text" class="form-control" value="Fixed, is running">
-                                                            <button class="btn btn-success">Pin</button>
                                                         </div>
                                                     </div>
 
@@ -324,17 +300,10 @@
                                                             <button class="btn btn-success">Update</button>
                                                         </div>
                                                     </div>
-                                                    <div class="pin-box d-none mt-2">
-                                                        <div class="input-group input-group-sm">
-                                                            <input type="text" class="form-control" value="Fixed, is running">
-                                                            <button class="btn btn-success">Pin</button>
-                                                        </div>
-                                                    </div>
 
                                                     <div class="note-actions mt-1">
                                                         <button class="btn btn-sm btn-link p-0 me-2 text-decoration-none" onclick="toggleInput(this, '.reply-box')">Reply</button>
                                                         <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="toggleInput(this, '.edit-box')">Edit</button>
-                                                        <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="toggleInput(this, '.pin-box')">Pin</button>
 
                                                     </div>
                                                 </div>
@@ -438,28 +407,28 @@
                 <!-- End Page-content -->
             </div>
 
-        <div class="modal fade" id="addTopicModal" tabindex="-1" aria-labelledby="addTopicModalLabel" aria-hidden="true">
+        <div class="modal fade" id="addNotesProjectModal" tabindex="-1" aria-labelledby="addTopicModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="addTopicModalLabel">Add Topic</h5>
+                        <h5 class="modal-title" id="addNotesProjectModalLabel">Add Notes</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <form>
                             <div class="mb-3">
-                                <label for="topicTitle" class="form-label">Topic Title</label>
-                                <input type="text" class="form-control" id="topicTitle" placeholder="Enter topic title">
+                                <label for="NotesProjectTitle" class="form-label">Notes Title</label>
+                                <input type="text" class="form-control" id="NotesProjectTitle" placeholder="Enter topic title">
                             </div>
                             <div class="mb-3">
-                                <label for="topicDescription" class="form-label">Description</label>
-                                <textarea class="form-control" id="topicDescription" rows="3" placeholder="Enter description"></textarea>
+                                <label for="NotesprojectDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="NotesprojectDescription" rows="3" placeholder="Enter description"></textarea>
                             </div>
                         </form>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary">Add Topic</button>
+                        <button type="button" class="btn btn-primary">Add</button>
                     </div>
                 </div>
             </div>
