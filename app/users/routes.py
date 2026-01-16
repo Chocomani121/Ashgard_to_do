@@ -129,35 +129,36 @@ def reset_token(token):
 
     return render_template('reset_token.html', title='Reset Password', form=form)
 
-@users.route("/profile", methods=['GET', 'POST']) # 1. Allow POST requests
+@users.route("/profile", methods=['GET', 'POST'])
 @login_required
 def profile():
     form = UpdateAccountForm()
-    
-    # 2. This block runs when you click "Save Changes"
     if form.validate_on_submit():
+        # Update user info (Note: we usually don't update department here if it's seeded/fixed)
+        current_user.name = form.name.data
+        current_user.username = form.username.data
+        current_user.email = form.email.data
+        
         if form.picture.data:
             picture_file = save_picture(form.picture.data)
             current_user.image_file = picture_file
-        
-        current_user.username = form.username.data
-        current_user.email = form.email.data
-        current_user.name = form.name.data
-        
+            
         db.session.commit()
-        flash('Your account has been updated!', 'success')
-        # Redirect back to profile to see the changes
+        flash('Profile updated!', 'success')
         return redirect(url_for('users.profile'))
     
-    # 3. This block runs ONLY when you first visit the page (GET request)
-    # It prevents the "reset" problem by checking the request method
     elif request.method == 'GET':
+        # Pre-fill the form
         form.name.data = current_user.name
         form.username.data = current_user.username
         form.email.data = current_user.email
+        
+        # Pull the seeded department name from your relationship
+        if current_user.dept_info:
+            form.department.data = current_user.dept_info.department_name
+            
+    return render_template('profile.html', form=form)
     
-    # 4. If validation fails, it skips the IF and ELIF and renders the page with errors
-    return render_template('profile.html', title='Profile', form=form)
 
 @users.route("/profile/update", methods=['POST'])
 @login_required
@@ -199,7 +200,7 @@ def save_picture(form_picture):
     picture_fn = random_hex + f_ext
     
     # Define folder path
-    dirname = os.path.join(current_app.root_path, 'static/profile_pics', picture_fn)
+    dirname = os.path.join(current_app.root_path, 'static/profile_pics',)
     
     # Create the directory if it doesn't exist
     if not os.path.exists(dirname):
