@@ -197,10 +197,16 @@ def save_picture(form_picture):
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
-    # Ensure this path matches your project structure
-    picture_path = os.path.join(app.root_path, 'static/assets/profile_pictures', picture_fn)
+    
+    # Define folder path
+    dirname = os.path.join(current_app.root_path, 'static/profile_pics', picture_fn)
+    
+    # Create the directory if it doesn't exist
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+        
+    picture_path = os.path.join(dirname, picture_fn)
 
-    # Optional: Resize image to keep storage small
     output_size = (125, 125)
     i = Image.open(form_picture)
     i.thumbnail(output_size)
