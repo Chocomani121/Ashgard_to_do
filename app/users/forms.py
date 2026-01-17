@@ -25,10 +25,18 @@ class RegisterForm(FlaskForm):
             raise ValidationError('That email is taken. Please choose a different one.')
 
 class UpdateAccountForm(FlaskForm):
-    name = StringField('Full Name', validators=[DataRequired(), Length(min=2, max=100)])
-    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    picture = FileField('Update Profile Picture', validators=[FileAllowed(['jpg', 'png'])])
+    """Form to sync and update profile details"""
+    name = StringField('Full Name', 
+                        validators=[DataRequired(), Length(min=2, max=100)])
+    username = StringField('Username',
+                        validators=[DataRequired(), Length(min=2, max=20)])
+    email = StringField('Email',
+                        validators=[DataRequired(), Email()])
+    department = StringField('Department', 
+                        validators=[Length(max=100)])
+    picture = FileField('Update Profile Picture', 
+                        validators=[FileAllowed(['jpg', 'png'])])
+    
     submit = SubmitField('Update Details')
 
     def validate_username(self, username):
