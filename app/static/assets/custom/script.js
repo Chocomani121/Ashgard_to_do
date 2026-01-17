@@ -201,16 +201,34 @@ function approveNoteModal(taskId, description, footer) {
     document.getElementById('approve-note-footer').innerText = footer;
 }
 
-//JS for PIN in activity threads
+//JS for PIN in Project details
+// document.querySelectorAll('.pin-btn').forEach(btn => {
+//     btn.addEventListener('click', e => {
+//         e.stopPropagation();
+
+//         const box = btn.closest('.message-box');
+//         box.classList.toggle('pinned');
+
+//         const icon = btn.querySelector('i');
+//         icon.classList.toggle('mdi-pin-outline');
+//         icon.classList.toggle('mdi-pin');
+//     });
+// });
+
 document.querySelectorAll('.pin-btn').forEach(btn => {
     btn.addEventListener('click', e => {
         e.stopPropagation();
 
         const box = btn.closest('.message-box');
+        if (!box) return;
+
         box.classList.toggle('pinned');
 
         const icon = btn.querySelector('i');
+        if (!icon) return;
+
         icon.classList.toggle('mdi-pin-outline');
         icon.classList.toggle('mdi-pin');
     });
 });
+
