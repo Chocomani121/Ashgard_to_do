@@ -3,8 +3,9 @@
 {% block page_title %}All Departments{% endblock %}
 
 {% block content %}
-<div class="main-content">
+<div class="main-content all_departments">
     <div class="page-content">
+        <div class="container-fluid">
 
         <div class="row">
             <div class="col-xl-12">
@@ -96,10 +97,21 @@
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
                                             <div class="dropdown-menu dropdown-menu-end shadow">
-                                                <a class="dropdown-item" href="{{ url_for('main.edit_department', id=dept.department_id) }}">Edit</a>
-                                                <form action="{{ url_for('main.delete_department', id=dept.department_id) }}" method="POST" style="display:inline;">
-                                                    <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Are you sure?')">Delete</button>
-                                                </form>
+                                                <div class="ms-auto">
+                                                    <button class="btn dropdown-item edit-department-btn" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#editDepartmentModal" 
+                                                    data-dept-id="{{ dept.department_id }}" 
+                                                    data-dept-name="{{ dept.department_name }}"
+                                                    data-dept-members="{{ dept.members|map(attribute='member_id')|list|tojson }}">
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                                <a class="dropdown-item text-danger delete-department-btn" 
+                                                href="javascript:void(0);" 
+                                                data-dept-name="{{ dept.department_name }}"
+                                                data-dept-id="{{ dept.department_id }}"
+                                                data-delete-url="{{ url_for('main.delete_department', id=dept.department_id) }}">Delete</a>
                                             </div>
                                         </div>
                                     </td>
@@ -112,137 +124,223 @@
             </div>
         </div>
 
+        <!-- Department Projects Table -->
         <div class="row">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-header align-items-center">
-                        <div class="d-flex align-items-center">
-                            <h4 class="card-title mb-0">Department Projects</h4>
-                            <div class="ms-auto">
-                                <select id="categorySelect" class="btn btn-primary">
-                                    <option value="" selected disabled hidden>View Departments</option>
-                                    <option value="All">All</option>
-                                    <option value="MDC">MDC</option>
-                                    <option value="CYBER">Cyber</option>
-                                    <option value="LEGAL">Legal</option>
-                                </select>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <!-- Card Header -->
+                            <div class="card-header align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <h4 class="card-title mb-0">Department Projects</h4>
+                                    <div class="ms-auto">
+                                        <div class="btn-group">
+                                            <button id="categorySelect" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                View Departments <i class="mdi mdi-chevron-down"></i>
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <a class="dropdown-item" href="#" data-value="All">All</a>
+                                                <a class="dropdown-item" href="#" data-value="MDC">MDC</a>
+                                                <a class="dropdown-item" href="#" data-value="CYBER">Cyber</a>
+                                                <a class="dropdown-item" href="#" data-value="LEGAL">Legal</a>
+                                            </div>
+                                        </div><!-- /btn-group -->
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Card Header -->
+                            <div class="card-body">
+                                <div id="tableDept-gridjs"></div>
+                                <!-- ORIGINAL TABLE (hidden but used by Grid.js) -->
+                                <table id="projectsTableDept" class="table d-none">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 190px;">ID</th>
+                                            <th>Projects</th>
+                                            <th>Department</th>
+                                            <th>Client</th>
+                                            <th>Deadline</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr data-category="Airmed">
+                                            <td>#SK2540</td>
+                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                                Osint
+                                                </a>
+                                            </td>
+                                            <td>AIRMED</td>
+                                            <td>Kathrina</td>
+                                            <td>11 / 12 / 2024 : 23:00</td>
+                                            <td><span class="badge badge-soft-success">Completed</span>
+                                            </td>
+                                        </tr>
+                                        <tr data-category="MDC">
+                                            <td>#SK2540</td>
+                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                                Lorem
+                                                </a>
+                                            </td>
+                                            <td>MDC</td>
+                                            <td>Kathrina</td>
+                                            <td>11 / 12 / 2024 : 23:00</td>
+                                            <td><span class="badge badge-soft-success">Completed</span>
+                                            </td>
+                                        </tr>
+                                        <tr data-category="LEGAL">
+                                            <td>#SK2540</td>
+                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                                Lorem ipsum
+                                                </a>
+                                            </td>
+                                            <td>LEGAL</td>
+                                            <td>Patrick</td>
+                                            <td>11 / 12 / 2024 : 03:00</td>
+                                            <td><span class="badge badge-soft-success">Completed</span>
+                                            </td>
+                                        </tr>
+                                        <tr data-category="MDC">
+                                            <td>#SK2540</td>
+                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                                Lorem ipsum dolor sit
+                                                </a>
+                                            </td>
+                                            <td>MDC</td>
+                                            <td>Neil</td>
+                                            <td>11 / 12 / 2024 : 13:00</td>
+                                            <td><span class="badge badge-soft-success">Completed</span>
+                                            </td>
+                                        </tr>
+                                        <tr data-category="CYBER">
+                                            <td>#SK2540</td>
+                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                                Lorem ipsum dolor sit amet
+                                                </a>
+                                            </td>
+                                            <td>CYBER</td>
+                                            <td>Windyl</td>
+                                            <td>11 / 12 / 2024 : 12:00</td>
+                                            <td><span class="badge badge-soft-success">Completed</span>
+                                            </td>
+                                        </tr>
+                                        <tr data-category="MARS">
+                                            <td>#SK2540</td>
+                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                                Lorem ipsum dolor sit amet consectetur
+                                                </a>
+                                            </td>
+                                            <td>MARS</td>
+                                            <td>Patrick</td>
+                                            <td>11 / 12 / 2024 : 21:00</td>
+                                            <td><span class="badge badge-soft-success">Completed</span>
+                                            </td>
+                                        </tr>
+                                        <tr data-category="CYBER">
+                                            <td>#SK2546</td>
+                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                                Lorem ipsum dolor sit amet consectetur, adipisicing
+                                                </a>
+                                            </td>
+                                            <td>CYBER</td>
+                                            <td>Kathrina</td>
+                                            <td>11 / 12 / 2024 : 22:00</td>
+                                            <td><span class="badge badge-soft-success">Completed</span>
+                                            </td>
+                                        </tr>
+                                        <tr data-category="LEGAL">
+                                            <td>#SK2547</td>
+                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
+                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                                                </a>
+                                            </td>
+                                            <td>LEGAL</td>
+                                            <td>Neil</td>
+                                            <td>11 / 12 / 2024 : 24:00</td>
+                                            <td><span class="badge badge-soft-success">Completed</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-body">
-                        <div id="table-gridjs"></div>
-                        <table id="projectsTable" class="table d-none">
-                            <thead>
-                                <tr>
-                                    <th style="width: 190px;">ID</th>
-                                    <th>Projects</th>
-                                    <th>Department</th>
-                                    <th>Client</th>
-                                    <th>Deadline</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr data-category="Airmed">
-                                    <td>#SK2540</td>
-                                    <td><a href="{{ url_for('main.project_details') }}" class="text-dark">Osint</a></td>
-                                    <td style="width: 190px;"><div class="d-flex align-items-center">AIRMED</div></td>
-                                    <td style="width: 190px;">Kathrina</td>
-                                    <td>11 / 12 / 2024 : 23:00</td>
-                                    <td><span class="badge badge-soft-success">Completed</span></td>
-                                </tr>
-                                <tr data-category="MDC">
-                                    <td>#SK2540</td>
-                                    <td>Osint</td>
-                                    <td style="width: 190px;"><div class="d-flex align-items-center">MDC</div></td>
-                                    <td style="width: 190px;">Kathrina</td>
-                                    <td>11 / 12 / 2024 : 23:00</td>
-                                    <td><span class="badge badge-soft-success">Completed</span></td>
-                                </tr>
-                                <tr data-category="LEGAL">
-                                    <td>#SK2540</td>
-                                    <td>Osint</td>
-                                    <td style="width: 190px;"><div class="d-flex align-items-center">LEGAL</div></td>
-                                    <td style="width: 190px;">Patrick</td>
-                                    <td>11 / 12 / 2024 : 03:00</td>
-                                    <td><span class="badge badge-soft-success">Completed</span></td>
-                                </tr>
-                                <tr data-category="MDC">
-                                    <td>#SK2540</td>
-                                    <td>Osint</td>
-                                    <td style="width: 190px;"><div class="d-flex align-items-center">MDC</div></td>
-                                    <td style="width: 190px;">Neil</td>
-                                    <td>11 / 12 / 2024 : 13:00</td>
-                                    <td><span class="badge badge-soft-success">Completed</span></td>
-                                </tr>
-                                <tr data-category="CYBER">
-                                    <td>#SK2540</td>
-                                    <td>Osint</td>
-                                    <td style="width: 190px;"><div class="d-flex align-items-center">CYBER</div></td>
-                                    <td style="width: 190px;">Windyl</td>
-                                    <td>11 / 12 / 2024 : 12:00</td>
-                                    <td><span class="badge badge-soft-success">Completed</span></td>
-                                </tr>
-                                <tr data-category="MARS">
-                                    <td>#SK2540</td>
-                                    <td>Osint</td>
-                                    <td style="width: 190px;"><div class="d-flex align-items-center">MARS</div></td>
-                                    <td style="width: 190px;">Patrick</td>
-                                    <td>11 / 12 / 2024 : 21:00</td>
-                                    <td><span class="badge badge-soft-success">Completed</span></td>
-                                </tr>
-                                <tr data-category="CYBER">
-                                    <td>#SK2546</td>
-                                    <td>Osint</td>
-                                    <td style="width: 190px;"><div class="d-flex align-items-center">CYBER</div></td>
-                                    <td style="width: 190px;">Kathrina</td>
-                                    <td>11 / 12 / 2024 : 22:00</td>
-                                    <td><span class="badge badge-soft-success">Completed</span></td>
-                                </tr>
-                                <tr data-category="LEGAL">
-                                    <td>#SK2547</td>
-                                    <td>Osint</td>
-                                    <td style="width: 190px;"><div class="d-flex align-items-center">LEGAL</div></td>
-                                    <td style="width: 190px;">Neil</td>
-                                    <td>11 / 12 / 2024 : 24:00</td>
-                                    <td><span class="badge badge-soft-success">Completed</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="myModal" class="modal fade" data-bs-backdrop="static" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+        <!-- Add Department Modal -->
+        <div
+            id="myModal"
+            class="modal fade"
+            data-bs-backdrop="static"
+            tabindex="-1"
+            aria-labelledby="myModalLabel"
+            data-bs-scroll="true"
+            aria-hidden="true"
+            style="display: none;"
+        >
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="myModalLabel">Add Department</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                        ></button>
                     </div>
 
                     <div class="card-body">
-                        <form action="{{ url_for('main.add_department') }}" method="POST">
+                        <form action="{{ url_for('main.add_department') }}" method="POST" id="addDepartmentForm">
+                            <!-- Hidden inputs for selected member IDs -->
+                            <div id="memberIdsContainer"></div>
+                            
                             <div class="mb-3">
-                                <label for="formrow-departmentname-input" class="form-label">Enter Department Name</label>
-                                <input type="text" name="department_name" class="form-control" placeholder="Department Name" id="formrow-departmentname-input" required>
+                                <label for="formrow-departmentname-input" class="form-label">
+                                    Enter Department Name
+                                </label>
+                                <input
+                                    type="text"
+                                    name="department_name"
+                                    class="form-control"
+                                    placeholder="Department Name"
+                                    id="formrow-departmentname-input"
+                                    required
+                                >
                             </div>
 
                             <div class="row">
                                 <div class="col-lg-12">
                                     <div class="mb-3">
-                                        <label for="ownerInput" class="form-label">Enter Members</label>
-                                        <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input" id="ownerInput" data-bs-toggle="dropdown">
-                                            <span class="text-muted small">Select member(s)</span>
+                                        <label for="formrow-inputState" class="form-label">
+                                            Enter Members
+                                        </label>
+                                        <!-- Input / Selected chips -->
+                                        <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
+                                            id="ownerInput"
+                                            data-bs-toggle="dropdown">
+                                            <span class="text-muted small">Select owner(s)</span>
                                         </div>
-                                        <div class="dropdown-menu p-3 shadow owner-dropdown w-100">
-                                            <input type="text" class="form-control mb-2" id="ownerSearch" placeholder="Search colleague">
+
+                                        <!-- Dropdown -->
+                                        <div class="dropdown-menu p-3 shadow owner-dropdown">
+                                            <input type="text"
+                                                class="form-control mb-2"
+                                                id="ownerSearch"
+                                                placeholder="Search colleague">
+
                                             <small class="text-muted">Contacts</small>
+
                                             <div class="list-group mt-2 owner-list" style="max-height: 200px; overflow-y: auto;"></div>
+
                                             <div class="d-flex justify-content-between align-items-center mt-3">
                                                 <a href="#" id="clearOwners" class="text-muted small">Clear</a>
-                                                <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">Confirm</button>
+                                                <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">
+                                                    Confirm
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -251,11 +349,24 @@
 
                             <div class="row mt-2">
                                 <div class="col-12 text-end">
-                                    <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal">
-                                        <i class="bx bx-x me-1 align-middle"></i>Cancel
+                                    <button
+                                        type="button"
+                                        class="btn btn-danger me-1"
+                                        data-bs-dismiss="modal"
+                                    >
+                                        <i class="bx bx-x me-1 align-middle"></i>
+                                        Cancel
                                     </button>
-                                    <button type="submit" class="btn btn-success" id="btn-save-event">
-                                        <i class="bx bx-check me-1 align-middle"></i>Confirm
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-success"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#success-btn"
+                                        id="btn-save-event"
+                                    >
+                                        <i class="bx bx-check me-1 align-middle"></i>
+                                        Confirm
                                     </button>
                                 </div>
                             </div>
@@ -265,6 +376,564 @@
             </div>
         </div>
 
-    </div> 
-</div> 
+        <!-- Edit Department Modal -->
+        <div
+            class="modal fade create-task"
+            id="editDepartmentModal"
+            data-bs-backdrop="static"
+            tabindex="-1"
+            aria-labelledby="createTaskLabel"
+            data-bs-scroll="true"
+            aria-hidden="true"
+            style="display: none;"
+        >
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createTaskLabel">Edit Department</h5>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                        ></button>
+                    </div>
+
+                    <div class="card-body">
+                        <form action="" method="POST" id="editDepartmentForm" data-base-url="{{ url_for('main.edit_department', id=0) }}">
+                            <!-- Hidden inputs for selected member IDs -->
+                            <div id="memberIdsContainerEdit"></div>
+                            
+                            <div class="mb-3">
+                                <label for="formrow-departmentname-input-edit" class="form-label">
+                                    Update Department Name
+                                </label>
+                                <input
+                                    type="text"
+                                    name="department_name"
+                                    class="form-control"
+                                    placeholder="Department Name"
+                                    id="formrow-departmentname-input-edit"
+                                    required
+                                >
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="mb-3">
+                                        <label for="formrow-inputState-edit" class="form-label">
+                                            Update Members
+                                        </label>
+                                        <!-- Input / Selected chips -->
+                                        <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input-edit"
+                                            id="ownerInputEdit"
+                                            data-bs-toggle="dropdown">
+                                            <span class="text-muted small">Select owner(s)</span>
+                                        </div>
+
+                                        <!-- Dropdown -->
+                                        <div class="dropdown-menu p-3 shadow owner-dropdown-edit">
+                                            <input type="text"
+                                                class="form-control mb-2"
+                                                id="ownerSearchEdit"
+                                                placeholder="Search colleague">
+
+                                            <small class="text-muted">Contacts</small>
+
+                                            <div class="list-group mt-2 owner-list-edit" style="max-height: 200px; overflow-y: auto;"></div>
+
+                                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                                <a href="#" id="clearOwnersEdit" class="text-muted small">Clear</a>
+                                                <button type="button" class="btn btn-sm btn-primary" id="confirmOwnersEdit">
+                                                    Confirm
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-2">
+                                <div class="col-12 text-end">
+                                    <button
+                                        type="button"
+                                        class="btn btn-danger me-1"
+                                        data-bs-dismiss="modal"
+                                    >
+                                        <i class="bx bx-x me-1 align-middle"></i>
+                                        Cancel
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-success"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#success-btn"
+                                        id="btn-save-event-edit"
+                                    >
+                                        <i class="bx bx-check me-1 align-middle"></i>
+                                        Confirm
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden delete form -->
+        <form id="deleteDepartmentForm" method="POST" style="display: none;"></form>
+
+        </div> <!-- end container-fluid -->
+    </div> <!-- end page-content -->
+</div> <!-- end main-content -->
+
+<!-- Users data from database (JSON format to avoid JavaScript linter errors) -->
+<script type="application/json" id="users-data">
+[
+    {% for user in users %}
+    {
+        "id": {{ user.member_id }},
+        "name": {{ (user.name or user.username)|tojson }},
+        "initials": "",
+        "color": "{{ ['#6f42c1', '#0d6efd', '#198754', '#dc3545', '#fd7e14', '#20c997', '#ffc107', '#6610f2'][loop.index0 % 8] }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+]
+</script>
+<script>
+// Initialize owners array from database users
+const usersDataElement = document.getElementById('users-data');
+const usersData = JSON.parse(usersDataElement.textContent);
+
+const owners = usersData.map(function(owner) {
+    // Generate initials
+    if (!owner.initials) {
+        const nameParts = owner.name.trim().split(/\s+/);
+        if (nameParts.length >= 2) {
+            owner.initials = (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+        } else {
+            owner.initials = owner.name.substring(0, 2).toUpperCase();
+        }
+    }
+    return owner;
+});
+
+// Override the hardcoded owners array in script.js for the Add Department modal
+document.addEventListener('DOMContentLoaded', function() {
+    // Re-initialize owner functionality with database users
+    const ownerList = document.querySelector(".owner-list");
+    const ownerInput = document.getElementById("ownerInput");
+    const ownerSearch = document.getElementById("ownerSearch");
+    
+    if (ownerList && ownerInput && ownerSearch) {
+        let selectedOwners = [];
+        
+        // Generate initials helper function
+        function getInitials(name) {
+            if (!name) return "??";
+            const parts = name.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[1][0]).toUpperCase();
+            }
+            return name.substring(0, 2).toUpperCase();
+        }
+        
+        // Render list
+        function renderOwners(filter = "") {
+            ownerList.innerHTML = "";
+            
+            owners
+                .filter(o => o.name.toLowerCase().includes(filter.toLowerCase()))
+                .forEach(owner => {
+                    const item = document.createElement("div");
+                    item.className = "list-group-item owner-item";
+                    if (selectedOwners.find(o => o.id === owner.id)) {
+                        item.classList.add("active");
+                    }
+                    
+                    item.innerHTML = `
+                        <div class="owner-avatar" style="background:${owner.color}">
+                            ${owner.initials}
+                        </div>
+                        <span>${owner.name}</span>
+                    `;
+                    
+                    item.onclick = () => toggleOwner(owner);
+                    ownerList.appendChild(item);
+                });
+        }
+        
+        // Toggle selection
+        function toggleOwner(owner) {
+            const exists = selectedOwners.find(o => o.id === owner.id);
+            
+            if (exists) {
+                selectedOwners = selectedOwners.filter(o => o.id !== owner.id);
+            } else {
+                selectedOwners.push(owner);
+            }
+            
+            renderSelected();
+            renderOwners(ownerSearch.value);
+        }
+        
+        // Render selected chips
+        function renderSelected() {
+            ownerInput.innerHTML = "";
+            
+            if (selectedOwners.length === 0) {
+                ownerInput.innerHTML = `<span class="text-muted small">Select owner(s)</span>`;
+                return;
+            }
+            
+            selectedOwners.forEach(owner => {
+                const chip = document.createElement("div");
+                chip.className = "owner-chip";
+                chip.innerHTML = `
+                    ${owner.name}
+                    <span onclick="removeOwner(${owner.id})">&times;</span>
+                `;
+                ownerInput.appendChild(chip);
+            });
+        }
+        
+        // Remove chip
+        window.removeOwner = function(id) {
+            selectedOwners = selectedOwners.filter(o => o.id !== id);
+            renderSelected();
+            renderOwners(ownerSearch.value);
+        };
+        
+        // Search
+        ownerSearch.addEventListener("input", e => {
+            renderOwners(e.target.value);
+        });
+        
+        // Clear
+        const clearBtn = document.getElementById("clearOwners");
+        if (clearBtn) {
+            clearBtn.onclick = () => {
+                selectedOwners = [];
+                renderSelected();
+                renderOwners();
+            };
+        }
+        
+        // Handle form submission - add selected member IDs to form
+        const addDepartmentForm = document.getElementById("addDepartmentForm");
+        if (addDepartmentForm) {
+            addDepartmentForm.addEventListener("submit", function(e) {
+                // Clear existing hidden inputs
+                const container = document.getElementById("memberIdsContainer");
+                container.innerHTML = "";
+                
+                // Add hidden inputs for each selected member
+                selectedOwners.forEach(function(owner) {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = "member_ids";
+                    input.value = owner.id;
+                    container.appendChild(input);
+                });
+            });
+        }
+        
+        // Init
+        renderOwners();
+        renderSelected();
+    }
+});
+
+// Edit Department Modal - Populate with department data
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait for owners array to be initialized
+    function initEditModalOwners() {
+        const editModal = document.getElementById('editDepartmentModal');
+        const editDepartmentForm = document.getElementById('editDepartmentForm');
+        const ownerListEdit = document.querySelector(".owner-list-edit");
+        const ownerInputEdit = document.getElementById("ownerInputEdit");
+        const ownerSearchEdit = document.getElementById("ownerSearchEdit");
+        
+        if (!ownerListEdit || !ownerInputEdit || !ownerSearchEdit) {
+            return;
+        }
+        
+        if (typeof owners === 'undefined' || !owners || owners.length === 0) {
+            // Retry after a short delay if owners not ready
+            setTimeout(initEditModalOwners, 100);
+            return;
+        }
+        
+        let selectedOwnersEdit = [];
+        
+        // Render list for edit modal
+        function renderOwnersEdit(filter = "") {
+            ownerListEdit.innerHTML = "";
+            
+            owners
+                .filter(o => o.name.toLowerCase().includes(filter.toLowerCase()))
+                .forEach(owner => {
+                    const item = document.createElement("div");
+                    item.className = "list-group-item owner-item";
+                    if (selectedOwnersEdit.find(o => o.id === owner.id)) {
+                        item.classList.add("active");
+                    }
+                    
+                    item.innerHTML = `
+                        <div class="owner-avatar" style="background:${owner.color}">
+                            ${owner.initials}
+                        </div>
+                        <span>${owner.name}</span>
+                    `;
+                    
+                    item.onclick = () => toggleOwnerEdit(owner);
+                    ownerListEdit.appendChild(item);
+                });
+        }
+        
+        // Toggle selection for edit modal
+        function toggleOwnerEdit(owner) {
+            const exists = selectedOwnersEdit.find(o => o.id === owner.id);
+            
+            if (exists) {
+                selectedOwnersEdit = selectedOwnersEdit.filter(o => o.id !== owner.id);
+            } else {
+                selectedOwnersEdit.push(owner);
+            }
+            
+            renderSelectedEdit();
+            renderOwnersEdit(ownerSearchEdit.value);
+        }
+        
+        // Render selected chips for edit modal
+        function renderSelectedEdit() {
+            if (!ownerInputEdit) return;
+            
+            ownerInputEdit.innerHTML = "";
+            
+            if (selectedOwnersEdit.length === 0) {
+                ownerInputEdit.innerHTML = `<span class="text-muted small">Select owner(s)</span>`;
+                return;
+            }
+            
+            selectedOwnersEdit.forEach(owner => {
+                const chip = document.createElement("div");
+                chip.className = "owner-chip";
+                chip.innerHTML = `
+                    ${owner.name}
+                    <span onclick="removeOwnerEdit(${owner.id})">&times;</span>
+                `;
+                ownerInputEdit.appendChild(chip);
+            });
+        }
+        
+        // Remove chip for edit modal
+        window.removeOwnerEdit = function(id) {
+            selectedOwnersEdit = selectedOwnersEdit.filter(o => o.id !== id);
+            renderSelectedEdit();
+            renderOwnersEdit(ownerSearchEdit.value);
+        };
+        
+        // Search for edit modal
+        ownerSearchEdit.addEventListener("input", e => {
+            renderOwnersEdit(e.target.value);
+        });
+        
+        // Clear for edit modal
+        const clearBtnEdit = document.getElementById("clearOwnersEdit");
+        if (clearBtnEdit) {
+            clearBtnEdit.onclick = () => {
+                selectedOwnersEdit = [];
+                renderSelectedEdit();
+                renderOwnersEdit();
+            };
+        }
+        
+        // Handle edit form submission
+        if (editDepartmentForm) {
+            editDepartmentForm.addEventListener("submit", function(e) {
+                // Clear existing hidden inputs
+                const container = document.getElementById("memberIdsContainerEdit");
+                container.innerHTML = "";
+                
+                // Add hidden inputs for each selected member
+                selectedOwnersEdit.forEach(function(owner) {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = "member_ids";
+                    input.value = owner.id;
+                    container.appendChild(input);
+                });
+            });
+        }
+        
+        // When edit modal opens, populate it with department data
+        if (editModal) {
+            editModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget; // Button that triggered the modal
+                if (button && button.classList.contains('edit-department-btn')) {
+                    const deptId = button.getAttribute('data-dept-id');
+                    const deptName = button.getAttribute('data-dept-name');
+                    const deptMembersJson = button.getAttribute('data-dept-members');
+                    
+                    // Populate department name
+                    const nameInput = document.getElementById('formrow-departmentname-input-edit');
+                    if (nameInput) {
+                        nameInput.value = deptName || '';
+                    }
+                    
+                    // Update form action with correct department ID
+                    if (editDepartmentForm && deptId) {
+                        const baseUrl = editDepartmentForm.getAttribute('data-base-url') || '';
+                        if (baseUrl) {
+                            editDepartmentForm.action = baseUrl.replace('/0', '/' + deptId);
+                        }
+                    }
+                    
+                    // Reset selected owners
+                    selectedOwnersEdit = [];
+                    
+                    // Parse and populate current members
+                    if (deptMembersJson) {
+                        try {
+                            const currentMemberIds = JSON.parse(deptMembersJson);
+                            
+                            if (Array.isArray(currentMemberIds) && currentMemberIds.length > 0) {
+                                // Convert member IDs to integers for comparison
+                                const memberIdsInt = currentMemberIds.map(function(id) {
+                                    return parseInt(id);
+                                });
+                                
+                                // Filter owners where ID matches (handle both string and number IDs)
+                                if (typeof owners !== 'undefined' && owners && owners.length > 0) {
+                                    selectedOwnersEdit = owners.filter(function(o) {
+                                        const ownerId = parseInt(o.id);
+                                        return memberIdsInt.includes(ownerId);
+                                    });
+                                }
+                            }
+                        } catch (e) {
+                            console.error('Error parsing member IDs:', e, deptMembersJson);
+                        }
+                    }
+                    
+                    // Render the selected members and the full list
+                    renderSelectedEdit();
+                    renderOwnersEdit();
+                }
+            });
+        }
+    }
+    
+    // Initialize after DOM is ready
+    initEditModalOwners();
+});
+
+// Department deletion with event listeners (avoids inline JavaScript syntax errors)
+document.addEventListener('DOMContentLoaded', function() {
+    // Attach event listeners to all delete buttons
+    document.querySelectorAll('.delete-department-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const departmentName = this.getAttribute('data-dept-name');
+            const departmentId = this.getAttribute('data-dept-id');
+            const deleteUrl = this.getAttribute('data-delete-url');
+            
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#51d28c",
+                cancelButtonColor: "#f34e4e",
+                confirmButtonText: "Yes, delete it!"
+            }).then(function (result) {
+                if (result.value) {
+                    // Create and submit the delete form
+                    const form = document.getElementById('deleteDepartmentForm');
+                    form.action = deleteUrl;
+                    form.submit();
+                }
+            });
+        });
+    });
+});
+
+// Department Projects Table - Direct initialization after all scripts load
+document.addEventListener('DOMContentLoaded', function() {
+    function initDeptProjectsGrid() {
+        const tableElement = document.getElementById('projectsTableDept');
+        const gridContainer = document.getElementById("tableDept-gridjs");
+        const dropdownButton = document.getElementById('categorySelect');
+        const dropdownMenu = dropdownButton?.closest('.btn-group')?.querySelectorAll('.dropdown-item') || [];
+        
+        // Check if elements exist and Grid.js is available
+        if (!tableElement || !gridContainer || !dropdownButton || dropdownMenu.length === 0) {
+            return false;
+        }
+        
+        if (typeof gridjs === 'undefined') {
+            return false;
+        }
+        
+        try {
+            // Extract data from table rows
+            const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
+            const allData = tableRows.map(tr => ({
+                category: tr.getAttribute('data-category'),
+                cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML))
+            }));
+            
+            // Initialize Grid.js
+            const grid = new gridjs.Grid({
+                columns: ["ID", "Projects", "Department", "Client", "Deadline", "Status"],
+                data: allData.map(row => row.cells),
+                pagination: { limit: 10 },
+                sort: true,
+                className: {
+                    table: 'table table-bordered'
+                }
+            }).render(gridContainer);
+            
+            // Handle dropdown filtering
+            const updateGrid = (selectedValue) => {
+                const filteredData = allData.filter(row => selectedValue === "All" ? true : row.category === selectedValue);
+                grid.updateConfig({ data: filteredData.map(row => row.cells) }).forceRender();
+            };
+            
+            dropdownMenu.forEach(item => {
+                item.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const selectedValue = this.getAttribute('data-value');
+                    dropdownButton.innerHTML = `${this.textContent} <i class="mdi mdi-chevron-down"></i>`;
+                    updateGrid(selectedValue || "All");
+                });
+            });
+            
+            return true;
+        } catch (error) {
+            console.error('Department Projects Grid initialization error:', error);
+            return false;
+        }
+    }
+    
+    // Try to initialize immediately, then retry if Grid.js not ready
+    if (!initDeptProjectsGrid()) {
+        // Wait for Grid.js to load
+        let attempts = 0;
+        const checkInterval = setInterval(function() {
+            attempts++;
+            if (initDeptProjectsGrid()) {
+                clearInterval(checkInterval);
+            } else if (attempts >= 50) {
+                // Timeout after 5 seconds
+                clearInterval(checkInterval);
+                console.warn('Department Projects: Failed to initialize after 5 seconds');
+            }
+        }, 100);
+    }
+});
+</script>
 {% endblock content %}

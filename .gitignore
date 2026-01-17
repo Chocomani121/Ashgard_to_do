@@ -1,5 +1,8 @@
+.env
 /venv
-instance/
+/instance
+/migrations
+.cursor/
 
 **/__init__.py
 instance/

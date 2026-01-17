@@ -11,10 +11,10 @@
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet">
          <!-- Custom CSS -->
         <link href="{{ url_for('static', filename='assets/custom/style.css') }}" id="app-style" rel="stylesheet" type="text/css" />
+        <!-- Sweet Alert-->
+        <link href="{{ url_for('static', filename='assets/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
         <!-- App favicon -->
         <link rel="shortcut icon" href="{{ url_for('static', filename='assets/images/ashgard_favicon.png') }}">
-           <!-- Sweet Alert-->
-        <link href="{{ url_for('static', filename='assets/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
         <!-- plugin css -->
         <link href="{{ url_for('static', filename='assets/libs/jsvectormap/css/jsvectormap.min.css') }}" rel="stylesheet" type="text/css" />
         <!-- gridjs css -->
@@ -279,7 +279,13 @@
         <main role="main" class="containerh=100">
             {% block content %}
             {% endblock content %}
-        </main>
+        </main>                
+        <!-- Sweet Alerts js -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="{{ url_for('static', filename='assets/libs/sweetalert2/sweetalert2.min.js') }}"></script>
+   
+        <!-- Sweet alert init js-->
+        <script src="{{ url_for('static', filename='assets/js/pages/sweet-alerts.init.js') }}"></script>
         <!-- Select2 JS -->
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
         <!-- Custom Js -->
@@ -331,12 +337,8 @@
         <script src="{{ url_for('static', filename='assets/js/pages/dashboard.init.js') }}"></script>
         
         <script src="{{ url_for('static', filename='assets/js/app.js') }}"></script>
+
         
-        <!-- Sweet Alerts js -->
-        <script src="{{ url_for('static', filename='assets/libs/sweetalert2/sweetalert2.min.js') }}"></script>
-   
-        <!-- Sweet alert init js-->
-        <script src="{{ url_for('static', filename='assets/js/pages/sweet-alerts.init.js') }}"></script>
     </body>
 
 </html>

@@ -121,7 +121,7 @@ body:not([data-sidebar-size=sm]) .app-search {
     background-color: #131516; } }
 
 .page-content {
-  padding: 75px calc(24px / 2) 60px calc(24px / 2); }
+  padding: 100px calc(24px / 2) 60px calc(24px / 2); }
   .page-content .container-fluid {
     max-width: 98%; }
 
@@ -362,8 +362,6 @@ body[data-topbar="hidden"] .page-content {
   .page-title-box .breadcrumb {
     background-color: transparent;
     padding: 0; }
-  .page-title-box h4 {
-    font-size: 21px !important; }
   @media (max-width: 575.98px) {
     .page-title-box .page-title-right {
       display: none; } }
