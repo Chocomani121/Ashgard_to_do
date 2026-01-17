@@ -43,7 +43,7 @@
                         </a>
                     </div>
                     
-                                    <form method="POST" action="{{ url_for('users.register') }}" class="col-12 col-md-9 col-lg-8">
+                                    <form method="POST" action="{{ url_for('users.register') }}">
                                     {{ form.hidden_tag() }}
                                     <div class="card shadow-sm">
                                         <div class="card-body p-4">
@@ -81,7 +81,7 @@
                                             </div>
                                                   
                                             <div class="mb-3">
-                                                <label class="form-label">Department</label>
+                                                <!-- <label class="form-label">Department</label>
                                                     <div class="position-relative input-custom-icon">
                                                         <span class="bx bx-buildings"></span>
                                                         {{ form.department(class="form-select") }}
@@ -90,7 +90,7 @@
                                                         {% for error in form.department.errors %}
                                                             <span class="text-danger small">{{ error }}</span>
                                                         {% endfor %}
-                                                    {% endif %}
+                                                    {% endif %} -->
                                             </div>
                                             
                                             <div class="mb-3">

@@ -122,34 +122,23 @@ def reset_token(token):
 
     return render_template('reset_token.html', title='Reset Password', form=form)
 
-@users.route("/profile", methods=['GET', 'POST'])
+@users.route("/profile", methods=['GET', 'POST']) # 1. Allow POST requests
 @login_required
 def profile():
     form = UpdateAccountForm()
+
     if form.validate_on_submit():
-        # Update user info (Note: we usually don't update department here if it's seeded/fixed)
-        current_user.name = form.name.data
-        current_user.username = form.username.data
-        current_user.email = form.email.data
-        
-        if form.picture.data:
-            picture_file = save_picture(form.picture.data)
-            current_user.image_file = picture_file
-            
+        # ... (update database logic) ...
         db.session.commit()
-        flash('Profile updated!', 'success')
         return redirect(url_for('users.profile'))
     
     elif request.method == 'GET':
-        # Pre-fill the form
+    
         form.name.data = current_user.name
         form.username.data = current_user.username
         form.email.data = current_user.email
-        
-        # Pull the seeded department name from your relationship
-        if current_user.dept_info:
-            form.department.data = current_user.dept_info.department_name
-            
+        form.department.data = current_user.department_id 
+
     return render_template('profile.html', form=form)
 
 @users.route("/profile/update", methods=['POST'])
