@@ -1,17 +1,15 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint, current_app
 from app import db, bcrypt, mail
 from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm, UpdateAccountForm
-from app.models import User
+from app.models import User, Department
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
-from app.models import Department, User 
 import os
 import secrets
 from PIL import Image
 
 
 users = Blueprint('users', __name__)
-
 
 @users.route("/register", methods=['GET', 'POST'])
 def register():
@@ -20,22 +18,20 @@ def register():
 
     form = RegisterForm()
     
-    # Refresh choices from the DB so the list is never empty
+    # Refresh choices from the DB
     all_departments = Department.query.all()
     form.department.choices = [(d.department_id, d.department_name) for d in all_departments]
-
+    
     if form.validate_on_submit():
-        
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         
-        # 2. Create the User instance matching your models.py columns
         user = User(
             name=form.name.data,
             username=form.username.data,
             email=form.email.data,
             password=hashed_password,
             department_id=form.department.data,
-            account_type='user' # Defaulting as per your model
+            account_type='user'
         )
         
         try:
@@ -48,7 +44,6 @@ def register():
             print(f"DATABASE ERROR: {e}")
             flash('An error occurred. Please try a different username or email.', 'danger')
 
-    # This handles the 'silent refresh' by showing you errors in the terminal
     if request.method == 'POST' and not form.validate():
         print(f"DEBUG - Form Validation Failed: {form.errors}")
 
@@ -61,7 +56,6 @@ def login():
         return redirect(url_for('main.projects'))
 
     form = LoginForm()
-
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
@@ -73,7 +67,6 @@ def login():
 
     return render_template('auth-login.html', title='Login', form=form)
 
-# -------------------- LOGOUT --------------------
 @users.route("/logout")
 def logout():
     logout_user()
@@ -158,28 +151,19 @@ def profile():
             form.department.data = current_user.dept_info.department_name
             
     return render_template('profile.html', form=form)
-    
 
 @users.route("/profile/update", methods=['POST'])
 @login_required
 def update_profile():
     form = UpdateAccountForm()
     if form.validate_on_submit():
-        # Alter the database record for the logged-in user
         current_user.name = form.name.data
         current_user.username = form.username.data
         current_user.email = form.email.data
-        
-        # If you have the save_picture function ready:
-        # if form.picture.data:
-        #     picture_file = save_picture(form.picture.data)
-        #     current_user.image_file = picture_file
-
         db.session.commit() 
         flash('Your profile has been updated!', 'success')
         return redirect(url_for('users.profile'))
     
-    # Show validation errors (like "Username already taken")
     if form.errors:
         for field, errors in form.errors.items():
             for error in errors:
@@ -190,7 +174,6 @@ def update_profile():
 @users.route("/members")
 @login_required
 def members():
-    # Fetch all users from the 'members' table
     all_members = User.query.all()
     return render_template('members.html', title='Members', members=all_members)
 
