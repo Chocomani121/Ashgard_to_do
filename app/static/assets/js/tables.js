@@ -2,6 +2,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     const tableData = [];
     const rows = document.querySelectorAll('#projectsTable tbody tr');
+    const gridContainer = document.getElementById("table-gridjs");
+
+    // Only initialize if the table exists
+    if (rows.length === 0 || !gridContainer) {
+        return;
+    }
 
     // Extract data from hidden table
     rows.forEach(row => {
@@ -30,17 +36,19 @@ document.addEventListener('DOMContentLoaded', () => {
             table: { 'width': '100%' },
             th: { 'text-align': 'left' }
         }
-    }).render(document.getElementById("table-gridjs"));
+    }).render(gridContainer);
 
-    // Filter by dropdown
+    // Filter by dropdown (only if element exists)
     const select = document.getElementById('categorySelect');
-    select.addEventListener('change', () => {
-        const selected = select.value;
+    if (select) {
+        select.addEventListener('change', () => {
+            const selected = select.value;
 
-        grid.updateConfig({
-            data: tableData.filter(row => selected === "All" || row[4] === selected)
-        }).forceRender();
-    });
+            grid.updateConfig({
+                data: tableData.filter(row => selected === "All" || row[4] === selected)
+            }).forceRender();
+        });
+    }
 });
 
 

@@ -20,16 +20,31 @@ def tasks():
 @login_required
 def all_departments():
     departments = Department.query.all()
+    users = User.query.all()  # Get all users from database
     stats = {'total': len(departments)}
-    return render_template('all_departments.html', departments=departments, stats=stats)
+    return render_template('all_departments.html', departments=departments, users=users, stats=stats)
 
 @main.route("/department/add", methods=['POST'])
 @login_required
 def add_department():
     name = request.form.get('department_name')
+    member_ids = request.form.getlist('member_ids')  # Get list of selected member IDs
+    
     if name:
         new_dept = Department(department_name=name)
         db.session.add(new_dept)
+        db.session.flush()  # Flush to get the department_id
+        
+        # Assign selected members to the new department
+        if member_ids:
+            for member_id in member_ids:
+                try:
+                    user = User.query.get(int(member_id))
+                    if user:
+                        user.department_id = new_dept.department_id
+                except (ValueError, TypeError):
+                    continue
+        
         db.session.commit()
         flash('Department added successfully!', 'success')
     return redirect(url_for('main.all_departments'))
@@ -41,6 +56,23 @@ def edit_department(id):
     department = Department.query.get_or_404(id)
     if request.method == 'POST':
         department.department_name = request.form.get('department_name')
+        member_ids = request.form.getlist('member_ids')  # Get list of selected member IDs
+        
+        # Update department members
+        # First, remove all current members from this department
+        for user in department.members:
+            user.department_id = None
+        
+        # Then assign new members to the department
+        if member_ids:
+            for member_id in member_ids:
+                try:
+                    user = User.query.get(int(member_id))
+                    if user:
+                        user.department_id = department.department_id
+                except (ValueError, TypeError):
+                    continue
+        
         db.session.commit()
         flash('Department updated!', 'success')
         return redirect(url_for('main.all_departments'))

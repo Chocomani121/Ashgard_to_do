@@ -2,6 +2,7 @@
 /venv
 /instance
 /migrations
+.cursor/
 
 **/__init__.py
 instance/
