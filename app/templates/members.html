@@ -10,7 +10,8 @@
                         <div class="row align-items-center">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <h5 class="card-title">Contact List <span class="text-muted fw-normal ms-2">(834)</span></h5>
+                                    <h5 class="card-title">Contact List 
+                                    <span class="text-muted fw-normal ms-2">Showing {{ total_users }} registered members</span></h5>
                                 </div>
                             </div>
 
@@ -30,7 +31,9 @@
                                                         <th scope="col">Email</th>
                                                         <th scope="col">Position</th>
                                                         <th scope="col">Department</th>
+                                                        {% if current_user.account_type == 'admin' %}
                                                         <th scope="col" style="width: 200px;">Action</th>
+                                                        {% endif %}
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -48,19 +51,21 @@
                                                         <td>{{ member.email }}</td>
                                                         <td><span class="badge badge-soft-success mb-0">{{ member.position if member.position else 'Staff' }}</span></td>
                                                         <td>{{ member.dept_info.department_name if member.dept_info else 'N/A' }}</td>
-                                                        
+                                                        {% if current_user.account_type == 'admin' %}
                                                         <td>
                                                             <ul class="list-inline mb-0">
                                                                 <li class="list-inline-item">
                                                                     <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target=".create-task" data-bs-placement="top" title="Edit" class="px-2 text-primary"><i class="bx bx-pencil font-size-18"></i></a>
                                                                 </li>
                                                               <li class="list-inline-item">
-                                                                        <a title="Delete" class="text-danger"
-                                                                            href="javascript:void(0);" 
-                                                                            onclick="confirmDelete('Daniel Anderson')"><i class="bx bx-trash-alt font-size-18"></i></a>
+                                                                        <a title="Delete" class="text-danger" href="javascript:void(0);" 
+                                                                        onclick="confirmDelete('{{ member.name }}', '{{ member.member_id }}')">
+                                                                        <i class="bx bx-trash-alt font-size-18"></i>
+                                                                        </a>
                                                                 </li>
                                                             </ul>
                                                         </td>
+                                                        {% endif %}
                                                     </tr>
                                                     {% endfor %}
                                                 </tbody>
@@ -75,32 +80,38 @@
                         <div class="row g-0 align-items-center pb-4">
                             <div class="col-sm-6">
                                 <div>
-                                    <p class="mb-sm-0">Showing 1 to 10 of 57 entries</p>
+                                    <p class="mb-sm-0">
+                                        Showing {{ (pagination.page - 1) * pagination.per_page + 1 }} 
+                                        to {{ (pagination.page - 1) * pagination.per_page + members|length }} 
+                                        of {{ total_users }} entries
+                                    </p>
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="float-sm-end">
                                     <ul class="pagination mb-sm-0">
-                                        <li class="page-item disabled">
-                                            <a href="#" class="page-link"><i class="mdi mdi-chevron-left"></i></a>
+                                        <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
+                                            <a href="{{ url_for('users.members', page=pagination.prev_num) if pagination.has_prev else '#' }}" class="page-link">
+                                                <i class="mdi mdi-chevron-left"></i>
+                                            </a>
                                         </li>
-                                        <li class="page-item active">
-                                            <a href="#" class="page-link">1</a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a href="#" class="page-link">2</a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a href="#" class="page-link">3</a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a href="#" class="page-link">4</a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a href="#" class="page-link">5</a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a href="#" class="page-link"><i class="mdi mdi-chevron-right"></i></a>
+
+                                        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                            {% if page_num %}
+                                                <li class="page-item {{ 'active' if page_num == pagination.page }}">
+                                                    <a href="{{ url_for('users.members', page=page_num) }}" class="page-link">{{ page_num }}</a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item disabled">
+                                                    <span class="page-link">...</span>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+
+                                        <li class="page-item {{ 'disabled' if not pagination.has_next }}">
+                                            <a href="{{ url_for('users.members', page=pagination.next_num) if pagination.has_next else '#' }}" class="page-link">
+                                                <i class="mdi mdi-chevron-right"></i>
+                                            </a>
                                         </li>
                                     </ul>
                                 </div>
