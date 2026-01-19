@@ -30,8 +30,8 @@ def register():
             username=form.username.data,
             email=form.email.data,
             password=hashed_password,
-            department_id=form.department.data,
-            account_type='admin'
+            # department_id=form.department.data,
+            account_type='user'
         )
         
         try:
