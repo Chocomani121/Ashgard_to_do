@@ -31,7 +31,7 @@ def register():
             email=form.email.data,
             password=hashed_password,
             department_id=form.department.data,
-            account_type='user'
+            account_type='admin'
         )
         
         try:
