@@ -48,13 +48,16 @@
                                                         <td>{{ member.email }}</td>
                                                         <td><span class="badge badge-soft-success mb-0">{{ member.position if member.position else 'Staff' }}</span></td>
                                                         <td>{{ member.dept_info.department_name if member.dept_info else 'N/A' }}</td>
+                                                        
                                                         <td>
                                                             <ul class="list-inline mb-0">
                                                                 <li class="list-inline-item">
-                                                                    <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit" class="px-2 text-primary"><i class="bx bx-pencil font-size-18"></i></a>
+                                                                    <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target=".create-task" data-bs-placement="top" title="Edit" class="px-2 text-primary"><i class="bx bx-pencil font-size-18"></i></a>
                                                                 </li>
-                                                                <li class="list-inline-item">
-                                                                    <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a>
+                                                              <li class="list-inline-item">
+                                                                        <a title="Delete" class="text-danger"
+                                                                            href="javascript:void(0);" 
+                                                                            onclick="confirmDelete('Daniel Anderson')"><i class="bx bx-trash-alt font-size-18"></i></a>
                                                                 </li>
                                                             </ul>
                                                         </td>
@@ -110,5 +113,304 @@
                     <!-- container-fluid -->
                 </div>
                 <!-- End Page-content -->
+<div
+    id="myModal"
+    class="modal fade"
+    tabindex="-1"
+    data-bs-backdrop="static"
+    aria-labelledby="myModalLabel"
+    data-bs-scroll="true"
+    aria-hidden="true"
+    style="display: none;"
+>
+    <div class="modal-dialog">
+        <div class="modal-content">
 
+            <div class="modal-header">
+                <h5 class="modal-title" id="myModalLabel">Add Member</h5>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                ></button>
+            </div>
+
+            <!-- div form -->
+            <div class="modal-body">
+                <form>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="formrow-fullname-input" class="form-label">
+                                    Enter Full Name
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="Full Name"
+                                    id="formrow-fullname-input"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="formrow-username-input" class="form-label">
+                                    Username
+                                </label>
+                                <input
+                                    type="username"
+                                    class="form-control"
+                                    placeholder="Enter Username"
+                                    id="formrow-username-input"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="formrow-email-input" class="form-label">
+                                    Email
+                                </label>
+                                <input
+                                    type="email"
+                                    class="form-control"
+                                    placeholder="Email"
+                                    id="formrow-email-input"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="formrow-password-input" class="form-label">
+                                    Password
+                                </label>
+                                <input
+                                    type="password"
+                                    class="form-control"
+                                    placeholder="Enter Password"
+                                    id="formrow-password-input"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="formrow-position-input" class="form-label">
+                                    Position
+                                </label>
+                                <select id="formrow-position-input" class="form-select">
+                                    <option value="" selected disabled>Choose...</option>
+                                    <option>Full Stack Developer</option>
+                                    <option>Frontend Developer</option>
+                                    <option>Backend Developer</option>
+                                    <option>Secretary</option>
+                                    <option>HR</option>
+                                    <option>Paralegal</option>
+                                    <option>N/A</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="formrow-department-input" class="form-label">
+                                    Department
+                                </label>
+                                <select id="formrow-department-input" class="form-select">
+                                    <option value="" selected disabled>Choose...</option>
+                                    <option>MDC</option>
+                                    <option>CYBER</option>
+                                    <option>LEGAL</option>
+                                    <option>AIRMED</option>
+                                    <option>VALKYRIE SECURITY</option>
+                                    <option>MARS MOTORS</option>
+                                    <option>LORRAINE DEV'T CORP</option>
+                                    <option>SANREM SHIPBUILDING SERVICES</option>
+                                    <option>N/A</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col-12 text-end">
+                            <button
+                                type="button"
+                                class="btn btn-danger me-1"
+                                data-bs-dismiss="modal"
+                            >
+                                <i class="bx bx-x me-1 align-middle"></i>
+                                Cancel
+                            </button>
+
+                            <button
+                                type="submit"
+                                class="btn btn-success"
+                                data-bs-toggle="modal"
+                                data-bs-target="#success-btn"
+                                id="btn-save-event"
+                            >
+                                <i class="bx bx-check me-1 align-middle"></i>
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+             </div> <!-- div form -->
+
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+<!-- end preview -->
+
+
+<!-- Edit Profile Modal -->
+<div
+    class="modal fade create-task"
+    data-bs-backdrop="static"
+    tabindex="-1"
+    aria-labelledby="createTaskLabel"
+    data-bs-scroll="true"
+    aria-hidden="true"
+    style="display: none;"
+>
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="createTaskLabel">Update Member</h5>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                ></button>
+            </div>
+<!-- div form -->
+            <div class="modal-body">
+                <form>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="formrow-fullname-input-edit" class="form-label">
+                                    Full Name
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="Full Name"
+                                    id="formrow-fullname-input-edit"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="formrow-username-input-edit" class="form-label">
+                                    Username
+                                </label>
+                                <input
+                                    type="username"
+                                    class="form-control"
+                                    placeholder="Username"
+                                    id="formrow-username-input-edit"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="formrow-email-input-edit" class="form-label">
+                                    Email
+                                </label>
+                                <input
+                                    type="email"
+                                    class="form-control"
+                                    placeholder="Email"
+                                    id="formrow-email-input-edit"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="formrow-position-input-edit" class="form-label">
+                                    Position
+                                </label>
+                                <select id="formrow-position-input-edit" class="form-select">
+                                    <option value="" selected disabled>Choose...</option>
+                                    <option>Full Stack Developer</option>
+                                    <option>Frontend Developer</option>
+                                    <option>Backend Developer</option>
+                                    <option>Secretary</option>
+                                    <option>HR</option>
+                                    <option>Paralegal</option>
+                                    <option>N/A</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="formrow-department-input-edit" class="form-label">
+                                    Department
+                                </label>
+                                <select id="formrow-department-input-edit" class="form-select">
+                                    <option value="" selected disabled>Choose...</option>
+                                    <option>MDC</option>
+                                    <option>CYBER</option>
+                                    <option>LEGAL</option>
+                                    <option>AIRMED</option>
+                                    <option>VALKYRIE SECURITY</option>
+                                    <option>MARS MOTORS</option>
+                                    <option>LORRAINE DEV'T CORP</option>
+                                    <option>SANREM SHIPBUILDING SERVICES</option>
+                                    <option>N/A</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col-12 text-end">
+                            <button
+                                type="button"
+                                class="btn btn-danger me-1"
+                                data-bs-dismiss="modal"
+                            >
+                                <i class="bx bx-x me-1 align-middle"></i>
+                                Cancel
+                            </button>
+
+                            <button
+                                type="submit"
+                                class="btn btn-success"
+                                data-bs-toggle="modal"
+                                data-bs-target="#success-btn"
+                                id="btn-save-event-edit"
+                            >
+                                <i class="bx bx-check me-1 align-middle"></i>
+                                Update
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+             </div> <!-- div form -->
+        </div>  <!-- /.modal-content -->
+    </div>  <!-- /.modal-dialog -->
+</div> <!-- Edit Profile modal -->    
+            
    {% endblock content %}
+   
