@@ -10,15 +10,13 @@ from PIL import Image
 
 users = Blueprint('users', __name__)
 
-# --- AUTHENTICATION ---
-# admin registration route
+# 1. ADMIN REGISTRATION
 @users.route("/admin_register", methods=['GET', 'POST'])
 def admin_register():
     if current_user.is_authenticated:
         return redirect(url_for('main.projects'))
 
     form = RegisterForm()
-    
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user = User(
@@ -26,46 +24,40 @@ def admin_register():
             username=form.username.data,
             email=form.email.data,
             password=hashed_password,
-            account_type='admin'
-        )
-        try:
-            db.session.add(user)
-            db.session.commit()
-            flash('Your account has been created! You can now log in.', 'success')
-            return redirect(url_for('users.login'))
-        except Exception as e:
-            db.session.rollback()
-            # If there's a database error (like a duplicate username that the form missed)
-            form.email.errors.append("A database error occurred. Please try again.")
-    return render_template('auth-register-admin.html', title='Register', form=form)
-
-
-@users.route("/register", methods=['GET', 'POST'])
-@users.route("/admin_register", methods=['GET', 'POST'])
-def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('main.projects'))
-    
-    form = RegisterForm()
-    # Check which URL the user is visiting
-    is_admin_route = request.path == '/admin_register'
-    
-    if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(
-            name=form.name.data,
-            username=form.username.data,
-            email=form.email.data,
-            password=hashed_password,
-            account_type='admin' if is_admin_route else 'user' # Dynamic assignment
+            account_type='admin'  # Hardcoded specifically for this route
         )
         db.session.add(user)
         db.session.commit()
+        flash('Admin account created!', 'success')
         return redirect(url_for('users.login'))
+    
+    # Points ONLY to the admin template
+    return render_template('auth-register-admin.html', title='Register Admin', form=form)
 
-    # Choose template based on the route
-    template = 'auth-register-admin.html' if is_admin_route else 'auth-register.html'
-    return render_template(template, title='Register', form=form)
+
+# 2. USER REGISTRATION
+@users.route("/register", methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.projects'))
+
+    form = RegisterForm()
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        user = User(
+            name=form.name.data,
+            username=form.username.data,
+            email=form.email.data,
+            password=hashed_password,
+            account_type='user'  # Hardcoded specifically for this route
+        )
+        db.session.add(user)
+        db.session.commit()
+        flash('Account created successfully!', 'success')
+        return redirect(url_for('users.login'))
+    
+    # Points ONLY to the standard user template
+    return render_template('auth-register.html', title='Register', form=form)
 
 @users.route("/")
 @users.route("/login", methods=['GET', 'POST'])
