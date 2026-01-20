@@ -29,7 +29,7 @@
                         <div class="card">
                             <div class="card-body p-4">
                                 <div class="mt-2 text-center">
-                                    <h5>Admin</h5>  
+                                    <h5>Login</h5>  
                                     <p class="text-muted">Please fill your information below</p>
                                 </div>
                                 
@@ -37,9 +37,8 @@
                                         {% with messages = get_flashed_messages(with_categories=true) %}
                                             {% if messages %}
                                                 {% for category, message in messages %}
-                                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                                <div class="text-danger small mb-2 text-center" role="alert">
                                                     {{ message }}
-                                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                                 </div>
                                                 {% endfor %}
                                             {% endif %}
@@ -52,11 +51,13 @@
                                                         {{ form.email(class="form-control " + ("is-invalid" if form.email.errors else ""), placeholder="Enter email") }}
                                                         <span class="bx bx-user"></span>
                                                     </div>
+
                                                     {% if form.email.errors %}
                                                         {% for error in form.email.errors %}
                                                             <div class="text-danger small mt-1">{{ error }}</div>
                                                         {% endfor %}
                                                     {% endif %}
+
                                                 </div>
                                             </div>
 
