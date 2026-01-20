@@ -3,6 +3,7 @@ from app import db, bcrypt, mail
 from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm, UpdateAccountForm
 from app.models import User, Department
 from flask_login import login_user, current_user, logout_user, login_required
+from flask_mail import Message
 import os
 import secrets
 from PIL import Image
@@ -39,13 +40,15 @@ def admin_register():
     return render_template('auth-register-admin.html', title='Register', form=form)
 
 
-# user registration route
 @users.route("/register", methods=['GET', 'POST'])
+@users.route("/admin_register", methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('main.projects'))
-
+    
     form = RegisterForm()
+    # Check which URL the user is visiting
+    is_admin_route = request.path == '/admin_register'
     
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -54,18 +57,15 @@ def register():
             username=form.username.data,
             email=form.email.data,
             password=hashed_password,
-            account_type='user'
+            account_type='admin' if is_admin_route else 'user' # Dynamic assignment
         )
-        try:
-            db.session.add(user)
-            db.session.commit()
-            flash('Your account has been created! You can now log in.', 'success')
-            return redirect(url_for('users.login'))
-        except Exception as e:
-            db.session.rollback()
-            # If there's a database error (like a duplicate username that the form missed)
-            form.email.errors.append("A database error occurred. Please try again.")
-    return render_template('auth-register.html', title='Register', form=form)
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for('users.login'))
+
+    # Choose template based on the route
+    template = 'auth-register-admin.html' if is_admin_route else 'auth-register.html'
+    return render_template(template, title='Register', form=form)
 
 @users.route("/")
 @users.route("/login", methods=['GET', 'POST'])
