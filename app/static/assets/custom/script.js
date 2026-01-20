@@ -232,3 +232,14 @@ document.querySelectorAll('.pin-btn').forEach(btn => {
     });
 });
 
+// This ensures the calendar works even if the .init.js misses it
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr("#datepicker-range", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "F j, Y"
+            });
+        }
+    });
