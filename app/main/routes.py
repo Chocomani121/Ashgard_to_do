@@ -1,7 +1,7 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request
 from flask_login import login_required
 from app.models import Department, User
-from app import db # Required for committing changes
+from app import db # 
 
 main = Blueprint('main', __name__)
 
@@ -20,7 +20,7 @@ def tasks():
 @login_required
 def all_departments():
     departments = Department.query.all()
-    users = User.query.all()  # Get all users from database
+    users = User.query.all() 
     stats = {'total': len(departments)}
     return render_template('all_departments.html', departments=departments, users=users, stats=stats)
 
@@ -28,7 +28,7 @@ def all_departments():
 @login_required
 def add_department():
     name = request.form.get('department_name')
-    member_ids = request.form.getlist('member_ids')  # Get list of selected member IDs
+    member_ids = request.form.getlist('member_ids') 
     
     if name:
         new_dept = Department(department_name=name)

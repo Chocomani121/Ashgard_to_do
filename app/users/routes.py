@@ -10,7 +10,36 @@ from PIL import Image
 users = Blueprint('users', __name__)
 
 # --- AUTHENTICATION ---
+# admin registration route
+@users.route("/admin_register", methods=['GET', 'POST'])
+def admin_register():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.projects'))
 
+    form = RegisterForm()
+    
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        user = User(
+            name=form.name.data,
+            username=form.username.data,
+            email=form.email.data,
+            password=hashed_password,
+            account_type='admin'
+        )
+        try:
+            db.session.add(user)
+            db.session.commit()
+            flash('Your account has been created! You can now log in.', 'success')
+            return redirect(url_for('users.login'))
+        except Exception as e:
+            db.session.rollback()
+            # If there's a database error (like a duplicate username that the form missed)
+            form.email.errors.append("A database error occurred. Please try again.")
+    return render_template('auth-register-admin.html', title='Register', form=form)
+
+
+# user registration route
 @users.route("/register", methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
