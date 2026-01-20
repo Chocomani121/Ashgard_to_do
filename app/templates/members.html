@@ -23,8 +23,9 @@
                             <div class="col-lg-12">
                                 <div class="card">
                                     <div class="card-body">
-                                        <div class="table-responsive">
-                                            <table class="table table-nowrap align-middle">
+                                          <div id="table7-gridjs"></div>
+                                       
+                                            <table id="projectsTableMembers" class="table table-nowrap align-middle">
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th scope="col">Name</th>
@@ -70,55 +71,12 @@
                                                     {% endfor %}
                                                 </tbody>
                                             </table>
-                                        </div>
+                                      
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <!-- end row -->
-
-                        <div class="row g-0 align-items-center pb-4">
-                            <div class="col-sm-6">
-                                <div>
-                                    <p class="mb-sm-0">
-                                        Showing {{ (pagination.page - 1) * pagination.per_page + 1 }} 
-                                        to {{ (pagination.page - 1) * pagination.per_page + members|length }} 
-                                        of {{ total_users }} entries
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="float-sm-end">
-                                    <ul class="pagination mb-sm-0">
-                                        <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
-                                            <a href="{{ url_for('users.members', page=pagination.prev_num) if pagination.has_prev else '#' }}" class="page-link">
-                                                <i class="mdi mdi-chevron-left"></i>
-                                            </a>
-                                        </li>
-
-                                        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-                                            {% if page_num %}
-                                                <li class="page-item {{ 'active' if page_num == pagination.page }}">
-                                                    <a href="{{ url_for('users.members', page=page_num) }}" class="page-link">{{ page_num }}</a>
-                                                </li>
-                                            {% else %}
-                                                <li class="page-item disabled">
-                                                    <span class="page-link">...</span>
-                                                </li>
-                                            {% endif %}
-                                        {% endfor %}
-
-                                        <li class="page-item {{ 'disabled' if not pagination.has_next }}">
-                                            <a href="{{ url_for('users.members', page=pagination.next_num) if pagination.has_next else '#' }}" class="page-link">
-                                                <i class="mdi mdi-chevron-right"></i>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- end row -->
-                       
 
                     </div>
                     <!-- container-fluid -->

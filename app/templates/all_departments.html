@@ -84,8 +84,8 @@
                             <thead>
                                 <tr>
                                     <th style="width: 190px;">Department Name</th>
-                                    <th>Total Members</th>
-                                    <th>Created Date</th>
+                                    <th style="text-align: center;">Total Members</th>
+                                    <th style="text-align: center;">Created Date</th>
                                     {% if current_user.is_authenticated and current_user.account_type == 'admin' %}
                                     <th>Action</th>
                                     {% endif %}
@@ -95,8 +95,8 @@
                                 {% for dept in departments %}
                                 <tr>
                                     <td style="width: 190px;">{{ dept.department_name }}</td>
-                                    <td>{{ dept.members|length }}</td>
-                                    <td>{{ dept.creation_date.strftime('%Y-%m-%d') if dept.creation_date else 'N/A' }}</td>
+                                    <td style="text-align: center;">{{ dept.members|length }}</td>
+                                    <td style="text-align: center;">{{ dept.creation_date.strftime('%Y-%m-%d') if dept.creation_date else 'N/A' }}</td>
                                     <td>
                                         {% if current_user.is_authenticated and current_user.account_type == 'admin' %}
                                         <div class="dropdown">
