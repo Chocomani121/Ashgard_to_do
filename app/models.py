@@ -3,6 +3,7 @@ from itsdangerous import URLSafeTimedSerializer as Serializer
 from flask import current_app
 from app import db, login_manager
 from flask_login import UserMixin
+from sqlalchemy import Enum
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -76,6 +77,8 @@ class Project(db.Model):
     project_manager = db.Column(db.Integer, db.ForeignKey('members.member_id'))
     deadlines_id    = db.Column(db.Integer, db.ForeignKey('deadlines_tbl.deadlines_id'))
     
+    # Priority field - ENUM type matching database
+    priority        = db.Column(Enum('Low', 'Medium', 'High', name='priority_enum'), default='High')
     client_name     = db.Column(db.String(255))
     project_status  = db.Column(db.String(255))
     progress        = db.Column(db.String(255))
