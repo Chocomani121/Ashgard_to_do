@@ -15,9 +15,8 @@ users = Blueprint('users', __name__)
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('main.projects'))
+
     form = RegisterForm()
-    all_departments = Department.query.all()
-    form.department.choices = [(d.department_id, d.department_name) for d in all_departments]
     
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -26,13 +25,17 @@ def register():
             username=form.username.data,
             email=form.email.data,
             password=hashed_password,
-            department_id=form.department.data,
-            account_type='admin'
+            account_type='user'
         )
-        db.session.add(user)
-        db.session.commit()
-        flash('Your account has been created!', 'success')
-        return redirect(url_for('users.login'))
+        try:
+            db.session.add(user)
+            db.session.commit()
+            flash('Your account has been created! You can now log in.', 'success')
+            return redirect(url_for('users.login'))
+        except Exception as e:
+            db.session.rollback()
+            # If there's a database error (like a duplicate username that the form missed)
+            form.email.errors.append("A database error occurred. Please try again.")
     return render_template('auth-register.html', title='Register', form=form)
 
 @users.route("/")
