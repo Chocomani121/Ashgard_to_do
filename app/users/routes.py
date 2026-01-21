@@ -25,7 +25,7 @@ def admin_register():
             username=form.username.data,
             email=form.email.data,
             password=hashed_password,
-            account_type='admin'  # Hardcoded specifically for this route
+            account_type='admin' 
         )
         db.session.add(user)
         db.session.commit()
@@ -34,7 +34,6 @@ def admin_register():
     
     # Points ONLY to the admin template
     return render_template('auth-register-admin.html', title='Register Admin', form=form)
-
 
 # 2. USER REGISTRATION
 @users.route("/register", methods=['GET', 'POST'])
@@ -150,17 +149,17 @@ def members():
 #                            pagination=pagination, 
 #                            total_users=User.query.count())
 
-@users.route("/delete_member/<int:member_id>", methods=['POST'])
+@users.route("/delete_member/<int:member_id>", methods=['GET','POST'])
 @login_required
 def delete_member(member_id):
     if current_user.account_type != 'admin':
-        flash('Unauthorized.', 'danger')
+        flash('Unauthorized.', 'danger_error')
         return redirect(url_for('users.members'))
     
     member = User.query.get_or_404(member_id)
     db.session.delete(member)
     db.session.commit()
-    flash('Member deleted.', 'success')
+    flash('Member deleted.', 'delete_success')
     return redirect(url_for('users.members'))
 
 # -------------------- PASSWORD RESET --------------------
@@ -215,24 +214,38 @@ def reset_token(token):
 
     return render_template('reset_token.html', title='Reset Password', form=form)
 
-@users.route("/admin/update/member/<int:member_id>", methods=['POST']) # Add GET for testing
+
+# 3. ADMIN UPDATING A MEMBER'S DETAILS
+@users.route("/admin/update/member/<int:member_id>", methods=['POST'])
 @login_required
 def update_member(member_id):
-
     if current_user.account_type != 'admin':
-        flash('Unauthorized!', 'danger')
+        flash('Unauthorized!', 'danger_error')
         return redirect(url_for('users.members'))
         
     member = User.query.get_or_404(member_id)
-    member.name = request.form.get('name')
-    member.username = request.form.get('username')
-    member.email = request.form.get('email')
     
-    # Check if 'department' is coming through as an ID
+    new_username = request.form.get('username')
+    new_email = request.form.get('email')
+
+    existing_user = User.query.filter(User.username == new_username, User.member_id != member_id).first()
+    if existing_user:
+        flash('The username is already taken!', 'modal_error')
+        return redirect(url_for('users.members'))
+
+    existing_email = User.query.filter(User.email == new_email, User.member_id != member_id).first()
+    if existing_email:
+        flash('The email is already in use!', 'modal_error')
+        return redirect(url_for('users.members'))
+
+    member.name = request.form.get('name')
+    member.username = new_username
+    member.email = new_email
+    
     dept_id = request.form.get('department')
     if dept_id:
         member.department_id = int(dept_id)
 
     db.session.commit()
-    flash(f'Updated {member.name}!', 'success')
+    flash(f'Updated {member.name}!', 'update_success')
     return redirect(url_for('users.members'))

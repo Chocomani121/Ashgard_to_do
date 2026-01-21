@@ -34,15 +34,15 @@
                                 </div>
                                 
                                     <div class="p-2 mt-4">
-                                        {% with messages = get_flashed_messages(with_categories=true) %}
+                                     {% with messages = get_flashed_messages(with_categories=true, category_filter=["login_errors"]) %}
                                             {% if messages %}
                                                 {% for category, message in messages %}
-                                                <div class="text-danger small mb-2 text-center" role="alert">
-                                                    {{ message }}
-                                                </div>
+                                                    <div class="text-danger small mb-2 text-center">
+                                                        {{ message }}
+                                                    </div>
                                                 {% endfor %}
                                             {% endif %}
-                                            {% endwith %}
+                                        {% endwith %}
                                         <form method="POST" action="{{ url_for('users.login') }}">
                                             {{ form.hidden_tag() }}
                                                 <div class="mb-3">
