@@ -4,6 +4,7 @@ from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPass
 from app.models import User, Department
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
+
 import os
 import secrets
 from PIL import Image
@@ -125,15 +126,29 @@ def profile():
 @users.route("/members")
 @login_required
 def members():
-    page = request.args.get('page', 1, type=int)
-    # This pagination object contains the logic for your HTML loop
-    pagination = User.query.order_by(User.name.asc()).paginate(page=page, per_page=10)
+    members = User.query.order_by(User.name.asc()).all()
+    departments = Department.query.order_by(Department.department_name.asc()).all()
+
+    return render_template(
+        'members.html',
+        title='Members',
+        members=members,
+        departments=departments,
+        total_users=len(members)
+    )
+
+# @users.route("/members")
+# @login_required
+# def members():
+#     page = request.args.get('page', 1, type=int)
+#     # This pagination object contains the logic for your HTML loop
+#     pagination = User.query.order_by(User.name.asc()).paginate(page=page, per_page=10)
     
-    return render_template('members.html', 
-                           title='Members',
-                           members=pagination.items, 
-                           pagination=pagination, 
-                           total_users=User.query.count())
+#     return render_template('members.html', 
+#                            title='Members',
+#                            members=pagination.items, 
+#                            pagination=pagination, 
+#                            total_users=User.query.count())
 
 @users.route("/delete_member/<int:member_id>", methods=['POST'])
 @login_required
@@ -199,3 +214,25 @@ def reset_token(token):
         return redirect(url_for('users.login'))
 
     return render_template('reset_token.html', title='Reset Password', form=form)
+
+@users.route("/admin/update/member/<int:member_id>", methods=['POST']) # Add GET for testing
+@login_required
+def update_member(member_id):
+
+    if current_user.account_type != 'admin':
+        flash('Unauthorized!', 'danger')
+        return redirect(url_for('users.members'))
+        
+    member = User.query.get_or_404(member_id)
+    member.name = request.form.get('name')
+    member.username = request.form.get('username')
+    member.email = request.form.get('email')
+    
+    # Check if 'department' is coming through as an ID
+    dept_id = request.form.get('department')
+    if dept_id:
+        member.department_id = int(dept_id)
+
+    db.session.commit()
+    flash(f'Updated {member.name}!', 'success')
+    return redirect(url_for('users.members'))
