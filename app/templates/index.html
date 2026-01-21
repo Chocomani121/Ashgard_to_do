@@ -139,7 +139,7 @@
                                                                 </td>
                                                                 <td>
                                                                     <a href="{{ url_for('main.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
-                                                                        {{ item.project.client_name or 'Unnamed Project' }}
+                                                                        {{ item.project.project_name or 'Unnamed Project' }}
                                                                     </a>
                                                                 </td>
                                                                 <td style="width: 190px;">
@@ -535,8 +535,8 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label class="form-label" for="project_name">Project Name <span class="text-muted fw-normal">(optional, not stored)</span></label>
-                                            <input type="text" class="form-control" placeholder="Optional — not saved to database" id="project_name" name="project_name">
+                                            <label class="form-label" for="project_name">Project Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" placeholder="Enter Project Name" id="project_name" name="project_name" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">

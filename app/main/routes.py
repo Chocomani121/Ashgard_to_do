@@ -194,7 +194,7 @@ def task_details():
 def create_project():
     try:
         # Get form data
-        # project_name: optional, not stored (placeholder only)
+        project_name = request.form.get('project_name')
         priority = request.form.get('priority', 'High')
         client_name = request.form.get('client_name')
         department_id = request.form.get('department_id')
@@ -205,7 +205,7 @@ def create_project():
         progress = request.form.get('progress', '0%')
         
         # Validate required fields
-        if not all([priority, client_name, department_id, project_manager, start_date_str, end_date_str]):
+        if not all([project_name, priority, client_name, department_id, project_manager, start_date_str, end_date_str]):
             flash('Please fill in all required fields', 'danger')
             return redirect(url_for('main.projects'))
         
@@ -232,6 +232,7 @@ def create_project():
             project_manager=int(project_manager),
             deadlines_id=deadline.deadlines_id,
             priority=priority,
+            project_name=project_name,
             client_name=client_name,
             project_status=project_status,
             progress=progress
