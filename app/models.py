@@ -6,10 +6,7 @@ from flask_login import UserMixin
 
 @login_manager.user_loader
 def load_user(user_id):
- 
     return User.query.get(int(user_id))
-
-
 
 class Department(db.Model):
     __tablename__   = 'department'
@@ -17,8 +14,8 @@ class Department(db.Model):
     department_name = db.Column(db.String(255), nullable=False)
     creation_date   = db.Column(db.DateTime, default=datetime.utcnow)
     
- 
-    members         = db.relationship('User',    backref='dept_info', lazy=True)
+    # This 'members' relationship is what we use in the HTML to count users
+    members         = db.relationship('User', backref='dept_info', lazy=True)
     projects        = db.relationship('Project', backref='dept_info', lazy=True)
 
 class Deadlines(db.Model):
@@ -29,7 +26,6 @@ class Deadlines(db.Model):
     create_on       = db.Column(db.DateTime, default=datetime.utcnow)
     flag            = db.Column(db.String(255))
     
-
     projects        = db.relationship('Project', backref='deadline_ref', lazy=True)
     tasks           = db.relationship('Task',    backref='deadline_ref', lazy=True)
 
@@ -40,12 +36,11 @@ class PrevDateList(db.Model):
     prev_date_actual = db.Column(db.DateTime)
     created_on       = db.Column(db.DateTime, default=datetime.utcnow)
 
-
-
 class User(db.Model, UserMixin):
     __tablename__ = 'members' 
     
     member_id       = db.Column(db.Integer, primary_key=True)
+    # This ForeignKey links back to department_id
     department_id   = db.Column(db.Integer, db.ForeignKey('department.department_id'))
     
     username        = db.Column(db.String(20),  unique=True, nullable=False)
@@ -55,10 +50,8 @@ class User(db.Model, UserMixin):
     account_type    = db.Column(db.String(255), default='user')
     image_file      = db.Column(db.String(20),  nullable=False, default='default.jpg')
     
-   
-    notes           = db.relationship('Notes',          backref='author', lazy=True)
-    managed_projects = db.relationship('Project',       backref='manager', lazy=True)
-
+    notes            = db.relationship('Notes',   backref='author', lazy=True)
+    managed_projects = db.relationship('Project', backref='manager', lazy=True)
 
     def get_id(self):
         return str(self.member_id)
@@ -76,8 +69,6 @@ class User(db.Model, UserMixin):
             return None
         return User.query.get(user_id)
 
-
-
 class Project(db.Model):
     __tablename__   = 'project'
     project_id      = db.Column(db.Integer, primary_key=True)
@@ -88,14 +79,14 @@ class Project(db.Model):
     client_name     = db.Column(db.String(255))
     project_status  = db.Column(db.String(255))
     progress        = db.Column(db.String(255))
-    p_members_id    = db.Column(db.Integer) 
 
-    
     tasks           = db.relationship('Task', backref='project_info', lazy=True)
+    team_members    = db.relationship('ProjectMembers', backref='project_ref', lazy=True)
 
 class ProjectMembers(db.Model):
     __tablename__   = 'project_members'
     p_members_id    = db.Column(db.Integer, primary_key=True)
+    project_id      = db.Column(db.Integer, db.ForeignKey('project.project_id')) # Added this
     member_id       = db.Column(db.Integer, db.ForeignKey('members.member_id'))
     role            = db.Column(db.String(255))
     generated_code  = db.Column(db.String(255))
@@ -115,8 +106,6 @@ class Task(db.Model):
     task_status      = db.Column(db.String(255))
     category         = db.Column(db.String(255))
 
-
-
 class SubTask(db.Model):
     __tablename__     = 'sub_task_list'
     sub_task_id       = db.Column(db.Integer, primary_key=True)
@@ -125,13 +114,10 @@ class SubTask(db.Model):
     subtask_name      = db.Column(db.String(255))
     is_checked        = db.Column(db.Boolean, default=False)
     created_on        = db.Column(db.DateTime, default=datetime.utcnow)
-    
 
 class Notes(db.Model):
     __tablename__ = 'notes_tbl'
     notes_id      = db.Column(db.Integer, primary_key=True)
     note_body     = db.Column(db.Text, nullable=False)
-    member_id     = db.Column(db.Integer, db.ForeignKey('members.member_id')) # Added this to track who wrote it
+    member_id     = db.Column(db.Integer, db.ForeignKey('members.member_id'))
     created_on    = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    

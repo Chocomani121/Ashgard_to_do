@@ -8,16 +8,15 @@
             <nav aria-label="breadcrumb" class="mb-3">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url_for('main.projects') }}">Projects</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('main.project_details') }}">Tasks</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.project_details') }}">Project Details</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Task Details</li>
                 </ol>
             </nav>
-
              <div class="row">
                 <!-- LEFT CONTENT -->
                 <div class="col-xl-8">
                     <!-- PROJECT OVERVIEW (Sticky Card) -->
-                    <div class="position-sticky" style="top: 90px;">
+                    <div style="top: 90px;">
                         <div class="card mb-4"  style="height: 75vh;">
 
                             <!-- Card Header with Button -->
@@ -29,12 +28,13 @@
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-end">
                                         <a class="dropdown-item"
-                                            href="#"
                                             data-bs-toggle="modal"
                                             data-bs-target="#editTaskModal">
                                             Edit Task
-                                        </a>
-                                        <a class="dropdown-item" href="#" id="sa-params">Delete Task</a>
+                                        </a>                                    
+                                        <a class="dropdown-item" 
+                                            href="javascript:void(0);" 
+                                            onclick="confirmDelete('UI Redisgn task')">Delete</a>
                                     </div>
                                 </div>
                             </div>
@@ -138,116 +138,230 @@
                 </div>
 
                 <!-- RIGHT SIDEBAR -->
-                <div class="col-xl-4">
-                    <div class="position-sticky" style="top: 90px;">
-                        <div class="card mb-4" style="height: 75vh;">
-
-                            <div class="card-body d-flex flex-column overflow-hidden">
+            <div class="col-xl-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-grow-1">
                                 <h5 class="card-title mb-0">Notes</h5>
-                                <small class="text-muted">Tasks → Subtasks</small>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addNotesProjectModal">
+                                    <i class="mdi mdi-plus me-1"></i> Add Notes
+                                </button>
+                            </div>
+                        </div>
 
-                                <!-- Scrollable notes -->
-                                <div class="mt-3 flex-grow-1 overflow-auto">
-                                 <!-- TASK -->
-                                        <div class="d-flex mb-4 ms-4">
-                                            <div class="flex-shrink-0 me-3">
-                                                <span class="avatar-sm rounded-circle bg-info text-white d-flex align-items-center justify-content-center">T</span>
-                                            </div>
-                                            <div class="border rounded p-3 w-100">
-                                                <div class="d-flex justify-content-between">
-                                                    <h6 class="mb-1">UI Redesign</h6>
-                                                    <span class="badge bg-soft-warning text-warning">Ongoing</span>
-                                                </div>
-                                                <p class="text-muted mb-0">Update layout, tables, and responsiveness.</p>
-                                            </div>
-                                        </div>
+                        <div class="mx-n4 px-4" data-simplebar style="max-height: 620px;">
+                            <div class="d-flex mb-4">
+                                <div class="flex-shrink-0 me-3">
+                                    <span class="avatar-sm rounded-circle bg-primary text-white d-flex align-items-center justify-content-center">T</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">API integration</h6>
+                                    <p class="text-muted mb-0">AI and GOOGLE</p>
+                                </div>
+                            </div>
 
-                                        <!-- SUBTASK -->
-                                        <div class="d-flex mb-3 ms-5">
-                                            <div class="flex-shrink-0 me-3">
-                                                <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
-                                            </div>
-                                            <div class="bg-light rounded p-3 w-100">
-                                                <div class="d-flex justify-content-between">
-                                                    <h6 class="mb-1">Grid.js Table Layout</h6>
-                                                    <span class="badge bg-soft-success text-success">Done</span>
-                                                </div>
-                                                <p class="text-muted mb-0">Ensured all headers display with horizontal scroll.</p>
-                                            </div>
-                                        </div>
-                                    
-                                        <!-- SUBTASK -->
-                                        <div class="d-flex mb-3 ms-5">
-                                            <div class="flex-shrink-0 me-3">
-                                                <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
-                                            </div>
-                                            <div class="bg-light rounded p-3 w-100">
-                                                <div class="d-flex justify-content-between">
-                                                    <h6 class="mb-1">Grid.js Table Layout</h6>
-                                                    <span class="badge bg-soft-success text-success">Done</span>
-                                                </div>
-                                                <p class="text-muted mb-0">Ensured all headers display with horizontal scroll.</p>
-                                            </div>
-                                        </div>
+                            <div class="d-flex mb-4 ms-4">
+                                <div class="flex-shrink-0 me-3">
+                                    <span class="avatar-sm rounded-circle bg-info text-white d-flex align-items-center justify-content-center">L</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong>Lurs</strong>
+                                        <small class="text-muted">Jan 1, 2026 · 10:42 AM</small>
+                                    </div>
+                                    <div class="border rounded p-3 position-relative message-box">
+                                        <!-- Pin button (top-right) -->
+                                        <button class="btn btn-sm btn-link p-0 pin-btn position-absolute top-0 end-0 m-2"
+                                            title="Pin message">
+                                            <i class="mdi mdi-pin-outline fs-6"></i>
+                                        </button>
 
-                                        <!-- SUBTASK -->
-                                        <div class="d-flex mb-3 ms-5">
-                                            <div class="flex-shrink-0 me-3">
-                                                <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
-                                            </div>
-                                            <div class="bg-light rounded p-3 w-100">
-                                                <div class="d-flex justify-content-between">
-                                                    <h6 class="mb-1">Grid.js Table Layout</h6>
-                                                    <span class="badge bg-soft-success text-success">Done</span>
-                                                </div>
-                                                <p class="text-muted mb-0">Ensured all headers display with horizontal scroll.</p>
-                                            </div>
+                                        <h6 class="mb-1">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Incidunt minima, perferendis sequi itaque molestias cum illum enim! Optio numquam fuga beatae aut modi enim in officiis aliquam. Cupiditate, a tenetur?</h6>
+                                        <p class="text-muted mb-0">Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae odio labore placeat autem deserunt delectus sequi consectetur quisquam eveniet cupiditate ut, porro saepe veritatis suscipit in incidunt natus aut voluptas.</p>
+
+                                    </div>
+
+                                    <div class="reply-box d-none mt-2">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" placeholder="Write a reply...">
+                                            <button class="btn btn-primary">Send</button>
                                         </div>
-                                        <!-- SUBTASK -->
-                                        <div class="d-flex mb-3 ms-5">
-                                            <div class="flex-shrink-0 me-3">
-                                                <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
-                                            </div>
-                                            <div class="bg-light rounded p-3 w-100">
-                                                <div class="d-flex justify-content-between">
-                                                    <h6 class="mb-1">Grid.js Table Layout</h6>
-                                                    <span class="badge bg-soft-success text-success">Done</span>
-                                                </div>
-                                                <p class="text-muted mb-0">Ensured all headers display with horizontal scroll.</p>
-                                            </div>
+                                    </div>
+                                    <div class="edit-box d-none mt-2">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" value="Update layout, tables, and responsiveness.">
+                                            <button class="btn btn-success">Update</button>
                                         </div>
-                                         <div class="d-flex mb-3 ms-5">
-                                            <div class="flex-shrink-0 me-3">
-                                                <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
-                                            </div>
-                                            <div class="bg-light rounded p-3 w-100">
-                                                <div class="d-flex justify-content-between">
-                                                    <h6 class="mb-1">Grid.js Table Layout</h6>
-                                                    <span class="badge bg-soft-success text-success">Done</span>
-                                                </div>
-                                                <p class="text-muted mb-0">Ensured all headers display with horizontal scroll.</p>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex mb-3 ms-5">
-                                        <div class="flex-shrink-0 me-3">
-                                            <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">S</span>
-                                        </div>
-                                        <div class="bg-light rounded p-3 w-100">
-                                            <div class="d-flex justify-content-between">
-                                                <h6 class="mb-1">Grid.js Table Layout</h6>
-                                                <span class="badge bg-soft-success text-success">Done</span>
-                                            </div>
-                                            <p class="text-muted mb-0">Ensured all headers display with horizontal scroll.</p>
-                                        </div>
+                                    </div>
+                   
+                                    <div class="note-actions mt-1">
+                                        <button class="btn btn-sm btn-link p-0 me-2 text-decoration-none" onclick="toggleInput(this, '.reply-box')">Reply</button>
+                                        <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="toggleInput(this, '.edit-box')">Edit</button>
                                     </div>
                                 </div>
                             </div>
 
+                            <div class="d-flex mb-3 ms-5">
+                                <div class="flex-shrink-0 me-3">
+                                    <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">P</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong>Patrick</strong>
+                                        <small class="text-muted">Jan 1, 2026 · 11:00 AM</small>
+                                    </div>
+                                    <div class="border rounded p-3 position-relative message-box">
+
+                                        <!-- Pin button (top-right) -->
+                                        <button class="btn btn-sm btn-link p-0 pin-btn position-absolute top-0 end-0 m-2"
+                                            title="Pin message">
+                                            <i class="mdi mdi-pin-outline fs-6"></i>
+                                        </button>
+                                            <p class="text-dark mb-0">ok</p>
+                                    </div>
+
+                                    <div class="reply-box d-none mt-2">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" placeholder="Write a reply...">
+                                            <button class="btn btn-primary">Send</button>
+                                        </div>
+                                    </div>
+                                    <div class="edit-box d-none mt-2">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" value="Fixed, is running">
+                                            <button class="btn btn-success">Update</button>
+                                        </div>
+                                    </div>
+                   
+                                    <div class="note-actions mt-1">
+                                        <button class="btn btn-sm btn-link p-0 me-2 text-decoration-none" onclick="toggleInput(this, '.reply-box')">Reply</button>
+                                        <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="toggleInput(this, '.edit-box')">Edit</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                                <div class="d-flex mb-3 ms-5">
+                                <div class="flex-shrink-0 me-3">
+                                    <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">W</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong>Windyl</strong>
+                                        <small class="text-muted">Jan 1, 2026 · 11:05 AM</small>
+                                    </div>
+                                        <div class="border rounded p-3 position-relative message-box">
+
+                                        <!-- Pin button (top-right) -->
+                                        <button class="btn btn-sm btn-link p-0 pin-btn position-absolute top-0 end-0 m-2"
+                                            title="Pin message">
+                                            <i class="mdi mdi-pin-outline fs-6"></i>
+                                        </button>
+                                            <p class="text-dark mb-0">Okay.</p>
+                                    </div>
+
+                                    <div class="reply-box d-none mt-2">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" placeholder="Write a reply...">
+                                            <button class="btn btn-primary">Send</button>
+                                        </div>
+                                    </div>
+                                    <div class="edit-box d-none mt-2">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" value="Fixed, is running">
+                                            <button class="btn btn-success">Update</button>
+                                        </div>
+                                    </div>
+                           
+                                    <div class="note-actions mt-1">
+                                        <button class="btn btn-sm btn-link p-0 me-2 text-decoration-none" onclick="toggleInput(this, '.reply-box')">Reply</button>
+                                        <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="toggleInput(this, '.edit-box')">Edit</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex mb-3 ms-5">
+                                <div class="flex-shrink-0 me-3">
+                                    <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">N</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong>Neil</strong>
+                                        <small class="text-muted">Jan 1, 2026 · 12:40 AM</small>
+                                    </div>
+                                        <div class="border rounded p-3 position-relative message-box">
+
+                                        <!-- Pin button (top-right) -->
+                                        <button class="btn btn-sm btn-link p-0 pin-btn position-absolute top-0 end-0 m-2"
+                                            title="Pin message">
+                                            <i class="mdi mdi-pin-outline fs-6"></i>
+                                        </button>
+                                            <p class="text-dark mb-0">ok</p>
+                                    </div>
+
+                                    <div class="reply-box d-none mt-2">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" placeholder="Write a reply...">
+                                            <button class="btn btn-primary">Send</button>
+                                        </div>
+                                    </div>
+                                    <div class="edit-box d-none mt-2">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" value="Fixed, is running">
+                                            <button class="btn btn-success">Update</button>
+                                        </div>
+                                    </div>
+                                  
+                                    <div class="note-actions mt-1">
+                                        <button class="btn btn-sm btn-link p-0 me-2 text-decoration-none" onclick="toggleInput(this, '.reply-box')">Reply</button>
+                                        <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="toggleInput(this, '.edit-box')">Edit</button>
+                                    </div>
+                                </div>
+            
+                            </div>
+                               <div class="d-flex mb-3 ms-5">
+                                <div class="flex-shrink-0 me-3">
+                                    <span class="avatar-sm rounded-circle bg-soft-info text-info d-flex align-items-center justify-content-center">N</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong>Neil</strong>
+                                        <small class="text-muted">Jan 1, 2026 · 12:40 AM</small>
+                                    </div>
+                                        <div class="border rounded p-3 position-relative message-box">
+
+                                        <!-- Pin button (top-right) -->
+                                        <button class="btn btn-sm btn-link p-0 pin-btn position-absolute top-0 end-0 m-2"
+                                            title="Pin message">
+                                            <i class="mdi mdi-pin-outline fs-6"></i>
+                                        </button>
+                                            <p class="text-dark mb-0">ok</p>
+                                    </div>
+
+                                    <div class="reply-box d-none mt-2">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" placeholder="Write a reply...">
+                                            <button class="btn btn-primary">Send</button>
+                                        </div>
+                                    </div>
+                                    <div class="edit-box d-none mt-2">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" value="Fixed, is running">
+                                            <button class="btn btn-success">Update</button>
+                                        </div>
+                                    </div>
+                                    <div class="note-actions mt-1">
+                                        <button class="btn btn-sm btn-link p-0 me-2 text-decoration-none" onclick="toggleInput(this, '.reply-box')">Reply</button>
+                                        <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="toggleInput(this, '.edit-box')">Edit</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-            </div>
+                    </div>
             <!-- SUBTASK TABLE -->
             <div class="row mt-4">
                 <div class="col-12">
@@ -262,9 +376,9 @@
                         </div>
 
                         <div class="card-body">
-                            <div id="table-gridjs"></div>
+                            <div id="table5-gridjs" class="projectsTableTaskDetails"></div>
 
-                            <table id="projectsTable" class="table d-none">
+                            <table id="projectsTableTaskDetails" class="table d-none">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
@@ -278,34 +392,205 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">H20</a></td>
-                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">Login Interface</a></td>
+                                        <td class="fw-semibold">H20</td>
+                                        <td class="fw-semibold">Login Interface</td>
                                         <td>Lurs</td>
-                                        <td><span class="badge bg-soft-warning text-warning">Ongoing</span></td>
+                                        <td><span class="badge bg-soft-primary text-primary">Ongoing</span></td>
                                         <td>11/12/2024 23:00</td>
-                                        <td>Lopre Lorem - it may work(?) Lmao -windyl 12/25/2025(edit)</td>
-                                        <td class="text-nowrap">
-                                            <a href="#" class="btn btn-sm btn-soft-primary me-1"><i class="mdi mdi-pencil"></i></a>
-                                            <a href="#" class="btn btn-sm btn-soft-danger"><i class="mdi mdi-delete"></i></a>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                                <a href="javascript:void(0)"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#notes-modal-preview"
+                                                onclick="prepareNoteModal('H20', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!', '-windyl 12/25/2025(edit)')">
+
+
+                                                    <div style="
+                                                        max-height: 120px;
+                                                        overflow-y: auto;
+                                                        overflow-x: hidden;
+                                                        white-space: normal;
+                                                        line-height: 1.4;
+                                                    ">
+                                                        <p class="text-dark">
+                                                            ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!
+                                                        </p>
+                                                        <footer class="blockquote-footer">
+                                                            -windyl 12/25/2025(edit)
+                                                        </footer>
+                                                    </div>
+
+                                                </a>
+                                            </td>
+                                          <td class="text-nowrap">
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                                <div class="dropdown-menu dropdown-menu-end shadow">
+                                                    <a class="dropdown-item"
+                                                       data-bs-toggle="modal" 
+                                                       data-bs-target=".notes-modal">
+                                                        Submit
+                                                    </a>
+                                                    <a class="dropdown-item"
+                                                       data-bs-toggle="modal" 
+                                                       data-bs-target=".notes-modal">
+                                                        Edit
+                                                    </a>
+                                                <a class="dropdown-item text-danger" 
+                                                onclick="confirmDelete('H20')">Delete</a>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
 
                                     <tr>
-                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">H21</a></td>
-                                        <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">Backend</a></td>
+                                        <td class="fw-semibold">H21</td>
+                                        <td class="fw-semibold">Backend</td>
                                         <td>Lurs</td>
-                                        <td><span class="badge bg-soft-warning text-warning">Ongoing</span></td>
+                                        <td><span class="badge bg-soft-warning text-warning">To be reviewed</span></td>
                                         <td>11/12/2024 23:00</td>
-                                        <td>Lopre Lorem - it may work(?) Lmao -windyl 12/25/2025(edit)</td>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                            <a href="javascript:void(0)"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#notes-modal-preview"
+                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+
+                                            <div style="
+                                                max-height: 120px;
+                                                overflow-y: auto;
+                                                overflow-x: hidden;
+                                                white-space: normal;
+                                                line-height: 1.4;
+                                            ">
+                                                <p class="text-dark">
+                                                    Lopre Lorem - it may work(?)
+                                                </p>
+                                                <footer class="blockquote-footer">
+                                                    -windyl 12/25/2025(edit)
+                                                </footer>
+                                            </div>
+
+                                            </a>
+                                        </td>
+                                    </tr>
+                                      <tr>
+                                        <td class="fw-semibold">H21</td>
+                                        <td class="fw-semibold">Backend</td>
+                                        <td>Lurs</td>
+                                        <td><span class="badge bg-soft-danger text-danger">Rejected</span></td>
+                                        <td>11/12/2024 23:00</td>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                            <a href="javascript:void(0)"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#notes-modal-preview"
+                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+                                                <div style="
+                                                    max-height: 120px;
+                                                    overflow-y: auto;
+                                                    overflow-x: hidden;
+                                                    white-space: normal;
+                                                    line-height: 1.4;
+                                                ">
+                                                    <p class="text-dark">
+                                                        Lopre Lorem - it may work(?)
+                                                    </p>
+                                                    <footer class="blockquote-footer">
+                                                        -windyl 12/25/2025(edit)
+                                                    </footer>
+                                                </div>
+
+                                            </a>
+                                        </td>
+                                        <td class="text-nowrap">
+                                        <button class="btn btn-sm btn-primary"
+                                            data-bs-toggle="modal"
+                                            data-bs-target=".notes-modal"
+                                            form="notesForm">
+                                            Re-Submit
+                                            </button>
+
+                                        </td>
+                                    </tr>
+                                      <tr>
+                                        <td class="fw-semibold">H21</td>
+                                        <td class="fw-semibold">Backend</td>
+                                        <td>Lurs</td>
+                                        <td><span class="badge bg-soft-secondary text-secondary">On Hold</span></td>
+                                        <td>11/12/2024 23:00</td>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                                <a href="javascript:void(0)"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#notes-modal-preview"
+                                                onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+
+
+                                                    <div style="
+                                                        max-height: 120px;
+                                                        overflow-y: auto;
+                                                        overflow-x: hidden;
+                                                        white-space: normal;
+                                                        line-height: 1.4;
+                                                    ">
+                                                        <p class="text-dark">
+                                                            Lopre Lorem - it may work(?)
+                                                        </p>
+                                                        <footer class="blockquote-footer">
+                                                            -windyl 12/25/2025(edit)
+                                                        </footer>
+                                                    </div>
+
+                                                </a>
+                                            </td>
                                         <td class="text-nowrap">
                                             <div class="dropdown">
                                                 <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
                                                 <div class="dropdown-menu dropdown-menu-end shadow">
-                                                    <a class="dropdown-item" href="#">Edit</a>
-                                                    <a class="dropdown-item text-danger" href="#">Delete</a>
+                                                    <a class="dropdown-item"
+                                                       data-bs-toggle="modal" 
+                                                       data-bs-target=".notes-modal">
+                                                        Resume
+                                                    </a>
+                                                    <a class="dropdown-item"
+                                                       data-bs-toggle="modal" 
+                                                       data-bs-target=".notes-modal">
+                                                        Edit
+                                                    </a>
+                                                       <a class="dropdown-item text-danger" 
+                                                        href="javascript:void(0);" 
+                                                        onclick="confirmDelete('H20')">Delete</a>
                                                 </div>
                                             </div>
                                         </td>
+                                    </tr>
+                                        <tr>
+                                        <td class="fw-semibold">H21</td>
+                                        <td class="fw-semibold">Backend</td>
+                                        <td>Lurs</td>
+                                        <td><span class="badge bg-soft-success text-success">Approved</span></td>
+                                        <td>11/12/2024 23:00</td>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                                <a href="javascript:void(0)"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#notes-modal-preview"
+                                                onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+
+
+                                                    <div style="
+                                                        max-height: 120px;
+                                                        overflow-y: auto;
+                                                        overflow-x: hidden;
+                                                        white-space: normal;
+                                                        line-height: 1.4;
+                                                    ">
+                                                        <p class="text-dark">
+                                                            Lopre Lorem - it may work(?)
+                                                        </p>
+                                                        <footer class="blockquote-footer">
+                                                            -windyl 12/25/2025(edit)
+                                                        </footer>
+                                                    </div>
+
+                                                </a>
+                                            </td>
                                     </tr>
                                     <!-- Repeat more subtasks as needed -->
                                 </tbody>
@@ -315,13 +600,273 @@
                 </div>
             </div>
 
+            <!-- PM SUBTASK TABLE -->
+             <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center">
+                            <h4 class="card-title mb-0">Sub-Task [1/6] (Project Manager)</h4>
+                            <div class="ms-auto">
+                                <button class="btn btn-primary btn-rounded" data-bs-toggle="modal" data-bs-target=".create-task">
+                                    <i class="mdi mdi-plus me-1"></i> Add Sub-Task
+                                </button>
+                            </div>
+                        </div>
 
+                        <div class="card-body">
+                            <div id="table6-gridjs" class="projectsTableTaskDetailsPM"></div>
+
+                            <table id="projectsTableTaskDetailsPM" class="table d-none">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Sub-Task Name</th>
+                                        <th>Owner</th>
+                                        <th>Status</th>
+                                        <th>Timestamp</th>
+                                        <th>Notes</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-semibold">H20</td>
+                                        <td class="fw-semibold">Login Interface</td>
+                                        <td>Lurs</td>
+                                        <td><span class="badge bg-soft-primary text-primary">Ongoing</span></td>
+                                        <td>11/12/2024 23:00</td>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                            <a href="javascript:void(0)"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#notes-modal-preview"
+                                            onclick="prepareNoteModal('H20', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!', '-windyl 12/25/2025(edit)')">
+
+
+                                                <div style="
+                                                    max-height: 120px;
+                                                    overflow-y: auto;
+                                                    overflow-x: hidden;
+                                                    white-space: normal;
+                                                    line-height: 1.4;
+                                                ">
+                                                    <p class="text-dark">
+                                                        ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!
+                                                    </p>
+                                                    <footer class="blockquote-footer">
+                                                        -windyl 12/25/2025(edit)
+                                                    </footer>
+                                                </div>
+
+                                            </a>
+                                        </td>
+                                          <td class="text-nowrap">
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                                <div class="dropdown-menu dropdown-menu-end shadow">
+                                                    <a class="dropdown-item"
+                                                       data-bs-toggle="modal" 
+                                                       data-bs-target=".notes-modal">
+                                                        Submit
+                                                    </a>
+                                                    <a class="dropdown-item"
+                                                       data-bs-toggle="modal" 
+                                                       data-bs-target=".notes-modal">
+                                                        Edit
+                                                    </a>
+                                                    <a class="dropdown-item">Hold</a>
+                                                    <a class="dropdown-item text-danger" 
+                                               
+                                                    onclick="confirmDelete('H20')">Delete</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="fw-semibold">H21</td>
+                                        <td class="fw-semibold">Backend</td>
+                                        <td>Lurs</td>
+                                        <td><span class="badge bg-soft-warning text-warning">To be reviewed</span></td>
+                                        <td>11/12/2024 23:00</td>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                            <a href="javascript:void(0)"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#notes-modal-preview"
+                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+
+
+                                                <div style="
+                                                    max-height: 120px;
+                                                    overflow-y: auto;
+                                                    overflow-x: hidden;
+                                                    white-space: normal;
+                                                    line-height: 1.4;
+                                                ">
+                                                    <p class="text-dark">
+                                                        Lopre Lorem - it may work(?)
+                                                    </p>
+                                                    <footer class="blockquote-footer">
+                                                        -windyl 12/25/2025(edit)
+                                                    </footer>
+                                                </div>
+
+                                            </a>
+                                        </td>
+                                        <td class="text-nowrap">
+                                            <button class="btn btn-sm btn-success me-1" data-bs-toggle="modal" data-bs-target=".notes-modal-approve" title="Approve" onclick="approveNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+                                                <i class="mdi mdi-check"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target=".notes-modal" title="Disapprove">
+                                                <i class="mdi mdi-close"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                      <tr>
+                                        <td class="fw-semibold">H21</td>
+                                        <td class="fw-semibold">Backend</td>
+                                        <td>Lurs</td>
+                                        <td><span class="badge bg-soft-danger text-danger">Rejected</span></td>
+                                        <td>11/12/2024 23:00</td>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                            <a href="javascript:void(0)"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#notes-modal-preview"
+                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+                                                <div style="
+                                                    max-height: 120px;
+                                                    overflow-y: auto;
+                                                    overflow-x: hidden;
+                                                    white-space: normal;
+                                                    line-height: 1.4;
+                                                ">
+                                                    <p class="text-dark">
+                                                        Lopre Lorem - it may work(?)
+                                                    </p>
+                                                    <footer class="blockquote-footer">
+                                                        -windyl 12/25/2025(edit)
+                                                    </footer>
+                                                </div>
+
+                                            </a>
+                                        </td>
+                                        <td class="text-nowrap">
+                                          <button class="btn btn-sm btn-primary"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#revertModal">
+                                                Revert
+                                            </button>
+                                        </td>
+                                    </tr>
+                                      <tr>
+                                        <td class="fw-semibold">H21</td>
+                                        <td class="fw-semibold">Backend</td>
+                                        <td>Lurs</td>
+                                        <td><span class="badge bg-soft-secondary text-secondary">On Hold</span></td>
+                                        <td>11/12/2024 23:00</td>
+                                       <td style="width: 400px;" class="notes-preview-cell">
+                                            <a href="javascript:void(0)"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#notes-modal-preview"
+                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+                                                <div style="
+                                                    max-height: 120px;
+                                                    overflow-y: auto;
+                                                    overflow-x: hidden;
+                                                    white-space: normal;
+                                                    line-height: 1.4;
+                                                ">
+                                                    <p class="text-dark">
+                                                        Lopre Lorem - it may work(?)
+                                                    </p>
+                                                    <footer class="blockquote-footer">
+                                                        -windyl 12/25/2025(edit)
+                                                    </footer>
+                                                </div>
+
+                                            </a>
+                                        </td>
+                                        <td class="text-nowrap">
+                                            <button class="btn btn-sm btn-primary"
+                                                data-bs-toggle="modal"
+                                                data-bs-target=".notes-modal"
+                                                form="notesForm">
+                                                Follow Up
+                                            </button>
+                                        </td>
+                                     </tr>
+                                         <tr>
+                                        <td class="fw-semibold">H21</td>
+                                        <td class="fw-semibold">Backend</td>
+                                        <td>Lurs</td>
+                                        <td><span class="badge bg-soft-success text-success">Approved</span></td>
+                                        <td>11/12/2024 23:00</td>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                            <a href="javascript:void(0)"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#notes-modal-preview"
+                                            onclick="prepareNoteModal('H20', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
+                                                <div style="
+                                                    max-height: 120px;
+                                                    overflow-y: auto;
+                                                    overflow-x: hidden;
+                                                    white-space: normal;
+                                                    line-height: 1.4;
+                                                ">
+                                                    <p class="text-dark">
+                                                        Lopre Lorem - it may work(?)
+                                                    </p>
+                                                    <footer class="blockquote-footer">
+                                                        -windyl 12/25/2025(edit)
+                                                    </footer>
+                                                </div>
+
+                                            </a>
+                                        </td>
+                                        <td>
+                                        <p>Approved on : 11/11/2026 20:00</p> 
+                                            <footer class="blockquote-footer">  -Lurs </footer>
+                                        </td>
+                                    </tr>
+                                    <!-- Repeat more subtasks as needed -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
+ <div class="modal fade" id="addNotesProjectModal" tabindex="-1" aria-labelledby="addTopicModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addNotesProjectModalLabel">Add Notes</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="NotesProjectTitle" class="form-label">Notes Title</label>
+                                <input type="text" class="form-control" id="NotesProjectTitle" placeholder="Enter Note title">
+                            </div>
+                            <div class="mb-3">
+                                <label for="NotesprojectDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="NotesprojectDescription" rows="3" placeholder="Enter description"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
     <!-- Add Sub-Task Modal -->
-<div class="modal fade create-task" tabindex="-1" aria-labelledby="createTaskLabel" aria-hidden="true">
+<div class="modal fade create-task" data-bs-backdrop="static" tabindex="-1" aria-labelledby="createTaskLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
 
@@ -339,11 +884,37 @@
                         <label class="form-label">Sub-Task Name</label>
                         <input type="text" class="form-control" placeholder="Enter sub-task name" required>
                     </div>
-
+                    <!-- Search + Modal = magic  -->
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="mb-3 position-relative" style="max-width: 390px;">
                             <label class="form-label">Owner</label>
-                            <input type="text" class="form-control" placeholder="Assigned to">
+
+                            <!-- Input / Selected chips -->
+                            <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
+                                id="ownerInput"
+                                data-bs-toggle="dropdown">
+
+                                <span class="text-muted small">Select owner(s)</span>
+                            </div>
+
+                            <!-- Dropdown -->
+                            <div class="dropdown-menu p-3 shadow owner-dropdown">
+                                <input type="text"
+                                    class="form-control mb-2"
+                                    id="ownerSearch"
+                                    placeholder="Search colleague">
+
+                                <small class="text-muted">Contacts</small>
+
+                                <div class="list-group mt-2 owner-list"></div>
+
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    Clear
+                                    <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">
+                                        Confirm
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -377,7 +948,7 @@
 </div>
 
 <!-- Edit Task Modal -->
-<div class="modal fade" id="editTaskModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" data-bs-backdrop="static" id="editTaskModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
 
@@ -416,19 +987,37 @@
                             <input type="date" class="form-control" value="2023-06-24">
                         </div>
 
-                        <div class="col-12">
-                            <label class="form-label">Assigned Members</label>
-                            <input type="text" class="form-control" value="John, Jane, Lurs">
-                        </div>
+                          <div class="mb-3 position-relative" style="max-width: 390px;">
+                            <label class="form-label">Owner</label>
 
-                        <div class="col-12">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" rows="4">
-                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                            </textarea>
+                            <!-- Input / Selected chips -->
+                            <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
+                                id="ownerInput"
+                                data-bs-toggle="dropdown">
+
+                                <span class="text-muted small">Select owner(s)</span>
+                            </div>
+
+                            <!-- Dropdown -->
+                            <div class="dropdown-menu p-3 shadow owner-dropdown">
+                                <input type="text"
+                                    class="form-control mb-2"
+                                    id="ownerSearch"
+                                    placeholder="Search colleague">
+
+                                <small class="text-muted">Contacts</small>
+
+                                <div class="list-group mt-2 owner-list" value="John, Jane, Lurs"></div>
+
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    Clear
+                                    <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">
+                                        Confirm
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
                 </form>
             </div>
 
@@ -440,6 +1029,92 @@
 
         </div>
     </div>
+</div>
+
+<!-- Notes Modal -->
+<div class="modal fade notes-modal" data-bs-backdrop="static" id="note-modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Note</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <textarea id="notesInput" class="form-control" rows="4"
+          placeholder="Enter your note here..."></textarea>
+
+        <input type="hidden" id="activeNotesTarget">
+        <input type="hidden" id="actionType">
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary" onclick="saveNote()">Save Note</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notes Preview -->
+<div class="modal fade" id="notes-modal-preview" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="preview-note-title">Sub-Task Notes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="preview-note-body" class="text-dark" style="white-space: pre-wrap;"></p>
+                <footer id="preview-note-footer" class="blockquote-footer mt-3"></footer>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade notes-modal-approve" data-bs-backdrop="static" id="notes-modal-approve" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="approve-note-title">Approve Note</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+          <p id="approve-note-body" class="text-dark" style="white-space: pre-wrap;"></p>
+          <footer id="approve-note-footer" class="blockquote-footer mt-3"></footer>
+      </div>
+      <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" onclick="saveNote()">Confirm Approval</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Revert modal -->
+<div class="modal fade" id="revertModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Revert Task</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <p class="mb-2">
+          This will move the task back to <strong>“To be reviewed”</strong>.
+        </p>
+
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary">Confirm Revert</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 {% endblock content %}
