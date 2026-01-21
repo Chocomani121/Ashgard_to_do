@@ -75,9 +75,27 @@ def tasks():
 @login_required
 def all_departments():
     departments = Department.query.all()
-    users = User.query.all()  # Get all users from database
-    stats = {'total': len(departments)}
-    return render_template('all_departments.html', departments=departments, users=users, stats=stats)
+    users = User.query.all()
+    projects = Project.query.all()
+    # Build department projects data for the Department Projects table
+    dept_projects_data = []
+    for project in projects:
+        dept = Department.query.get(project.department_id) if project.department_id else None
+        manager = User.query.get(project.project_manager) if project.project_manager else None
+        deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
+        dept_projects_data.append({
+            'project': project,
+            'department': dept,
+            'manager': manager,
+            'deadline': deadline,
+        })
+    # Stats for cards: total, completed, ongoing
+    stats = {
+        'total': len(departments),
+        'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
+        'ongoing': len([p for p in projects if p.project_status and p.project_status.lower() == 'ongoing']),
+    }
+    return render_template('all_departments.html', departments=departments, users=users, stats=stats, dept_projects_data=dept_projects_data)
 
 @main.route("/department/add", methods=['POST'])
 @login_required
@@ -176,8 +194,8 @@ def task_details():
 def create_project():
     try:
         # Get form data
-        project_name = request.form.get('project_name', '')  # Optional, for display
-        priority = request.form.get('priority', 'High')  # Default to High if not specified
+        # project_name: optional, not stored (placeholder only)
+        priority = request.form.get('priority', 'High')
         client_name = request.form.get('client_name')
         department_id = request.form.get('department_id')
         project_manager = request.form.get('project_manager')
@@ -213,7 +231,7 @@ def create_project():
             department_id=int(department_id),
             project_manager=int(project_manager),
             deadlines_id=deadline.deadlines_id,
-            priority=priority,  # Save priority value from form
+            priority=priority,
             client_name=client_name,
             project_status=project_status,
             progress=progress

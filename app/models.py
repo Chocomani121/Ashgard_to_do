@@ -121,6 +121,14 @@ class SubTask(db.Model):
 class Notes(db.Model):
     __tablename__ = 'notes_tbl'
     notes_id      = db.Column(db.Integer, primary_key=True)
+    task_id       = db.Column(db.Integer, db.ForeignKey('task_tbl.task_id'))
+    sub_task_id   = db.Column(db.Integer, db.ForeignKey('sub_task_list.sub_task_id'))
+    p_members_id  = db.Column(db.Integer, db.ForeignKey('project_members.p_members_id'))
+    reply_code    = db.Column(db.String(255))
     note_body     = db.Column(db.Text, nullable=False)
-    member_id     = db.Column(db.Integer, db.ForeignKey('members.member_id'))
     created_on    = db.Column(db.DateTime, default=datetime.utcnow)
+    edited_on     = db.Column(db.DateTime)
+    pin_stat      = db.Column(db.Boolean, default=False)
+    pin_datetime  = db.Column(db.DateTime)
+    generated_code = db.Column(db.String(255))
+    member_id     = db.Column(db.Integer, db.ForeignKey('members.member_id'))
