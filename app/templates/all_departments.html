@@ -72,6 +72,7 @@
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
                         <div class="ms-auto d-flex gap-2">
+                            {# Check if the logged-in user is an admin #}
                             {% if current_user.is_authenticated and current_user.account_type == 'admin' %}
                             <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#myModal">
                                 <i class="mdi mdi-plus me-1"></i>Add Department
