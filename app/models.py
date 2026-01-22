@@ -85,6 +85,7 @@ class Project(db.Model):
     client_name     = db.Column(db.String(255))
     project_status  = db.Column(db.String(255))
     progress        = db.Column(db.String(255))
+    project_desc    = db.Column(db.Text)
 
     tasks           = db.relationship('Task', backref='project_info', lazy=True)
     team_members    = db.relationship('ProjectMembers', backref='project_ref', lazy=True)
