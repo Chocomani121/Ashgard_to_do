@@ -4,7 +4,8 @@ from flask import current_app
 from app import db, login_manager
 from flask_login import UserMixin
 from sqlalchemy import Enum
-from sqlalchemy.sql import func
+from flask_sqlalchemy import SQLAlchemy
+# from sqlalchemy.sql import func
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -14,7 +15,7 @@ class Department(db.Model):
     __tablename__   = 'department'
     department_id   = db.Column(db.Integer, primary_key=True)
     department_name = db.Column(db.String(255), nullable=False)
-    creation_date   = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    creation_date   = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     
     # This 'members' relationship is what we use in the HTML to count users
     members         = db.relationship('User', backref='dept_info', lazy=True)
@@ -25,7 +26,7 @@ class Deadlines(db.Model):
     deadlines_id    = db.Column(db.Integer, primary_key=True)
     start_date      = db.Column(db.DateTime, nullable=False)
     end_date        = db.Column(db.DateTime, nullable=False)
-    create_on       = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    create_on       = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     flag            = db.Column(db.String(255))
     
     projects        = db.relationship('Project', backref='deadline_ref', lazy=True)
@@ -36,7 +37,7 @@ class PrevDateList(db.Model):
     prev_date_id     = db.Column(db.Integer, primary_key=True)
     deadlines_id     = db.Column(db.Integer, db.ForeignKey('deadlines_tbl.deadlines_id'))
     prev_date_actual = db.Column(db.DateTime)
-    created_on       = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    created_on       = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
 
 class User(db.Model, UserMixin):
     __tablename__ = 'members' 
@@ -95,7 +96,7 @@ class ProjectMembers(db.Model):
     member_id       = db.Column(db.Integer, db.ForeignKey('members.member_id'))
     role            = db.Column(db.String(255))
     generated_code  = db.Column(db.String(255))
-    assigned_date   = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    assigned_date   = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
 
 class Task(db.Model):
     __tablename__    = 'task_tbl'
@@ -118,7 +119,7 @@ class SubTask(db.Model):
     notes_id          = db.Column(db.Integer, db.ForeignKey('notes_tbl.notes_id'))
     subtask_name      = db.Column(db.String(255))
     is_checked        = db.Column(db.Boolean, default=False)
-    created_on        = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    created_on        = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
 
 class Notes(db.Model):
     __tablename__ = 'notes_tbl'
@@ -128,7 +129,7 @@ class Notes(db.Model):
     p_members_id  = db.Column(db.Integer, db.ForeignKey('project_members.p_members_id'))
     reply_code    = db.Column(db.String(255))
     note_body     = db.Column(db.Text, nullable=False)
-    created_on    = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    created_on    = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     edited_on     = db.Column(db.DateTime)
     pin_stat      = db.Column(db.Boolean, default=False)
     pin_datetime  = db.Column(db.DateTime)
