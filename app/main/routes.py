@@ -1,7 +1,8 @@
-from flask import render_template, Blueprint, redirect, url_for, flash, request
+from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required
-from app.models import Department, User
+from app.models import Department, User, Project, Deadlines
 from app import db # Required for committing changes
+from datetime import datetime
 
 main = Blueprint('main', __name__)
 
@@ -9,7 +10,61 @@ main = Blueprint('main', __name__)
 @main.route("/projects") 
 @login_required
 def projects():
-    return render_template('index.html')
+    # Fetch all projects with related data
+    projects = Project.query.all()
+    departments = Department.query.all()
+    users = User.query.all()
+    
+    # Prepare projects data for template
+    projects_data = []
+    for project in projects:
+        dept = Department.query.get(project.department_id) if project.department_id else None
+        manager = User.query.get(project.project_manager) if project.project_manager else None
+        deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
+        
+        # Calculate manhours (hours between start_date and end_date)
+        manhours = None
+        if deadline and deadline.start_date and deadline.end_date:
+            time_diff = deadline.end_date - deadline.start_date
+            # Convert to hours (total_seconds() / 3600)
+            manhours = int(time_diff.total_seconds() / 3600)
+        
+        # Get priority from project (defaults to 'High' if not set or column doesn't exist)
+        try:
+            priority_raw = project.priority
+            priority = str(priority_raw) if priority_raw else 'High'
+        except (AttributeError, KeyError):
+            priority = 'High'  # Fallback if column doesn't exist
+        
+        projects_data.append({
+            'project': project,
+            'department': dept,
+            'manager': manager,
+            'deadline': deadline,
+            'manhours': manhours,
+            'priority': priority
+        })
+    
+    # Calculate statistics from projects
+    # Count only High priority projects for the Priority card
+    # Use the same logic as display: None/null priority defaults to 'High'
+    high_priority_count = 0
+    for item in projects_data:
+        try:
+            priority_val = item['priority']  # Use the converted priority from projects_data
+            if priority_val and priority_val.lower() == 'high':
+                high_priority_count += 1
+        except (AttributeError, KeyError):
+            pass  # Skip if priority column doesn't exist
+    
+    stats = {
+        'pending': len([p for p in projects if p.project_status and p.project_status.lower() == 'pending']),
+        'high_priority': high_priority_count,  # Only count projects with High priority
+        'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
+        'on_hold': len([p for p in projects if p.project_status and p.project_status.lower() == 'on hold'])
+    }
+    
+    return render_template('index.html', projects_data=projects_data, departments=departments, users=users, stats=stats)
 
 @main.route("/tasks")
 @login_required 
@@ -20,15 +75,33 @@ def tasks():
 @login_required
 def all_departments():
     departments = Department.query.all()
-    users = User.query.all()  # Get all users from database
-    stats = {'total': len(departments)}
-    return render_template('all_departments.html', departments=departments, users=users, stats=stats)
+    users = User.query.all()
+    projects = Project.query.all()
+    # Build department projects data for the Department Projects table
+    dept_projects_data = []
+    for project in projects:
+        dept = Department.query.get(project.department_id) if project.department_id else None
+        manager = User.query.get(project.project_manager) if project.project_manager else None
+        deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
+        dept_projects_data.append({
+            'project': project,
+            'department': dept,
+            'manager': manager,
+            'deadline': deadline,
+        })
+    # Stats for cards: total, completed, ongoing
+    stats = {
+        'total': len(departments),
+        'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
+        'ongoing': len([p for p in projects if p.project_status and p.project_status.lower() == 'ongoing']),
+    }
+    return render_template('all_departments.html', departments=departments, users=users, stats=stats, dept_projects_data=dept_projects_data)
 
 @main.route("/department/add", methods=['POST'])
 @login_required
 def add_department():
     name = request.form.get('department_name')
-    member_ids = request.form.getlist('member_ids')  # Get list of selected member IDs
+    member_ids = request.form.getlist('member_ids') 
     
     if name:
         new_dept = Department(department_name=name)
@@ -101,8 +174,9 @@ def members():
     return render_template('members.html', title="Members", users=users)
 
 @main.route("/project_details")
+@main.route("/project_details/<int:id>")
 @login_required
-def project_details():
+def project_details(id=None):
     return render_template('project_details.html')
 
 @main.route("/profile")
@@ -114,3 +188,63 @@ def profile():
 @login_required
 def task_details():
     return render_template('task_details.html')
+
+@main.route("/project/create", methods=['POST'])
+@login_required
+def create_project():
+    try:
+        # Get form data
+        project_name = request.form.get('project_name')
+        priority = request.form.get('priority', 'High')
+        client_name = request.form.get('client_name')
+        department_id = request.form.get('department_id')
+        project_manager = request.form.get('project_manager')
+        start_date_str = request.form.get('start_date')
+        end_date_str = request.form.get('end_date')
+        project_status = request.form.get('project_status', 'Ongoing')
+        progress = request.form.get('progress', '0%')
+        
+        # Validate required fields
+        if not all([project_name, priority, client_name, department_id, project_manager, start_date_str, end_date_str]):
+            flash('Please fill in all required fields', 'danger')
+            return redirect(url_for('main.projects'))
+        
+        # Parse dates
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+        except ValueError:
+            flash('Invalid date format', 'danger')
+            return redirect(url_for('main.projects'))
+        
+        # Create deadline entry first
+        deadline = Deadlines(
+            start_date=start_date,
+            end_date=end_date,
+            flag='active'
+        )
+        db.session.add(deadline)
+        db.session.flush()  # Get the deadlines_id
+        
+        # Create project entry
+        project = Project(
+            department_id=int(department_id),
+            project_manager=int(project_manager),
+            deadlines_id=deadline.deadlines_id,
+            priority=priority,
+            project_name=project_name,
+            client_name=client_name,
+            project_status=project_status,
+            progress=progress
+        )
+        
+        db.session.add(project)
+        db.session.commit()
+        
+        flash('Project created successfully!', 'success')
+        return redirect(url_for('main.projects'))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error creating project: {str(e)}', 'danger')
+        return redirect(url_for('main.projects'))

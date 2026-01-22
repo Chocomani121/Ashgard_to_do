@@ -19,8 +19,8 @@
                                         <h4 class="mb-0 font-size-22 fw-bold">{{ stats.total }}</h4>
                                     </div>
                                     <div class="avatar-md">
-                                        <div class="avatar-title rounded bg-soft-warning">
-                                            <i class="mdi mdi-office-building font-size-24 text-warning"></i>
+                                        <div class="avatar-title rounded bg-soft-info">
+                                            <i class="mdi mdi-file-document-multiple-outline font-size-24 alert-info"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -37,8 +37,8 @@
                                         <h4 class="mb-0 font-size-22 fw-bold">{{ stats.completed|default(0) }}</h4>
                                     </div>
                                     <div class="avatar-md">
-                                        <div class="avatar-title rounded bg-soft-danger">
-                                            <i class="mdi mdi-alert-octagon font-size-24 text-danger"></i>
+                                        <div class="avatar-title rounded bg-soft-warning">
+                                            <i class="mdi mdi-hammer-wrench font-size-24 alert-warning"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -72,9 +72,12 @@
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
                         <div class="ms-auto d-flex gap-2">
+                            {# Check if the logged-in user is an admin #}
+                            {% if current_user.is_authenticated and current_user.account_type == 'admin' %}
                             <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#myModal">
                                 <i class="mdi mdi-plus me-1"></i>Add Department
                             </button>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="card-body">
@@ -82,18 +85,21 @@
                             <thead>
                                 <tr>
                                     <th style="width: 190px;">Department Name</th>
-                                    <th>Total Members</th>
-                                    <th>Created Date</th>
+                                    <th style="text-align: center;">Total Members</th>
+                                    <th style="text-align: center;">Created Date</th>
+                                    {% if current_user.is_authenticated and current_user.account_type == 'admin' %}
                                     <th>Action</th>
+                                    {% endif %}
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for dept in departments %}
                                 <tr>
                                     <td style="width: 190px;">{{ dept.department_name }}</td>
-                                    <td>{{ dept.members|length }}</td>
-                                    <td>{{ dept.creation_date.strftime('%Y-%m-%d') if dept.creation_date else 'N/A' }}</td>
+                                    <td style="text-align: center;">{{ dept.members|length }}</td>
+                                    <td style="text-align: center;">{{ dept.creation_date.strftime('%Y-%m-%d') if dept.creation_date else 'N/A' }}</td>
                                     <td>
+                                        {% if current_user.is_authenticated and current_user.account_type == 'admin' %}
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
                                             <div class="dropdown-menu dropdown-menu-end shadow">
@@ -114,6 +120,7 @@
                                                 data-delete-url="{{ url_for('main.delete_department', id=dept.department_id) }}">Delete</a>
                                             </div>
                                         </div>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -141,9 +148,9 @@
                                             </button>
                                             <div class="dropdown-menu">
                                                 <a class="dropdown-item" href="#" data-value="All">All</a>
-                                                <a class="dropdown-item" href="#" data-value="MDC">MDC</a>
-                                                <a class="dropdown-item" href="#" data-value="CYBER">Cyber</a>
-                                                <a class="dropdown-item" href="#" data-value="LEGAL">Legal</a>
+                                                {% for dept in departments %}
+                                                <a class="dropdown-item" href="#" data-value="{{ dept.department_name }}">{{ dept.department_name }}</a>
+                                                {% endfor %}
                                             </div>
                                         </div><!-- /btn-group -->
                                     </div>
@@ -165,102 +172,26 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr data-category="Airmed">
-                                            <td>#SK2540</td>
-                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
-                                                Osint
-                                                </a>
-                                            </td>
-                                            <td>AIRMED</td>
-                                            <td>Kathrina</td>
-                                            <td>11 / 12 / 2024 : 23:00</td>
-                                            <td><span class="badge badge-soft-success">Completed</span>
-                                            </td>
-                                        </tr>
-                                        <tr data-category="MDC">
-                                            <td>#SK2540</td>
-                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
-                                                Lorem
-                                                </a>
-                                            </td>
-                                            <td>MDC</td>
-                                            <td>Kathrina</td>
-                                            <td>11 / 12 / 2024 : 23:00</td>
-                                            <td><span class="badge badge-soft-success">Completed</span>
+                                        {% for item in dept_projects_data|default([]) %}
+                                        <tr data-category="{{ item.department.department_name if item.department else '' }}">
+                                            <td>#{{ item.project.project_id }}</td>
+                                            <td><a href="{{ url_for('main.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">{{ item.project.client_name or 'Unnamed Project' }}</a></td>
+                                            <td>{{ item.department.department_name if item.department else '—' }}</td>
+                                            <td>{{ item.project.client_name or '—' }}</td>
+                                            <td>{% if item.deadline and item.deadline.end_date %}{{ item.deadline.end_date.strftime('%d / %m / %Y : %H:%M') }}{% else %}—{% endif %}</td>
+                                            <td>
+                                                {% if item.project.project_status == 'Ongoing' %}
+                                                <span class="badge badge-soft-warning">Ongoing</span>
+                                                {% elif item.project.project_status == 'Completed' %}
+                                                <span class="badge badge-soft-success">Completed</span>
+                                                {% elif item.project.project_status == 'On Hold' %}
+                                                <span class="badge badge-soft-secondary">On Hold</span>
+                                                {% else %}
+                                                <span class="badge badge-soft-info">{{ item.project.project_status or 'Pending' }}</span>
+                                                {% endif %}
                                             </td>
                                         </tr>
-                                        <tr data-category="LEGAL">
-                                            <td>#SK2540</td>
-                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
-                                                Lorem ipsum
-                                                </a>
-                                            </td>
-                                            <td>LEGAL</td>
-                                            <td>Patrick</td>
-                                            <td>11 / 12 / 2024 : 03:00</td>
-                                            <td><span class="badge badge-soft-success">Completed</span>
-                                            </td>
-                                        </tr>
-                                        <tr data-category="MDC">
-                                            <td>#SK2540</td>
-                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
-                                                Lorem ipsum dolor sit
-                                                </a>
-                                            </td>
-                                            <td>MDC</td>
-                                            <td>Neil</td>
-                                            <td>11 / 12 / 2024 : 13:00</td>
-                                            <td><span class="badge badge-soft-success">Completed</span>
-                                            </td>
-                                        </tr>
-                                        <tr data-category="CYBER">
-                                            <td>#SK2540</td>
-                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
-                                                Lorem ipsum dolor sit amet
-                                                </a>
-                                            </td>
-                                            <td>CYBER</td>
-                                            <td>Windyl</td>
-                                            <td>11 / 12 / 2024 : 12:00</td>
-                                            <td><span class="badge badge-soft-success">Completed</span>
-                                            </td>
-                                        </tr>
-                                        <tr data-category="MARS">
-                                            <td>#SK2540</td>
-                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
-                                                Lorem ipsum dolor sit amet consectetur
-                                                </a>
-                                            </td>
-                                            <td>MARS</td>
-                                            <td>Patrick</td>
-                                            <td>11 / 12 / 2024 : 21:00</td>
-                                            <td><span class="badge badge-soft-success">Completed</span>
-                                            </td>
-                                        </tr>
-                                        <tr data-category="CYBER">
-                                            <td>#SK2546</td>
-                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
-                                                Lorem ipsum dolor sit amet consectetur, adipisicing
-                                                </a>
-                                            </td>
-                                            <td>CYBER</td>
-                                            <td>Kathrina</td>
-                                            <td>11 / 12 / 2024 : 22:00</td>
-                                            <td><span class="badge badge-soft-success">Completed</span>
-                                            </td>
-                                        </tr>
-                                        <tr data-category="LEGAL">
-                                            <td>#SK2547</td>
-                                            <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                </a>
-                                            </td>
-                                            <td>LEGAL</td>
-                                            <td>Neil</td>
-                                            <td>11 / 12 / 2024 : 24:00</td>
-                                            <td><span class="badge badge-soft-success">Completed</span>
-                                            </td>
-                                        </tr>
+                                        {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
@@ -860,80 +791,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-
-// Department Projects Table - Direct initialization after all scripts load
-document.addEventListener('DOMContentLoaded', function() {
-    function initDeptProjectsGrid() {
-        const tableElement = document.getElementById('projectsTableDept');
-        const gridContainer = document.getElementById("tableDept-gridjs");
-        const dropdownButton = document.getElementById('categorySelect');
-        const dropdownMenu = dropdownButton?.closest('.btn-group')?.querySelectorAll('.dropdown-item') || [];
-        
-        // Check if elements exist and Grid.js is available
-        if (!tableElement || !gridContainer || !dropdownButton || dropdownMenu.length === 0) {
-            return false;
-        }
-        
-        if (typeof gridjs === 'undefined') {
-            return false;
-        }
-        
-        try {
-            // Extract data from table rows
-            const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
-            const allData = tableRows.map(tr => ({
-                category: tr.getAttribute('data-category'),
-                cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML))
-            }));
-            
-            // Initialize Grid.js
-            const grid = new gridjs.Grid({
-                columns: ["ID", "Projects", "Department", "Client", "Deadline", "Status"],
-                data: allData.map(row => row.cells),
-                pagination: { limit: 10 },
-                sort: true,
-                className: {
-                    table: 'table table-bordered'
-                }
-            }).render(gridContainer);
-            
-            // Handle dropdown filtering
-            const updateGrid = (selectedValue) => {
-                const filteredData = allData.filter(row => selectedValue === "All" ? true : row.category === selectedValue);
-                grid.updateConfig({ data: filteredData.map(row => row.cells) }).forceRender();
-            };
-            
-            dropdownMenu.forEach(item => {
-                item.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    const selectedValue = this.getAttribute('data-value');
-                    dropdownButton.innerHTML = `${this.textContent} <i class="mdi mdi-chevron-down"></i>`;
-                    updateGrid(selectedValue || "All");
-                });
-            });
-            
-            return true;
-        } catch (error) {
-            console.error('Department Projects Grid initialization error:', error);
-            return false;
-        }
-    }
-    
-    // Try to initialize immediately, then retry if Grid.js not ready
-    if (!initDeptProjectsGrid()) {
-        // Wait for Grid.js to load
-        let attempts = 0;
-        const checkInterval = setInterval(function() {
-            attempts++;
-            if (initDeptProjectsGrid()) {
-                clearInterval(checkInterval);
-            } else if (attempts >= 50) {
-                // Timeout after 5 seconds
-                clearInterval(checkInterval);
-                console.warn('Department Projects: Failed to initialize after 5 seconds');
-            }
-        }, 100);
-    }
-});
 </script>
+
 {% endblock content %}
