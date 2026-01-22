@@ -71,7 +71,7 @@
 
                             <li>
                                 <a href="{{ url_for('main.projects') }}">
-                                    <i class="bx bx-layer icon nav-icon"></i>
+                                    <i class="bx bx-folder-open icon nav-icon"></i>
                                     <span class="menu-item" href="{{ url_for('main.projects') }}" data-key="t-dashboard">Projects</span>
                                 </a>
                             </li>
@@ -87,7 +87,7 @@
 
                             <li>
                                 <a href="{{ url_for('main.all_departments') }}" >
-                                    <i class="bx bx-grid-alt icon nav-icon"></i> 
+                                    <i class="bx bx-home-alt icon nav-icon"></i> 
                                     <span class="menu-item" data-key="t-departments">Departments</span>
                                 </a>
 
@@ -184,7 +184,7 @@
                                     <a href="#!" class="text-reset notification-item">
                                         <div class="d-flex">
                                             <div class="flex-shrink-0 me-3">
-                                                <img src="../static/assets/images/users/avatar-3.jpg" class="rounded-circle avatar-sm" alt="user-pic">
+                                                <img src="{{ url_for('static', filename='profile_pics/' + current_user.image_file) }}" class="rounded-circle avatar-sm" alt="user-pic">
                                             </div>
                                             <div class="flex-grow-1">
                                                 <p class="text-muted font-size-13 mb-0 float-end">1 hour ago</p>
@@ -255,7 +255,7 @@
                         <div class="dropdown d-inline-block">
                             <button type="button" class="btn header-item user text-start d-flex align-items-center" id="page-header-user-dropdown-v"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <img class="rounded-circle header-profile-user" src="../static/assets/images/users/avatar-3.jpg"
+                                <img class="rounded-circle header-profile-user" src="{{ url_for('static', filename='profile_pics/' + current_user.image_file) }}"
                                 alt="Header Avatar">
                                 <!-- <span class="d-none d-xl-inline-block ms-2 fw-medium font-size-15">{{ current_user.username}}</span> -->
                             </button>

@@ -101,7 +101,7 @@ def all_departments():
 @login_required
 def add_department():
     name = request.form.get('department_name')
-    member_ids = request.form.getlist('member_ids')  # Get list of selected member IDs
+    member_ids = request.form.getlist('member_ids') 
     
     if name:
         new_dept = Department(department_name=name)
