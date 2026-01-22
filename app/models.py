@@ -3,6 +3,8 @@ from itsdangerous import URLSafeTimedSerializer as Serializer
 from flask import current_app
 from app import db, login_manager
 from flask_login import UserMixin
+from sqlalchemy import Enum
+from sqlalchemy.sql import func
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -12,7 +14,7 @@ class Department(db.Model):
     __tablename__   = 'department'
     department_id   = db.Column(db.Integer, primary_key=True)
     department_name = db.Column(db.String(255), nullable=False)
-    creation_date   = db.Column(db.DateTime, default=datetime.utcnow)
+    creation_date   = db.Column(db.DateTime(timezone=True), server_default=func.now())
     
     # This 'members' relationship is what we use in the HTML to count users
     members         = db.relationship('User', backref='dept_info', lazy=True)
@@ -23,7 +25,7 @@ class Deadlines(db.Model):
     deadlines_id    = db.Column(db.Integer, primary_key=True)
     start_date      = db.Column(db.DateTime, nullable=False)
     end_date        = db.Column(db.DateTime, nullable=False)
-    create_on       = db.Column(db.DateTime, default=datetime.utcnow)
+    create_on       = db.Column(db.DateTime(timezone=True), server_default=func.now())
     flag            = db.Column(db.String(255))
     
     projects        = db.relationship('Project', backref='deadline_ref', lazy=True)
@@ -34,7 +36,7 @@ class PrevDateList(db.Model):
     prev_date_id     = db.Column(db.Integer, primary_key=True)
     deadlines_id     = db.Column(db.Integer, db.ForeignKey('deadlines_tbl.deadlines_id'))
     prev_date_actual = db.Column(db.DateTime)
-    created_on       = db.Column(db.DateTime, default=datetime.utcnow)
+    created_on       = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
 class User(db.Model, UserMixin):
     __tablename__ = 'members' 
@@ -76,6 +78,9 @@ class Project(db.Model):
     project_manager = db.Column(db.Integer, db.ForeignKey('members.member_id'))
     deadlines_id    = db.Column(db.Integer, db.ForeignKey('deadlines_tbl.deadlines_id'))
     
+    # Priority field - ENUM type matching database
+    priority        = db.Column(Enum('Low', 'Medium', 'High', name='priority_enum'), default='High')
+    project_name    = db.Column(db.String(255), nullable=False)
     client_name     = db.Column(db.String(255))
     project_status  = db.Column(db.String(255))
     progress        = db.Column(db.String(255))
@@ -90,7 +95,7 @@ class ProjectMembers(db.Model):
     member_id       = db.Column(db.Integer, db.ForeignKey('members.member_id'))
     role            = db.Column(db.String(255))
     generated_code  = db.Column(db.String(255))
-    assigned_date   = db.Column(db.DateTime, default=datetime.utcnow)
+    assigned_date   = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
 class Task(db.Model):
     __tablename__    = 'task_tbl'
@@ -113,11 +118,19 @@ class SubTask(db.Model):
     notes_id          = db.Column(db.Integer, db.ForeignKey('notes_tbl.notes_id'))
     subtask_name      = db.Column(db.String(255))
     is_checked        = db.Column(db.Boolean, default=False)
-    created_on        = db.Column(db.DateTime, default=datetime.utcnow)
+    created_on        = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
 class Notes(db.Model):
     __tablename__ = 'notes_tbl'
     notes_id      = db.Column(db.Integer, primary_key=True)
+    task_id       = db.Column(db.Integer, db.ForeignKey('task_tbl.task_id'))
+    sub_task_id   = db.Column(db.Integer, db.ForeignKey('sub_task_list.sub_task_id'))
+    p_members_id  = db.Column(db.Integer, db.ForeignKey('project_members.p_members_id'))
+    reply_code    = db.Column(db.String(255))
     note_body     = db.Column(db.Text, nullable=False)
+    created_on    = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    edited_on     = db.Column(db.DateTime)
+    pin_stat      = db.Column(db.Boolean, default=False)
+    pin_datetime  = db.Column(db.DateTime)
+    generated_code = db.Column(db.String(255))
     member_id     = db.Column(db.Integer, db.ForeignKey('members.member_id'))
-    created_on    = db.Column(db.DateTime, default=datetime.utcnow)
