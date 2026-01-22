@@ -14,7 +14,7 @@
             </nav>
              <div class="row">
                 <!-- LEFT CONTENT -->
-                <div class="col-xl-8">
+                <div class="col-xl-7">
                     <!-- PROJECT OVERVIEW (Sticky Card) -->
                     <div style="top: 90px;">
                         <div class="card mb-4"  style="height: 75vh;">
@@ -85,9 +85,78 @@
 
                                     <div class="col-md-3 col-sm-6">
                                         <span class="text-muted">Assigned to / Members:</span> 
-                                        <strong class="ms-1">John, Jane, Lurs</strong>
+                                         <div class="avatar-group d-inline-flex align-items-center">
+                                                <div class="avatar-group-item" style="margin-right: -10px;">
+                                                    <a href="javascript: void(0);" 
+                                                    class="d-inline-block" 
+                                                    data-bs-toggle="tooltip" 
+                                                    data-bs-placement="top" 
+                                                    title="John Doe">
+                                                        <img src="../static/assets/images/users/avatar-4.jpg" class="rounded-circle avatar-sm border border-2 border-white">
+                                                    </a>
+                                                </div>
+
+                                                <div class="avatar-group-item" style="margin-right: -10px;">
+                                                    <a href="javascript: void(0);" 
+                                                    class="d-inline-block" 
+                                                    data-bs-toggle="tooltip" 
+                                                    data-bs-placement="top" 
+                                                    title="Jane Smith">
+                                                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-sm border border-2 border-white">
+                                                    </a>
+                                                </div>
+                                                
+                                                <div class="avatar-group-item" style="margin-right: -10px;">
+                                                    <a href="javascript: void(0);" 
+                                                    class="d-inline-block" 
+                                                    data-bs-toggle="tooltip" 
+                                                    data-bs-placement="top" 
+                                                    title="Jane Smith">
+                                                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-sm border border-2 border-white">
+                                                    </a>
+                                                </div>
+                                                
+                                                <div class="avatar-group-item" style="margin-right: -10px;">
+                                                    <a href="javascript: void(0);" 
+                                                    class="d-inline-block" 
+                                                    data-bs-toggle="tooltip" 
+                                                    data-bs-placement="top" 
+                                                    title="Jane Smith">
+                                                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-sm border border-2 border-white">
+                                                    </a>
+                                                </div>
+                                                
+                                                <div class="avatar-group-item" style="margin-right: -10px;">
+                                                    <a href="javascript: void(0);" 
+                                                    class="d-inline-block" 
+                                                    data-bs-toggle="tooltip" 
+                                                    data-bs-placement="top" 
+                                                    title="Jane Smith">
+                                                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-sm border border-2 border-white">
+                                                    </a>
+                                                </div>
+                                                 <div class="avatar-group-item" style="margin-right: -10px;">
+                                                    <a href="javascript: void(0);" 
+                                                    class="d-inline-block" 
+                                                    data-bs-toggle="tooltip" 
+                                                    data-bs-placement="top" 
+                                                    title="Jane Smith">
+                                                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-sm border border-2 border-white">
+                                                    </a>
+                                                </div>
+                                               <div class="avatar-group-item">
+                                                <a href="javascript: void(0);" class="d-inline-block" data-bs-toggle="modal" data-bs-target="#membersModalAssign">
+                                                    <div class="avatar-sm">
+                                                        <div class="avatar-title rounded-circle bg-light border border-2 border-white text-primary font-size-16 fw-medium">
+                                                            +3
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                            
 
                                 <!-- Scrollable Description -->
                               <div class="flex-grow-1 overflow-auto">
@@ -131,14 +200,14 @@
                                         <!-- Add more content as needed -->
                                     </p>
                                 </div>
-
+                            
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- RIGHT SIDEBAR -->
-            <div class="col-xl-4">
+            <div class="col-xl-5">
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-3">
@@ -1094,6 +1163,71 @@
   </div>
 </div>
 
+<!-- Members Modal Assign -->
+<div class="modal fade" id="membersModalAssign" tabindex="-1" aria-labelledby="membersModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="membersModalLabel">Assigned Members</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="d-flex align-items-center mb-3">
+                        <img src="../static/assets/images/users/avatar-4.jpg" class="rounded-circle avatar-xs me-2">
+                        <div>
+                            <h6 class="mb-0 font-size-14">John Doe</h6>
+                            <small class="text-muted">Project Manager</small>
+                        </div>
+                    </li>
+                    <li class="d-flex align-items-center mb-3">
+                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-xs me-2">
+                        <div>
+                            <h6 class="mb-0 font-size-14">Jane Smith</h6>
+                            <small class="text-muted">Developer</small>
+                        </div>
+                    </li>
+                      <li class="d-flex align-items-center mb-3">
+                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-xs me-2">
+                        <div>
+                            <h6 class="mb-0 font-size-14">Jane Smith</h6>
+                            <small class="text-muted">Developer</small>
+                        </div>
+                    </li>
+                      <li class="d-flex align-items-center mb-3">
+                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-xs me-2">
+                        <div>
+                            <h6 class="mb-0 font-size-14">Jane Smith</h6>
+                            <small class="text-muted">Developer</small>
+                        </div>
+                    </li>
+                      <li class="d-flex align-items-center mb-3">
+                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-xs me-2">
+                        <div>
+                            <h6 class="mb-0 font-size-14">Jane Smith</h6>
+                            <small class="text-muted">Developer</small>
+                        </div>
+                    </li>
+                      <li class="d-flex align-items-center mb-3">
+                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-xs me-2">
+                        <div>
+                            <h6 class="mb-0 font-size-14">Jane Smith</h6>
+                            <small class="text-muted">Developer</small>
+                        </div>
+                    </li>
+                      <li class="d-flex align-items-center mb-3">
+                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-xs me-2">
+                        <div>
+                            <h6 class="mb-0 font-size-14">Jane Smith</h6>
+                            <small class="text-muted">Developer</small>
+                        </div>
+                    </li>
+                    </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Revert modal -->
 <div class="modal fade" id="revertModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
@@ -1116,5 +1250,6 @@
     </div>
   </div>
 </div>
+
 
 {% endblock content %}
