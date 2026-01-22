@@ -1,356 +1,100 @@
 {% extends "layout.html" %}
-
 {% block page_title %}Members{% endblock %}
+   {% block content %}
+            <!-- Start right Content here -->
+            <!-- ============================================================== -->
+            <div class="main-content">
+                <div class="page-content">
+                    <div class="container-fluid">
 
-{% block content %}
-
-<div class="main-content">
-    <div class="page-content">
-        <div class="container-fluid">
-
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-
-                        <!-- Card Header -->
-                        <div class="card-header d-flex align-items-center">
-                            <div class="mb-3">
-                                <h5 class="card-title">
-                                    User List
-                                    <span class="text-muted fw-normal ms-2">(9)</span>
-                                </h5>
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <h5 class="card-title">Contact List 
+                                    <span class="text-muted fw-normal ms-2">Showing {{ total_users }} registered members</span></h5>
+                                </div>
                             </div>
 
-                            <div class="ms-auto d-flex gap-2">
-                                <button
-                                    type="button"
-                                    class="btn btn-primary waves-effect waves-light"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#myModal">
-                                    <i class="mdi mdi-plus me-1"></i>Add Member
-                                </button>
+                        </div>
+                        <!-- end row -->
+                    {% with messages = get_flashed_messages(category_filter=["update_success", "delete_success", "danger_error"]) %}
+                                {% if messages %}
+                                    {% for message in messages %}
+                                        <div class="alert alert-success flash-message">{{ message }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endwith %}
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                          <div id="table7-gridjs"></div>
+                                       
+                                            <table id="projectsTableMembers" class="table table-nowrap align-middle">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th scope="col">Name</th>
+                                                        <th scope="col">Email</th>
+                                                        <th scope="col">Position</th>
+                                                        <th scope="col">Department</th>
+                                                        {% if current_user.account_type == 'admin' %}
+                                                        <th scope="col" style="width: 200px;">Action</th>
+                                                        {% endif %}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for member in members %}
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <img src="{{ url_for('static', filename='profile_pics/' + member.image_file) }}" class="rounded-circle avatar img-thumbnail" alt="">
+                                                                <div class="flex-grow-1 ms-3 overflow-hidden">
+                                                                    <h5 class="font-size-15 mb-1 text-truncate">{{ member.username }}</h5>
+                                                                    <p class="text-muted text-truncate mb-0">{{ member.name }}</p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>{{ member.email }}</td>
+                                                        <td><span class="badge badge-soft-success mb-0">{{ member.position if member.position else 'Staff' }}</span></td>
+                                                        <td>{{ member.dept_info.department_name if member.dept_info else 'N/A' }}</td>
+                                                        {% if current_user.account_type == 'admin' %}
+                                                        <td>
+                                                            <ul class="list-inline mb-0">
+                                                                <li class="list-inline-item">
+                                                                    <a href="javascript:void(0);" 
+                                                                    class="px-2 text-primary edit-button" 
+                                                                    data-bs-toggle="modal" 
+                                                                    data-bs-target=".create-task" 
+                                                                    data-id="{{ member.member_id }}"  data-name="{{ member.name }}"
+                                                                    data-username="{{ member.username }}"
+                                                                    data-email="{{ member.email }}"
+                                                                    data-pos="{{ member.position }}"
+                                                                    data-dept="{{ member.department_id }}"> <i class="bx bx-pencil font-size-18"></i>
+                                                                    </a>
+                                                                </li>
+                                                              <li class="list-inline-item">
+                                                                    <a title="Delete" class="text-danger" href="javascript:void(0);" 
+                                                                    onclick="confirmDelete('{{ member.name }}', '{{ member.member_id }}')">
+                                                                    <i class="bx bx-trash-alt font-size-18"></i>
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                        </td>
+                                                        {% endif %}
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
-                        <!-- Card Body -->
-                        <div class="card-body">
-                            <div id="table-gridjs"></div>
-
-                            <!-- Hidden Grid.js Table -->
-                            <table id="projectsTable" class="table d-none">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 190px;">Name</th>
-                                        <th>Email</th>
-                                        <th>Position</th>
-                                        <th>Department</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    <!-- ALL 9 TR ROWS – UNCHANGED CONTENT, FIXED STRUCTURE -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">marilynhorton</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>Marilyn Horton
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>MarilynHorton@minible.com</td>
-                                        <td><span class="badge badge-soft-success">Full Stack Developer</span></td>
-                                        <td>Cyber Security</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item">
-                                                    <button title="Update" class="btn" data-bs-toggle="modal" data-bs-target=".create-task">
-                                                        <a class=" text-primary"><i class="bx bx-pencil font-size-18"></i></a>
-                                                    </button>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a title="Delete" class="text-danger"
-                                                        href="javascript:void(0);" 
-                                                        onclick="confirmDelete('H20')"><i class="bx bx-trash-alt font-size-18"></i></a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 2 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">jdoe</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>John Doe
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>john.doe@example.com</td>
-                                        <td><span class="badge badge-soft-info">Frontend Developer</span></td>
-                                        <td>Cyber Security</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item">
-                                                    <button title="Update" class="btn" data-bs-toggle="modal" data-bs-target=".create-task">
-                                                        <a class=" text-primary"><i class="bx bx-pencil font-size-18"></i></a>
-                                                    </button>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a title="Delete" class="text-danger"
-                                                        href="javascript:void(0);" 
-                                                        onclick="confirmDelete('John Doe')"><i class="bx bx-trash-alt font-size-18"></i></a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 3 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">mrossi</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>Mario Rossi
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>mario.rossi@example.com</td>
-                                        <td><span class="badge badge-soft-info">Frontend Developer</span></td>
-                                        <td>Mars</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item">
-                                                    <button title="Update" class="btn" data-bs-toggle="modal" data-bs-target=".create-task">
-                                                        <a class=" text-primary"><i class="bx bx-pencil font-size-18"></i></a>
-                                                    </button>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a title="Delete" class="text-danger"
-                                                        href="javascript:void(0);" 
-                                                        onclick="confirmDelete('Mario Rossi')"><i class="bx bx-trash-alt font-size-18"></i></a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 4 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">mmuster</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>Max Mustermann
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>max.mustermann@example.com</td>
-                                        <td><span class="badge badge-soft-primary">Backend Developer</span></td>
-                                        <td>Valkyrie Security</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item">
-                                                    <button title="Update" class="btn" data-bs-toggle="modal" data-bs-target=".create-task">
-                                                        <a class=" text-primary"><i class="bx bx-pencil font-size-18"></i></a>
-                                                    </button>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a title="Delete" class="text-danger"
-                                                        href="javascript:void(0);" 
-                                                        onclick="confirmDelete('Max Mustermann')"><i class="bx bx-trash-alt font-size-18"></i></a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 5 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">mjohnson</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>Michael Johnson
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>michael.johnson@example.com</td>
-                                        <td><span class="badge badge-soft-danger">Founder</span></td>
-                                        <td></td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item">
-                                                    <button title="Update" class="btn" data-bs-toggle="modal" data-bs-target=".create-task">
-                                                        <a class=" text-primary"><i class="bx bx-pencil font-size-18"></i></a>
-                                                    </button>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a title="Delete" class="text-danger"
-                                                        href="javascript:void(0);" 
-                                                        onclick="confirmDelete('Michael Johnson')"><i class="bx bx-trash-alt font-size-18"></i></a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 6 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">wjones</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>William Jone
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>wjones@example.com</td>
-                                        <td><span class="badge badge-soft-primary">Backend Developer</span></td>
-                                        <td>Mars</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item">
-                                                    <button title="Update" class="btn" data-bs-toggle="modal" data-bs-target=".create-task">
-                                                        <a class=" text-primary"><i class="bx bx-pencil font-size-18"></i></a>
-                                                    </button>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a title="Delete" class="text-danger"
-                                                        href="javascript:void(0);" 
-                                                        onclick="confirmDelete('William Jone')"><i class="bx bx-trash-alt font-size-18"></i></a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 7 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">jwilliams</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>Jennifer Williams
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>wjones@example.com</td>
-                                        <td><span class="badge badge-soft-primary">Backend Developer</span></td>
-                                        <td>Mars</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item">
-                                                    <button title="Update" class="btn" data-bs-toggle="modal" data-bs-target=".create-task">
-                                                        <a class=" text-primary"><i class="bx bx-pencil font-size-18"></i></a>
-                                                    </button>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a title="Delete" class="text-danger"
-                                                        href="javascript:void(0);" 
-                                                        onclick="confirmDelete('Jennifer Williams')"><i class="bx bx-trash-alt font-size-18"></i></a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 8 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">alexj</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>Alex Johnson
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>alex.johnson@example.com</td>
-                                        <td><span class="badge badge-soft-primary">Backend Developer</span></td>
-                                        <td>legal</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item">
-                                                    <button title="Update" class="btn" data-bs-toggle="modal" data-bs-target=".create-task">
-                                                        <a class=" text-primary"><i class="bx bx-pencil font-size-18"></i></a>
-                                                    </button>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a title="Delete" class="text-danger"
-                                                        href="javascript:void(0);" 
-                                                        onclick="confirmDelete('Alex Johnson')"><i class="bx bx-trash-alt font-size-18"></i></a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                    <!-- 9 -->
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gridjs-td">
-                                                <img src="../static/assets/images/users/avatar-7.jpg" class="rounded-circle avatar img-thumbnail" alt="">
-                                                <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                    <h5 class="font-size-15 mb-1 text-truncate">danderson</h5>
-                                                    <p class="text-muted mb-0">
-                                                        <i class="mdi mdi-account me-1"></i>Daniel Anderson
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>daniel.anderson@example.com</td>
-                                        <td><span class="badge badge-soft-success">Full Stack Developer</span></td>
-                                        <td>Ashgard</td>
-                                        <td>
-                                            <ul class="list-inline mb-0">
-                                                <li class="list-inline-item">
-                                                    <button title="Update" class="btn" data-bs-toggle="modal" data-bs-target=".create-task">
-                                                        <a class=" text-primary"><i class="bx bx-pencil font-size-18"></i></a>
-                                                    </button>
-                                                </li>
-                                                <li class="list-inline-item">
-                                                    <a title="Delete" class="text-danger"
-                                                        href="javascript:void(0);" 
-                                                        onclick="confirmDelete('Daniel Anderson')"><i class="bx bx-trash-alt font-size-18"></i></a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-
-                                </tbody>
-                            </table>
-                        </div>
-                        <!-- End Card Body -->
+                        <!-- end row -->
 
                     </div>
+                    <!-- container-fluid -->
                 </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-<!-- sample modal content -->
+                <!-- End Page-content -->
 <div
     id="myModal"
     class="modal fade"
@@ -533,37 +277,31 @@
                     aria-label="Close"
                 ></button>
             </div>
-
-            <!-- div form -->
+<!-- div form -->
             <div class="modal-body">
-                <form>
+                {% with messages = get_flashed_messages(category_filter=["modal_error"]) %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-danger">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                <form id="editMemberForm"
+                         method="POST"
+                         action="   ">
 
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="formrow-fullname-input-edit" class="form-label">
-                                    Full Name
-                                </label>
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    placeholder="Full Name"
-                                    id="formrow-fullname-input-edit"
-                                >
+                                <label for="formrow-fullname-input-edit" class="form-label">Full Name</label>
+                                <input type="text" name="name" class="form-control" placeholder="Full Name" id="formrow-fullname-input-edit">
                             </div>
                         </div>
 
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="formrow-username-input-edit" class="form-label">
-                                    Username
-                                </label>
-                                <input
-                                    type="username"
-                                    class="form-control"
-                                    placeholder="Username"
-                                    id="formrow-username-input-edit"
-                                >
+                                <label for="formrow-username-input-edit" class="form-label">Username</label>
+                                <input type="text" name="username" class="form-control" placeholder="Username" id="formrow-username-input-edit">
                             </div>
                         </div>
                     </div>
@@ -571,76 +309,67 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="formrow-email-input-edit" class="form-label">
-                                    Email
-                                </label>
-                                <input
-                                    type="email"
-                                    class="form-control"
-                                    placeholder="Email"
-                                    id="formrow-email-input-edit"
-                                >
+                                <label for="formrow-email-input-edit" class="form-label">Email</label>
+                                <input type="email" name="email" class="form-control" placeholder="Email" id="formrow-email-input-edit">
                             </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="formrow-position-input-edit" class="form-label">
-                                    Position
-                                </label>
-                                <select id="formrow-position-input-edit" class="form-select">
-                                    <option value="" selected disabled>Choose...</option>
-                                    <option>Full Stack Developer</option>
-                                    <option>Frontend Developer</option>
-                                    <option>Backend Developer</option>
-                                    <option>Secretary</option>
-                                    <option>HR</option>
-                                    <option>Paralegal</option>
-                                    <option>N/A</option>
-                                </select>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="formrow-position-input-edit" class="form-label">
+                                        Position
+                                    </label>
+
+                                    <select
+                                        name="position"
+                                        id="formrow-position-input-edit"
+                                        class="form-select"
+                                    >
+                                        <option value="" disabled selected>Choose position</option>
+
+                                        <option value="Full Stack Developer">Full Stack Developer</option>
+                                        <option value="Frontend Developer">Frontend Developer</option>
+                                        <option value="Backend Developer">Backend Developer</option>
+                                        <option value="Secretary">Secretary</option>
+                                        <option value="HR">HR</option>
+                                        <option value="Paralegal">Paralegal</option>
+                                        <option value="N/A">N/A</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-6">
+
+                        
+                       <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="formrow-department-input-edit" class="form-label">
                                     Department
                                 </label>
-                                <select id="formrow-department-input-edit" class="form-select">
-                                    <option value="" selected disabled>Choose...</option>
-                                    <option>MDC</option>
-                                    <option>CYBER</option>
-                                    <option>LEGAL</option>
-                                    <option>AIRMED</option>
-                                    <option>VALKYRIE SECURITY</option>
-                                    <option>MARS MOTORS</option>
-                                    <option>LORRAINE DEV'T CORP</option>
-                                    <option>SANREM SHIPBUILDING SERVICES</option>
-                                    <option>N/A</option>
+
+                                <select
+                                    name="department"
+                                    id="formrow-department-input-edit"
+                                    class="form-select"
+                                    required
+                                >
+                                    <option value="" disabled selected>Choose department</option>
+
+                                    {% for dept in departments %}
+                                        <option value="{{ dept.department_id}}">
+                                            {{ dept.department_name }}
+                                        </option>
+                                    {% endfor %}
                                 </select>
                             </div>
                         </div>
-                    </div>
+
 
                     <div class="row mt-2">
                         <div class="col-12 text-end">
-                            <button
-                                type="button"
-                                class="btn btn-danger me-1"
-                                data-bs-dismiss="modal"
-                            >
-                                <i class="bx bx-x me-1 align-middle"></i>
-                                Cancel
+                            <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal">
+                                <i class="bx bx-x me-1 align-middle"></i> Cancel
                             </button>
-
-                            <button
-                                type="submit"
-                                class="btn btn-success"
-                                data-bs-toggle="modal"
-                                data-bs-target="#success-btn"
-                                id="btn-save-event-edit"
-                            >
-                                <i class="bx bx-check me-1 align-middle"></i>
-                                Update
+                            <button type="submit" class="btn btn-success" id="btn-save-event-edit">
+                                <i class="bx bx-check me-1 align-middle"></i> Update
                             </button>
                         </div>
                     </div>
@@ -649,7 +378,52 @@
              </div> <!-- div form -->
         </div>  <!-- /.modal-content -->
     </div>  <!-- /.modal-dialog -->
-</div> <!-- Edit Profile modal -->
-    
+</div> <!-- Edit Profile modal -->    
 
-{% endblock content %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.edit-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id'); 
+            const form = document.getElementById('editMemberForm');
+            
+            // Construct the URL 
+            const newAction = "/admin/update/member/" + id;
+            
+            
+            form.action = newAction;
+            
+            // Debugging: This will show up in your F12 Console
+            console.log("Form action changed to: " + form.action);
+
+            // Fill the inputs
+            document.getElementById('formrow-fullname-input-edit').value = this.getAttribute('data-name');
+            document.getElementById('formrow-username-input-edit').value = this.getAttribute('data-username');
+            document.getElementById('formrow-email-input-edit').value = this.getAttribute('data-email');
+            document.getElementById('formrow-position-input-edit').value = this.getAttribute('data-pos');
+            document.getElementById('formrow-department-input-edit').value = this.getAttribute('data-dept');
+        });
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+        const messages = document.querySelectorAll('.flash-message');
+        
+        if (messages.length > 0) {
+            setTimeout(function() {
+                messages.forEach(function(msg) {
+                    msg.style.transition = "opacity 0.5s ease";
+                    msg.style.opacity = "0";
+                    
+                    setTimeout(() => {
+                        msg.style.display = "none";
+                    }, 500); 
+                });
+            }, 3000);
+        }
+    });
+    
+</script>
+
+   {% endblock content %}
+   
