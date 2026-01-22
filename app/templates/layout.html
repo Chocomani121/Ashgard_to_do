@@ -35,7 +35,11 @@
 
         <!-- datepicker css -->
         <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/flatpickr/flatpickr.min.css') }}">
-        
+           <!-- quill css -->
+        <link href="{{ url_for('static', filename='assets/libs/quill/quill.core.css') }}" rel="stylesheet" type="text/css" />
+        <link href="{{ url_for('static', filename='assets/libs/quill/quill.bubble.css') }}" rel="stylesheet" type="text/css" />
+        <link href="{{ url_for('static', filename='assets/libs/quill/quill.snow.css') }}" rel="stylesheet" type="text/css" />
+
     </head>
     </head>
 
@@ -356,7 +360,9 @@
         <!-- init js -->
         <script src="{{ url_for('static', filename='assets/js/pages/form-advanced.init.js') }}"></script>
 
-        
+        <!-- ckeditor -->
+        <script src="{{ url_for('static', filename='assets/libs/@ckeditor/ckeditor5-build-classic/build/ckeditor.js') }}"></script>
+
     </body>
 
 </html>
