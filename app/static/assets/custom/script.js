@@ -118,147 +118,25 @@ function toggleInput(btn, className) {
     }
 }
 
-
-// Department projects filter using dropdown
-function initializeDepartmentProjects(gridjsLib) {
-    const dropdownButton = document.getElementById('categorySelect');
-    const dropdownMenu = dropdownButton?.closest('.btn-group')?.querySelectorAll('.dropdown-item') || [];
-    const tableElement = document.getElementById('projectsTableDept');
-    const gridContainer = document.getElementById("tableDept-gridjs");
-    
-    try {
-        if (!gridjsLib || typeof gridjsLib.html === 'undefined') {
-            throw new Error('Grid.js library not properly loaded');
-        }
-
-        if (!dropdownButton || dropdownMenu.length === 0 || !tableElement || !gridContainer) {
-            return;
-        }
-
-        // Extract data and wrap HTML strings in gridjs.html()
-        const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
-        const allData = tableRows.map(tr => ({
-            category: tr.getAttribute('data-category'),
-            cells: Array.from(tr.querySelectorAll('td')).map(td => gridjsLib.html(td.innerHTML))
-        }));
-
-        const grid = new gridjsLib.Grid({
-            columns: ["ID", "Projects", "Department", "Client", "Deadline", "Status"],
-            data: allData.map(row => row.cells),
-            pagination: { limit: 10 },
-            sort: true,
-            className: {
-                table: 'table table-bordered'
-            }
-        }).render(gridContainer);
-
-        const updateGrid = (selectedValue) => {
-            const filteredData = allData.filter(row => selectedValue === "All" ? true : row.category === selectedValue);
-            grid.updateConfig({ data: filteredData.map(row => row.cells) }).forceRender();
-        };
-
-        dropdownMenu.forEach(item => {
-            item.addEventListener('click', function(event) {
-                event.preventDefault();
-                const selectedValue = this.getAttribute('data-value');
-                dropdownButton.innerHTML = `${this.textContent} <i class="mdi mdi-chevron-down"></i>`;
-                updateGrid(selectedValue || "All");
-            });
-        });
-    } catch (error) {
-        console.error('Department Projects Grid initialization error:', error);
-    }
-}
-
-function initDepartmentProjectsTable() {
-    const dropdownButton = document.getElementById('categorySelect');
-    const dropdownMenu = dropdownButton?.closest('.btn-group')?.querySelectorAll('.dropdown-item') || [];
-    const tableElement = document.getElementById('projectsTableDept');
-    const gridContainer = document.getElementById("tableDept-gridjs");
-
-    if (!dropdownButton || dropdownMenu.length === 0 || !tableElement || !gridContainer) {
-        return;
-    }
-
-    // Check if gridjs is available - wait if not
-    if (typeof gridjs === 'undefined' || typeof window.gridjs === 'undefined') {
-        // Wait for Grid.js to load
-        let attempts = 0;
-        const checkGridjs = setInterval(() => {
-            attempts++;
-            if (typeof gridjs !== 'undefined' || typeof window.gridjs !== 'undefined') {
-                clearInterval(checkGridjs);
-                const gridjsLib = gridjs || window.gridjs;
-                initializeDepartmentProjects(gridjsLib);
-            } else if (attempts >= 50) {
-                // Timeout after 5 seconds (50 * 100ms)
-                clearInterval(checkGridjs);
-                console.error('Department Projects: Grid.js failed to load after 5 seconds');
-            }
-        }, 100);
-        return;
-    }
-
-    initializeDepartmentProjects(gridjs || window.gridjs);
-}
-
-function waitForElementsAndInit(maxAttempts = 50, attempt = 0) {
-    const currentURL = window.location.pathname;
-    
-    // Only run on the all_departments page
-    if (!currentURL.includes('/all_departments')) {
-        return;
-    }
-    
-    const dropdownButton = document.getElementById('categorySelect');
-    const tableElement = document.getElementById('projectsTableDept');
-    const gridContainer = document.getElementById("tableDept-gridjs");
-    
-    if (dropdownButton && tableElement && gridContainer) {
-        // Elements found, proceed with initialization
-        initDepartmentProjectsTable();
-    } else if (attempt < maxAttempts) {
-        // Retry after 100ms
-        setTimeout(() => waitForElementsAndInit(maxAttempts, attempt + 1), 100);
-    } else {
-        console.warn('Department Projects: Required DOM elements not found after 5 seconds. URL:', currentURL);
-    }
-}
-
-// Try multiple initialization strategies
-function initDepartmentProjectsWithRetry() {
-    // Wait for elements to be available, retry up to 5 seconds
-    waitForElementsAndInit(50, 0);
-}
-
-// Try on DOMContentLoaded
-if (document.readyState === 'loading') {
-    document.addEventListener("DOMContentLoaded", initDepartmentProjectsWithRetry);
-} else {
-    // DOM already loaded, try immediately
-    initDepartmentProjectsWithRetry();
-}
-
-// Also try after a short delay as fallback
-setTimeout(initDepartmentProjectsWithRetry, 500);
-
 //Delete sweet Alert
-function confirmDelete(taskId) {
- Swal.fire({
+// Delete SweetAlert for Members
+function confirmDelete(memberName, memberId) {
+    Swal.fire({
         title: "Are you sure?",
-        text: "You won't be able to revert this!",
+        text: "You are about to delete " + memberName + ". You won't be able to revert this!",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#51d28c",
         cancelButtonColor: "#f34e4e",
         confirmButtonText: "Yes, delete it!"
-      }).then(function (result) {
-        if (result.value) {
-          Swal.fire("Deleted!", "Deleted Successfully.", "success"
-          );
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            // Redirect to the Flask route you created
+            window.location.href = "/delete_member/" + memberId;
         }
     });
 }
+
 
 // notes view modal
 function prepareNoteModal(taskId, description, footer) {
@@ -314,4 +192,23 @@ document.querySelectorAll('.pin-btn').forEach(btn => {
         icon.classList.toggle('mdi-pin');
     });
 });
+
+// This ensures the calendar works even if the .init.js misses it
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr("#datepicker-range", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "F j, Y"
+            });
+        }
+    });
+// Auto-close alerts after 5 seconds
+    window.setTimeout(function() {
+        $(".alert").fadeTo(500, 0).slideUp(500, function(){
+            $(this).remove(); 
+        });
+    }, 5000);
+
 
