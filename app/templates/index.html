@@ -11,7 +11,7 @@
                                         <div class="d-flex align-items-center justify-content-between">
                                             <div>
                                                 <h6 class="mb-2 text-muted font-size-15">Pending Projects</h6>
-                                                <h4 class="mb-0 font-size-22 fw-bold">5</h4>
+                                                <h4 class="mb-0 font-size-22 fw-bold">{{ stats.pending|default(0) }}</h4>
                                             </div>
                                             <div class="avatar-md">
                                                 <div class="avatar-title rounded bg-soft-warning">
@@ -29,7 +29,7 @@
                                           <div class="d-flex align-items-center justify-content-between">
                                                 <div>
                                                     <h6 class="mb-2 text-muted font-size-15">Priority</h6>
-                                                    <h4 class="mb-0 font-size-22 fw-bold">3</h4>
+                                                    <h4 class="mb-0 font-size-22 fw-bold">{{ stats.high_priority|default(0) }}</h4>
                                                 </div>
                                                 <div class="avatar-md">
                                                     <div class="avatar-title rounded bg-soft-danger">
@@ -47,7 +47,7 @@
                                         <div class="d-flex align-items-center justify-content-between">
                                                 <div>
                                                     <h6 class="mb-2 text-muted font-size-15">Completed</h6>
-                                                    <h4 class="mb-0 font-size-22 fw-bold">2</h4>
+                                                    <h4 class="mb-0 font-size-22 fw-bold">{{ stats.completed|default(0) }}</h4>
                                                 </div>
                                                 <div class="avatar-md">
                                                     <div class="avatar-title rounded bg-soft-success">
@@ -65,7 +65,7 @@
                                          <div class="d-flex align-items-center justify-content-between">
                                             <div>
                                                 <h6 class="mb-2 text-muted font-size-15">On Hold</h6>
-                                                <h4 class="mb-0 font-size-22 fw-bold">2</h4>
+                                                <h4 class="mb-0 font-size-22 fw-bold">{{ stats.on_hold|default(0) }}</h4>
                                             </div>
 
                                             <div class="avatar-md">
@@ -119,269 +119,84 @@
                                                                 </tr>
                                                             </thead>
                                                         <tbody>
-                                                            <tr>
-                                                             <td>
-                                                                <div class="d-flex justify-content-center">
-                                                                    <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #8B1A1A; display: inline-block;" title="High Priority"></span>
-                                                                </div>
-                                                            </td>
-                                                                <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
-                                                                    Osint
-                                                                    </a>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                    :  23:00</div>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 02 / 15 / 2025
-                                                                    :  11:23</div>
-                                                                </td>
-                                                                <td>
-                                                                     <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                </td>
-                                                                <td>
-                                                                    50%
-                                                                </td>
-                                                                <td>
-                                                                    500 hrs
-                                                                </td>
-                                                                <td>
-                                                                    Lurs
-                                                                </td>
-                                                                <td>
-                                                                    Ashgard
-                                                                </td>
-                                                                <td>
-                                                                    UI: User Modal
-                                                                </td>
-                                                            </tr>   
-                                                            
+                                                            {% if projects_data %}
+                                                            {% for item in projects_data %}
                                                             <tr>
                                                                 <td>
-                                                                   <div class="d-flex justify-content-center">
+                                                                    <div class="d-flex justify-content-center">
+                                                                        {# Priority is safely handled in backend #}
+                                                                        {% set priority = item.priority|default('High') %}
+                                                                        {% if priority == 'High' %}
+                                                                        <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #8B1A1A; display: inline-block;" title="High Priority"></span>
+                                                                        {% elif priority == 'Medium' %}
+                                                                        <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #F1B44C; display: inline-block;" title="Medium Priority"></span>
+                                                                        {% elif priority == 'Low' %}
                                                                         <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #34C38F; display: inline-block;" title="Low Priority"></span>
+                                                                        {% else %}
+                                                                        <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #8B1A1A; display: inline-block;" title="High Priority"></span>
+                                                                        {% endif %}
                                                                     </div>
-                                                               </td>
-                                                                <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
-                                                                    Lorem
+                                                                </td>
+                                                                <td>
+                                                                    <a href="{{ url_for('main.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
+                                                                        {{ item.project.project_name or 'Unnamed Project' }}
                                                                     </a>
                                                                 </td>
                                                                 <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                :  23:00</div>
+                                                                    <div class="d-flex align-items-center">
+                                                                        {% if item.deadline and item.deadline.start_date %}
+                                                                        {{ item.deadline.start_date.strftime('%m / %d / %Y') }}
+                                                                        {% else %}
+                                                                        N/A
+                                                                        {% endif %}
+                                                                    </div>
                                                                 </td>
                                                                 <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                :  23:00</div>
+                                                                    <div class="d-flex align-items-center">
+                                                                        {% if item.deadline and item.deadline.end_date %}
+                                                                        {{ item.deadline.end_date.strftime('%m / %d / %Y') }}
+                                                                        {% else %}
+                                                                        N/A
+                                                                        {% endif %}
+                                                                    </div>
                                                                 </td>
                                                                 <td>
-                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                    {% if item.project.project_status == 'Ongoing' %}
+                                                                    <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                                                    {% elif item.project.project_status == 'Completed' %}
+                                                                    <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                    {% elif item.project.project_status == 'On Hold' %}
+                                                                    <div class="badge badge-soft-secondary font-size-12">On Hold</div>
+                                                                    {% else %}
+                                                                    <div class="badge badge-soft-info font-size-12">{{ item.project.project_status or 'Pending' }}</div>
+                                                                    {% endif %}
                                                                 </td>
                                                                 <td>
-                                                                    100%
+                                                                    {{ item.project.progress or '0%' }}
                                                                 </td>
                                                                 <td>
-                                                                    500 hrs
+                                                                    {% if item.manhours is not none %}
+                                                                    {{ item.manhours }} hrs
+                                                                    {% else %}
+                                                                    N/A
+                                                                    {% endif %}
                                                                 </td>
                                                                 <td>
-                                                                    Lurs
+                                                                    {{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}
                                                                 </td>
                                                                 <td>
-                                                                   MDC
+                                                                    {{ item.project.client_name or 'N/A' }}
                                                                 </td>
                                                                 <td>
-                                                                    Configuration
+                                                                    N/A
                                                                 </td>
-                                                            </tr>   
+                                                            </tr>
+                                                            {% endfor %}
+                                                            {% else %}
                                                             <tr>
-                                                                <td>
-                                                                    <div class="d-flex justify-content-center">
-                                                                        <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #8B1A1A; display: inline-block;" title="High Priority"></span>
-                                                                    </div>
-                                                                </td>
-                                                                <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
-                                                                    Lorem ipsum
-                                                                    </a>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                    :  23:00</div>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 02 / 15 / 2025
-                                                                    :  11:23</div>
-                                                                </td>
-                                                                <td>
-                                                                     <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                </td>
-                                                                <td>
-                                                                    50%
-                                                                </td>
-                                                                <td>
-                                                                    500 hrs
-                                                                </td>
-                                                                <td>
-                                                                    Lurs
-                                                                </td>
-                                                                <td>
-                                                                    Ashgard
-                                                                </td>
-                                                                <td>
-                                                                    UI: User Modal
-                                                                </td>
-                                                            </tr>   
-                                                           <tr>
-                                                                <td>
-                                                                    <div class="d-flex justify-content-center">
-                                                                        <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #F1B44C; display: inline-block;" title="Moderate Priority"></span>
-                                                                    </div>
-                                                                </td>
-                                                                <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
-                                                                    Lorem ipsum dolor
-                                                                    </a>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                    :  23:00</div>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 02 / 15 / 2025
-                                                                    :  11:23</div>
-                                                                </td>
-                                                                <td>
-                                                                     <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                </td>
-                                                                <td>
-                                                                    50%
-                                                                </td>
-                                                                <td>
-                                                                    500 hrs
-                                                                </td>
-                                                                <td>
-                                                                    Lurs
-                                                                </td>
-                                                                <td>
-                                                                    Ashgard
-                                                                </td>
-                                                                <td>
-                                                                    UI: User Modal
-                                                                </td>
-                                                            </tr>   
-                                                           <tr>
-                                                                <td>
-                                                                  <div class="d-flex justify-content-center">
-                                                                        <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #F1B44C; display: inline-block;" title="Moderate Priority"></span>
-                                                                    </div>
-                                                                </td>
-                                                                <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
-                                                                    Lorem ipsum dolor sit
-                                                                    </a>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                    :  23:00</div>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 02 / 15 / 2025
-                                                                    :  11:23</div>
-                                                                </td>
-                                                                <td>
-                                                                     <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                </td>
-                                                                <td>
-                                                                    50%
-                                                                </td>
-                                                                <td>
-                                                                    500 hrs
-                                                                </td>
-                                                                <td>
-                                                                    Lurs
-                                                                </td>
-                                                                <td>
-                                                                    Ashgard
-                                                                </td>
-                                                                <td>
-                                                                    UI: User Modal
-                                                                </td>
-                                                            </tr>   
-                                                            
-                                                            <tr>
-                                                                <td>
-                                                                  <div class="d-flex justify-content-center">
-                                                                        <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #8B1A1A; display: inline-block;" title="High Priority"></span>
-                                                                    </div>
-                                                                </td>
-                                                                <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
-                                                                    Lorem ipsum, dolor sit amet 
-                                                                    </a>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                    :  23:00</div>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 02 / 15 / 2025
-                                                                    :  11:23</div>
-                                                                </td>
-                                                                <td>
-                                                                     <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                </td>
-                                                                <td>
-                                                                    50%
-                                                                </td>
-                                                                <td>
-                                                                    500 hrs
-                                                                </td>
-                                                                <td>
-                                                                    Lurs
-                                                                </td>
-                                                                <td>
-                                                                    Ashgard
-                                                                </td>
-                                                                <td>
-                                                                    UI: User Modal
-                                                                </td>
-                                                            </tr>   
-                                                            
-                                                             <tr>
-                                                                <td>
-                                                                  <div class="d-flex justify-content-center">
-                                                                        <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #8B1A1A; display: inline-block;" title="High Priority"></span>
-                                                                    </div>
-                                                                </td>
-                                                                <td><a href="{{ url_for('main.project_details') }}" class="text-dark fw-medium">
-                                                                    Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-                                                                    </a>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                    :  23:00</div>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 02 / 15 / 2025
-                                                                    :  11:23</div>
-                                                                </td>
-                                                                <td>
-                                                                     <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                </td>
-                                                                <td>
-                                                                    50%
-                                                                </td>
-                                                                <td>
-                                                                    500 hrs
-                                                                </td>
-                                                                <td>
-                                                                    Lurs
-                                                                </td>
-                                                                <td>
-                                                                    Ashgard
-                                                                </td>
-                                                                <td>
-                                                                    UI: User Modal
-                                                                </td>
-                                                            </tr>   
-                                                            
+                                                                <td colspan="10" class="text-center text-muted">No projects found. Create your first project!</td>
+                                                            </tr>
+                                                            {% endif %}
                                                         </tbody>
                                                 </table>
                                             </div>
@@ -716,89 +531,89 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                           <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label" for="CreateTask-Task-Name">Project Name</label>
-                                        <input type="text" class="form-control" placeholder="Enter Project Name" id="CreateTask-Task-Name">
-                                    </div>
-                                </div>
-                                 <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label" for="CreateTask-Category">Priority</label>
-                                        <select class="form-select">
-                                            <option  selected> Select </option>
-                                            <option>High</option>
-                                            <option>Medium</option>
-                                            <option>Low</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Start Date</label>
-                                        <input type="date" class="form-control" placeholder="Select Start Date" id="CreateTask-start-date" >
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                     <div class="mb-3">
-                                        <label class="form-label">Deadline</label>
-                                        <input type="date" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Client</label>
-                                        <input type="text" class="form-control" placeholder="Client Name" id="CreateTask-due-date">
-                                    </div>
-                                </div>
-                               <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label" for="CreateTask-Category">Department</label>
-                                        <select class="form-select">
-                                            <option  selected> Select </option>
-                                            <option>Cyber</option>
-                                            <option>MDC</option>
-                                            <option>Mars</option>
-                                            <option>Sanrem</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3 position-relative" style="max-width: 560px;">
-                                    <label class="form-label">Assign Members</label>
-                                    <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
-                                        id="ownerInput"
-                                        data-bs-toggle="dropdown"
-                                        style="max-height: 100px; overflow-y: auto;">
-                                    </div>
-                                    <!-- Dropdown -->
-                                    <div class="dropdown-menu p-3 shadow owner-dropdown">
-                                        <input type="text"
-                                            class="form-control mb-2"
-                                            id="ownerSearch"
-                                            placeholder="Search colleague">
-                                        <small class="text-muted">Contacts</small>
-                                        <div class="list-group mt-2 owner-list"></div>
-                                        <div class="d-flex justify-content-between align-items-center mt-3">
-                                            <a href="#" id="clearOwners" class="text-muted small">Clear</a>
-                                            <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">Confirm</button>
+                            <form action="{{ url_for('main.create_project') }}" method="POST" id="createProjectForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="project_name">Project Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" placeholder="Enter Project Name" id="project_name" name="project_name" required>
                                         </div>
                                     </div>
-                                </div>
-                                  <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="topicDescription" class="form-label">Description</label>
-                                        <textarea class="form-control" id="topicDescription" rows="3" placeholder="Enter description"></textarea>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="priority">Priority Level <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="priority" name="priority" required>
+                                                <option value="High" selected>High</option>
+                                                <option value="Medium">Medium</option>
+                                                <option value="Low">Low</option>
+                                            </select>
+                                        </div>
                                     </div>
-                                </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="client_name">Client Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" placeholder="Enter Client Name" id="client_name" name="client_name" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="department_id">Department <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="department_id" name="department_id" required>
+                                                <option value="" selected>Select Department</option>
+                                                {% for dept in departments %}
+                                                <option value="{{ dept.department_id }}">{{ dept.department_name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="project_manager">Project Manager <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="project_manager" name="project_manager" required>
+                                                <option value="" selected>Select Project Manager</option>
+                                                {% for user in users %}
+                                                <option value="{{ user.member_id }}">{{ user.name or user.username }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="project_status">Project Status</label>
+                                            <select class="form-select" id="project_status" name="project_status">
+                                                <option value="Ongoing" selected>Ongoing</option>
+                                                <option value="Completed">Completed</option>
+                                                <option value="On Hold">On Hold</option>
+                                                <option value="Pending">Pending</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="start_date">Start Date <span class="text-danger">*</span></label>
+                                            <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="end_date">End Date (Deadline) <span class="text-danger">*</span></label>
+                                            <input type="date" class="form-control" id="end_date" name="end_date" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="progress">Progress</label>
+                                            <input type="text" class="form-control" placeholder="e.g., 0%, 50%, 100%" id="progress" name="progress" value="0%">
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="row mt-2">
                                     <div class="col-12 text-end">
                                         <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal"><i class="bx bx-x me-1 align-middle"></i> Cancel</button>
-                                        <button type="submit" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#success-btn" id="btn-save-event"><i class="bx bx-check me-1 align-middle"></i> Confirm</button>
+                                        <button type="submit" class="btn btn-success" id="btn-save-project"><i class="bx bx-check me-1 align-middle"></i> Create Project</button>
                                     </div>
                                 </div>
+                            </form>
                         </div>
                     </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->
