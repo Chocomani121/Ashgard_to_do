@@ -243,22 +243,24 @@ if (document.readyState === 'loading') {
 setTimeout(initDepartmentProjectsWithRetry, 500);
 
 //Delete sweet Alert
-function confirmDelete(taskId) {
- Swal.fire({
+// Delete SweetAlert for Members
+function confirmDelete(memberName, memberId) {
+    Swal.fire({
         title: "Are you sure?",
-        text: "You won't be able to revert this!",
+        text: "You are about to delete " + memberName + ". You won't be able to revert this!",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#51d28c",
         cancelButtonColor: "#f34e4e",
         confirmButtonText: "Yes, delete it!"
-      }).then(function (result) {
-        if (result.value) {
-          Swal.fire("Deleted!", "Deleted Successfully.", "success"
-          );
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            // Redirect to the Flask route you created
+            window.location.href = "/delete_member/" + memberId;
         }
     });
 }
+
 
 // notes view modal
 function prepareNoteModal(taskId, description, footer) {
@@ -284,16 +286,42 @@ function approveNoteModal(taskId, description, footer) {
     document.getElementById('approve-note-footer').innerText = footer;
 }
 
-//JS for PIN in activity threads
+//JS for PIN in Project details
+// document.querySelectorAll('.pin-btn').forEach(btn => {
+//     btn.addEventListener('click', e => {
+//         e.stopPropagation();
+
+//         const box = btn.closest('.message-box');
+//         box.classList.toggle('pinned');
+
+//         const icon = btn.querySelector('i');
+//         icon.classList.toggle('mdi-pin-outline');
+//         icon.classList.toggle('mdi-pin');
+//     });
+// });
+
 document.querySelectorAll('.pin-btn').forEach(btn => {
     btn.addEventListener('click', e => {
         e.stopPropagation();
 
         const box = btn.closest('.message-box');
+        if (!box) return;
+
         box.classList.toggle('pinned');
 
         const icon = btn.querySelector('i');
+        if (!icon) return;
+
         icon.classList.toggle('mdi-pin-outline');
         icon.classList.toggle('mdi-pin');
     });
 });
+
+// Auto-close alerts after 5 seconds
+    window.setTimeout(function() {
+        $(".alert").fadeTo(500, 0).slideUp(500, function(){
+            $(this).remove(); 
+        });
+    }, 5000);
+
+
