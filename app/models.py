@@ -88,12 +88,12 @@ class Project(db.Model):
     project_desc    = db.Column(db.Text)
 
     tasks           = db.relationship('Task', backref='project_info', lazy=True)
-    team_members    = db.relationship('ProjectMembers', backref='project_ref', lazy=True)
+    # team_members    = db.relationship('ProjectMembers', backref='project_ref', lazy=True)  # Disabled: no project_id foreign key in project_members table
 
 class ProjectMembers(db.Model):
     __tablename__   = 'project_members'
     p_members_id    = db.Column(db.Integer, primary_key=True)
-    project_id      = db.Column(db.Integer, db.ForeignKey('project.project_id')) # Added this
+    # project_id      = db.Column(db.Integer, db.ForeignKey('project.project_id')) # Column doesn't exist in database
     member_id       = db.Column(db.Integer, db.ForeignKey('members.member_id'))
     role            = db.Column(db.String(255))
     generated_code  = db.Column(db.String(255))

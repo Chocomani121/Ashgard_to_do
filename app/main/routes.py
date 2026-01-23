@@ -1,8 +1,9 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
-from flask_login import login_required
-from app.models import Department, User, Project, Deadlines
+from flask_login import login_required, current_user
+from app.models import Department, User, Project, Deadlines, ProjectMembers
 from app import db # Required for committing changes
 from datetime import datetime
+import json
 
 main = Blueprint('main', __name__)
 
@@ -64,7 +65,19 @@ def projects():
         'on_hold': len([p for p in projects if p.project_status and p.project_status.lower() == 'on hold'])
     }
     
-    return render_template('index.html', projects_data=projects_data, departments=departments, users=users, stats=stats)
+    # Convert users to JSON-serializable format for JavaScript
+    # Pass as Python list, let Jinja2 handle JSON encoding with |tojson filter
+    users_json = [
+        {
+            'member_id': user.member_id,
+            'name': user.name or user.username,
+            'username': user.username,
+            'department_id': user.department_id
+        }
+        for user in users
+    ]
+    
+    return render_template('index.html', projects_data=projects_data, departments=departments, users=users, users_json=users_json, stats=stats)
 
 @main.route("/tasks")
 @login_required 
@@ -75,6 +88,7 @@ def tasks():
 @login_required
 def all_departments():
     departments = Department.query.all()
+    # Get all users (we'll filter unassigned ones in JavaScript for dropdown, but need all for Edit modal)
     users = User.query.all()
     projects = Project.query.all()
     # Build department projects data for the Department Projects table
@@ -83,11 +97,22 @@ def all_departments():
         dept = Department.query.get(project.department_id) if project.department_id else None
         manager = User.query.get(project.project_manager) if project.project_manager else None
         deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
+        
+        # Calculate manhours (hours between start_date and end_date)
+        manhours = None
+        if deadline and deadline.start_date and deadline.end_date:
+            try:
+                time_diff = deadline.end_date - deadline.start_date
+                manhours = int(time_diff.total_seconds() / 3600)  # Convert to hours
+            except:
+                manhours = None
+        
         dept_projects_data.append({
             'project': project,
             'department': dept,
             'manager': manager,
             'deadline': deadline,
+            'manhours': manhours,
         })
     # Stats for cards: total, completed, ongoing
     stats = {
@@ -203,6 +228,7 @@ def create_project():
         end_date_str = request.form.get('end_date')
         project_status = request.form.get('project_status', 'Ongoing')
         progress = request.form.get('progress', '0%')
+        project_description = request.form.get('topicDescription', '')
         
         # Validate required fields
         if not all([project_name, priority, client_name, department_id, project_manager, start_date_str, end_date_str]):
@@ -235,10 +261,17 @@ def create_project():
             project_name=project_name,
             client_name=client_name,
             project_status=project_status,
-            progress=progress
+            progress=progress,
+            project_desc=project_description
         )
         
         db.session.add(project)
+        db.session.flush()  # Get the project_id
+        
+        # Note: project_members table doesn't have project_id column in the database
+        # So we skip creating ProjectMembers entries for now
+        # The project will still be created successfully
+        
         db.session.commit()
         
         flash('Project created successfully!', 'success')

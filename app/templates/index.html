@@ -103,7 +103,6 @@
                                                                 <option value="all">Status: All</option>
                                                                 <option value="Ongoing">Ongoing</option>
                                                                 <option value="On Hold">On Hold</option>
-                                                                <option value="Cancelled">Cancelled</option>
                                                                 <option value="Completed">Completed</option>
                                                             </select>
                                                         </div>
@@ -146,16 +145,27 @@
                                                         <tbody>
                                                             {% if projects_data %}
                                                             {% for item in projects_data %}
-                                                            <tr>
+                                                            <tr 
+                                                                data-status="{% if item.project.project_status == 'Pending' or not item.project.project_status %}Ongoing{% elif item.project.project_status == 'Cancelled' %}Ongoing{% else %}{{ item.project.project_status }}{% endif %}"
+                                                                data-priority="{{ item.priority or 'High' }}"
+                                                                data-start-date="{{ item.deadline.start_date.strftime('%Y-%m-%d') if item.deadline and item.deadline.start_date else '' }}"
+                                                                data-end-date="{{ item.deadline.end_date.strftime('%Y-%m-%d') if item.deadline and item.deadline.end_date else '' }}"
+                                                            >
                                                                 <td>
                                                                     <a href="{{ url_for('main.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
                                                                         {{ item.project.project_name or 'Unnamed Project' }}
                                                                     </a>
                                                                 </td>
                                                                 <td>
-                                                                  <div class="d-flex">
-                                                                    <div class="badge badge-soft-primary font-size-12">Medium</div>                                 
-                                                                </div>
+                                                                    {% if item.priority == 'High' %}
+                                                                    <div class="badge badge-soft-danger font-size-12">High</div>
+                                                                    {% elif item.priority == 'Medium' %}
+                                                                    <div class="badge badge-soft-warning font-size-12">Medium</div>
+                                                                    {% elif item.priority == 'Low' %}
+                                                                    <div class="badge badge-soft-info font-size-12">Low</div>
+                                                                    {% else %}
+                                                                    <div class="badge badge-soft-primary font-size-12">{{ item.priority or 'High' }}</div>
+                                                                    {% endif %}
                                                                 </td>
                                                                 <td style="width: 190px;">
                                                                     <div class="d-flex align-items-center">
@@ -176,14 +186,15 @@
                                                                     </div>
                                                                 </td>
                                                                 <td>
-                                                                    {% if item.project.project_status == 'Ongoing' %}
+                                                                    {% set display_status = 'Ongoing' if (item.project.project_status == 'Pending' or not item.project.project_status or item.project.project_status == 'Cancelled') else item.project.project_status %}
+                                                                    {% if display_status == 'Ongoing' %}
                                                                     <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                    {% elif item.project.project_status == 'Completed' %}
+                                                                    {% elif display_status == 'Completed' %}
                                                                     <div class="badge badge-soft-success font-size-12">Completed</div>
-                                                                    {% elif item.project.project_status == 'On Hold' %}
+                                                                    {% elif display_status == 'On Hold' %}
                                                                     <div class="badge badge-soft-secondary font-size-12">On Hold</div>
                                                                     {% else %}
-                                                                    <div class="badge badge-soft-info font-size-12">{{ item.project.project_status or 'Pending' }}</div>
+                                                                    <div class="badge badge-soft-warning font-size-12">Ongoing</div>
                                                                     {% endif %}
                                                                 </td>
                                                                 <td>
@@ -248,275 +259,73 @@
                                                             </tr>
                                                         </thead>
                                                         <tbody>
+                                                            {% if projects_data %}
+                                                            {% for item in projects_data %}
                                                             <tr>
-                                                                <!-- <td>
-                                                                    <div class="form-check font-size-16">
-                                                                        <input type="checkbox" class="form-check-input">
-                                                                        <label class="form-check-label"></label>
+                                                                <td>
+                                                                    <a href="{{ url_for('main.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
+                                                                        {{ item.project.project_name or 'Unnamed Project' }}
+                                                                    </a>
+                                                                </td>
+                                                                <td style="width: 190px;">
+                                                                    <div class="d-flex align-items-center">
+                                                                        {% if item.deadline and item.deadline.start_date %}
+                                                                        {{ item.deadline.start_date.strftime('%m / %d / %Y') }}
+                                                                        {% else %}
+                                                                        N/A
+                                                                        {% endif %}
                                                                     </div>
-                                                                </td> -->
-                                                                <td class="fw-semibold">Osint</td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                    :  23:00</div>
                                                                 </td>
                                                                 <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 02 / 15 / 2025
-                                                                    :  11:23</div>
-                                                                </td>
-                                                                <td>
-                                                                     <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                </td>
-                                                                <td>
-                                                                    50%
-                                                                </td>
-                                                                <td>
-                                                                    500 hrs
-                                                                </td>
-                                                                <td>
-                                                                    Lurs
-                                                                </td>
-                                                                <td>
-                                                                    Ashgard
-                                                                </td>
-                                                                <td>
-                                                                    Cyber2
-                                                                </td>
-                                                                <td>
-                                                                    UI: User Modal
-                                                                </td>
-                                                            </tr>   
-                                                            
-                                                             <tr>
-                                                                <!-- <td>
-                                                                    <div class="form-check font-size-16">
-                                                                        <input type="checkbox" class="form-check-input">
-                                                                        <label class="form-check-label"></label>
+                                                                    <div class="d-flex align-items-center">
+                                                                        {% if item.deadline and item.deadline.end_date %}
+                                                                        {{ item.deadline.end_date.strftime('%m / %d / %Y') }}
+                                                                        {% else %}
+                                                                        N/A
+                                                                        {% endif %}
                                                                     </div>
-                                                                </td> -->
-                                                                <td class="fw-semibold">Osint</td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                    :  23:00</div>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 02 / 15 / 2025
-                                                                    :  11:23</div>
                                                                 </td>
                                                                 <td>
-                                                                     <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                                                    {% set display_status = 'Ongoing' if (item.project.project_status == 'Pending' or not item.project.project_status or item.project.project_status == 'Cancelled') else item.project.project_status %}
+                                                                    {% if display_status == 'Ongoing' %}
+                                                                    <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                                                    {% elif display_status == 'Completed' %}
+                                                                    <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                    {% elif display_status == 'On Hold' %}
+                                                                    <div class="badge badge-soft-secondary font-size-12">On Hold</div>
+                                                                    {% else %}
+                                                                    <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                                                    {% endif %}
                                                                 </td>
                                                                 <td>
-                                                                    50%
+                                                                    {{ item.project.progress or '0%' }}
                                                                 </td>
                                                                 <td>
-                                                                    500 hrs
+                                                                    {% if item.manhours is not none %}
+                                                                    {{ item.manhours }} hrs
+                                                                    {% else %}
+                                                                    N/A
+                                                                    {% endif %}
                                                                 </td>
                                                                 <td>
-                                                                    Lurs
+                                                                    {{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}
                                                                 </td>
                                                                 <td>
-                                                                    Ashgard
+                                                                    {{ item.project.client_name or 'N/A' }}
                                                                 </td>
                                                                 <td>
-                                                                    Cyber
+                                                                    {{ item.department.department_name if item.department else 'N/A' }}
                                                                 </td>
                                                                 <td>
-                                                                    UI: User Modal
+                                                                    N/A
                                                                 </td>
-                                                            </tr>   
-                                                           <tr>
-                                                                <!-- <td>
-                                                                    <div class="form-check font-size-16">
-                                                                        <input type="checkbox" class="form-check-input">
-                                                                        <label class="form-check-label"></label>
-                                                                    </div>
-                                                                </td> -->
-                                                                <td class="fw-semibold">Osint</td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                    :  23:00</div>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 02 / 15 / 2025
-                                                                    :  11:23</div>
-                                                                </td>
-                                                                <td>
-                                                                     <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                </td>
-                                                                <td>
-                                                                    50%
-                                                                </td>
-                                                                <td>
-                                                                    500 hrs
-                                                                </td>
-                                                                <td>
-                                                                    Lurs
-                                                                </td>
-                                                                <td>
-                                                                    Ashgard
-                                                                </td>
-                                                                <td>
-                                                                    Cyber
-                                                                </td>
-                                                                <td>
-                                                                    UI: User Modal
-                                                                </td>
-                                                            </tr>   
+                                                            </tr>
+                                                            {% endfor %}
+                                                            {% else %}
                                                             <tr>
-                                                                <!-- <td>
-                                                                    <div class="form-check font-size-16">
-                                                                        <input type="checkbox" class="form-check-input">
-                                                                        <label class="form-check-label"></label>
-                                                                    </div>
-                                                                </td> -->
-                                                                <td class="fw-semibold">Osint</td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                    :  23:00</div>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 02 / 15 / 2025
-                                                                    :  11:23</div>
-                                                                </td>
-                                                                <td>
-                                                                     <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                </td>
-                                                                <td>
-                                                                    50%
-                                                                </td>
-                                                                <td>
-                                                                    500 hrs
-                                                                </td>
-                                                                <td>
-                                                                    Lurs
-                                                                </td>
-                                                                <td>
-                                                                    Ashgard
-                                                                </td>
-                                                                <td>
-                                                                    Cyber
-                                                                </td>
-                                                                <td>
-                                                                    UI: User Modal
-                                                                </td>
-                                                            </tr>   
-                                                             <tr>
-                                                                <!-- <td>
-                                                                    <div class="form-check font-size-16">
-                                                                        <input type="checkbox" class="form-check-input">
-                                                                        <label class="form-check-label"></label>
-                                                                    </div>
-                                                                </td> -->
-                                                                <td class="fw-semibold">Osint</td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                    :  23:00</div>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 02 / 15 / 2025
-                                                                    :  11:23</div>
-                                                                </td>
-                                                                <td>
-                                                                     <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                </td>
-                                                                <td>
-                                                                    50%
-                                                                </td>
-                                                                <td>
-                                                                    500 hrs
-                                                                </td>
-                                                                <td>
-                                                                    Lurs
-                                                                </td>
-                                                                <td>
-                                                                    Ashgard
-                                                                </td>
-                                                                <td>
-                                                                    Cyber
-                                                                </td>
-                                                                <td>
-                                                                    UI: User Modal
-                                                                </td>
-                                                            </tr>   
-                                                            
-                                                             <tr>
-                                                                <!-- <td>
-                                                                    <div class="form-check font-size-16">
-                                                                        <input type="checkbox" class="form-check-input">
-                                                                        <label class="form-check-label"></label>
-                                                                    </div>
-                                                                </td> -->
-                                                                <td class="fw-semibold">Osint</td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                    :  23:00</div>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 02 / 15 / 2025
-                                                                    :  11:23</div>
-                                                                </td>
-                                                                <td>
-                                                                     <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                </td>
-                                                                <td>
-                                                                    50%
-                                                                </td>
-                                                                <td>
-                                                                    500 hrs
-                                                                </td>
-                                                                <td>
-                                                                    Lurs
-                                                                </td>
-                                                                <td>
-                                                                    Ashgard
-                                                                </td>
-                                                                <td>
-                                                                    Cyber
-                                                                </td>
-                                                                <td>
-                                                                    UI: User Modal
-                                                                </td>
-                                                            </tr>   
-                                                               <tr>
-                                                                <!-- <td>
-                                                                    <div class="form-check font-size-16">
-                                                                        <input type="checkbox" class="form-check-input">
-                                                                        <label class="form-check-label"></label>
-                                                                    </div>
-                                                                </td> -->
-                                                                <td class="fw-semibold">Osint</td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 11 / 12 / 2024 
-                                                                    :  23:00</div>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center"> 02 / 15 / 2025
-                                                                    :  11:23</div>
-                                                                </td>
-                                                                <td>
-                                                                     <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                </td>
-                                                                <td>
-                                                                    50%
-                                                                </td>
-                                                                <td>
-                                                                    500 hrs
-                                                                </td>
-                                                                <td>
-                                                                    Lurs
-                                                                </td>
-                                                                <td>
-                                                                    Ashgard
-                                                                </td>
-                                                                <td>
-                                                                    Cyber
-                                                                </td>
-                                                                <td>
-                                                                    UI: User Modal
-                                                                </td>
-                                                            </tr>   
-                                                            
+                                                                <td colspan="10" class="text-center text-muted">No projects found. Create your first project!</td>
+                                                            </tr>
+                                                            {% endif %}
                                                         </tbody>
                                                 </table>
                                             </div>
@@ -585,21 +394,10 @@
                                         <div class="mb-3">
                                             <label class="form-label" for="project_manager">Project Manager <span class="text-danger">*</span></label>
                                             <select class="form-select" id="project_manager" name="project_manager" required>
-                                                <option value="" selected>Select Project Manager</option>
+                                                <option value="">Select Project Manager</option>
                                                 {% for user in users %}
-                                                <option value="{{ user.member_id }}">{{ user.name or user.username }}</option>
+                                                <option value="{{ user.member_id }}" {% if current_user.member_id == user.member_id %}selected{% endif %}>{{ user.name or user.username }}</option>
                                                 {% endfor %}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label" for="project_status">Project Status</label>
-                                            <select class="form-select" id="project_status" name="project_status">
-                                                <option value="Ongoing" selected>Ongoing</option>
-                                                <option value="Completed">Completed</option>
-                                                <option value="On Hold">On Hold</option>
-                                                <option value="Pending">Pending</option>
                                             </select>
                                         </div>
                                     </div>
@@ -617,18 +415,44 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label class="form-label" for="progress">Progress</label>
-                                            <input type="text" class="form-control" placeholder="e.g., 0%, 50%, 100%" id="progress" name="progress" value="0%">
+                                            <label class="form-label" for="project_members">Add Members <span class="text-danger">*</span></label>
+                                            <!-- Hidden inputs container for selected member IDs -->
+                                            <div id="memberIdsContainerProject"></div>
+                                            
+                                            <!-- Input / Selected chips -->
+                                            <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input-project"
+                                                id="ownerInputProject"
+                                                data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                                <span class="text-muted small">Select Department first to see members</span>
+                                            </div>
+
+                                            <!-- Dropdown -->
+                                            <div class="dropdown-menu p-3 shadow owner-dropdown-project" style="width: 100%;">
+                                                <input type="text"
+                                                    class="form-control mb-2"
+                                                    id="ownerSearchProject"
+                                                    placeholder="Search member">
+
+                                                <small class="text-muted">Contacts</small>
+
+                                                <div class="list-group mt-2 owner-list-project" style="max-height: 200px; overflow-y: auto;"></div>
+
+                                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                                    <a href="#" id="clearOwnersProject" class="text-muted small">Clear</a>
+                                                    <button type="button" class="btn btn-sm btn-primary" id="confirmOwnersProject">
+                                                        Confirm
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="topicDescription" class="form-label">Description</label>
-                                        <textarea class="form-control" id="topicDescription" rows="3" placeholder="Enter description"></textarea>
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label for="topicDescription" class="form-label">Description</label>
+                                            <textarea class="form-control" id="topicDescription" name="topicDescription" rows="3" placeholder="Enter description"></textarea>
+                                        </div>
                                     </div>
-                                </div>
-                                
                                 </div>
                                 <div class="row mt-2">
                                     <div class="col-12 text-end">
@@ -641,5 +465,252 @@
                     </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
+
+<script type="application/json" id="users-data">{{ users_json|tojson }}</script>
+<script>
+// Get users data from JSON script tag
+const usersDataElement = document.getElementById('users-data');
+const allUsersData = JSON.parse(usersDataElement.textContent);
+
+// Generate colors array
+const colors = ['#6f42c1', '#0d6efd', '#198754', '#dc3545', '#fd7e14', '#20c997', '#ffc107', '#6610f2'];
+
+// Helper function to generate initials
+function getInitials(name) {
+    if (!name) return "??";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+}
+
+// Map users to owner format with colors and initials
+const allUsers = allUsersData.map((user, index) => ({
+    id: user.member_id,
+    name: user.name || user.username,
+    initials: getInitials(user.name || user.username),
+    color: colors[index % colors.length],
+    department_id: user.department_id || null
+}));
+
+// Chip-based member selection for projects (matching department modal design)
+let selectedOwnersProject = [];
+const departmentSelect = document.getElementById('department_id');
+const ownerInputProject = document.getElementById('ownerInputProject');
+const ownerListProject = document.querySelector('.owner-list-project');
+const ownerSearchProject = document.getElementById('ownerSearchProject');
+
+// Function to populate available members based on selected department
+function populateAvailableMembers() {
+    if (!ownerListProject || !departmentSelect) return;
+    
+    const selectedDeptId = departmentSelect.value ? parseInt(departmentSelect.value) : null;
+    
+    // Filter users by department
+    let availableMembers = [];
+    if (selectedDeptId) {
+        availableMembers = allUsers.filter(user => 
+            user.department_id && parseInt(user.department_id) === selectedDeptId
+        );
+    }
+    
+    // Render the list
+    renderOwnersProject(ownerSearchProject ? ownerSearchProject.value : '', availableMembers);
+}
+
+// Render owners list
+function renderOwnersProject(filter = "", availableMembers = null) {
+    if (!ownerListProject) return;
+    
+    ownerListProject.innerHTML = "";
+    
+    // Use provided members or filter from allUsers
+    let membersToShow = availableMembers || allUsers;
+    
+    // Apply search filter
+    if (filter) {
+        membersToShow = membersToShow.filter(m => 
+            m.name.toLowerCase().includes(filter.toLowerCase())
+        );
+    }
+    
+    // Filter by department if one is selected (already filtered in populateAvailableMembers, but double-check)
+    const selectedDeptId = departmentSelect ? (departmentSelect.value ? parseInt(departmentSelect.value) : null) : null;
+    if (selectedDeptId && availableMembers === null) {
+        // Only apply department filter if we're using allUsers (not pre-filtered)
+        membersToShow = membersToShow.filter(m => 
+            m.department_id && parseInt(m.department_id) === selectedDeptId
+        );
+    }
+    
+    if (membersToShow.length === 0) {
+        const emptyMsg = document.createElement('div');
+        emptyMsg.className = 'list-group-item text-muted text-center';
+        emptyMsg.textContent = selectedDeptId ? 'No members found in this department' : 'Select Department first to see members';
+        ownerListProject.appendChild(emptyMsg);
+        return;
+    }
+    
+    membersToShow.forEach(owner => {
+        const item = document.createElement("div");
+        item.className = "list-group-item owner-item";
+        if (selectedOwnersProject.find(o => o.id === owner.id)) {
+            item.classList.add("active");
+        }
+        
+        item.innerHTML = `
+            <div class="owner-avatar" style="background:${owner.color}">
+                ${owner.initials}
+            </div>
+            <span>${owner.name}</span>
+        `;
+        
+        item.onclick = () => toggleOwnerProject(owner);
+        ownerListProject.appendChild(item);
+    });
+}
+
+// Toggle owner selection
+function toggleOwnerProject(owner) {
+    const exists = selectedOwnersProject.find(o => o.id === owner.id);
+    
+    if (exists) {
+        selectedOwnersProject = selectedOwnersProject.filter(o => o.id !== owner.id);
+    } else {
+        selectedOwnersProject.push(owner);
+    }
+    
+    renderSelectedProject();
+    renderOwnersProject(ownerSearchProject ? ownerSearchProject.value : '');
+}
+
+// Render selected chips
+function renderSelectedProject() {
+    if (!ownerInputProject) return;
+    
+    ownerInputProject.innerHTML = "";
+    
+    if (selectedOwnersProject.length === 0) {
+        const selectedDeptId = departmentSelect ? departmentSelect.value : null;
+        ownerInputProject.innerHTML = `<span class="text-muted small">${selectedDeptId ? 'Select member(s)' : 'Select Department first to see members'}</span>`;
+        return;
+    }
+    
+    selectedOwnersProject.forEach(owner => {
+        const chip = document.createElement("div");
+        chip.className = "owner-chip";
+        chip.innerHTML = `
+            ${owner.name}
+            <span onclick="removeOwnerProject(${owner.id})">&times;</span>
+        `;
+        ownerInputProject.appendChild(chip);
+    });
+}
+
+// Remove owner chip
+window.removeOwnerProject = function(id) {
+    selectedOwnersProject = selectedOwnersProject.filter(o => o.id !== id);
+    renderSelectedProject();
+    renderOwnersProject(ownerSearchProject ? ownerSearchProject.value : '');
+};
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize available members
+    populateAvailableMembers();
+    
+    // Reset form and member selection when modal opens
+    const createProjectModal = document.querySelector('.create-task');
+    if (createProjectModal) {
+        createProjectModal.addEventListener('show.bs.modal', function() {
+            // Reset member selection
+            selectedOwnersProject = [];
+            renderSelectedProject();
+            
+            // Reset department selection
+            if (departmentSelect) {
+                departmentSelect.value = '';
+                populateAvailableMembers();
+            }
+            
+            // Clear search
+            if (ownerSearchProject) {
+                ownerSearchProject.value = '';
+            }
+        });
+    }
+    
+    // Add event listener to department dropdown
+    if (departmentSelect) {
+        departmentSelect.addEventListener('change', function() {
+            // Clear selection when department changes
+            selectedOwnersProject = [];
+            renderSelectedProject();
+            populateAvailableMembers();
+        });
+    }
+    
+    // Search functionality
+    if (ownerSearchProject) {
+        ownerSearchProject.addEventListener("input", e => {
+            renderOwnersProject(e.target.value);
+        });
+    }
+    
+    // Clear button
+    const clearBtnProject = document.getElementById("clearOwnersProject");
+    if (clearBtnProject) {
+        clearBtnProject.onclick = () => {
+            selectedOwnersProject = [];
+            renderSelectedProject();
+            renderOwnersProject();
+        };
+    }
+    
+    // Confirm button
+    const confirmBtnProject = document.getElementById("confirmOwnersProject");
+    if (confirmBtnProject) {
+        confirmBtnProject.onclick = () => {
+            // Close dropdown (Bootstrap dropdown)
+            const dropdown = ownerInputProject.closest('.mb-3').querySelector('.dropdown-menu');
+            if (dropdown) {
+                const bsDropdown = bootstrap.Dropdown.getInstance(ownerInputProject);
+                if (bsDropdown) {
+                    bsDropdown.hide();
+                }
+            }
+        };
+    }
+    
+    // Handle form submission - add selected member IDs to form
+    const createProjectForm = document.getElementById('createProjectForm');
+    if (createProjectForm) {
+        createProjectForm.addEventListener('submit', function(e) {
+            // Validate that at least one member is selected
+            if (selectedOwnersProject.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one member for the project');
+                return false;
+            }
+            
+            // Clear existing hidden inputs
+            const container = document.getElementById("memberIdsContainerProject");
+            if (container) {
+                container.innerHTML = "";
+                
+                // Add hidden inputs for each selected member
+                selectedOwnersProject.forEach(function(member) {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = "project_members";
+                    input.value = member.id;
+                    container.appendChild(input);
+                });
+            }
+        });
+    }
+});
+</script>
 
    {% endblock content %}
