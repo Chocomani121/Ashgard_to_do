@@ -159,27 +159,59 @@
                                 <div class="row mb-3 g-3 flex-shrink-0">
                                     <div class="col-md-3 col-sm-6">
                                         <span class="text-muted">Project Manager:</span> 
-                                        <strong class="ms-1">Lurs</strong>
+                                        <strong class="ms-1">
+                                            {% if manager %}
+                                                {{ manager.name if manager.name else manager.username }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </strong>
                                     </div>
 
                                     <div class="col-md-3 col-sm-6">
                                         <span class="text-muted">Priority:</span> 
+                                        {% if project.priority == 'High' %}
                                         <span class="badge bg-soft-danger text-danger ms-1">High</span>
+                                        {% elif project.priority == 'Medium' %}
+                                        <span class="badge bg-soft-warning text-warning ms-1">Medium</span>
+                                        {% elif project.priority == 'Low' %}
+                                        <span class="badge bg-soft-info text-info ms-1">Low</span>
+                                        {% else %}
+                                        <span class="badge bg-soft-danger text-danger ms-1">{{ project.priority or 'High' }}</span>
+                                        {% endif %}
                                     </div>
 
                                     <div class="col-md-3 col-sm-6">
                                         <span class="text-muted">Start date:</span> 
-                                        <strong class="ms-1">24, June 2023</strong>
+                                        <strong class="ms-1">
+                                            {% if deadline and deadline.start_date %}
+                                                {{ deadline.start_date.strftime('%B %d, %Y') }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </strong>
                                     </div>
 
                                     <div class="col-md-3 col-sm-6">
                                         <span class="text-muted">End date:</span> 
-                                        <strong class="ms-1">24, June 2023</strong>
+                                        <strong class="ms-1">
+                                            {% if deadline and deadline.end_date %}
+                                                {{ deadline.end_date.strftime('%B %d, %Y') }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </strong>
                                     </div>
 
                                     <div class="col-md-3 col-sm-6">
                                         <span class="text-muted">Man-hours:</span> 
-                                        <strong class="ms-1">45H:35M:45S</strong>
+                                        <strong class="ms-1">
+                                            {% if manhours is not none %}
+                                                {{ manhours }} hrs
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </strong>
                                     </div>
                                 </div>
 
@@ -365,6 +397,91 @@
        
 
                         </div>
+                            <!-- Project Details Table -->
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header d-flex align-items-center">
+                                            <h4 class="card-title mb-0">Project Details</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="projectDetails-gridjs"></div>
+                                            <table id="projectDetailsTable" class="table d-none">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Project Manager</th>
+                                                        <th>Man Hours</th>
+                                                        <th>Priority</th>
+                                                        <th>Start Date</th>
+                                                        <th>End Date</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            {% if manager %}
+                                                            <div class="d-flex align-items-center">
+                                                                <img class="rounded-circle avatar-sm me-2" src="{{ url_for('static', filename='profile_pics/' + manager.image_file) }}" alt="{{ manager.name or manager.username }}">
+                                                                <div>
+                                                                    <strong>{{ manager.name if manager.name else manager.username }}</strong>
+                                                                </div>
+                                                            </div>
+                                                            {% else %}
+                                                            <span class="text-muted">N/A</span>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            {% if manhours is not none %}
+                                                            <strong>{{ manhours }} hrs</strong>
+                                                            {% else %}
+                                                            <span class="text-muted">N/A</span>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            {% if project.priority == 'High' %}
+                                                            <span class="badge badge-soft-danger font-size-12">High</span>
+                                                            {% elif project.priority == 'Medium' %}
+                                                            <span class="badge badge-soft-warning font-size-12">Medium</span>
+                                                            {% elif project.priority == 'Low' %}
+                                                            <span class="badge badge-soft-info font-size-12">Low</span>
+                                                            {% else %}
+                                                            <span class="badge badge-soft-primary font-size-12">{{ project.priority or 'High' }}</span>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            {% if deadline and deadline.start_date %}
+                                                            <strong>{{ deadline.start_date.strftime('%m/%d/%Y') }}</strong>
+                                                            {% else %}
+                                                            <span class="text-muted">N/A</span>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            {% if deadline and deadline.end_date %}
+                                                            <strong>{{ deadline.end_date.strftime('%m/%d/%Y') }}</strong>
+                                                            {% else %}
+                                                            <span class="text-muted">N/A</span>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            {% if display_status == 'Ongoing' %}
+                                                            <span class="badge badge-soft-warning font-size-12">Ongoing</span>
+                                                            {% elif display_status == 'Completed' %}
+                                                            <span class="badge badge-soft-success font-size-12">Completed</span>
+                                                            {% elif display_status == 'On Hold' %}
+                                                            <span class="badge badge-soft-secondary font-size-12">On Hold</span>
+                                                            {% else %}
+                                                            <span class="badge badge-soft-warning font-size-12">Ongoing</span>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="row mt-2">
                                 <div class="col-12">
                                     <div class="card">

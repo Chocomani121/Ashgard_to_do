@@ -489,3 +489,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
 });
+
+// 7. Project Details Table (from project_details.html)
+const projectDetailsTableReq = document.getElementById("projectDetailsTable");
+const projectDetailsTableRes = document.getElementById("projectDetails-gridjs");
+if (projectDetailsTableReq && projectDetailsTableRes) {
+    new gridjs.Grid({
+        from: projectDetailsTableReq,
+        pagination: false, // Single row, no pagination needed
+        sort: false, // Single row, no sorting needed
+        search: false, // Single row, no search needed
+        className: { table: "table table-bordered table-centered align-middle" }
+    }).render(projectDetailsTableRes);
+}

@@ -202,7 +202,42 @@ def members():
 @main.route("/project_details/<int:id>")
 @login_required
 def project_details(id=None):
-    return render_template('project_details.html')
+    # If no ID provided, get the first project or handle appropriately
+    if id is None:
+        project = Project.query.first()
+    else:
+        project = Project.query.get(id)
+    
+    if not project:
+        flash('Project not found', 'error')
+        return redirect(url_for('main.projects'))
+    
+    # Get related data
+    manager = User.query.get(project.project_manager) if project.project_manager else None
+    deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
+    department = Department.query.get(project.department_id) if project.department_id else None
+    
+    # Calculate manhours
+    manhours = None
+    if deadline and deadline.start_date and deadline.end_date:
+        try:
+            time_diff = deadline.end_date - deadline.start_date
+            manhours = int(time_diff.total_seconds() / 3600)  # Convert to hours
+        except:
+            manhours = None
+    
+    # Normalize status: convert Pending/Cancelled to Ongoing
+    display_status = project.project_status
+    if not display_status or display_status == 'Pending' or display_status == 'Cancelled':
+        display_status = 'Ongoing'
+    
+    return render_template('project_details.html', 
+                         project=project, 
+                         manager=manager, 
+                         deadline=deadline,
+                         department=department,
+                         manhours=manhours,
+                         display_status=display_status)
 
 @main.route("/profile")
 @login_required
