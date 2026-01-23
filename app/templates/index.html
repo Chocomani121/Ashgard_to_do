@@ -147,13 +147,14 @@
                                                             {% if projects_data %}
                                                             {% for item in projects_data %}
                                                             <tr>
+                                                              
                                                                 <td>
                                                                     <a href="{{ url_for('main.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
                                                                         {{ item.project.project_name or 'Unnamed Project' }}
                                                                     </a>
                                                                 </td>
                                                                 <td>
-                                                                  <div class="d-flex justify-content-center">
+                                                                  <div class="d-flex">
                                                                     <div class="badge badge-soft-primary font-size-12">Medium</div>                                 
                                                                 </div>
                                                                 </td>
@@ -615,22 +616,14 @@
                                             <input type="date" class="form-control" id="end_date" name="end_date" required>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label" for="progress">Progress</label>
-                                            <input type="text" class="form-control" placeholder="e.g., 0%, 50%, 100%" id="progress" name="progress" value="0%">
-                                        </div>
-                                    </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <div class="mb-3">
                                         <label for="topicDescription" class="form-label">Description</label>
-                                        <textarea class="form-control" id="topicDescription" rows="3" placeholder="Enter description"></textarea>
+                                        <textarea class="form-control" id="topicDescription" rows="10" placeholder="Enter description"></textarea>
                                     </div>
                                 </div>
-                                
-                                </div>
-                                <div class="row mt-2">
+                                <div class="row mt-5">
                                     <div class="col-12 text-end">
                                         <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal"><i class="bx bx-x me-1 align-middle"></i> Cancel</button>
                                         <button type="submit" class="btn btn-success" id="btn-save-project"><i class="bx bx-check me-1 align-middle"></i> Create Project</button>
