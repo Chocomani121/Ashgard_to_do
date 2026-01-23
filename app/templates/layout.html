@@ -157,23 +157,6 @@
                     <div class="d-flex">
 
                         <div class="dropdown d-inline-block">
-                            <button type="button" class="btn header-item noti-icon"
-                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="bx bx-search icon-sm align-middle"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0">
-                                <form class="p-2">
-                                    <div class="search-box">
-                                        <div class="position-relative">
-                                            <input type="text" class="form-control rounded bg-light border-0" placeholder="Search...">
-                                            <i class="bx bx-search search-icon"></i>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-
-                        <div class="dropdown d-inline-block">
                             <button type="button" class="btn header-item noti-icon" id="page-header-notifications-dropdown-v"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="bx bx-bell icon-sm align-middle"></i>
@@ -276,8 +259,6 @@
                                     <p class="mb-0 font-size-11 text-muted">{{ current_user.username}}</p> -->
                                 </div>
                                 <a class="dropdown-item" href="{{ url_for('main.profile') }}"><i class="mdi mdi-account-circle text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Profile</span></a>
-                                <a class="dropdown-item" href="apps-chat.html"><i class="mdi mdi-message-text-outline text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Messages</span></a>
-                                <a class="dropdown-item" href="pages-faqs.html"><i class="mdi mdi-lifebuoy text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Help</span></a>
                         
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="{{ url_for('users.logout') }}"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Logout</span></a>

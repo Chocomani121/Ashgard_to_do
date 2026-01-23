@@ -147,28 +147,14 @@
                                                             {% if projects_data %}
                                                             {% for item in projects_data %}
                                                             <tr>
-                                                                <td>
-                                                                    <div class="d-flex justify-content-center">
-                                                                        {# Priority is safely handled in backend #}
-                                                                        {% set priority = item.priority|default('High') %}
-                                                                        {% if priority == 'High' %}
-                                                                        <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #8B1A1A; display: inline-block;" title="High Priority"></span>
-                                                                        {% elif priority == 'Medium' %}
-                                                                        <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #F1B44C; display: inline-block;" title="Medium Priority"></span>
-                                                                        {% elif priority == 'Low' %}
-                                                                        <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #34C38F; display: inline-block;" title="Low Priority"></span>
-                                                                        {% else %}
-                                                                        <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #8B1A1A; display: inline-block;" title="High Priority"></span>
-                                                                        {% endif %}
-                                                                    </div>
-                                                                </td>
+                                                              
                                                                 <td>
                                                                     <a href="{{ url_for('main.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
                                                                         {{ item.project.project_name or 'Unnamed Project' }}
                                                                     </a>
                                                                 </td>
                                                                 <td>
-                                                                  <div class="d-flex justify-content-center">
+                                                                  <div class="d-flex">
                                                                     <div class="badge badge-soft-primary font-size-12">Medium</div>                                 
                                                                 </div>
                                                                 </td>
@@ -630,12 +616,6 @@
                                             <input type="date" class="form-control" id="end_date" name="end_date" required>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label" for="progress">Progress</label>
-                                            <input type="text" class="form-control" placeholder="e.g., 0%, 50%, 100%" id="progress" name="progress" value="0%">
-                                        </div>
-                                    </div>
                                 </div>
                                 <div class="col-md-12">
                                     <div class="mb-3">
@@ -643,8 +623,6 @@
                                         <textarea class="form-control" id="topicDescription" rows="10" placeholder="Enter description"></textarea>
                                     </div>
                                 </div>
-                                </div>
-                                <div class="row mt-5">
                                 <div class="row mt-5">
                                     <div class="col-12 text-end">
                                         <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal"><i class="bx bx-x me-1 align-middle"></i> Cancel</button>
