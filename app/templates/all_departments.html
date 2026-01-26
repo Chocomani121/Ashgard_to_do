@@ -33,7 +33,7 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between">
                                     <div>
-                                        <h6 class="mb-2 text-muted font-size-15">Completed Projects</h6>
+                                        <h6 class="mb-2 text-muted font-size-15">Ongoing Projects</h6>
                                         <h4 class="mb-0 font-size-22 fw-bold">{{ stats.completed|default(0) }}</h4>
                                     </div>
                                     <div class="avatar-md">
@@ -51,7 +51,7 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between">
                                     <div>
-                                        <h6 class="mb-2 text-muted font-size-15">Ongoing Projects</h6>
+                                        <h6 class="mb-2 text-muted font-size-15">Completed Projects</h6>
                                         <h4 class="mb-0 font-size-22 fw-bold">{{ stats.ongoing|default(0) }}</h4>
                                     </div>
                                     <div class="avatar-md">
@@ -72,12 +72,9 @@
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
                         <div class="ms-auto d-flex gap-2">
-                            {# Check if the logged-in user is an admin #}
-                            {% if current_user.is_authenticated and current_user.account_type == 'admin' %}
                             <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#myModal">
                                 <i class="mdi mdi-plus me-1"></i>Add Department
                             </button>
-                            {% endif %}
                         </div>
                     </div>
                     <div class="card-body">
@@ -87,9 +84,7 @@
                                     <th style="width: 190px;">Department Name</th>
                                     <th style="text-align: center;">Total Members</th>
                                     <th style="text-align: center;">Created Date</th>
-                                    {% if current_user.is_authenticated and current_user.account_type == 'admin' %}
                                     <th>Action</th>
-                                    {% endif %}
                                 </tr>
                             </thead>
                             <tbody>
@@ -99,28 +94,24 @@
                                     <td style="text-align: center;">{{ dept.members|length }}</td>
                                     <td style="text-align: center;">{{ dept.creation_date.strftime('%Y-%m-%d') if dept.creation_date else 'N/A' }}</td>
                                     <td>
-                                        {% if current_user.is_authenticated and current_user.account_type == 'admin' %}
                                         <div class="dropdown">
-                                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>
                                             <div class="dropdown-menu dropdown-menu-end shadow">
-                                                <div class="ms-auto">
-                                                    <button class="btn dropdown-item edit-department-btn" 
+                                                <button class="dropdown-item edit-department-btn" 
                                                     data-bs-toggle="modal" 
                                                     data-bs-target="#editDepartmentModal" 
                                                     data-dept-id="{{ dept.department_id }}" 
                                                     data-dept-name="{{ dept.department_name }}"
                                                     data-dept-members="{{ dept.members|map(attribute='member_id')|list|tojson }}">
-                                                        Edit
-                                                    </button>
-                                                </div>
+                                                    Edit
+                                                </button>
                                                 <a class="dropdown-item text-danger delete-department-btn" 
-                                                href="javascript:void(0);" 
-                                                data-dept-name="{{ dept.department_name }}"
-                                                data-dept-id="{{ dept.department_id }}"
-                                                data-delete-url="{{ url_for('main.delete_department', id=dept.department_id) }}">Delete</a>
+                                                    href="javascript:void(0);" 
+                                                    data-dept-name="{{ dept.department_name }}"
+                                                    data-dept-id="{{ dept.department_id }}"
+                                                    data-delete-url="{{ url_for('main.delete_department', id=dept.department_id) }}">Delete</a>
                                             </div>
                                         </div>
-                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -139,9 +130,40 @@
                         <div class="card">
                             <!-- Card Header -->
                             <div class="card-header align-items-center">
-                                <div class="d-flex align-items-center">
-                                    <h4 class="card-title mb-0">Department Projects</h4>
-                                    <div class="ms-auto">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                    <h4 class="card-title mb-0">Department-Wide Projects</h4>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <!-- Search Bar -->
+                                        <div style="width: 200px;">
+                                            <input type="text" id="searchDeptProjects" class="form-control" placeholder="Type a keyword...">
+                                        </div>
+                                        
+                                        <!-- Date Range Picker -->
+                                        <div style="width: 200px;">
+                                            <input type="text" id="datepicker-range-dept" class="form-control" placeholder="Select Date Range">
+                                        </div>
+                                        
+                                        <!-- Status Filter -->
+                                        <div style="width: 150px;">
+                                            <select class="form-select" id="statusFilterDept">
+                                                <option value="all">Status: All</option>
+                                                <option value="Ongoing">Ongoing</option>
+                                                <option value="On Hold">On Hold</option>
+                                                <option value="Completed">Completed</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Priority Filter -->
+                                        <div style="width: 150px;">
+                                            <select class="form-select" id="priorityFilterDept">
+                                                <option value="all">Priority: All</option>
+                                                <option value="Low">Low</option>
+                                                <option value="Medium">Medium</option>
+                                                <option value="High">High</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Department Filter -->
                                         <div class="btn-group">
                                             <button id="categorySelect" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                                 View Departments <i class="mdi mdi-chevron-down"></i>
@@ -163,32 +185,87 @@
                                 <table id="projectsTableDept" class="table d-none">
                                     <thead>
                                         <tr>
-                                            <th style="width: 190px;">ID</th>
-                                            <th>Projects</th>
-                                            <th>Department</th>
-                                            <th>Client</th>
+                                            <th style="width: 190px;">Project Name</th>
+                                            <th>Priority</th>
+                                            <th>Start Date</th>
                                             <th>Deadline</th>
                                             <th>Status</th>
+                                            <th>Progress</th>
+                                            <th>Manhours</th>
+                                            <th>Project Manager</th>
+                                            <th>Client</th>
+                                            <th>Last Tasks</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for item in dept_projects_data|default([]) %}
-                                        <tr data-category="{{ item.department.department_name if item.department else '' }}">
-                                            <td>#{{ item.project.project_id }}</td>
-                                            <td><a href="{{ url_for('main.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">{{ item.project.client_name or 'Unnamed Project' }}</a></td>
-                                            <td>{{ item.department.department_name if item.department else '—' }}</td>
-                                            <td>{{ item.project.client_name or '—' }}</td>
-                                            <td>{% if item.deadline and item.deadline.end_date %}{{ item.deadline.end_date.strftime('%d / %m / %Y : %H:%M') }}{% else %}—{% endif %}</td>
+                                        <tr 
+                                            data-category="{{ item.department.department_name if item.department else '' }}"
+                                            data-status="{% if item.project.project_status == 'Pending' or not item.project.project_status %}Ongoing{% elif item.project.project_status == 'Cancelled' %}Ongoing{% else %}{{ item.project.project_status }}{% endif %}"
+                                            data-priority="{{ item.project.priority or 'High' }}"
+                                            data-start-date="{{ item.deadline.start_date.strftime('%Y-%m-%d') if item.deadline and item.deadline.start_date else '' }}"
+                                            data-end-date="{{ item.deadline.end_date.strftime('%Y-%m-%d') if item.deadline and item.deadline.end_date else '' }}"
+                                        >
                                             <td>
-                                                {% if item.project.project_status == 'Ongoing' %}
-                                                <span class="badge badge-soft-warning">Ongoing</span>
-                                                {% elif item.project.project_status == 'Completed' %}
-                                                <span class="badge badge-soft-success">Completed</span>
-                                                {% elif item.project.project_status == 'On Hold' %}
-                                                <span class="badge badge-soft-secondary">On Hold</span>
+                                                <a href="{{ url_for('main.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
+                                                    {{ item.project.project_name or item.project.client_name or 'Unnamed Project' }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                {% if item.project.priority == 'High' %}
+                                                <span class="badge badge-soft-danger font-size-12">High</span>
+                                                {% elif item.project.priority == 'Medium' %}
+                                                <span class="badge badge-soft-warning font-size-12">Medium</span>
+                                                {% elif item.project.priority == 'Low' %}
+                                                <span class="badge badge-soft-info font-size-12">Low</span>
                                                 {% else %}
-                                                <span class="badge badge-soft-info">{{ item.project.project_status or 'Pending' }}</span>
+                                                <span class="badge badge-soft-primary font-size-12">{{ item.project.priority or 'High' }}</span>
                                                 {% endif %}
+                                            </td>
+                                            <td style="width: 190px;">
+                                                {% if item.deadline and item.deadline.start_date %}
+                                                {{ item.deadline.start_date.strftime('%m/%d/%Y') }}
+                                                {% else %}
+                                                N/A
+                                                {% endif %}
+                                            </td>
+                                            <td style="width: 190px;">
+                                                {% if item.deadline and item.deadline.end_date %}
+                                                {{ item.deadline.end_date.strftime('%m/%d/%Y') }}
+                                                {% else %}
+                                                N/A
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% set display_status = 'Ongoing' if (item.project.project_status == 'Pending' or not item.project.project_status or item.project.project_status == 'Cancelled') else item.project.project_status %}
+                                                {% if display_status == 'Ongoing' %}
+                                                <span class="badge badge-soft-warning font-size-12">Ongoing</span>
+                                                {% elif display_status == 'Completed' %}
+                                                <span class="badge badge-soft-success font-size-12">Completed</span>
+                                                {% elif display_status == 'On Hold' %}
+                                                <span class="badge badge-soft-secondary font-size-12">On Hold</span>
+                                                {% else %}
+                                                <span class="badge badge-soft-warning font-size-12">Ongoing</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ item.project.progress or '0%' }}
+                                            </td>
+                                            <td>
+                                                {% if item.manhours is not none %}
+                                                {{ item.manhours }} hrs
+                                                {% else %}
+                                                N/A
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}
+                                            </td>
+                                            <td>
+                                                {{ item.project.client_name or 'N/A' }}
+                                            </td>
+                                            <td>
+                                                N/A
                                             </td>
                                         </tr>
                                         {% endfor %}
@@ -224,7 +301,7 @@
                         ></button>
                     </div>
 
-                    <div class="card-body">
+                    <div class="modal-body">
                         <form action="{{ url_for('main.add_department') }}" method="POST" id="addDepartmentForm">
                             <!-- Hidden inputs for selected member IDs -->
                             <div id="memberIdsContainer"></div>
@@ -330,7 +407,7 @@
                         ></button>
                     </div>
 
-                    <div class="card-body">
+                    <div class="modal-body">
                         <form action="" method="POST" id="editDepartmentForm" data-base-url="{{ url_for('main.edit_department', id=0) }}">
                             <!-- Hidden inputs for selected member IDs -->
                             <div id="memberIdsContainerEdit"></div>
@@ -427,6 +504,7 @@
     {
         "id": {{ user.member_id }},
         "name": {{ (user.name or user.username)|tojson }},
+        "department_id": {{ user.department_id|tojson if user.department_id else 'null' }},
         "initials": "",
         "color": "{{ ['#6f42c1', '#0d6efd', '#198754', '#dc3545', '#fd7e14', '#20c997', '#ffc107', '#6610f2'][loop.index0 % 8] }}"
     }{% if not loop.last %},{% endif %}
@@ -438,7 +516,26 @@
 const usersDataElement = document.getElementById('users-data');
 const usersData = JSON.parse(usersDataElement.textContent);
 
-const owners = usersData.map(function(owner) {
+// Filter to only include users without a department (for Add/Edit modals dropdown)
+const owners = usersData
+    .filter(function(user) {
+        return user.department_id === null || user.department_id === undefined;
+    })
+    .map(function(owner) {
+        // Generate initials
+        if (!owner.initials) {
+            const nameParts = owner.name.trim().split(/\s+/);
+            if (nameParts.length >= 2) {
+                owner.initials = (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+            } else {
+                owner.initials = owner.name.substring(0, 2).toUpperCase();
+            }
+        }
+        return owner;
+    });
+
+// Store all users (including those with departments) for Edit modal pre-selection
+const allUsersData = usersData.map(function(owner) {
     // Generate initials
     if (!owner.initials) {
         const nameParts = owner.name.trim().split(/\s+/);
@@ -737,9 +834,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                     return parseInt(id);
                                 });
                                 
-                                // Filter owners where ID matches (handle both string and number IDs)
-                                if (typeof owners !== 'undefined' && owners && owners.length > 0) {
-                                    selectedOwnersEdit = owners.filter(function(o) {
+                                // Filter allUsersData to find current members (even if they have a department)
+                                // This allows pre-selecting current members in Edit modal
+                                if (typeof allUsersData !== 'undefined' && allUsersData && allUsersData.length > 0) {
+                                    selectedOwnersEdit = allUsersData.filter(function(o) {
                                         const ownerId = parseInt(o.id);
                                         return memberIdsInt.includes(ownerId);
                                     });
