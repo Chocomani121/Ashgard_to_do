@@ -301,59 +301,20 @@
                                     <div class="col-xl-12 col-md-7">
                                         <div class="assigned-members overflow-auto pe-4 ps-4" style="max-height: 260px;"> 
                                             <ul class="list-unstyled mb-0">
-                                                
-                                                <li class="d-flex align-items-center mb-4"> 
-                                                    <img src="{{ url_for('static', filename='assets/images/users/avatar-4.jpg') }}" class="rounded-circle avatar-sm me-3">
-                                                    <div>
-                                                        <h6 class="mb-0 font-size-16 fw-bold">John Doe</h6>
-                                                        <small class="text-muted font-size-13">Project Manager</small>
-                                                    </div>
-                                                </li>
-
-                                                <li class="d-flex align-items-center mb-4">
-                                                    <img src="{{ url_for('static', filename='assets/images/users/avatar-5.jpg') }}" class="rounded-circle avatar-sm me-3">
-                                                    <div>
-                                                        <h6 class="mb-0 font-size-16 fw-bold">Jane Smith</h6>
-                                                        <small class="text-muted font-size-13">Developer</small>
-                                                    </div>
-                                                </li>
-                                                <li class="d-flex align-items-center mb-4">
-                                                    <img src="{{ url_for('static', filename='assets/images/users/avatar-5.jpg') }}" class="rounded-circle avatar-sm me-3">
-                                                    <div>
-                                                        <h6 class="mb-0 font-size-16 fw-bold">Jane Smith</h6>
-                                                        <small class="text-muted font-size-13">Developer</small>
-                                                    </div>
-                                                </li>
-                                                <li class="d-flex align-items-center mb-4">
-                                                    <img src="{{ url_for('static', filename='assets/images/users/avatar-5.jpg') }}" class="rounded-circle avatar-sm me-3">
-                                                    <div>
-                                                        <h6 class="mb-0 font-size-16 fw-bold">Jane Smith</h6>
-                                                        <small class="text-muted font-size-13">Developer</small>
-                                                    </div>
-                                                </li>
-                                                <li class="d-flex align-items-center mb-4">
-                                                    <img src="{{ url_for('static', filename='assets/images/users/avatar-5.jpg') }}" class="rounded-circle avatar-sm me-3">
-                                                    <div>
-                                                        <h6 class="mb-0 font-size-16 fw-bold">Jane Smith</h6>
-                                                        <small class="text-muted font-size-13">Developer</small>
-                                                    </div>
-                                                </li>
-                                                <li class="d-flex align-items-center mb-4">
-                                                    <img src="{{ url_for('static', filename='assets/images/users/avatar-5.jpg') }}" class="rounded-circle avatar-sm me-3">
-                                                    <div>
-                                                        <h6 class="mb-0 font-size-16 fw-bold">Jane Smith</h6>
-                                                        <small class="text-muted font-size-13">Developer</small>
-                                                    </div>
-                                                </li>
-                                                <li class="d-flex align-items-center mb-4">
-                                                    <img src="{{ url_for('static', filename='assets/images/users/avatar-5.jpg') }}" class="rounded-circle avatar-sm me-3">
-                                                    <div>
-                                                        <h6 class="mb-0 font-size-16 fw-bold">Jane Smith</h6>
-                                                        <small class="text-muted font-size-13">Developer</small>
-                                                    </div>
-                                                </li>
-
-                                                </ul>
+                                                {% if assigned_members %}
+                                                    {% for member_info in assigned_members %}
+                                                    <li class="d-flex align-items-center mb-4">
+                                                        <img src="{{ url_for('static', filename='profile_pics/' + member_info.user.image_file) }}" class="rounded-circle avatar-sm me-3" alt="{{ member_info.user.name or member_info.user.username }}">
+                                                        <div>
+                                                            <h6 class="mb-0 font-size-16 fw-bold">{{ member_info.user.name if member_info.user.name else member_info.user.username }}</h6>
+                                                            <small class="text-muted font-size-13">{{ member_info.role }}</small>
+                                                        </div>
+                                                    </li>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <li class="text-muted">No assigned members</li>
+                                                {% endif %}
+                                            </ul>
                                         </div>
                                     </div>
                                     </div>
@@ -373,10 +334,10 @@
                                         <div class="project-description overflow-auto" style="max-height: 260px;">
                                             
                                             <p class="text-muted mb-0">
-                                                {% if project.project_desc %}
-                                                {{ project.project_desc }}
+                                                {% if project and project.project_desc %}
+                                                    {{ project.project_desc }}
                                                 {% else %}
-                                                No description provided for this project.
+                                                    <span class="text-muted">No description available.</span>
                                                 {% endif %}
                                             </p>
                                         </div>
