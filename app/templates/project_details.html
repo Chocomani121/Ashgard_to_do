@@ -371,33 +371,13 @@
                                     <div class="col-xl-12 col-md-7">
 
                                         <div class="project-description overflow-auto" style="max-height: 260px;">
+                                            
                                             <p class="text-muted mb-0">
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Ex inventore quis fugiat, tenetur blanditiis reiciendis eos,
-                                                eum dolorum sint soluta veritatis, laborum veniam omnis.
-                                                Delectus, vitae mollitia! Consequatur, nihil voluptates.
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Alias, vitae voluptates? Sit odio alias tenetur blanditiis
-                                                laboriosam facere quibusdam quidem!
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Magni a voluptate nostrum ipsam.
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Error minima molestiae ipsa nostrum nihil asperiores.
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Maiores, sapiente corporis?
-                                                                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Ex inventore quis fugiat, tenetur blanditiis reiciendis eos,
-                                                eum dolorum sint soluta veritatis, laborum veniam omnis.
-                                                Delectus, vitae mollitia! Consequatur, nihil voluptates.
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Alias, vitae voluptates? Sit odio alias tenetur blanditiis
-                                                laboriosam facere quibusdam quidem!
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Magni a voluptate nostrum ipsam.
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Error minima molestiae ipsa nostrum nihil asperiores.
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Maiores, sapiente corporis?
+                                                {% if project.project_desc %}
+                                                {{ project.project_desc }}
+                                                {% else %}
+                                                No description provided for this project.
+                                                {% endif %}
                                             </p>
                                         </div>
                                     </div>
