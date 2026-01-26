@@ -231,13 +231,27 @@ def project_details(id=None):
     if not display_status or display_status == 'Pending' or display_status == 'Cancelled':
         display_status = 'Ongoing'
     
+    # Get assigned members for this project using project_id
+    assigned_members = []
+    if project:
+        project_members = ProjectMembers.query.filter_by(project_id=project.project_id).all()
+        for project_member in project_members:
+            if project_member.member_id:
+                user = User.query.get(project_member.member_id)
+                if user:
+                    assigned_members.append({
+                        'user': user,
+                        'role': project_member.role or 'Team Member'
+                    })
+    
     return render_template('project_details.html', 
                          project=project, 
                          manager=manager, 
                          deadline=deadline,
                          department=department,
                          manhours=manhours,
-                         display_status=display_status)
+                         display_status=display_status,
+                         assigned_members=assigned_members)
 
 @main.route("/profile")
 @login_required
@@ -303,9 +317,31 @@ def create_project():
         db.session.add(project)
         db.session.flush()  # Get the project_id
         
-        # Note: project_members table doesn't have project_id column in the database
-        # So we skip creating ProjectMembers entries for now
-        # The project will still be created successfully
+        # Get assigned members from form
+        member_ids = request.form.getlist('project_members')
+        
+        # Create ProjectMembers entries for assigned members using project_id
+        if member_ids:
+            for member_id in member_ids:
+                try:
+                    member_id_int = int(member_id)
+                    # Check if ProjectMembers entry already exists for this member and project
+                    existing = ProjectMembers.query.filter_by(
+                        member_id=member_id_int,
+                        project_id=project.project_id
+                    ).first()
+                    
+                    # Only create if it doesn't exist
+                    if not existing:
+                        project_member = ProjectMembers(
+                            project_id=project.project_id,
+                            member_id=member_id_int,
+                            role='Team Member',  # Default role, can be updated later
+                            generated_code=str(project.project_id)  # Keep for backward compatibility if needed
+                        )
+                        db.session.add(project_member)
+                except (ValueError, TypeError):
+                    continue
         
         db.session.commit()
         
