@@ -15,6 +15,10 @@ def tasks():
 def all_departments():
     return render_template('all_departments.html', title="All Departments")
 
+@main.route("/reports")
+def reports():
+    return render_template('reports.html', title="Reports")
+
 @main.route("/members")
 def members():
     return render_template('members.html', title="Members")
