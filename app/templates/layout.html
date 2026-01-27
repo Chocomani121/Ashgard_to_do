@@ -40,6 +40,13 @@
         <link href="{{ url_for('static', filename='assets/libs/quill/quill.bubble.css') }}" rel="stylesheet" type="text/css" />
         <link href="{{ url_for('static', filename='assets/libs/quill/quill.snow.css') }}" rel="stylesheet" type="text/css" />
 
+        <!-- swiper css -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/swiper/swiper-bundle.min.css')}}">
+
+        <!-- nouisliderribute css -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/nouislider/nouislider.min.css')}}">
+          
+
     </head>
     </head>
 
@@ -117,18 +124,7 @@
                                     <span class="menu-item" data-key="t-todo">Reports</span>
                                 </a>
                             </li>
-                            <li>
-                                 <a href="{{ url_for('main.reports') }}" >
-                                    <i class="bx bx-notepad icon nav-icon"></i>
-                                    <span class="menu-item" data-key="t-todo">Reports</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ url_for('main.reports') }}" >
-                                    <i class="bx bx-notepad icon nav-icon"></i>
-                                    <span class="menu-item" data-key="t-todo">Reports</span>
-                                </a>
-                            </li>
+                          
                         </ul>
                     </div>
                     <!-- Sidebar -->
@@ -290,7 +286,14 @@
         <main role="main" class="containerh=100">
             {% block content %}
             {% endblock content %}
-        </main>                
+        </main>          
+ 
+        <script src="{{ url_for('static', filename='assets/js/app.js') }}"></script>
+        <script src="{{ url_for('static', filename='assets/libs/jsvectormap/js/jsvectormap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='assets/libs/jsvectormap/maps/world-merc.js') }}"></script>
+
+        <script src="{{ url_for('static', filename='assets/js/pages/dashboard.init.js') }}"></script>
+
         <!-- Sweet Alerts js -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="{{ url_for('static', filename='assets/libs/sweetalert2/sweetalert2.min.js') }}"></script>
@@ -312,42 +315,13 @@
         <script src="{{ url_for('static', filename='assets/libs/simplebar/simplebar.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/eva-icons/eva.min.js') }}"></script>
 
-          <!-- tui charts plugins -->
-        <script src="{{ url_for('static', filename='assets/libs/tui-chart/tui-chart-all.min.js') }}"></script>
-
-        <!-- tui charts map -->
-        <script src="{{ url_for('static', filename='assets/libs/tui-chart/maps/usa.js') }}"></script>
-
-        <!-- tui charts plugins -->
-        <script src="{{ url_for('static', filename='assets/js/pages/tui-charts.init.js') }}"></script>
         <!-- Charts and Apex JS -->
         <script src="{{ url_for('static', filename='assets/libs/apexcharts/apexcharts.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/chart.js/chart.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/js/pages/chartjs.init.js') }}"></script> 
-           <!-- for basic area chart -->
-        <script src="https://apexcharts.com/samples/assets/stock-prices.js"></script>
-        <!-- for github style chart -->
-        <script src="https://apexcharts.com/samples/assets/github-data.js"></script>
-        <!-- for irregular timeseries chart -->
-        <script src="https://apexcharts.com/samples/assets/irregular-data-series.js"></script>
-        <script src="assets/libs/moment/min/moment.min.js"></script>
 
-        <!-- Candlestick  -->
-        <script src="https://apexcharts.com/samples/assets/ohlc.js"></script>
-        
-        <!-- for Category x-axis chart -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.8.17/dayjs.min.js"></script>
-
-        <!-- linecharts init -->
-        <script src="assets/js/pages/apexcharts.init.js"></script>
-        
-        <script src="{{ url_for('static', filename='assets/libs/jsvectormap/js/jsvectormap.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='assets/libs/jsvectormap/maps/world-merc.js') }}"></script>
-
-        <script src="{{ url_for('static', filename='assets/js/pages/dashboard.init.js') }}"></script>
-        
-        <script src="{{ url_for('static', filename='assets/js/app.js') }}"></script>
-
+        <!-- ckeditor -->
+        <script src="{{ url_for('static', filename='assets/libs/@ckeditor/ckeditor5-build-classic/build/ckeditor.js') }}"></script>
           <!-- choices js -->
         <script src="{{ url_for('static', filename='assets/libs/choices.js/public/assets/scripts/choices.min.js') }}"></script>
 
@@ -362,9 +336,12 @@
         <!-- init js -->
         <script src="{{ url_for('static', filename='assets/js/pages/form-advanced.init.js') }}"></script>
 
-        <!-- ckeditor -->
-        <script src="{{ url_for('static', filename='assets/libs/@ckeditor/ckeditor5-build-classic/build/ckeditor.js') }}"></script>
-
+        <!-- swiper js -->
+        <script src="{{ url_for('static', filename='assets/libs/swiper/swiper-bundle.min.js')}}"></script>
+        
+        <!-- nouisliderribute js -->
+        <script src="{{ url_for('static', filename='assets/libs/nouislider/nouislider.min.js')}}"></script>
+        <script src="{{url_for('static', filename='assets/libs/wnumb/wNumb.min.js')}}"></script>
     </body>
 
 </html>
