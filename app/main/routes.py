@@ -192,6 +192,10 @@ def delete_department(id):
 
 # --- Existing Routes ---
 
+@main.route("/reports")
+def reports():
+    return render_template('reports.html', title="Reports")
+
 @main.route("/members")
 @login_required
 def members():
