@@ -1,0 +1,836 @@
+{% extends "layout.html" %}
+{% block page_title %}Reports Info{% endblock %}
+   {% block content %}
+   <div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title text-center">To Do Reports</h4>
+                        </div>
+                        <!-- end card header -->
+                        <ul class="nav nav-tabs nav-tabs-custom mt-1 mb-2 ecommerce-sortby-list d-flex align-items-center">
+                            <li class="nav-item">
+                                <a class="nav-link" data-bs-toggle="tab" href="#Report" role="tab">Report</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#newReportModal" style="color: #0d6efd;">
+                                    <i class="bx bx-plus me-1"></i>New
+                                </a>
+                            </li>
+                        
+                            <li class="nav-item ms-auto">
+                                <a class="nav-link py-1" href="javascript:void(0);" onclick="location.reload();" title="Refresh Page">
+                                    <i class="bx bx-rotate-right fs-4 text-muted"></i>
+                                </a>
+                            </li>
+                        </ul>
+
+                        <!-- Home tab pane -->
+                        <div class="card-body">
+                            <div class="tab-content">
+                                <!-- <div class="tab-pane fade show active" id="Home" role="tabpanel">
+                                    <div class="row g-3 justify-content-center" style="height: calc(100vh - 250px); min-height: 600px;">
+                                        
+                                        <div class="col-md-4 h-100">
+                                            <div class="card h-100 shadow-sm">
+                                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                                    <h6 class="mb-0 fw-bold">Updates [ 15 ]</h6>
+                                                    <i class="bi bi-arrow-clockwise text-muted" style="cursor: pointer;"></i>
+                                                </div>
+                                                <div class="card-body p-0" style="overflow-y: auto;">
+                                                    <div class="list-group list-group-flush">
+                                                        <div class="list-group-item p-3">
+                                                            <h6 class="mb-1 text-primary" style="font-size: 0.9rem;">Weekly-Kathrina Mirasol...</h6>
+                                                            <small class="text-muted d-block mb-1">This week's summary: 1. Initiated the...</small>
+                                                            <div class="d-flex justify-content-between">
+                                                                <small class="text-muted"><i class="bi bi-file-text me-1"></i>Weekly report</small>
+                                                                <small class="text-muted">17 days ago</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                
+                                        <div class="col-md-4 h-100">
+                                            <div class="card h-100 shadow-sm">
+                                                <div class="card-header bg-white d-flex align-items-center">
+                                                    <h6 class="mb-0 fw-bold">Todo</h6>
+                                                    <i class="bi bi-info-circle ms-2 text-muted" style="font-size: 0.8rem;"></i>
+                                                </div>
+                                                <div class="card-body" style="overflow-y: auto;">
+                                                    <input type="text" class="form-control mb-3" placeholder="Quickly create new task records for">
+                                                    
+                                                    <div class="alert alert-danger py-2 px-3" style="font-size: 0.85rem;">
+                                                        Report to be reviewed
+                                                    </div>
+                                                    
+                                                    <div class="border-bottom py-2">
+                                                        <p class="mb-0 fw-bold" style="font-size: 0.9rem;">Kathrina Mirasol's Weekly report</p>
+                                                        <small class="text-muted">12/01 To 18/01</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> 
+                                
+                                    </div>
+                                </div> -->
+
+                                <!-- Report tab pane - Move this INSIDE the tab-content -->
+                                <div class="tab-pane fade show active" id="Report" role="tabpanel">
+                                    <ul class="nav nav-tabs nav-tabs-custom mt-1 mb-2 ecommerce-sortby-list">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" data-bs-toggle="tab" href="#Pending" role="tab" href="#">Pending</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" data-bs-toggle="tab" href="#Reviewed" role="tab" href="#">Reviewed</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" data-bs-toggle="tab" href="#participated" role="tab" href="#">I participated</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" data-bs-toggle="tab" href="#Company-wide" role="tab" href="#">Company-wide</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" data-bs-toggle="tab" href="#Draft" role="tab" href="#">Draft</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" data-bs-toggle="tab" href="#Stats" role="tab" href="#">Stats</a>
+                                        </li>
+                                    </ul>
+
+                                    <!-- Tab Content for Report sub-tabs -->
+                                    <div class="tab-content">
+                                        <div class="tab-pane fade show active" id="Pending" role="tabpanel">
+                                            <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
+                                        
+                                                <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
+                                                    <div class="list-group list-group-flush">
+                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                            <div class="d-flex justify-content-between align-items-start">
+                                                                <div class="me-2">
+                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Neil Alfred</h6>
+                                                                    <small class="text-muted d-block">Weekly-Neil Alfred(01/19/2026-01/25/2026)</small>
+                                                                </div>
+                                                                <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                            </div>
+                                                        </a>
+                                        
+                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                            <div class="d-flex justify-content-between align-items-start">
+                                                                <div class="me-2">
+                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                </div>
+                                                                <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                            </div>
+                                                        </a>
+        
+                                                       
+                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                            <div class="d-flex justify-content-between align-items-start">
+                                                                <div class="me-2">
+                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                </div>
+                                                                <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                            </div>
+                                                        </a>
+                                                        
+                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                            <div class="d-flex justify-content-between align-items-start">
+                                                                <div class="me-2">
+                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                </div>
+                                                                <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                            </div>
+                                                        </a>
+        
+                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                            <div class="d-flex justify-content-between align-items-start">
+                                                                <div class="me-2">
+                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                </div>
+                                                                <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                            </div>
+                                                        </a>
+                                                        
+                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                            <div class="d-flex justify-content-between align-items-start">
+                                                                <div class="me-2">
+                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                </div>
+                                                                <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                            </div>
+                                                        </a>
+                                                                           
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
+                                                    
+                                                    <div class="p-4 flex-grow-1" style="overflow-y: auto;">
+                                                        <div class="d-flex align-items-center mb-3">
+                                                            <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
+                                                            <h5 class="mb-0 fw-bold">Weekly-Neil Alfred(01/19/2026-01/25/2026)</h5>
+                                                        </div>
+                                        
+                                                        <div class="table-responsive mb-4">
+                                                            <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
+                                                                <tr>
+                                                                    <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
+                                                                    <td class="p-2">Lurs Aldrhyz Lastimosa</td>
+                                                                    <td class="p-2 bg-light" style="width: 10%;">CC</td>
+                                                                    <td class="p-2">Marcelino, Jr Cutamora, Richie Lavina...</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="p-2 bg-light">Department</td>
+                                                                    <td class="p-2">Cyber</td>
+                                                                    <td class="p-2 bg-light">Created</td>
+                                                                    <td class="p-2">01/24/2026 11:53</td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+                                        
+                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                            <p>Good day,</p>
+                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                            <ol class="ps-3">
+                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                            </ol>
+                                                        </div>
+        
+                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                            <p>Good day,</p>
+                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                            <ol class="ps-3">
+                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                            </ol>
+                                                        </div>
+                                                       
+                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                            <p>Good day,</p>
+                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                            <ol class="ps-3">
+                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                            </ol>
+                                                        </div>
+                                                    </div>
+                                        
+                                                    <div class="p-3 bg-light border-top">
+                                                        <textarea class="form-control border-0 shadow-sm" rows="1" placeholder="Comment content(Ctrl+Enter send)" style="resize: none; background-color: #efefef;"></textarea>
+                                                    </div>
+                                                </div>
+                                        
+                                            </div>
+                                        </div>  
+                                        <div class="tab-pane fade" id="Reviewed" role="tabpanel">
+                                            <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
+                                                
+                                                <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
+                                                    <div class="list-group list-group-flush">
+                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                            <div class="d-flex justify-content-between align-items-start">
+                                                                <div class="me-2">
+                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Neil Alfred</h6>
+                                                                    <small class="text-muted d-block">Weekly-Neil Alfred(01/19/2026-01/25/2026)</small>
+                                                                </div>
+                                                                <span class="badge bg-success bg-opacity-75 px-2 py-1">Reviewed</span>
+                                                            </div>
+                                                        </a>
+                                        
+                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                            <div class="d-flex justify-content-between align-items-start">
+                                                                <div class="me-2">
+                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                </div>
+                                                                <span class="badge bg-success bg-opacity-75 px-2 py-1">Reviewed</span>
+                                                            </div>
+                                                        </a>
+        
+                                                    
+                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                            <div class="d-flex justify-content-between align-items-start">
+                                                                <div class="me-2">
+                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                </div>
+                                                                <span class="badge bg-success bg-opacity-75 px-2 py-1">Reviewed</span>
+                                                            </div>
+                                                        </a>
+                                                        
+                                                      
+                                                        
+                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                            <div class="d-flex justify-content-between align-items-start">
+                                                                <div class="me-2">
+                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                </div>
+                                                                <span class="badge bg-success bg-opacity-75 px-2 py-1">Reviewed</span>
+                                                            </div>
+                                                        </a>                        
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
+                                                    
+                                                    <div class="p-4 flex-grow-1" style="overflow-y: auto;">
+                                                        <div class="d-flex align-items-center mb-3">
+                                                            <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
+                                                            <h5 class="mb-0 fw-bold">Weekly-Neil Alfred(01/19/2026-01/25/2026)</h5>
+                                                        </div>
+                                        
+                                                        <div class="table-responsive mb-4">
+                                                            <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
+                                                                <tr>
+                                                                    <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
+                                                                    <td class="p-2">Lurs Aldrhyz Lastimosa</td>
+                                                                    <td class="p-2 bg-light" style="width: 10%;">CC</td>
+                                                                    <td class="p-2">Marcelino, Jr Cutamora, Richie Lavina...</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="p-2 bg-light">Department</td>
+                                                                    <td class="p-2">Cyber</td>
+                                                                    <td class="p-2 bg-light">Created</td>
+                                                                    <td class="p-2">01/24/2026 11:53</td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+                                        
+                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                            <p>Good day,</p>
+                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                            <ol class="ps-3">
+                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                            </ol>
+                                                        </div>
+        
+                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                            <p>Good day,</p>
+                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                            <ol class="ps-3">
+                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                            </ol>
+                                                        </div>
+                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                            <p>Good day,</p>
+                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                            <ol class="ps-3">
+                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                            </ol>
+                                                        </div>
+                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                            <p>Good day,</p>
+                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                            <ol class="ps-3">
+                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                            </ol>
+                                                        </div>
+                       
+                                                    </div>
+                                                    <div class="p-3 bg-light border-top">
+                                                        <textarea class="form-control border-0 shadow-sm" rows="1" placeholder="Comment content(Ctrl+Enter send)" style="resize: none; background-color: #efefef;"></textarea>
+                                                    </div>
+                                                </div>
+                                        
+                                            </div>
+                                        </div>                                            
+                                            <div class="tab-pane fade" id="participated" role="tabpanel">
+                                                <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
+                                        
+                                                    <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
+                                                        <div class="list-group list-group-flush">
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Neil Alfred</h6>
+                                                                        <small class="text-muted d-block">Weekly-Neil Alfred(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                </div>
+                                                            </a>
+                                            
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-success bg-opacity-75 px-2 py-1">Reviewed</span>
+                                                                </div>
+                                                            </a>
+            
+                                                           
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                </div>
+                                                            </a>
+                                                            
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                </div>
+                                                            </a>
+            
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                </div>
+                                                            </a>
+                                                            
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                </div>
+                                                            </a>
+                                                                               
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
+                                                        
+                                                        <div class="p-4 flex-grow-1" style="overflow-y: auto;">
+                                                            <div class="d-flex align-items-center mb-3">
+                                                                <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
+                                                                <h5 class="mb-0 fw-bold">Weekly-Neil Alfred(01/19/2026-01/25/2026)</h5>
+                                                            </div>
+                                            
+                                                            <div class="table-responsive mb-4">
+                                                                <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
+                                                                    <tr>
+                                                                        <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
+                                                                        <td class="p-2">Lurs Aldrhyz Lastimosa</td>
+                                                                        <td class="p-2 bg-light" style="width: 10%;">CC</td>
+                                                                        <td class="p-2">Marcelino, Jr Cutamora, Richie Lavina...</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="p-2 bg-light">Department</td>
+                                                                        <td class="p-2">Cyber</td>
+                                                                        <td class="p-2 bg-light">Created</td>
+                                                                        <td class="p-2">01/24/2026 11:53</td>
+                                                                    </tr>
+                                                                </table>
+                                                            </div>
+                                            
+                                                            <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                                <p>Good day,</p>
+                                                                <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                                <ol class="ps-3">
+                                                                    <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                    <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                                </ol>
+                                                            </div>
+            
+                                                            <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                                <p>Good day,</p>
+                                                                <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                                <ol class="ps-3">
+                                                                    <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                    <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                                </ol>
+                                                            </div>
+                                                           
+                                                            <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                                <p>Good day,</p>
+                                                                <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                                <ol class="ps-3">
+                                                                    <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                    <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                                </ol>
+                                                            </div>
+                                                        </div>
+                                            
+                                                        <div class="p-3 bg-light border-top">
+                                                            <textarea class="form-control border-0 shadow-sm" rows="1" placeholder="Comment content(Ctrl+Enter send)" style="resize: none; background-color: #efefef;"></textarea>
+                                                        </div>
+                                                    </div>
+                                            
+                                                </div>
+                                            </div>
+
+                                    
+                                            <div class="tab-pane fade" id="Company-wide" role="tabpanel">
+                                                <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
+                                        
+                                                    <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
+                                                        <div class="list-group list-group-flush">
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Neil Alfred</h6>
+                                                                        <small class="text-muted d-block">Weekly-Neil Alfred(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                </div>
+                                                            </a>
+                                            
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                </div>
+                                                            </a>
+            
+                                                           
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                </div>
+                                                            </a>
+                                                            
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                </div>
+                                                            </a>
+            
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                </div>
+                                                            </a>
+                                                            
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                </div>
+                                                            </a>
+                                                                               
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
+                                                        
+                                                        <div class="p-4 flex-grow-1" style="overflow-y: auto;">
+                                                            <div class="d-flex align-items-center mb-3">
+                                                                <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
+                                                                <h5 class="mb-0 fw-bold">Weekly-Neil Alfred(01/19/2026-01/25/2026)</h5>
+                                                            </div>
+                                            
+                                                            <div class="table-responsive mb-4">
+                                                                <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
+                                                                    <tr>
+                                                                        <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
+                                                                        <td class="p-2">Lurs Aldrhyz Lastimosa</td>
+                                                                        <td class="p-2 bg-light" style="width: 10%;">CC</td>
+                                                                        <td class="p-2">Marcelino, Jr Cutamora, Richie Lavina...</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="p-2 bg-light">Department</td>
+                                                                        <td class="p-2">Cyber</td>
+                                                                        <td class="p-2 bg-light">Created</td>
+                                                                        <td class="p-2">01/24/2026 11:53</td>
+                                                                    </tr>
+                                                                </table>
+                                                            </div>
+                                            
+                                                            <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                                <p>Good day,</p>
+                                                                <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                                <ol class="ps-3">
+                                                                    <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                    <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                                </ol>
+                                                            </div>
+            
+                                                            <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                                <p>Good day,</p>
+                                                                <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                                <ol class="ps-3">
+                                                                    <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                    <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                                </ol>
+                                                            </div>
+                                                           
+                                                            <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                                <p>Good day,</p>
+                                                                <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                                <ol class="ps-3">
+                                                                    <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                    <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                                </ol>
+                                                            </div>
+                                                            
+                                                            <div class="d-flex gap-2 mb-4">
+                                                                <button class="btn btn-primary btn-sm px-4">Revoke</button>
+                                                                <button class="btn btn-danger btn-sm px-4">Delete</button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="p-3 bg-light border-top">
+                                                            <textarea class="form-control border-0 shadow-sm" rows="1" placeholder="Comment content(Ctrl+Enter send)" style="resize: none; background-color: #efefef;"></textarea>
+                                                        </div>
+                                                    </div>
+                                            
+                                                </div>
+                                            </div>
+
+                                        
+                                            <div class="tab-pane fade" id="Draft" role="tabpanel">
+                                                <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
+                                                    <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
+                                                        <div class="list-group list-group-flush">
+                                                            
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Neil Alfred</h6>
+                                                                        <small class="text-muted d-block">Weekly-Neil Alfred(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                </div>
+                                                            </a>
+                                                    
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                </div>
+                                                            </a>
+                                                    
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                </div>
+                                                            </a>
+                                                    
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                </div>
+                                                            </a>
+                                                    
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
+                                                        
+                                                        <div class="p-4 flex-grow-1" style="overflow-y: auto;">
+                                                            <div class="d-flex align-items-center mb-3">
+                                                                <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
+                                                                <h5 class="mb-0 fw-bold">Weekly-Neil Alfred(01/19/2026-01/25/2026)</h5>
+                                                            </div>
+                                            
+                                                            <div class="table-responsive mb-4">
+                                                                <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
+                                                                    <tr>
+                                                                        <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
+                                                                        <td class="p-2">Lurs Aldrhyz Lastimosa</td>
+                                                                        <td class="p-2 bg-light" style="width: 10%;">CC</td>
+                                                                        <td class="p-2">Marcelino, Jr Cutamora, Richie Lavina...</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="p-2 bg-light">Department</td>
+                                                                        <td class="p-2">Cyber</td>
+                                                                        <td class="p-2 bg-light">Created</td>
+                                                                        <td class="p-2">01/24/2026 11:53</td>
+                                                                    </tr>
+                                                                </table>
+                                                            </div>
+                                            
+                                                            <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                                <p>Good day,</p>
+                                                                <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                                <ol class="ps-3">
+                                                                    <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                    <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                                </ol>
+                                                            </div>
+                                                            <div class="d-flex gap-2 mb-4">
+                                                                <button class="btn btn-primary btn-sm px-4">Edit</button>
+                                                                <button class="btn btn-danger btn-sm px-4">Delete</button>
+                                                            </div>
+                                                        </div>
+                                            
+                                                        <div class="p-3 bg-light border-top">
+                                                            <textarea class="form-control border-0 shadow-sm" rows="1" placeholder="Comment content(Ctrl+Enter send)" style="resize: none; background-color: #efefef;"></textarea>
+                                                        </div>
+                                                    </div>
+                                            
+                                                </div>
+                                            </div>
+
+                                        
+                                            <div class="tab-pane fade" id="Stats" role="tabpanel">
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered table-striped table-nowrap mb-0">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Stats Content</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>Statistics will appear here</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                   </div><!-- end card -->
+                </div> <!-- end col -->
+            </div> <!-- end row -->
+
+        </div>
+        <!-- container-fluid -->
+    </div>
+    <!-- End Page-content -->
+</div>
+
+<div class="modal fade" id="newReportModal" tabindex="-1" aria-labelledby="newReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold text-muted" id="newReportModalLabel">New weekly report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body pt-0">
+                <div class="d-flex align-items-center mb-3 text-muted" style="font-size: 0.9rem;">
+                    <span class="me-3">Select type :</span>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="reportType" id="daily" value="daily">
+                        <label class="form-check-label" for="daily">Daily</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="reportType" id="weekly" value="weekly" checked>
+                        <label class="form-check-label" for="weekly">Weekly</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="reportType" id="monthly" value="monthly">
+                        <label class="form-check-label" for="monthly">Monthly</label>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0" style="font-size: 0.85rem;">
+                        <tbody>
+                            <tr>
+                                <td class="p-0" style="width: 30%;">
+                                    <div class="p-2 text-muted bg-light border-bottom">Select date :</div>
+                                    <input type="text" class="form-control border-0 shadow-none" value="01/26/2026 - 02/01/2026">
+                                </td>
+                                <td class="p-0" style="width: 35%;">
+                                    <div class="p-2 text-muted bg-light border-bottom">Reviewer :</div>
+                                    <input type="text" class="form-control border-0 shadow-none" value="Marcelino, Jr Cutamora">
+                                </td>
+                                <td class="p-0" style="width: 35%;">
+                                    <div class="p-2 text-muted bg-light border-bottom">CC :</div>
+                                    <input type="text" class="form-control border-0 shadow-none" placeholder="Add CC...">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="border mt-3 rounded">
+                    <div class="bg-light p-2 border-bottom d-flex gap-3">
+                        <i class="bx bx-undo cursor-pointer"></i>
+                        <i class="bx bx-redo cursor-pointer"></i>
+                        <span class="border-start mx-1"></span>
+                        <select class="border-0 bg-transparent fw-bold" style="font-size: 0.8rem;"><option>10pt</option></select>
+                        <span class="border-start mx-1"></span>
+                        <i class="bx bx-bold"></i>
+                        <i class="bx bx-italic"></i>
+                        <i class="bx bx-list-ol"></i>
+                        <i class="bx bx-link"></i>
+                        <i class="bx bx-image"></i>
+                    </div>
+                    <div class="p-3" style="min-height: 250px;">
+                        <p class="fw-bold mb-1">This week's summary:</p>
+                        <p class="text-muted small">1.<br>2.</p>
+                        <p class="fw-bold mb-1 mt-3">Next week's plan:</p>
+                        <p class="text-muted small">1.<br>2.</p>
+                        <p class="fw-bold mb-1 mt-3">Issues and suggestions:</p>
+                        <p class="text-muted small">1.<br>2.</p>
+                    </div>
+                    <div class="p-2 bg-light border-top d-flex gap-3 text-muted" style="font-size: 0.8rem;">
+                        <span><i class="bx bx-paperclip"></i> Attachment</span>
+                        <span><i class="bx bx-font-color"></i> Content style</span>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <div class="p-2 bg-light border rounded mb-2 d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">This week's task plan <i class="bx bx-plus text-primary"></i> <i class="bx bx-link text-primary"></i></span>
+                    </div>
+                    <div class="p-2 bg-light border rounded d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">Next week's task plan <i class="bx bx-plus text-primary"></i> <i class="bx bx-link text-primary"></i></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-primary px-4">Save draft</button>
+                <button type="button" class="btn btn-primary px-5">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+   {% endblock content %}

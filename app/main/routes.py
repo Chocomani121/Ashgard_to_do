@@ -19,6 +19,10 @@ def all_departments():
 def approvals():
     return render_template('approvals.html', title="Approvals")
 
+@main.route("/reports")
+def reports():
+    return render_template('reports.html', title="Reports")
+
 @main.route("/members")
 def members():
     return render_template('members.html', title="Members")

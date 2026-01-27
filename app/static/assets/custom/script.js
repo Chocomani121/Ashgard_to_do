@@ -96,28 +96,26 @@ renderSelected();
 
 
 
-// Note Reply and Edit Functionality//
 function toggleInput(btn, className) {
-    // 1. Find the parent container for this specific thread item
+
     const parent = btn.closest('.flex-grow-1');
     
-    // 2. Hide any other open boxes in this specific item
+  
     parent.querySelectorAll('.reply-box, .edit-box').forEach(box => {
         if (!box.classList.contains(className.substring(1))) {
             box.classList.add('d-none');
         }
     });
 
-    // 3. Toggle the box we want
+  
     const target = parent.querySelector(className);
     target.classList.toggle('d-none');
 
-    // 4. Auto-focus the input if it's now visible
+
     if (!target.classList.contains('d-none')) {
         target.querySelector('input').focus();
     }
 }
-
 
 // Department projects filter using dropdown
 document.addEventListener("DOMContentLoaded", function() {
@@ -243,3 +241,4 @@ document.querySelectorAll('.pin-btn').forEach(btn => {
             });
         }
     });
+

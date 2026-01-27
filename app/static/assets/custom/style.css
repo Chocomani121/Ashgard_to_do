@@ -88,7 +88,6 @@ tr:has(a[href]):hover {
     border-radius: 0 4px 4px 0;
 }
 
-
 /* Custom Sidebar when active */
 #sidebar-menu ul li.mm-active > a {
     background-color: #d2def4;
