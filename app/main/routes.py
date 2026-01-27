@@ -23,13 +23,6 @@ def projects():
         manager = User.query.get(project.project_manager) if project.project_manager else None
         deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
         
-        # Calculate manhours (hours between start_date and end_date)
-        manhours = None
-        if deadline and deadline.start_date and deadline.end_date:
-            time_diff = deadline.end_date - deadline.start_date
-            # Convert to hours (total_seconds() / 3600)
-            manhours = int(time_diff.total_seconds() / 3600)
-        
         # Get priority from project (defaults to 'High' if not set or column doesn't exist)
         try:
             priority_raw = project.priority
@@ -42,7 +35,6 @@ def projects():
             'department': dept,
             'manager': manager,
             'deadline': deadline,
-            'manhours': manhours,
             'priority': priority
         })
     
@@ -98,21 +90,11 @@ def all_departments():
         manager = User.query.get(project.project_manager) if project.project_manager else None
         deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
         
-        # Calculate manhours (hours between start_date and end_date)
-        manhours = None
-        if deadline and deadline.start_date and deadline.end_date:
-            try:
-                time_diff = deadline.end_date - deadline.start_date
-                manhours = int(time_diff.total_seconds() / 3600)  # Convert to hours
-            except:
-                manhours = None
-        
         dept_projects_data.append({
             'project': project,
             'department': dept,
             'manager': manager,
             'deadline': deadline,
-            'manhours': manhours,
         })
     # Stats for cards: total, completed, ongoing
     stats = {
@@ -221,15 +203,6 @@ def project_details(id=None):
     deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
     department = Department.query.get(project.department_id) if project.department_id else None
     
-    # Calculate manhours
-    manhours = None
-    if deadline and deadline.start_date and deadline.end_date:
-        try:
-            time_diff = deadline.end_date - deadline.start_date
-            manhours = int(time_diff.total_seconds() / 3600)  # Convert to hours
-        except:
-            manhours = None
-    
     # Normalize status: convert Pending/Cancelled to Ongoing
     display_status = project.project_status
     if not display_status or display_status == 'Pending' or display_status == 'Cancelled':
@@ -283,7 +256,6 @@ def project_details(id=None):
                          manager=manager, 
                          deadline=deadline,
                          department=department,
-                         manhours=manhours,
                          display_status=display_status,
                          assigned_members=assigned_members,
                          tasks=tasks)

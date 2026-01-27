@@ -136,7 +136,6 @@
                                                                     <th>Deadline</th>
                                                                     <th>Status</th>
                                                                     <th>Progress</th>
-                                                                    <th>Manhours</th>
                                                                     <th>Project Manager</th>
                                                                     <th>Client</th>
                                                                     <th>Last Tasks</th>
@@ -201,13 +200,6 @@
                                                                     {{ item.project.progress or '0%' }}
                                                                 </td>
                                                                 <td>
-                                                                    {% if item.manhours is not none %}
-                                                                    {{ item.manhours }} hrs
-                                                                    {% else %}
-                                                                    N/A
-                                                                    {% endif %}
-                                                                </td>
-                                                                <td>
                                                                     {{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}
                                                                 </td>
                                                                 <td>
@@ -220,7 +212,7 @@
                                                             {% endfor %}
                                                             {% else %}
                                                             <tr>
-                                                                <td colspan="10" class="text-center text-muted">No projects found. Create your first project!</td>
+                                                                <td colspan="9" class="text-center text-muted">No projects found. Create your first project!</td>
                                                             </tr>
                                                             {% endif %}
                                                         </tbody>
@@ -251,7 +243,6 @@
                                                                 <th>Deadline</th>
                                                                 <th>Status</th>
                                                                 <th>Progress</th>
-                                                                <th>Manhours</th>
                                                                 <th>Project Manager</th>
                                                                 <th>Client</th>
                                                                 <th>Department</th>
@@ -301,13 +292,6 @@
                                                                     {{ item.project.progress or '0%' }}
                                                                 </td>
                                                                 <td>
-                                                                    {% if item.manhours is not none %}
-                                                                    {{ item.manhours }} hrs
-                                                                    {% else %}
-                                                                    N/A
-                                                                    {% endif %}
-                                                                </td>
-                                                                <td>
                                                                     {{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}
                                                                 </td>
                                                                 <td>
@@ -323,7 +307,7 @@
                                                             {% endfor %}
                                                             {% else %}
                                                             <tr>
-                                                                <td colspan="10" class="text-center text-muted">No projects found. Create your first project!</td>
+                                                                <td colspan="9" class="text-center text-muted">No projects found. Create your first project!</td>
                                                             </tr>
                                                             {% endif %}
                                                         </tbody>
