@@ -87,7 +87,7 @@
 
                             <li>
                                 <a href="{{ url_for('main.tasks') }}">
-                                    <i class="bx bx-list-check icon nav-icon"></i>
+                                    <i class="bx bx-task icon nav-icon"></i>
                                     <span class="menu-item" data-key="t-calendar">Tasks</span>
                                 </a>
                             </li>   
@@ -108,23 +108,11 @@
                                 </a>
                             </li>
                             <li>
-                                 <a href="{{ url_for('main.reports') }}" >
-                                    <i class="bx bx-notepad icon nav-icon"></i>
-                                    <span class="menu-item" data-key="t-todo">Reports</span>
-                                </a>
-                            </li>
-                            <li>
-                                 <a href="{{ url_for('main.reports') }}" >
-                                    <i class="bx bx-notepad icon nav-icon"></i>
-                                    <span class="menu-item" data-key="t-todo">Reports</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ url_for('main.reports') }}" >
-                                    <i class="bx bx-notepad icon nav-icon"></i>
-                                    <span class="menu-item" data-key="t-todo">Reports</span>
-                                </a>
-                            </li>
+                                <a href="{{ url_for('main.approvals') }}" class="border border-success p-2">
+                                   <i class="bx bx-list-check icon nav-icon text-success"></i>
+                                   <span class="menu-item text-success" data-key="t-todo">Approvals</span><span class="position-absolute top-0 start-100 translate-middle badge border border-light rounded-circle bg-danger p-1"><span class="visually-hidden">unread messages</span></span>
+                               </a>
+                           </li>
                         </ul>
                     </div>
                     <!-- Sidebar -->

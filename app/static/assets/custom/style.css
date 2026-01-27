@@ -87,3 +87,14 @@ tr:has(a[href]):hover {
     padding: 2px 6px;
     border-radius: 0 4px 4px 0;
 }
+
+
+/* Custom Sidebar when active */
+#sidebar-menu ul li.mm-active > a {
+    background-color: #d2def4;
+    color: #133577; 
+}
+
+#sidebar-menu ul li.mm-active:last-child > a {
+    background-color: #28b7651a;
+}
