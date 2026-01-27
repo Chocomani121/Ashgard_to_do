@@ -294,9 +294,68 @@ def profile():
     return render_template('profile.html')
 
 @main.route("/task_details")
+@main.route("/task_details/<int:id>")
 @login_required
-def task_details():
-    return render_template('task_details.html')
+def task_details(id=None):
+    # If no ID provided, get the first task or handle appropriately
+    if id is None:
+        task = Task.query.first()
+    else:
+        task = Task.query.get(id)
+    
+    if not task:
+        flash('Task not found', 'error')
+        return redirect(url_for('main.projects'))
+    
+    return render_template('task_details.html', task=task)
+
+@main.route("/project_details/<int:id>/task/create", methods=['POST'])
+@login_required
+def create_task(id):
+    try:
+        # Get the project
+        project = Project.query.get_or_404(id)
+        
+        # Get form data
+        task_name = request.form.get('task_name')
+        owner_id = request.form.get('owner_id')
+        task_description = request.form.get('task_description', '')
+        
+        # Validate required fields
+        if not task_name or not owner_id:
+            flash('Please fill in all required fields', 'danger')
+            return redirect(url_for('main.project_details', id=id))
+        
+        # Verify that the owner is assigned to this project
+        project_member = ProjectMembers.query.filter_by(
+            project_id=project.project_id,
+            member_id=int(owner_id)
+        ).first()
+        
+        if not project_member:
+            flash('Selected owner must be assigned to this project', 'danger')
+            return redirect(url_for('main.project_details', id=id))
+        
+        # Create the task
+        task = Task(
+            project_id=project.project_id,
+            p_members_id=project_member.p_members_id,
+            task_name=task_name,
+            task_description=task_description.strip() if task_description else None,
+            task_status='Ongoing',
+            priority='Medium'
+        )
+        
+        db.session.add(task)
+        db.session.commit()
+        
+        flash('Task created successfully!', 'success')
+        return redirect(url_for('main.project_details', id=id))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error creating task: {str(e)}', 'danger')
+        return redirect(url_for('main.project_details', id=id))
 
 @main.route("/project/create", methods=['POST'])
 @login_required
@@ -311,7 +370,8 @@ def create_project():
         project_manager = current_user.member_id
         start_date_str = request.form.get('start_date')
         end_date_str = request.form.get('end_date')
-        project_status = request.form.get('project_status', 'Ongoing')
+        # New projects default to Ongoing (not shown in UI)
+        project_status = 'Ongoing'
         progress = request.form.get('progress', '0%')
         project_description = request.form.get('topicDescription', '')
         
