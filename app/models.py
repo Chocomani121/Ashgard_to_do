@@ -88,16 +88,19 @@ class Project(db.Model):
     project_desc    = db.Column(db.Text)
 
     tasks           = db.relationship('Task', backref='project_info', lazy=True)
-    # team_members    = db.relationship('ProjectMembers', backref='project_ref', lazy=True)  # Disabled: no project_id foreign key in project_members table
+    team_members    = db.relationship('ProjectMembers', backref='project_ref', lazy=True)
 
 class ProjectMembers(db.Model):
     __tablename__   = 'project_members'
     p_members_id    = db.Column(db.Integer, primary_key=True)
-    # project_id      = db.Column(db.Integer, db.ForeignKey('project.project_id')) # Column doesn't exist in database
+    project_id      = db.Column(db.Integer, db.ForeignKey('project.project_id'))
     member_id       = db.Column(db.Integer, db.ForeignKey('members.member_id'))
     role            = db.Column(db.String(255))
     generated_code  = db.Column(db.String(255))
     assigned_date   = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    
+    # Relationship to User model
+    user = db.relationship('User', backref='project_assignments', lazy=True)
 
 class Task(db.Model):
     __tablename__    = 'task_tbl'

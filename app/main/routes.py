@@ -1,6 +1,6 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from app.models import Department, User, Project, Deadlines, ProjectMembers
+from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask
 from app import db # Required for committing changes
 from datetime import datetime
 import json
@@ -231,13 +231,58 @@ def project_details(id=None):
     if not display_status or display_status == 'Pending' or display_status == 'Cancelled':
         display_status = 'Ongoing'
     
+    # Get assigned members for this project using project_id
+    assigned_members = []
+    if project:
+        project_members = ProjectMembers.query.filter_by(project_id=project.project_id).all()
+        for project_member in project_members:
+            if project_member.member_id:
+                user = User.query.get(project_member.member_id)
+                if user:
+                    assigned_members.append({
+                        'user': user,
+                        'role': project_member.role or 'Team Member'
+                    })
+    
+    # Get tasks for this project
+    tasks = []
+    if project:
+        project_tasks = Task.query.filter_by(project_id=project.project_id).all()
+        for task in project_tasks:
+            # Get task owner
+            owner = None
+            if task.p_members_id:
+                project_member = ProjectMembers.query.get(task.p_members_id)
+                if project_member and project_member.member_id:
+                    owner = User.query.get(project_member.member_id)
+            
+            # Calculate task progress (completed subtasks / total subtasks)
+            subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).all()
+            total_subtasks = len(subtasks)
+            completed_subtasks = len([st for st in subtasks if st.is_checked])
+            progress = f"{completed_subtasks}/{total_subtasks}" if total_subtasks > 0 else "0/0"
+            
+            # Normalize task status
+            task_status = task.task_status or 'Ongoing'
+            if task_status == 'Pending' or task_status == 'Cancelled':
+                task_status = 'Ongoing'
+            
+            tasks.append({
+                'task': task,
+                'owner': owner,
+                'progress': progress,
+                'status': task_status
+            })
+    
     return render_template('project_details.html', 
                          project=project, 
                          manager=manager, 
                          deadline=deadline,
                          department=department,
                          manhours=manhours,
-                         display_status=display_status)
+                         display_status=display_status,
+                         assigned_members=assigned_members,
+                         tasks=tasks)
 
 @main.route("/profile")
 @login_required
@@ -258,7 +303,8 @@ def create_project():
         priority = request.form.get('priority', 'High')
         client_name = request.form.get('client_name')
         department_id = request.form.get('department_id')
-        project_manager = request.form.get('project_manager')
+        # Project manager is automatically set to the current user
+        project_manager = current_user.member_id
         start_date_str = request.form.get('start_date')
         end_date_str = request.form.get('end_date')
         project_status = request.form.get('project_status', 'Ongoing')
@@ -266,7 +312,7 @@ def create_project():
         project_description = request.form.get('topicDescription', '')
         
         # Validate required fields
-        if not all([project_name, priority, client_name, department_id, project_manager, start_date_str, end_date_str]):
+        if not all([project_name, priority, client_name, department_id, start_date_str, end_date_str]):
             flash('Please fill in all required fields', 'danger')
             return redirect(url_for('main.projects'))
         
@@ -303,9 +349,31 @@ def create_project():
         db.session.add(project)
         db.session.flush()  # Get the project_id
         
-        # Note: project_members table doesn't have project_id column in the database
-        # So we skip creating ProjectMembers entries for now
-        # The project will still be created successfully
+        # Get assigned members from form
+        member_ids = request.form.getlist('project_members')
+        
+        # Create ProjectMembers entries for assigned members using project_id
+        if member_ids:
+            for member_id in member_ids:
+                try:
+                    member_id_int = int(member_id)
+                    # Check if ProjectMembers entry already exists for this member and project
+                    existing = ProjectMembers.query.filter_by(
+                        member_id=member_id_int,
+                        project_id=project.project_id
+                    ).first()
+                    
+                    # Only create if it doesn't exist
+                    if not existing:
+                        project_member = ProjectMembers(
+                            project_id=project.project_id,
+                            member_id=member_id_int,
+                            role='Team Member',  # Default role, can be updated later
+                            generated_code=str(project.project_id)  # Keep for backward compatibility if needed
+                        )
+                        db.session.add(project_member)
+                except (ValueError, TypeError):
+                    continue
         
         db.session.commit()
         
