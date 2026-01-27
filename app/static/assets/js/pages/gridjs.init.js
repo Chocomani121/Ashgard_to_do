@@ -262,6 +262,18 @@ if (table6Req && table6Res) {
     }).render(table6Res);
 }
 
+//Members table
+const table7Req = document.getElementById("projectsTableMembers");
+const table7Res = document.getElementById("table7-gridjs");
+if (table7Req && table7Res) {
+    new gridjs.Grid({
+        from: table7Req,
+        pagination: { limit: 10 },
+        sort: true,
+        search: true,
+        className: { table: "table table-centered align-middle" }
+    }).render(table7Res);
+}
 // 6. Department Projects Table (from all_departments.html)
 document.addEventListener('DOMContentLoaded', function() {
     let grid = null;
