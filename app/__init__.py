@@ -7,8 +7,10 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_migrate import Migrate
+from flask_caching import Cache
 
 load_dotenv()
+cache = Cache()
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -22,24 +24,37 @@ migrate = Migrate()
 def create_app():
     app = Flask(__name__)
 
+    # cache.init_app(app)
+    # --- DATABASE CONFIG ---
     user = os.getenv("DB_USER")
-    raw_password = os.getenv("DB_PASSWORD")
+    # Force string conversion to handle the special characters in your password safely
+    raw_password = str(os.getenv("DB_PASSWORD", "")) 
     password = urllib.parse.quote_plus(raw_password)
     host = os.getenv("DB_HOST")
-    port = os.getenv("DB_PORT")
+    
+    # Safely handle the Port conversion
+    db_port = os.getenv("DB_PORT")
+    port = int(db_port) if db_port and db_port.isdigit() else 16751 # Vultr default from your .env
+    
     db_name = os.getenv("DB_NAME")
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}"
-    )
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
-    app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER")
-    app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT"))
-    app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS") == "True"
+    # --- MAIL CONFIG ---
+    app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.googlemail.com")
+    
+    # Safely handle Mail Port
+    m_port = os.getenv("MAIL_PORT")
+    app.config["MAIL_PORT"] = int(m_port) if m_port and m_port.isdigit() else 587
+    
+    app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "true").lower() == "true"
     app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
     app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
+
+    app.config['CACHE_TYPE'] = 'SimpleCache' 
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 300
 
     db.init_app(app)
     bcrypt.init_app(app)

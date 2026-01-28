@@ -9,9 +9,11 @@ main = Blueprint('main', __name__)
 
 @main.route("/")
 @main.route("/projects") 
+# @cache.cached(timeout=60)
 @login_required
 def projects():
     # Fetch all projects with related data
+    
     projects = Project.query.all()
     departments = Department.query.all()
     users = User.query.all()

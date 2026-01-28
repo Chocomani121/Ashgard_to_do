@@ -86,8 +86,6 @@ class Project(db.Model):
     project_status  = db.Column(db.String(255))
     progress        = db.Column(db.String(255))
     project_desc    = db.Column(db.Text)
-    created_on      = db.Column(db.DateTime, server_default=db.func.now())
-    edited_on       = db.Column(db.DateTime, onupdate=db.func.now())
 
     tasks           = db.relationship('Task', backref='project_info', lazy=True)
     team_members    = db.relationship('ProjectMembers', backref='project_ref', lazy=True)
@@ -117,8 +115,6 @@ class Task(db.Model):
     task_description = db.Column(db.Text)
     task_status      = db.Column(db.String(255))
     category         = db.Column(db.String(255))
-    created_on       = db.Column(db.DateTime, server_default=db.func.now())
-    edited_on        = db.Column(db.DateTime, onupdate=db.func.now())
 
 class SubTask(db.Model):
     __tablename__     = 'sub_task_list'
@@ -143,3 +139,22 @@ class Notes(db.Model):
     pin_datetime  = db.Column(db.DateTime)
     generated_code = db.Column(db.String(255))
     member_id     = db.Column(db.Integer, db.ForeignKey('members.member_id'))
+    
+class Report(db.Model):
+    __tablename__ = 'report_tbl'
+    report_id = db.Column(db.Integer, primary_key=True)
+    member_id = db.Column(db.Integer, db.ForeignKey('members.member_id'), nullable=False)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.project_id'))
+    week_name = db.Column(db.String(100), nullable=False)
+    report_content = db.Column(db.Text, nullable=False)
+    created_on = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    
+    comments = db.relationship('Comment', backref='parent_report', cascade="all, delete-orphan", lazy=True)
+
+class Comment(db.Model):
+    __tablename__ = 'comments_tbl'
+    comment_id = db.Column(db.Integer, primary_key=True)
+    report_id = db.Column(db.Integer, db.ForeignKey('report_tbl.report_id'), nullable=False)
+    week_name = db.Column(db.String(100), nullable=False)
+    report_content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
