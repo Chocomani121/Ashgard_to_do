@@ -12,87 +12,54 @@ const ownerSearch = document.getElementById("ownerSearch");
 
 let selectedOwners = [];
 
-// Render list
-function renderOwners(filter = "") {
-    ownerList.innerHTML = "";
-
-    owners
-        .filter(o => o.name.toLowerCase().includes(filter.toLowerCase()))
-        .forEach(owner => {
-            const item = document.createElement("div");
-            item.className = "list-group-item owner-item";
-            if (selectedOwners.find(o => o.id === owner.id)) {
-                item.classList.add("active");
-            }
-
-            item.innerHTML = `
-                <div class="owner-avatar" style="background:${owner.color}">
-                    ${owner.initials}
-                </div>
-                <span>${owner.name}</span>
-            `;
-
-            item.onclick = () => toggleOwner(owner);
-            ownerList.appendChild(item);
+// Only run owner-list UI code when elements exist (e.g. not on project_details)
+if (ownerList && ownerInput && ownerSearch) {
+    // Render list
+    function renderOwners(filter = "") {
+        ownerList.innerHTML = "";
+        owners
+            .filter(o => o.name.toLowerCase().includes(filter.toLowerCase()))
+            .forEach(owner => {
+                const item = document.createElement("div");
+                item.className = "list-group-item owner-item";
+                if (selectedOwners.find(o => o.id === owner.id)) item.classList.add("active");
+                item.innerHTML = `<div class="owner-avatar" style="background:${owner.color}">${owner.initials}</div><span>${owner.name}</span>`;
+                item.onclick = () => toggleOwner(owner);
+                ownerList.appendChild(item);
+            });
+    }
+    function toggleOwner(owner) {
+        const exists = selectedOwners.find(o => o.id === owner.id);
+        if (exists) selectedOwners = selectedOwners.filter(o => o.id !== owner.id);
+        else selectedOwners.push(owner);
+        renderSelected();
+        renderOwners(ownerSearch.value);
+    }
+    function renderSelected() {
+        ownerInput.innerHTML = "";
+        if (selectedOwners.length === 0) {
+            ownerInput.innerHTML = `<span class="text-muted small">Select Members</span>`;
+            return;
+        }
+        selectedOwners.forEach(owner => {
+            const chip = document.createElement("div");
+            chip.className = "owner-chip";
+            chip.innerHTML = `${owner.name} <span onclick="removeOwner(${owner.id})">&times;</span>`;
+            ownerInput.appendChild(chip);
         });
-}
-
-// Toggle selection
-function toggleOwner(owner) {
-    const exists = selectedOwners.find(o => o.id === owner.id);
-
-    if (exists) {
-        selectedOwners = selectedOwners.filter(o => o.id !== owner.id);
-    } else {
-        selectedOwners.push(owner);
     }
-
-    renderSelected();
-    renderOwners(ownerSearch.value);
-}
-
-// Render selected chips
-function renderSelected() {
-    ownerInput.innerHTML = "";
-
-    if (selectedOwners.length === 0) {
-        ownerInput.innerHTML = `<span class="text-muted small">Select Members</span>`;
-        return;
+    function removeOwner(id) {
+        selectedOwners = selectedOwners.filter(o => o.id !== id);
+        renderSelected();
+        renderOwners(ownerSearch.value);
     }
-
-    selectedOwners.forEach(owner => {
-        const chip = document.createElement("div");
-        chip.className = "owner-chip";
-        chip.innerHTML = `
-            ${owner.name}
-            <span onclick="removeOwner(${owner.id})">&times;</span>
-        `;
-        ownerInput.appendChild(chip);
-    });
-}
-
-// Remove chip
-function removeOwner(id) {
-    selectedOwners = selectedOwners.filter(o => o.id !== id);
-    renderSelected();
-    renderOwners(ownerSearch.value);
-}
-
-// Search
-ownerSearch.addEventListener("input", e => {
-    renderOwners(e.target.value);
-});
-
-// Clear
-document.getElementById("clearOwners").onclick = () => {
-    selectedOwners = [];
-    renderSelected();
+    window.removeOwner = removeOwner;
+    ownerSearch.addEventListener("input", e => { renderOwners(e.target.value); });
+    const clearOwners = document.getElementById("clearOwners");
+    if (clearOwners) clearOwners.onclick = () => { selectedOwners = []; renderSelected(); renderOwners(); };
     renderOwners();
-};
-
-// Init
-renderOwners();
-renderSelected();
+    renderSelected();
+}
 
 
 

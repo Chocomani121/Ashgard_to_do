@@ -208,7 +208,7 @@ def project_details(id=None):
     if not display_status or display_status == 'Pending' or display_status == 'Cancelled':
         display_status = 'Ongoing'
     
-    # Get assigned members for this project using project_id
+    # Get assigned members for this project (all members, regardless of department)
     assigned_members = []
     if project:
         project_members = ProjectMembers.query.filter_by(project_id=project.project_id).all()
@@ -305,15 +305,23 @@ def update_project_members(id):
         flash('Please select at least one member', 'danger')
         return redirect(url_for('main.project_details', id=id))
     try:
+        # Delete all existing project members
         ProjectMembers.query.filter_by(project_id=project.project_id).delete()
+        db.session.flush()  # Ensure delete is processed before adding new ones
+        
+        # Add all selected members (from any department)
         for mid in member_ids:
             if mid and str(mid).isdigit():
-                pm = ProjectMembers(
-                    project_id=project.project_id,
-                    member_id=int(mid),
-                    role='Team Member'
-                )
-                db.session.add(pm)
+                member_id_int = int(mid)
+                user = User.query.get(member_id_int)
+                if user:
+                    pm = ProjectMembers(
+                        project_id=project.project_id,
+                        member_id=member_id_int,
+                        role='Team Member'
+                    )
+                    db.session.add(pm)
+        
         db.session.commit()
         flash('Project members updated successfully', 'success')
     except Exception as e:

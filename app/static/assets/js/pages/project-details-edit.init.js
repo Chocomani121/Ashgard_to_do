@@ -161,6 +161,7 @@ Purpose: Edit Project modal – Edit Project Manager + Edit Members (chip UI, pr
         const container = document.getElementById("editMemberIdsContainer");
         if (container) {
           container.innerHTML = "";
+          // Add all selected members (from any department) to form
           selectedEditMembers.forEach(function (member) {
             const input = document.createElement("input");
             input.type = "hidden";
