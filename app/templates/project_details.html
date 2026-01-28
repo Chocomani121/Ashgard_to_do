@@ -103,7 +103,7 @@
                                             <div
                                                 id="saleing-categories"
                                                 class="apex-charts mb-3"
-                                                data-colors='["#28b765", "#4dabf7"]'
+                                                data-colors='["#28b765", "#f4c238c2"]'
                                                 dir="ltr">
                                             </div>
 
@@ -113,16 +113,15 @@
                                                     <div class="d-flex align-items-center">
                                                         <i class="mdi mdi-circle font-size-10 text-success"></i>
                                                         <p class="mb-0 ms-2">Completed</p>
-                                                        <span class="ms-auto fw-bold">60%</span>
+                                                        <span class="ms-2 fw-bold">60%</span>
                                                     </div>
                                                 </div>
 
                                                 <div class="col-6">
                                                     <div class="d-flex align-items-center">
-                                                        <i class="mdi mdi-circle font-size-10"
-                                                        style="color:#4dabf7"></i>
+                                                        <i class="mdi mdi-circle font-size-10 text-warning"></i>
                                                         <p class="mb-0 ms-2">Ongoing</p>
-                                                        <span class="ms-auto fw-bold">40%</span>
+                                                        <span class="ms-2 fw-bold">40%</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -135,8 +134,8 @@
                                      <div class="col-xl-6 col-md-5 d-flex align-items-center justify-content-center">
                                         <div class="d-flex flex-column gap-2 text-start">
 
-                                        <div class="mb-2">
-                                            <span class="text-success text-uppercase fw-semibold d-block fs-5">
+                                        <div class="mb-2 text-success ">
+                                            <span class="text-uppercase fw-semibold d-block fs-5">
                                                 Approved
                                             </span>
                                             <span class="fw-bold fs-3">
@@ -144,8 +143,8 @@
                                             </span>
                                         </div>
 
-                                        <div>
-                                            <span class="text-warning text-uppercase fw-semibold d-block fs-5">
+                                        <div class="text-warning">
+                                            <span class="text-uppercase fw-semibold d-block fs-5">
                                                 Ongoing
                                             </span>
                                             <span class="fw-bold fs-3 ">
@@ -250,18 +249,29 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {% if tasks %}
-                                                        {% for task_data in tasks %}
                                                         <tr>
-                                                            <td class="fw-semibold">
-                                                                <a href="{{ url_for('main.task_details', id=task_data.task.task_id) }}" class="text-dark">
-                                                                    {{ task_data.task.task_name }}
-                                                                </a>
+                                                            <td class="fw-semibold"><a href="{{ url_for('main.task_details') }}" class="text-dark">API integration</a>
+                                                            <td style="width: 190px;">
+                                                                <div class="d-flex align-items-center">
+                                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
+                                                                    <div class="flex-grow-1 ms-3">
+                                                                        Patrick
+                                                                    </div>
+                                                                </div>
                                                             </td>
                                                             <td>
-                                                                {% if task_data.owner %}
+                                                                <div class="badge badge-soft-danger font-size-12">Rejected</div>
+                                                            </td>
+                                                            <td>
+                                                                4/5
+                                                            </td>
+                                                        </tr>   
+                                                        
+                                                        <tr>
+                                                            <td class="fw-semibold"><a href="#" class="text-dark">Login Form</a>
+                                                            <td style="width: 190px;">
                                                                 <div class="d-flex align-items-center">
-                                                                    <img class="rounded-circle avatar-sm" src="{{ url_for('static', filename='profile_pics/' + task_data.owner.image_file) }}" alt="{{ task_data.owner.name or task_data.owner.username }}">
+                                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
                                                                     <div class="flex-grow-1 ms-3">
                                                                         {{ task_data.owner.name if task_data.owner.name else task_data.owner.username }}
                                                                     </div>
@@ -271,25 +281,32 @@
                                                                 {% endif %}
                                                             </td>
                                                             <td>
-                                                                {% if task_data.status == 'Completed' %}
-                                                                    <div class="badge badge-soft-success font-size-12">Completed</div>
-                                                                {% elif task_data.status == 'On Hold' or task_data.status == 'On-hold' %}
-                                                                    <div class="badge bg-soft-secondary text-secondary font-size-12">On-hold</div>
-                                                                {% else %}
-                                                                    <div class="badge bg-soft-warning text-warning font-size-12">Ongoing</div>
-                                                                {% endif %}
+                                                                <div class="badge badge-soft-primary font-size-12">To be Reviewed</div>
                                                             </td>
                                                             <td>
                                                                 {{ task_data.progress }}
                                                             </td>
-                                                        </tr>
-                                                        {% endfor %}
-                                                    {% else %}
+                                                    
+                                                        </tr>   
+
                                                         <tr>
-                                                            <td colspan="4" class="text-center text-muted">No tasks found for this project</td>
-                                                        </tr>
-                                                    {% endif %}
-                                                </tbody>
+                                                            <td class="fw-semibold"><a href="#" class="text-dark">UI Redesign</a>
+                                                            <td style="width: 190px;">
+                                                                <div class="d-flex align-items-center">
+                                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
+                                                                    <div class="flex-grow-1 ms-3">
+                                                                        Kath
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div class="badge badge-soft-success font-size-12">Approved</div>
+                                                            </td>
+                                                            <td>
+                                                                4/6
+                                                            </td>                       
+                                                        </tr>   
+                                                    </tbody>
                                             </table>
                                             
                                             <!-- Pagination -->
@@ -367,48 +384,90 @@
         
   <!--  Extra Large modal example -->
             <div class="modal fade create-task" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-dialog modal-xl modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="myExtraLargeModalLabel">Create Task</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form id="createTaskForm" method="POST" action="{{ url_for('main.create_task', id=project.project_id) }}">
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="mb-3">
-                                            <label class="form-label" for="CreateTask-Task-Name">Task Name</label>
-                                            <input type="text" class="form-control" placeholder="Enter Task Name" id="CreateTask-Task-Name" name="task_name" required>
-                                        </div>
+                           <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="CreateTask-Category">Select Project</label>
+                                        <select class="form-select">
+                                            <option  selected> Select </option>
+                                            <option>Osint</option>
+                                            <option>MDC</option>
+                                        </select>
                                     </div>
-                                    <div class="col-md-12">
-                                        <div class="mb-3">
-                                            <label class="form-label" for="CreateTask-Owner">Owner</label>
-                                            <select class="form-select" id="CreateTask-Owner" name="owner_id" required>
-                                                <option value="">Select Owner</option>
-                                                {% if assigned_members %}
-                                                    {% for member_info in assigned_members %}
-                                                        <option value="{{ member_info.user.member_id }}">{{ member_info.user.name if member_info.user.name else member_info.user.username }}</option>
-                                                    {% endfor %}
-                                                {% endif %}
-                                            </select>
-                                        </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="CreateTask-Task-Name">Task Name</label>
+                                        <input type="text" class="form-control" placeholder="Enter Task Name" id="CreateTask-Task-Name">
                                     </div>
-                                    <div class="col-md-12">
-                                        <div class="mb-3">
-                                            <label for="taskDescription" class="form-label">Description</label>
-                                            <textarea class="form-control" id="taskDescription" name="task_description" rows="3" placeholder="Enter description"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Start Date</label>
+                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                     <div class="mb-3">
+                                        <label class="form-label">Deadline</label>
+                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Client</label>
+                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Department</label>
+                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3 position-relative" style="max-width: 550px;">
+                                        <label class="form-label">Assign Members</label>
+                                        <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
+                                            id="ownerInput"
+                                            data-bs-toggle="dropdown"
+                                            style="max-height: 100px; overflow-y: auto;">
+                                        </div>
+                                        <!-- Dropdown -->
+                                        <div class="dropdown-menu p-3 shadow owner-dropdown">
+                                            <input type="text"
+                                                class="form-control mb-2"
+                                                id="ownerSearch"
+                                                placeholder="Search colleague">
+                                            <small class="text-muted">Contacts</small>
+                                            <div class="list-group mt-2 owner-list"></div>
+                                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                                <a href="#" id="clearOwners" class="text-muted small">Clear</a>
+                                                <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">Confirm</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row mt-2">
-                                    <div class="col-12 text-end">
-                                        <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal"><i class="bx bx-x me-1 align-middle"></i> Cancel</button>
-                                        <button type="submit" class="btn btn-success"><i class="bx bx-check me-1 align-middle"></i> Confirm</button>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="topicDescription" class="form-label">Description</label>
+                                        <textarea class="form-control" id="topicDescription" rows="3" placeholder="Enter description"></textarea>
                                     </div>
                                 </div>
-                            </form>
+                           </div>
+                           <div class="row mt-2">
+                            <div class="col-12 text-end">
+                                <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal"><i class="bx bx-x me-1 align-middle"></i> Cancel</button>
+                                <button type="submit" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#success-btn" id="btn-save-event"><i class="bx bx-check me-1 align-middle"></i> Confirm</button>
+                            </div>
+                        </div>
                         </div>
                     </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->

@@ -176,6 +176,10 @@ def delete_department(id):
 
 # --- Existing Routes ---
 
+@main.route("/approvals")
+def approvals():
+    return render_template('approvals.html', title="Approvals")
+
 @main.route("/reports")
 def reports():
     return render_template('reports.html', title="Reports")
