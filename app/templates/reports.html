@@ -110,7 +110,7 @@
                                         
                                                 <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
                                                     <div class="list-group list-group-flush">
-                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                        <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 border-bottom border-light">
                                                             <div class="d-flex justify-content-between align-items-start">
                                                                 <div class="me-2">
                                                                     <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Neil Alfred</h6>
@@ -119,7 +119,6 @@
                                                                 <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
                                                             </div>
                                                         </a>
-                                        
                                                         <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
                                                             <div class="d-flex justify-content-between align-items-start">
                                                                 <div class="me-2">
@@ -129,7 +128,6 @@
                                                                 <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
                                                             </div>
                                                         </a>
-        
                                                        
                                                         <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
                                                             <div class="d-flex justify-content-between align-items-start">
@@ -225,8 +223,27 @@
                                                                 <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
                                                             </ol>
                                                         </div>
+                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                            <p>Good day,</p>
+                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                            <ol class="ps-3">
+                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                            </ol>
+                                                        </div>
+                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                                            <p>Good day,</p>
+                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
+                                                            <ol class="ps-3">
+                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
+                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
+                                                            </ol>
+                                                        </div>
                                                     </div>
-                                        
+                                                    <div class="d-flex gap-2 justify-content-end p-3 border-top bg-white">
+                                                        <button type="button" class="btn btn-outline-danger btn-sm px-4">Delete</button>
+                                                        <button type="button" class="btn btn-outline-warning btn-sm px-4" data-bs-toggle="modal" data-bs-target="#newReportModal">Update</button>
+                                                    </div>
                                                     <div class="p-3 bg-light border-top">
                                                         <textarea class="form-control border-0 shadow-sm" rows="1" placeholder="Comment content(Ctrl+Enter send)" style="resize: none; background-color: #efefef;"></textarea>
                                                     </div>
@@ -363,7 +380,7 @@
                                                                         <small class="text-muted d-block">Weekly-Neil Alfred(01/19/2026-01/25/2026)</small>
                                                                     </div>
                                                                     <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
-                                                                </div>
+                                                                </div>  
                                                             </a>
                                             
                                                             <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
@@ -817,7 +834,7 @@
                     </div>
                 </div>
 
-            <div class="modal-footer border-0 justify-content-center pb-4">
+            <div class="modal-footer border-0 justify-content-center pb-4" style="padding-top: 1.5rem; margin-top: 1rem;">
                 <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary px-5">Submit</button>
             </div>
@@ -835,7 +852,10 @@
         { id: 2, name: "Windyl Orbeta", initials: "WO", color: "#007bff" },
         { id: 3, name: "Paul Garcia", initials: "PG", color: "#198754" },
         { id: 4, name: "Neil Javerle", initials: "NJ", color: "#dc3545" },
-        { id: 5, name: "Lurs Lastimosa", initials: "LL", color: "#fd7e14" }
+        { id: 6, name: "Lurs Lastimosa", initials: "LL", color: "#fd7e14" },
+        { id: 7, name: "Lurs Lastimosa", initials: "LL", color: "#fd7e14" },
+        { id: 8, name: "Lurs Lastimosa", initials: "LL", color: "#fd7e14" },
+        { id: 9, name: "Lurs Lastimosa", initials: "LL", color: "#fd7e14" }
     ];
 
     var reportCCSelected = [];
@@ -1056,6 +1076,23 @@
     } else {
         initReportCK();
     }
+})();
+
+(function () {
+    var modal = document.getElementById("newReportModal");
+    var modalTitle = document.getElementById("newReportModalLabel");
+    if (!modal || !modalTitle) return;
+
+    modal.addEventListener("show.bs.modal", function (e) {
+        var link = e.relatedTarget;
+        if (link && link.classList && link.classList.contains("list-group-item-action")) {
+            var name = link.getAttribute("data-report-name") || "";
+            var title = link.getAttribute("data-report-title") || "";
+            modalTitle.textContent = title ? "Edit: " + title : "Edit report";
+        } else {
+            modalTitle.textContent = "Weekly report";
+        }
+    });
 })();
     </script>
 
