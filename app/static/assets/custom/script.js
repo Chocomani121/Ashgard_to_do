@@ -176,6 +176,29 @@ function confirmDelete(memberName, memberId) {
     });
 }
 
+// Delete SweetAlert for Projects (redirects to dashboard after delete)
+function confirmDeleteProject(projectId, projectName) {
+    if (typeof Swal === "undefined") {
+        if (window.confirm("Are you sure you want to delete " + (projectName || "this project") + "? You won't be able to revert this!")) {
+            window.location.href = "/project_details/" + projectId + "/delete";
+        }
+        return;
+    }
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You are about to delete " + (projectName || "this project") + ". You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#51d28c",
+        cancelButtonColor: "#f34e4e",
+        confirmButtonText: "Yes, delete it!"
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            window.location.href = "/project_details/" + projectId + "/delete";
+        }
+    });
+}
+
 
 // notes view modal
 function prepareNoteModal(taskId, description, footer) {
