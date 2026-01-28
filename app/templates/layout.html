@@ -118,7 +118,7 @@
                                     <span class="menu-item" data-key="t-todo">Reports</span>
                                 </a>
                             </li>
-                            
+
                             <li>
                                 <a href="{{ url_for('main.members') }}" >
                                     <i class="bx bx-group icon nav-icon"></i>
@@ -126,7 +126,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ url_for('main.approvals') }}" class="border border-success p-2">
+                                <a href="{{ url_for('main.approvals') }}" class="border border-success">
                                    <i class="bx bx-list-check icon nav-icon text-success"></i>
                                    <span class="menu-item text-success" data-key="t-todo">Approvals</span><span class="position-absolute top-0 start-100 translate-middle badge border border-light rounded-circle bg-danger p-1"><span class="visually-hidden">unread messages</span></span>
                                </a>    
@@ -315,6 +315,8 @@
         <script src="{{ url_for('static', filename='assets/js/app.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/jsvectormap/js/jsvectormap.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/jsvectormap/maps/world-merc.js') }}"></script>
+        <!-- ApexCharts must load before dashboard.init (donut chart on project_details) -->
+        <script src="{{ url_for('static', filename='assets/libs/apexcharts/apexcharts.min.js') }}"></script>
 
         <script src="{{ url_for('static', filename='assets/js/pages/dashboard.init.js') }}"></script>
 
