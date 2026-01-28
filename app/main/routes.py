@@ -1,7 +1,7 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask
-from app import db # Required for committing changes
+from app import db 
 from datetime import datetime
 import json
 
