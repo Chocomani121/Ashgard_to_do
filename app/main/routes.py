@@ -1,7 +1,7 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask
-from app import db # Required for committing changes
+from app import db 
 from datetime import datetime
 import json
 
@@ -9,9 +9,11 @@ main = Blueprint('main', __name__)
 
 @main.route("/")
 @main.route("/projects") 
+# @cache.cached(timeout=60)
 @login_required
 def projects():
     # Fetch all projects with related data
+    
     projects = Project.query.all()
     departments = Department.query.all()
     users = User.query.all()
@@ -22,13 +24,6 @@ def projects():
         dept = Department.query.get(project.department_id) if project.department_id else None
         manager = User.query.get(project.project_manager) if project.project_manager else None
         deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
-        
-        # Calculate manhours (hours between start_date and end_date)
-        manhours = None
-        if deadline and deadline.start_date and deadline.end_date:
-            time_diff = deadline.end_date - deadline.start_date
-            # Convert to hours (total_seconds() / 3600)
-            manhours = int(time_diff.total_seconds() / 3600)
         
         # Get priority from project (defaults to 'High' if not set or column doesn't exist)
         try:
@@ -42,7 +37,6 @@ def projects():
             'department': dept,
             'manager': manager,
             'deadline': deadline,
-            'manhours': manhours,
             'priority': priority
         })
     
@@ -98,21 +92,11 @@ def all_departments():
         manager = User.query.get(project.project_manager) if project.project_manager else None
         deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
         
-        # Calculate manhours (hours between start_date and end_date)
-        manhours = None
-        if deadline and deadline.start_date and deadline.end_date:
-            try:
-                time_diff = deadline.end_date - deadline.start_date
-                manhours = int(time_diff.total_seconds() / 3600)  # Convert to hours
-            except:
-                manhours = None
-        
         dept_projects_data.append({
             'project': project,
             'department': dept,
             'manager': manager,
             'deadline': deadline,
-            'manhours': manhours,
         })
     # Stats for cards: total, completed, ongoing
     stats = {
@@ -192,6 +176,10 @@ def delete_department(id):
 
 # --- Existing Routes ---
 
+@main.route("/approvals")
+def approvals():
+    return render_template('approvals.html', title="Approvals")
+
 @main.route("/reports")
 def reports():
     return render_template('reports.html', title="Reports")
@@ -221,21 +209,12 @@ def project_details(id=None):
     deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
     department = Department.query.get(project.department_id) if project.department_id else None
     
-    # Calculate manhours
-    manhours = None
-    if deadline and deadline.start_date and deadline.end_date:
-        try:
-            time_diff = deadline.end_date - deadline.start_date
-            manhours = int(time_diff.total_seconds() / 3600)  # Convert to hours
-        except:
-            manhours = None
-    
     # Normalize status: convert Pending/Cancelled to Ongoing
     display_status = project.project_status
     if not display_status or display_status == 'Pending' or display_status == 'Cancelled':
         display_status = 'Ongoing'
     
-    # Get assigned members for this project using project_id
+    # Get assigned members for this project (all members, regardless of department)
     assigned_members = []
     if project:
         project_members = ProjectMembers.query.filter_by(project_id=project.project_id).all()
@@ -278,15 +257,155 @@ def project_details(id=None):
                 'status': task_status
             })
     
+    users = User.query.all()
+    users_json = [
+        {'member_id': u.member_id, 'name': u.name or u.username, 'username': u.username, 'department_id': u.department_id}
+        for u in users
+    ]
+    # Current assigned member ids/names for edit modal prefill (manager + assigned_members, no duplicate)
+    manager_id = manager.member_id if manager else None
+    edit_initial = []
+    if manager:
+        edit_initial.append({'member_id': manager.member_id, 'name': manager.name or manager.username})
+    for m in assigned_members:
+        uid = m['user'].member_id
+        if uid != manager_id:
+            edit_initial.append({'member_id': uid, 'name': m['user'].name or m['user'].username})
+    edit_initial_members_json = edit_initial
+    
     return render_template('project_details.html', 
                          project=project, 
                          manager=manager, 
                          deadline=deadline,
                          department=department,
-                         manhours=manhours,
                          display_status=display_status,
                          assigned_members=assigned_members,
-                         tasks=tasks)
+                         tasks=tasks,
+                         users=users,
+                         users_json=users_json,
+                         edit_initial_members_json=edit_initial_members_json)
+
+@main.route("/project_details/<int:id>/update_manager", methods=['POST'])
+@login_required
+def update_project_manager(id):
+    project = Project.query.get_or_404(id)
+    project_manager_id = request.form.get('project_manager')
+    if not project_manager_id:
+        flash('Please select a Project Manager', 'danger')
+        return redirect(url_for('main.project_details', id=id))
+    try:
+        project.project_manager = int(project_manager_id)
+        db.session.commit()
+        flash('Project manager updated successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to update: {}'.format(str(e)), 'danger')
+    return redirect(url_for('main.project_details', id=id))
+
+@main.route("/project_details/<int:id>/update_members", methods=['POST'])
+@login_required
+def update_project_members(id):
+    project = Project.query.get_or_404(id)
+    member_ids = request.form.getlist('project_members')
+    if not member_ids:
+        flash('Please select at least one member', 'danger')
+        return redirect(url_for('main.project_details', id=id))
+    try:
+        # Delete all existing project members
+        ProjectMembers.query.filter_by(project_id=project.project_id).delete()
+        db.session.flush()  # Ensure delete is processed before adding new ones
+        
+        # Add all selected members (from any department)
+        for mid in member_ids:
+            if mid and str(mid).isdigit():
+                member_id_int = int(mid)
+                user = User.query.get(member_id_int)
+                if user:
+                    pm = ProjectMembers(
+                        project_id=project.project_id,
+                        member_id=member_id_int,
+                        role='Team Member'
+                    )
+                    db.session.add(pm)
+        
+        db.session.commit()
+        flash('Project members updated successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to update: {}'.format(str(e)), 'danger')
+    return redirect(url_for('main.project_details', id=id))
+
+@main.route("/project_details/<int:id>/update", methods=['POST'])
+@login_required
+def update_project(id):
+    project = Project.query.get_or_404(id)
+    project_name = request.form.get('project_name', '').strip()
+    if not project_name:
+        flash('Project name is required', 'danger')
+        return redirect(url_for('main.project_details', id=id))
+    try:
+        project.project_name = project_name
+        project.priority = request.form.get('priority') or project.priority
+        project.project_status = request.form.get('project_status') or project.project_status
+        project.client_name = request.form.get('client_name') or None
+        start_str = request.form.get('start_date')
+        end_str = request.form.get('end_date')
+        if start_str and end_str:
+            start_date = datetime.strptime(start_str, '%Y-%m-%d')
+            end_date = datetime.strptime(end_str, '%Y-%m-%d')
+            if project.deadlines_id:
+                dl = Deadlines.query.get(project.deadlines_id)
+                if dl:
+                    dl.start_date = start_date
+                    dl.end_date = end_date
+            else:
+                dl = Deadlines(start_date=start_date, end_date=end_date)
+                db.session.add(dl)
+                db.session.flush()
+                project.deadlines_id = dl.deadlines_id
+        db.session.commit()
+        flash('Project updated successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to update: {}'.format(str(e)), 'danger')
+    return redirect(url_for('main.project_details', id=id))
+
+@main.route("/project_details/<int:id>/update_description", methods=['POST'])
+@login_required
+def update_project_description(id):
+    project = Project.query.get_or_404(id)
+    project_desc = request.form.get('project_desc', '').strip() or None
+    try:
+        project.project_desc = project_desc
+        db.session.commit()
+        flash('Description updated successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to update: {}'.format(str(e)), 'danger')
+    return redirect(url_for('main.project_details', id=id))
+
+@main.route("/project_details/<int:id>/delete", methods=['GET', 'POST'])
+@login_required
+def delete_project(id):
+    project = Project.query.get_or_404(id)
+    try:
+        ProjectMembers.query.filter_by(project_id=project.project_id).delete()
+        tasks = Task.query.filter_by(project_id=project.project_id).all()
+        for task in tasks:
+            SubTask.query.filter_by(parent_task_id=task.task_id).delete()
+        Task.query.filter_by(project_id=project.project_id).delete()
+        deadlines_id = project.deadlines_id
+        db.session.delete(project)
+        if deadlines_id:
+            dl = Deadlines.query.get(deadlines_id)
+            if dl:
+                db.session.delete(dl)
+        db.session.commit()
+        flash('Project deleted successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to delete project: {}'.format(str(e)), 'danger')
+    return redirect(url_for('main.projects'))
 
 @main.route("/profile")
 @login_required
@@ -294,9 +413,68 @@ def profile():
     return render_template('profile.html')
 
 @main.route("/task_details")
+@main.route("/task_details/<int:id>")
 @login_required
-def task_details():
-    return render_template('task_details.html')
+def task_details(id=None):
+    # If no ID provided, get the first task or handle appropriately
+    if id is None:
+        task = Task.query.first()
+    else:
+        task = Task.query.get(id)
+    
+    if not task:
+        flash('Task not found', 'error')
+        return redirect(url_for('main.projects'))
+    
+    return render_template('task_details.html', task=task)
+
+@main.route("/project_details/<int:id>/task/create", methods=['POST'])
+@login_required
+def create_task(id):
+    try:
+        # Get the project
+        project = Project.query.get_or_404(id)
+        
+        # Get form data
+        task_name = request.form.get('task_name')
+        owner_id = request.form.get('owner_id')
+        task_description = request.form.get('task_description', '')
+        
+        # Validate required fields
+        if not task_name or not owner_id:
+            flash('Please fill in all required fields', 'danger')
+            return redirect(url_for('main.project_details', id=id))
+        
+        # Verify that the owner is assigned to this project
+        project_member = ProjectMembers.query.filter_by(
+            project_id=project.project_id,
+            member_id=int(owner_id)
+        ).first()
+        
+        if not project_member:
+            flash('Selected owner must be assigned to this project', 'danger')
+            return redirect(url_for('main.project_details', id=id))
+        
+        # Create the task
+        task = Task(
+            project_id=project.project_id,
+            p_members_id=project_member.p_members_id,
+            task_name=task_name,
+            task_description=task_description.strip() if task_description else None,
+            task_status='Ongoing',
+            priority='Medium'
+        )
+        
+        db.session.add(task)
+        db.session.commit()
+        
+        flash('Task created successfully!', 'success')
+        return redirect(url_for('main.project_details', id=id))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error creating task: {str(e)}', 'danger')
+        return redirect(url_for('main.project_details', id=id))
 
 @main.route("/project/create", methods=['POST'])
 @login_required
@@ -311,7 +489,8 @@ def create_project():
         project_manager = current_user.member_id
         start_date_str = request.form.get('start_date')
         end_date_str = request.form.get('end_date')
-        project_status = request.form.get('project_status', 'Ongoing')
+        # New projects default to Ongoing (not shown in UI)
+        project_status = 'Ongoing'
         progress = request.form.get('progress', '0%')
         project_description = request.form.get('topicDescription', '')
         

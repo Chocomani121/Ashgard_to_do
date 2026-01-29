@@ -12,89 +12,77 @@ const ownerSearch = document.getElementById("ownerSearch");
 
 let selectedOwners = [];
 
-// Render list
-function renderOwners(filter = "") {
-    ownerList.innerHTML = "";
-
-    owners
-        .filter(o => o.name.toLowerCase().includes(filter.toLowerCase()))
-        .forEach(owner => {
-            const item = document.createElement("div");
-            item.className = "list-group-item owner-item";
-            if (selectedOwners.find(o => o.id === owner.id)) {
-                item.classList.add("active");
-            }
-
-            item.innerHTML = `
-                <div class="owner-avatar" style="background:${owner.color}">
-                    ${owner.initials}
-                </div>
-                <span>${owner.name}</span>
-            `;
-
-            item.onclick = () => toggleOwner(owner);
-            ownerList.appendChild(item);
+// Only run owner-list UI code when elements exist (e.g. not on project_details)
+if (ownerList && ownerInput && ownerSearch) {
+    // Render list
+    function renderOwners(filter = "") {
+        ownerList.innerHTML = "";
+        owners
+            .filter(o => o.name.toLowerCase().includes(filter.toLowerCase()))
+            .forEach(owner => {
+                const item = document.createElement("div");
+                item.className = "list-group-item owner-item";
+                if (selectedOwners.find(o => o.id === owner.id)) item.classList.add("active");
+                item.innerHTML = `<div class="owner-avatar" style="background:${owner.color}">${owner.initials}</div><span>${owner.name}</span>`;
+                item.onclick = () => toggleOwner(owner);
+                ownerList.appendChild(item);
+            });
+    }
+    function toggleOwner(owner) {
+        const exists = selectedOwners.find(o => o.id === owner.id);
+        if (exists) selectedOwners = selectedOwners.filter(o => o.id !== owner.id);
+        else selectedOwners.push(owner);
+        renderSelected();
+        renderOwners(ownerSearch.value);
+    }
+    function renderSelected() {
+        ownerInput.innerHTML = "";
+        if (selectedOwners.length === 0) {
+            ownerInput.innerHTML = `<span class="text-muted small">Select Members</span>`;
+            return;
+        }
+        selectedOwners.forEach(owner => {
+            const chip = document.createElement("div");
+            chip.className = "owner-chip";
+            chip.innerHTML = `${owner.name} <span onclick="removeOwner(${owner.id})">&times;</span>`;
+            ownerInput.appendChild(chip);
         });
-}
-
-// Toggle selection
-function toggleOwner(owner) {
-    const exists = selectedOwners.find(o => o.id === owner.id);
-
-    if (exists) {
-        selectedOwners = selectedOwners.filter(o => o.id !== owner.id);
-    } else {
-        selectedOwners.push(owner);
     }
-
+    function removeOwner(id) {
+        selectedOwners = selectedOwners.filter(o => o.id !== id);
+        renderSelected();
+        renderOwners(ownerSearch.value);
+    }
+    window.removeOwner = removeOwner;
+    ownerSearch.addEventListener("input", e => { renderOwners(e.target.value); });
+    const clearOwners = document.getElementById("clearOwners");
+    if (clearOwners) clearOwners.onclick = () => { selectedOwners = []; renderSelected(); renderOwners(); };
+    renderOwners();
     renderSelected();
-    renderOwners(ownerSearch.value);
 }
 
-// Render selected chips
-function renderSelected() {
-    ownerInput.innerHTML = "";
-
-    if (selectedOwners.length === 0) {
-        ownerInput.innerHTML = `<span class="text-muted small">Select Members</span>`;
-        return;
-    }
-
-    selectedOwners.forEach(owner => {
-        const chip = document.createElement("div");
-        chip.className = "owner-chip";
-        chip.innerHTML = `
-            ${owner.name}
-            <span onclick="removeOwner(${owner.id})">&times;</span>
-        `;
-        ownerInput.appendChild(chip);
+// Search – only if this page has the owner/CC block
+if (ownerSearch) {
+    ownerSearch.addEventListener("input", e => {
+        renderOwners(e.target.value);
     });
 }
 
-// Remove chip
-function removeOwner(id) {
-    selectedOwners = selectedOwners.filter(o => o.id !== id);
-    renderSelected();
-    renderOwners(ownerSearch.value);
+// Clear – only if this page has the block
+var clearOwnersBtn = document.getElementById("clearOwners");
+if (clearOwnersBtn) {
+    clearOwnersBtn.onclick = () => {
+        selectedOwners = [];
+        renderSelected();
+        renderOwners();
+    };
 }
 
-// Search
-ownerSearch.addEventListener("input", e => {
-    renderOwners(e.target.value);
-});
-
-// Clear
-document.getElementById("clearOwners").onclick = () => {
-    selectedOwners = [];
-    renderSelected();
+// Init – only when both list and input exist (e.g. task/member page with CC dropdown)
+if (ownerList && ownerInput) {
     renderOwners();
-};
-
-// Init
-renderOwners();
-renderSelected();
-
-
+    renderSelected();
+}
 
 function toggleInput(btn, className) {
 
@@ -176,6 +164,29 @@ function confirmDelete(memberName, memberId) {
     });
 }
 
+// Delete SweetAlert for Projects (redirects to dashboard after delete)
+function confirmDeleteProject(projectId, projectName) {
+    if (typeof Swal === "undefined") {
+        if (window.confirm("Are you sure you want to delete " + (projectName || "this project") + "? You won't be able to revert this!")) {
+            window.location.href = "/project_details/" + projectId + "/delete";
+        }
+        return;
+    }
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You are about to delete " + (projectName || "this project") + ". You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#51d28c",
+        cancelButtonColor: "#f34e4e",
+        confirmButtonText: "Yes, delete it!"
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            window.location.href = "/project_details/" + projectId + "/delete";
+        }
+    });
+}
+
 
 // notes view modal
 function prepareNoteModal(taskId, description, footer) {
@@ -244,3 +255,47 @@ document.querySelectorAll('.pin-btn').forEach(btn => {
         }
     });
 
+// Generate options for the weekly report date dropdown
+function getCurrentReportWeek() {
+    const today = new Date();
+    const daysFromMonday = (today.getDay() + 6) % 7;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - daysFromMonday);
+    const saturday = new Date(monday);
+    saturday.setDate(monday.getDate() + 5);
+    return { start: monday, end: saturday };
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const sel = document.getElementById("weekly-report-date");
+    if (!sel) return;
+
+    function fmt(d) {
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return m + "/" + day + "/" + d.getFullYear();
+    }
+
+    const { start, end } = getCurrentReportWeek();
+    const currentLabel = fmt(start) + " - " + fmt(end);
+
+    // Clear placeholder, add "This week" as first and selected
+    sel.innerHTML = "";
+    const currentOpt = document.createElement("option");
+    currentOpt.value = currentLabel;
+    currentOpt.textContent = currentLabel + " (This week)";
+    currentOpt.selected = true;
+    sel.appendChild(currentOpt);
+
+    // Only future report weeks (ahead)
+    for (let i = 1; i <= 12; i++) {
+        const nextMon = new Date(start);
+        nextMon.setDate(start.getDate() + 7 * i);
+        const nextSat = new Date(nextMon);
+        nextSat.setDate(nextMon.getDate() + 5);
+        const opt = document.createElement("option");
+        opt.value = fmt(nextMon) + " - " + fmt(nextSat);
+        opt.textContent = opt.value;
+        sel.appendChild(opt);
+    }
+});

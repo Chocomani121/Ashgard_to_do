@@ -25,7 +25,8 @@ function getChartColorsArray(chartId) {
   }
 }
 
-// Chart Mini-1
+// Chart Mini-1 (dashboard only – skip on project_details)
+if (document.querySelector("#mini-1")) {
 var barchartColors = getChartColorsArray("mini-1");
 var sparklineoptions1 = {
   series: [{
@@ -76,9 +77,11 @@ var sparklineoptions1 = {
 
 var sparklinechart1 = new ApexCharts(document.querySelector("#mini-1"), sparklineoptions1);
 sparklinechart1.render();
+}
 
 
-// Chart Mini-2
+// Chart Mini-2 (dashboard only)
+if (document.querySelector("#mini-2")) {
 var barchartColors = getChartColorsArray("mini-2");
 var sparklineoptions1 = {
     series: [{
@@ -129,8 +132,10 @@ var sparklineoptions1 = {
   
   var sparklinechart1 = new ApexCharts(document.querySelector("#mini-2"), sparklineoptions1);
   sparklinechart1.render();
+}
 
-// Chart Mini-3
+// Chart Mini-3 (dashboard only)
+if (document.querySelector("#mini-3")) {
 var barchartColors = getChartColorsArray("mini-3");
   var sparklineoptions1 = {
     series: [{
@@ -181,8 +186,10 @@ var barchartColors = getChartColorsArray("mini-3");
   
   var sparklinechart1 = new ApexCharts(document.querySelector("#mini-3"), sparklineoptions1);
   sparklinechart1.render();
+}
 
-  // Chart Mini-4
+// Chart Mini-4 (dashboard only)
+if (document.querySelector("#mini-4")) {
   var barchartColors = getChartColorsArray("mini-4");
 var sparklineoptions1 = {
     series: [{
@@ -233,9 +240,10 @@ var sparklineoptions1 = {
   
   var sparklinechart1 = new ApexCharts(document.querySelector("#mini-4"), sparklineoptions1);
   sparklinechart1.render();
+}
 
-  
-//  Sales Statistics
+// Sales Statistics (dashboard only)
+if (document.querySelector("#overview")) {
 var barchartColors = getChartColorsArray("overview");
 var options = {
     series: [{
@@ -283,38 +291,39 @@ var options = {
 
 var chart = new ApexCharts(document.querySelector("#overview"), options);
 chart.render();
+}
 
-
-// Saleing Categories donut chart in project details page
-var barchartColors = getChartColorsArray("saleing-categories");
-var options = {
-  chart: {
+// Saleing Categories donut chart in project details page (only when container exists)
+var saleingCategoriesEl = document.querySelector("#saleing-categories");
+if (saleingCategoriesEl && typeof ApexCharts !== "undefined") {
+  var barchartColors = getChartColorsArray("saleing-categories");
+  var options = {
+    chart: {
       height: 340,
       type: 'donut',
-  }, 
-  series: [60, 40],
-  labels: ["Completed", "Ongoing"],
-  colors: barchartColors,
-  plotOptions: {
-        pie: {
-          startAngle: 25,
-          donut: {
-            size: '72%',
-            labels: {
+    },
+    series: [60, 40],
+    labels: ["Completed", "Ongoing"],
+    colors: barchartColors || ["#28b765", "#f4c238c2"],
+    plotOptions: {
+      pie: {
+        startAngle: 25,
+        donut: {
+          size: '72%',
+          labels: {
+            show: true,
+            total: {
               show: true,
-              total: {
-                show: true,
-                label: 'Progress',
-                fontSize: '22px',
-                fontFamily: 'Montserrat,sans-serif',
-                fontWeight: 600,
-              }
+              label: 'Progress',
+              fontSize: '22px',
+              fontFamily: 'Montserrat,sans-serif',
+              fontWeight: 600,
             }
           }
         }
-  },
-
-  legend: {
+      }
+    },
+    legend: {
       show: false,
       position: 'bottom',
       horizontalAlign: 'center',
@@ -322,48 +331,38 @@ var options = {
       floating: false,
       fontSize: '14px',
       offsetX: 0,
-      
-  },
-
-  dataLabels: {
-        style: {
-          fontSize: '11px',
-          fontFamily: 'Montserrat,sans-serif',
-          fontWeight: 'bold',
-          colors: undefined
-         },
-    
-        background: {
-          enabled: true,
-          foreColor: '#fff',
-          padding: 4,
-          borderRadius: 2,
-          borderWidth: 1,
-          borderColor: '#fff',
-          opacity: 1,
-        },
-  },
-  responsive: [{
+    },
+    dataLabels: {
+      style: {
+        fontSize: '11px',
+        fontFamily: 'Montserrat,sans-serif',
+        fontWeight: 'bold',
+        colors: undefined
+      },
+      background: {
+        enabled: true,
+        foreColor: '#fff',
+        padding: 4,
+        borderRadius: 2,
+        borderWidth: 1,
+        borderColor: '#fff',
+        opacity: 1,
+      },
+    },
+    responsive: [{
       breakpoint: 600,
       options: {
-          chart: {
-              height: 240
-          },
-          legend: {
-              show: false
-          },
+        chart: { height: 240 },
+        legend: { show: false },
       }
-  }]
-  }
-  
-  var chart = new ApexCharts(
-  document.querySelector("#saleing-categories"),
-  options
-  );
-  
+    }]
+  };
+  var chart = new ApexCharts(saleingCategoriesEl, options);
   chart.render();
+}
 
-// world map with markers
+// world map with markers (dashboard only)
+if (document.querySelector("#world-map-markers")) {
 var worldemapmarkers = new jsVectorMap({
 	map: 'world_merc',
 	selector: '#world-map-markers',
@@ -393,4 +392,5 @@ var worldemapmarkers = new jsVectorMap({
 			}
 	  	}
 	}
-})
+});
+}
