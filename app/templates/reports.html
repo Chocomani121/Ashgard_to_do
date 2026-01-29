@@ -244,11 +244,24 @@
                                                         <button type="button" class="btn btn-outline-danger btn-sm px-4">Delete</button>
                                                         <button type="button" class="btn btn-outline-warning btn-sm px-4" data-bs-toggle="modal" data-bs-target="#newReportModal">Update</button>
                                                     </div>
+                                    
                                                     <div class="p-3 bg-light border-top">
-                                                        <textarea class="form-control border-0 shadow-sm" rows="1" placeholder="Comment content(Ctrl+Enter send)" style="resize: none; background-color: #efefef;"></textarea>
+                                                        <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
+                                                    </div>
+                                                    
+                                                    <div id="commentEditorPopover" class="border rounded shadow-sm bg-white p-0" style="display: none; position: fixed; z-index: 1050; min-width: 320px; max-width: 520px;">
+                                                        <div class="p-2 bg-light border-bottom small fw-bold">Comment</div>
+                                                        <div class="p-2 bg-white">
+                                                            <textarea id="commentCKEditor" class="form-control border-0" style="min-height: 120px;" placeholder="Write your comment..."></textarea>
+                                                        </div>
+                                                        <div class="p-2 bg-light border-top d-flex justify-content-end gap-2">
+                                                            <button type="button" id="commentEditorCancel" class="btn btn-outline-secondary btn-sm">Cancel</button>
+                                                            <button type="button" id="commentEditorSend" class="btn btn-primary btn-sm">Send</button>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                        
+                                                
+
                                             </div>
                                         </div>  
                                         <div class="tab-pane fade" id="Reviewed" role="tabpanel">
@@ -842,6 +855,25 @@
     </div>
 </div>
 
+<!-- comment modal  -->
+<div class="modal fade" id="newCommentModal" tabindex="-1" aria-labelledby="newCommentModalLabel" aria-hidden="true">
+    <div class="border rounded">
+        <div class="p-2 bg-light border-bottom small fw-bold">Report content</div>
+        <div class="p-3 bg-white">
+            <textarea id="reportCKEditor" name="reportBody" class="form-control" style="min-height: 350px;"><p><strong>This week's summary:</strong></p>
+            <p>1.</p><p>2.</p>
+            <p><strong>Next week's plan:</strong></p>
+            <p>1.</p><p>2.</p>
+            <p><strong>Issues and suggestions:</strong></p>
+            <p>1.</p><p>2.</p></textarea>
+        </div>
+        <div class="p-2 bg-light border-top d-flex gap-3 text-muted" style="font-size: 0.8rem;">
+            <span><i class="bx bx-paperclip"></i> Attachment</span>
+            <span><i class="bx bx-font-color"></i> Content style</span>
+        </div>
+    </div>
+</div>
+
 <script>
     // CC
     (function () {
@@ -1091,6 +1123,91 @@
             modalTitle.textContent = title ? "Edit: " + title : "Edit report";
         } else {
             modalTitle.textContent = "Weekly report";
+        }
+    });
+})();
+
+// comment editor
+// comment editor
+(function () {
+    var popover = document.getElementById("commentEditorPopover");
+    var cancelBtn = document.getElementById("commentEditorCancel");
+    var sendBtn = document.getElementById("commentEditorSend");
+    var commentEditorInstance = null;
+    var currentPlaceholder = null;
+
+    function positionPopover(placeholder) {
+        if (!popover || !placeholder) return;
+        var rect = placeholder.getBoundingClientRect();
+        var gap = 6;
+        popover.style.top = (rect.top - popover.offsetHeight - gap) + "px";
+        popover.style.left = Math.max(8, rect.left) + "px";
+    }
+
+    function showCommentEditor(placeholder) {
+        if (!popover || !placeholder) return;
+        if (currentPlaceholder && currentPlaceholder !== placeholder) {
+            closeCommentEditor();
+        }
+        currentPlaceholder = placeholder;
+        placeholder.style.display = "none";
+
+        popover.style.display = "block";
+        positionPopover(placeholder);
+
+        var textarea = document.getElementById("commentCKEditor");
+        if (!textarea) return;
+        if (typeof ClassicEditor !== "undefined") {
+            ClassicEditor.create(textarea, { placeholder: "Write your comment..." })
+                .then(function (editor) {
+                    commentEditorInstance = editor;
+                    editor.keystrokes.set("Ctrl+Enter", function () { sendComment(); });
+                })
+                .catch(function (err) { console.error(err); });
+        }
+    }
+
+    function restorePlaceholder() {
+        if (currentPlaceholder) {
+            currentPlaceholder.style.display = "";
+            currentPlaceholder = null;
+        }
+    }
+
+    function sendComment() {
+        var html = commentEditorInstance ? commentEditorInstance.getData() : "";
+        if (commentEditorInstance) {
+            commentEditorInstance.destroy().then(function () { commentEditorInstance = null; });
+        }
+        popover.style.display = "none";
+        var textarea = document.getElementById("commentCKEditor");
+        if (textarea) textarea.value = "";
+        restorePlaceholder();
+        // TODO: submit html to server (e.g. for current report)
+    }
+
+    function closeCommentEditor() {
+        if (commentEditorInstance) {
+            commentEditorInstance.destroy().then(function () { commentEditorInstance = null; });
+        }
+        popover.style.display = "none";
+        var textarea = document.getElementById("commentCKEditor");
+        if (textarea) textarea.value = "";
+        restorePlaceholder();
+    }
+
+    if (cancelBtn) cancelBtn.addEventListener("click", closeCommentEditor);
+    if (sendBtn) sendBtn.addEventListener("click", sendComment);
+
+    document.addEventListener("click", function (e) {
+        var ph = e.target.closest(".comment-placeholder");
+        if (ph) {
+            e.preventDefault();
+            showCommentEditor(ph);
+            return;
+        }
+        if (popover && popover.style.display === "block" && !popover.contains(e.target) && !e.target.closest(".comment-placeholder")) {
+            closeCommentEditor();
         }
     });
 })();
