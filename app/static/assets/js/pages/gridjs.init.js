@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Initialize Grid.js
             grid1 = new gridjs.Grid({
-                columns: ["Project Name", "Priority", "Start Date", "Deadline", "Status", "Progress", "Manhours", "Project Manager", "Client", "Last Tasks"],
+                columns: ["Project Name", "Priority", "Start Date", "Deadline", "Status", "Progress", "Project Manager", "Client", "Last Tasks"],
                 data: getFilteredData().map(row => row.cells),
                 pagination: { limit: 5 },
                 sort: true,
@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Initialize Grid.js
             grid = new gridjs.Grid({
-                columns: ["Project Name", "Priority", "Start Date", "Deadline", "Status", "Progress", "Manhours", "Project Manager", "Client", "Last Tasks"],
+                columns: ["Project Name", "Priority", "Start Date", "Deadline", "Status", "Progress", "Project Manager", "Client", "Last Tasks"],
                 data: getFilteredData().map(row => row.cells),
                 pagination: { limit: 10 },
                 sort: true,

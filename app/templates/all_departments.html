@@ -191,7 +191,6 @@
                                             <th>Deadline</th>
                                             <th>Status</th>
                                             <th>Progress</th>
-                                            <th>Manhours</th>
                                             <th>Project Manager</th>
                                             <th>Client</th>
                                             <th>Last Tasks</th>
@@ -250,13 +249,6 @@
                                             </td>
                                             <td>
                                                 {{ item.project.progress or '0%' }}
-                                            </td>
-                                            <td>
-                                                {% if item.manhours is not none %}
-                                                {{ item.manhours }} hrs
-                                                {% else %}
-                                                N/A
-                                                {% endif %}
                                             </td>
                                             <td>
                                                 {{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}

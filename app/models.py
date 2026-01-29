@@ -108,8 +108,7 @@ class Task(db.Model):
     deadline_id      = db.Column(db.Integer, db.ForeignKey('deadlines_tbl.deadlines_id'))
     project_id       = db.Column(db.Integer, db.ForeignKey('project.project_id'))
     p_members_id     = db.Column(db.Integer, db.ForeignKey('project_members.p_members_id'))
-    notes_id         = db.Column(db.Integer, db.ForeignKey('notes_tbl.notes_id'))
-    
+
     priority         = db.Column(db.String(255))
     task_name        = db.Column(db.String(255), nullable=False)
     task_description = db.Column(db.Text)

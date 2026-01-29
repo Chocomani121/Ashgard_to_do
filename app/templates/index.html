@@ -136,7 +136,6 @@
                                                                     <th>Deadline</th>
                                                                     <th>Status</th>
                                                                     <th>Progress</th>
-                                                                    <th>Manhours</th>
                                                                     <th>Project Manager</th>
                                                                     <th>Client</th>
                                                                     <th>Last Tasks</th>
@@ -201,13 +200,6 @@
                                                                     {{ item.project.progress or '0%' }}
                                                                 </td>
                                                                 <td>
-                                                                    {% if item.manhours is not none %}
-                                                                    {{ item.manhours }} hrs
-                                                                    {% else %}
-                                                                    N/A
-                                                                    {% endif %}
-                                                                </td>
-                                                                <td>
                                                                     {{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}
                                                                 </td>
                                                                 <td>
@@ -220,7 +212,7 @@
                                                             {% endfor %}
                                                             {% else %}
                                                             <tr>
-                                                                <td colspan="10" class="text-center text-muted">No projects found. Create your first project!</td>
+                                                                <td colspan="9" class="text-center text-muted">No projects found. Create your first project!</td>
                                                             </tr>
                                                             {% endif %}
                                                         </tbody>
@@ -251,7 +243,6 @@
                                                                 <th>Deadline</th>
                                                                 <th>Status</th>
                                                                 <th>Progress</th>
-                                                                <th>Manhours</th>
                                                                 <th>Project Manager</th>
                                                                 <th>Client</th>
                                                                 <th>Department</th>
@@ -301,13 +292,6 @@
                                                                     {{ item.project.progress or '0%' }}
                                                                 </td>
                                                                 <td>
-                                                                    {% if item.manhours is not none %}
-                                                                    {{ item.manhours }} hrs
-                                                                    {% else %}
-                                                                    N/A
-                                                                    {% endif %}
-                                                                </td>
-                                                                <td>
                                                                     {{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}
                                                                 </td>
                                                                 <td>
@@ -323,7 +307,7 @@
                                                             {% endfor %}
                                                             {% else %}
                                                             <tr>
-                                                                <td colspan="10" class="text-center text-muted">No projects found. Create your first project!</td>
+                                                                <td colspan="9" class="text-center text-muted">No projects found. Create your first project!</td>
                                                             </tr>
                                                             {% endif %}
                                                         </tbody>
@@ -398,17 +382,6 @@
                                                 {% for user in users %}
                                                 <option value="{{ user.member_id }}" {% if current_user.member_id == user.member_id %}selected{% endif %}>{{ user.name or user.username }}</option>
                                                 {% endfor %}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label" for="project_status">Project Status</label>
-                                            <select class="form-select" id="project_status" name="project_status">
-                                                <option value="Ongoing" selected>Ongoing</option>
-                                                <option value="Completed">Completed</option>
-                                                <option value="On Hold">On Hold</option>
-                                                <option value="Pending">Pending</option>
                                             </select>
                                         </div>
                                     </div>
