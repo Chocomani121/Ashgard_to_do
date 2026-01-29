@@ -268,31 +268,15 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
+                                                        {% for task_info in tasks %}
                                                         <tr>
-                                                            <td class="fw-semibold"><a href="{{ url_for('main.task_details') }}" class="text-dark">API integration</a>
+                                                            <td class="fw-semibold"><a href="{{ url_for('main.task_details', id=task_info.task.task_id) }}" class="text-dark">{{ task_info.task.task_name }}</a></td>
                                                             <td style="width: 190px;">
+                                                                {% if task_info.owner %}
                                                                 <div class="d-flex align-items-center">
-                                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
+                                                                    <img class="rounded-circle avatar-sm" src="{{ url_for('static', filename='profile_pics/' + task_info.owner.image_file) }}" alt="">
                                                                     <div class="flex-grow-1 ms-3">
-                                                                        Patrick
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <div class="badge badge-soft-danger font-size-12">Rejected</div>
-                                                            </td>
-                                                            <td>
-                                                                4/5
-                                                            </td>
-                                                        </tr>   
-                                                        
-                                                        <tr>
-                                                            <td class="fw-semibold"><a href="#" class="text-dark">Login Form</a>
-                                                            <td style="width: 190px;">
-                                                                <div class="d-flex align-items-center">
-                                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
-                                                                    <div class="flex-grow-1 ms-3">
-                                                                        {{ task_data.owner.name if task_data.owner.name else task_data.owner.username }}
+                                                                        {{ task_info.owner.name if task_info.owner.name else task_info.owner.username }}
                                                                     </div>
                                                                 </div>
                                                                 {% else %}
@@ -300,31 +284,23 @@
                                                                 {% endif %}
                                                             </td>
                                                             <td>
-                                                                <div class="badge badge-soft-primary font-size-12">To be Reviewed</div>
+                                                                {% if task_info.status == 'Completed' %}
+                                                                <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                {% elif task_info.status == 'Ongoing' %}
+                                                                <div class="badge bg-soft-warning text-warning font-size-12">Ongoing</div>
+                                                                {% else %}
+                                                                <div class="badge bg-soft-secondary text-secondary font-size-12">{{ task_info.status }}</div>
+                                                                {% endif %}
                                                             </td>
                                                             <td>
-                                                                {{ task_data.progress }}
+                                                                {{ task_info.progress }}
                                                             </td>
-                                                    
-                                                        </tr>   
-
+                                                        </tr>
+                                                        {% else %}
                                                         <tr>
-                                                            <td class="fw-semibold"><a href="#" class="text-dark">UI Redesign</a>
-                                                            <td style="width: 190px;">
-                                                                <div class="d-flex align-items-center">
-                                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
-                                                                    <div class="flex-grow-1 ms-3">
-                                                                        Kath
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <div class="badge badge-soft-success font-size-12">Approved</div>
-                                                            </td>
-                                                            <td>
-                                                                4/6
-                                                            </td>                       
-                                                        </tr>   
+                                                            <td colspan="4" class="text-muted text-center py-4">No tasks yet.</td>
+                                                        </tr>
+                                                        {% endfor %}
                                                     </tbody>
                                             </table>
                                             
@@ -403,7 +379,7 @@
         
   <!--  Extra Large modal example -->
             <div class="modal fade create-task" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-dialog modal-md modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="myExtraLargeModalLabel">Create Task</h5>
@@ -411,47 +387,13 @@
                         </div>
                         <div class="modal-body">
                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label" for="CreateTask-Category">Select Project</label>
-                                        <select class="form-select">
-                                            <option  selected> Select </option>
-                                            <option>Osint</option>
-                                            <option>MDC</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <div class="mb-3">
                                         <label class="form-label" for="CreateTask-Task-Name">Task Name</label>
                                         <input type="text" class="form-control" placeholder="Enter Task Name" id="CreateTask-Task-Name">
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Start Date</label>
-                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                     <div class="mb-3">
-                                        <label class="form-label">Deadline</label>
-                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Client</label>
-                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Department</label>
-                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <div class="mb-3 position-relative" style="max-width: 550px;">
                                         <label class="form-label">Assign Members</label>
                                         <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
@@ -472,12 +414,6 @@
                                                 <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">Confirm</button>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="topicDescription" class="form-label">Description</label>
-                                        <textarea class="form-control" id="topicDescription" rows="3" placeholder="Enter description"></textarea>
                                     </div>
                                 </div>
                            </div>
