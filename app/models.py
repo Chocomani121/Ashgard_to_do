@@ -86,8 +86,6 @@ class Project(db.Model):
     project_status  = db.Column(db.String(255))
     progress        = db.Column(db.String(255))
     project_desc    = db.Column(db.Text)
-    created_on      = db.Column(db.DateTime, server_default=db.func.now())
-    edited_on       = db.Column(db.DateTime, onupdate=db.func.now())
 
     tasks           = db.relationship('Task', backref='project_info', lazy=True)
     team_members    = db.relationship('ProjectMembers', backref='project_ref', lazy=True)
@@ -110,15 +108,12 @@ class Task(db.Model):
     deadline_id      = db.Column(db.Integer, db.ForeignKey('deadlines_tbl.deadlines_id'))
     project_id       = db.Column(db.Integer, db.ForeignKey('project.project_id'))
     p_members_id     = db.Column(db.Integer, db.ForeignKey('project_members.p_members_id'))
-    notes_id         = db.Column(db.Integer, db.ForeignKey('notes_tbl.notes_id'))
-    
+
     priority         = db.Column(db.String(255))
     task_name        = db.Column(db.String(255), nullable=False)
     task_description = db.Column(db.Text)
     task_status      = db.Column(db.String(255))
     category         = db.Column(db.String(255))
-    created_on       = db.Column(db.DateTime, server_default=db.func.now())
-    edited_on        = db.Column(db.DateTime, onupdate=db.func.now())
 
 class SubTask(db.Model):
     __tablename__     = 'sub_task_list'
