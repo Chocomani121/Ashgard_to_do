@@ -628,9 +628,6 @@ body[data-layout-mode="dark"] .right-bar {
           top: 8px; }
   #sidebar-menu ul li.mm-active {
     color: #2e3032; }
-    #sidebar-menu ul li.mm-active > a {
-      background-color: #f3f5f9;
-      color: #2e3032; }
       #sidebar-menu ul li.mm-active > a .nav-icon {
         fill: #2e3032 !important; }
     #sidebar-menu ul li.mm-active .mm-show .mm-active > a {

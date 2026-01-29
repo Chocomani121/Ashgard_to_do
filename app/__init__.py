@@ -1,11 +1,16 @@
-import urllib.parse 
+import os
+import urllib.parse
+from dotenv import load_dotenv
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
-from flask_migrate import Migrate 
+from flask_migrate import Migrate
+from flask_caching import Cache
 
+load_dotenv()
+cache = Cache()
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -14,39 +19,48 @@ login_manager.login_view = 'users.login'
 login_manager.login_message_category = 'info'
 login_manager.login_message = None
 mail = Mail()
-migrate = Migrate() 
+migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
-    
-   
-    user = 'testman'
-   
-    password = urllib.parse.quote_plus('Jhayg3309]]:P') 
-    mysql_url = 'vultr-prod-85f8d360-5bbf-4d05-ad2d-01cc47768728-vultr-prod-995c.vultrdb.com'
-    port_num = '16751'
-    db_name = 'ashgard_todo'
 
+    # cache.init_app(app)
+    # --- DATABASE CONFIG ---
+    user = os.getenv("DB_USER")
+    # Force string conversion to handle the special characters in your password safely
+    raw_password = str(os.getenv("DB_PASSWORD", "")) 
+    password = urllib.parse.quote_plus(raw_password)
+    host = os.getenv("DB_HOST")
     
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{user}:{password}@{mysql_url}:{port_num}/{db_name}'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    # Safely handle the Port conversion
+    db_port = os.getenv("DB_PORT")
+    port = int(db_port) if db_port and db_port.isdigit() else 16751 # Vultr default from your .env
     
+    db_name = os.getenv("DB_NAME")
 
-    app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
+    # --- MAIL CONFIG ---
+    app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.googlemail.com")
     
-    app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
-    app.config['MAIL_PORT'] = 587
-    app.config['MAIL_USE_TLS'] = True
-    app.config['MAIL_USERNAME'] = 'dr.strangex404@gmail.com'
-    app.config['MAIL_PASSWORD'] = 'iwzt upks azcd laux'
+    # Safely handle Mail Port
+    m_port = os.getenv("MAIL_PORT")
+    app.config["MAIL_PORT"] = int(m_port) if m_port and m_port.isdigit() else 587
+    
+    app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "true").lower() == "true"
+    app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
+    app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 
-    
+    app.config['CACHE_TYPE'] = 'SimpleCache' 
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 300
+
     db.init_app(app)
     bcrypt.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
-    migrate.init_app(app, db) 
+    migrate.init_app(app, db)
 
     @app.after_request
     def add_header(response):
@@ -55,10 +69,9 @@ def create_app():
         response.headers["Expires"] = "0"
         return response
 
-    
     from .users.routes import users as users_blueprint
     from .main.routes import main as main_blueprint
-    
+
     app.register_blueprint(users_blueprint)
     app.register_blueprint(main_blueprint)
 

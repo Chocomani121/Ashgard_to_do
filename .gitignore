@@ -4,11 +4,6 @@
 /migrations
 .cursor/
 
-**/__init__.py
-instance/
-/migrations
-
-**/__init__.py
 
 *.pyc
 __pycache__/
@@ -18,6 +13,8 @@ __pycache__/
 ****/__pycache__
 
 .python-version
+
+
 
 *.code-workspace
 ashgard-todo-app.code-workspace

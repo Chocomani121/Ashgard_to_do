@@ -78,169 +78,89 @@ function removeOwner(id) {
     renderOwners(ownerSearch.value);
 }
 
-// Search
-ownerSearch.addEventListener("input", e => {
-    renderOwners(e.target.value);
-});
+// Search – only if this page has the owner/CC block
+if (ownerSearch) {
+    ownerSearch.addEventListener("input", e => {
+        renderOwners(e.target.value);
+    });
+}
 
-// Clear
-document.getElementById("clearOwners").onclick = () => {
-    selectedOwners = [];
-    renderSelected();
+// Clear – only if this page has the block
+var clearOwnersBtn = document.getElementById("clearOwners");
+if (clearOwnersBtn) {
+    clearOwnersBtn.onclick = () => {
+        selectedOwners = [];
+        renderSelected();
+        renderOwners();
+    };
+}
+
+// Init – only when both list and input exist (e.g. task/member page with CC dropdown)
+if (ownerList && ownerInput) {
     renderOwners();
-};
+    renderSelected();
+}
 
-// Init
-renderOwners();
-renderSelected();
-
-
-
-// Note Reply and Edit Functionality//
 function toggleInput(btn, className) {
-    // 1. Find the parent container for this specific thread item
+
     const parent = btn.closest('.flex-grow-1');
     
-    // 2. Hide any other open boxes in this specific item
+  
     parent.querySelectorAll('.reply-box, .edit-box').forEach(box => {
         if (!box.classList.contains(className.substring(1))) {
             box.classList.add('d-none');
         }
     });
 
-    // 3. Toggle the box we want
+  
     const target = parent.querySelector(className);
     target.classList.toggle('d-none');
 
-    // 4. Auto-focus the input if it's now visible
+
     if (!target.classList.contains('d-none')) {
         target.querySelector('input').focus();
     }
 }
 
-
 // Department projects filter using dropdown
-function initializeDepartmentProjects(gridjsLib) {
+document.addEventListener("DOMContentLoaded", function() {
     const dropdownButton = document.getElementById('categorySelect');
     const dropdownMenu = dropdownButton?.closest('.btn-group')?.querySelectorAll('.dropdown-item') || [];
     const tableElement = document.getElementById('projectsTableDept');
-    const gridContainer = document.getElementById("tableDept-gridjs");
-    
-    try {
-        if (!gridjsLib || typeof gridjsLib.html === 'undefined') {
-            throw new Error('Grid.js library not properly loaded');
+
+    if (!dropdownButton || dropdownMenu.length === 0 || !tableElement) return;
+
+    // Extract data and wrap HTML strings in gridjs.html()
+    const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
+    const allData = tableRows.map(tr => ({
+        category: tr.getAttribute('data-category'),
+        cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML))
+    }));
+
+    const grid = new gridjs.Grid({
+        columns: ["ID", "Projects", "Department", "Client", "Deadline", "Status"],
+        data: allData.map(row => row.cells),
+        pagination: { limit: 10 },
+        sort: true,
+        className: {
+            table: 'table table-bordered'
         }
+    }).render(document.getElementById("tableDept-gridjs"));
 
-        if (!dropdownButton || dropdownMenu.length === 0 || !tableElement || !gridContainer) {
-            return;
-        }
+    const updateGrid = (selectedValue) => {
+        const filteredData = allData.filter(row => selectedValue === "All" ? true : row.category === selectedValue);
+        grid.updateConfig({ data: filteredData.map(row => row.cells) }).forceRender();
+    };
 
-        // Extract data and wrap HTML strings in gridjs.html()
-        const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
-        const allData = tableRows.map(tr => ({
-            category: tr.getAttribute('data-category'),
-            cells: Array.from(tr.querySelectorAll('td')).map(td => gridjsLib.html(td.innerHTML))
-        }));
-
-        const grid = new gridjsLib.Grid({
-            columns: ["ID", "Projects", "Department", "Client", "Deadline", "Status"],
-            data: allData.map(row => row.cells),
-            pagination: { limit: 10 },
-            sort: true,
-            className: {
-                table: 'table table-bordered'
-            }
-        }).render(gridContainer);
-
-        const updateGrid = (selectedValue) => {
-            const filteredData = allData.filter(row => selectedValue === "All" ? true : row.category === selectedValue);
-            grid.updateConfig({ data: filteredData.map(row => row.cells) }).forceRender();
-        };
-
-        dropdownMenu.forEach(item => {
-            item.addEventListener('click', function(event) {
-                event.preventDefault();
-                const selectedValue = this.getAttribute('data-value');
-                dropdownButton.innerHTML = `${this.textContent} <i class="mdi mdi-chevron-down"></i>`;
-                updateGrid(selectedValue || "All");
-            });
+    dropdownMenu.forEach(item => {
+        item.addEventListener('click', function(event) {
+            event.preventDefault();
+            const selectedValue = this.getAttribute('data-value');
+            dropdownButton.innerHTML = `${this.textContent} <i class="mdi mdi-chevron-down"></i>`;
+            updateGrid(selectedValue || "All");
         });
-    } catch (error) {
-        console.error('Department Projects Grid initialization error:', error);
-    }
-}
-
-function initDepartmentProjectsTable() {
-    const dropdownButton = document.getElementById('categorySelect');
-    const dropdownMenu = dropdownButton?.closest('.btn-group')?.querySelectorAll('.dropdown-item') || [];
-    const tableElement = document.getElementById('projectsTableDept');
-    const gridContainer = document.getElementById("tableDept-gridjs");
-
-    if (!dropdownButton || dropdownMenu.length === 0 || !tableElement || !gridContainer) {
-        return;
-    }
-
-    // Check if gridjs is available - wait if not
-    if (typeof gridjs === 'undefined' || typeof window.gridjs === 'undefined') {
-        // Wait for Grid.js to load
-        let attempts = 0;
-        const checkGridjs = setInterval(() => {
-            attempts++;
-            if (typeof gridjs !== 'undefined' || typeof window.gridjs !== 'undefined') {
-                clearInterval(checkGridjs);
-                const gridjsLib = gridjs || window.gridjs;
-                initializeDepartmentProjects(gridjsLib);
-            } else if (attempts >= 50) {
-                // Timeout after 5 seconds (50 * 100ms)
-                clearInterval(checkGridjs);
-                console.error('Department Projects: Grid.js failed to load after 5 seconds');
-            }
-        }, 100);
-        return;
-    }
-
-    initializeDepartmentProjects(gridjs || window.gridjs);
-}
-
-function waitForElementsAndInit(maxAttempts = 50, attempt = 0) {
-    const currentURL = window.location.pathname;
-    
-    // Only run on the all_departments page
-    if (!currentURL.includes('/all_departments')) {
-        return;
-    }
-    
-    const dropdownButton = document.getElementById('categorySelect');
-    const tableElement = document.getElementById('projectsTableDept');
-    const gridContainer = document.getElementById("tableDept-gridjs");
-    
-    if (dropdownButton && tableElement && gridContainer) {
-        // Elements found, proceed with initialization
-        initDepartmentProjectsTable();
-    } else if (attempt < maxAttempts) {
-        // Retry after 100ms
-        setTimeout(() => waitForElementsAndInit(maxAttempts, attempt + 1), 100);
-    } else {
-        console.warn('Department Projects: Required DOM elements not found after 5 seconds. URL:', currentURL);
-    }
-}
-
-// Try multiple initialization strategies
-function initDepartmentProjectsWithRetry() {
-    // Wait for elements to be available, retry up to 5 seconds
-    waitForElementsAndInit(50, 0);
-}
-
-// Try on DOMContentLoaded
-if (document.readyState === 'loading') {
-    document.addEventListener("DOMContentLoaded", initDepartmentProjectsWithRetry);
-} else {
-    // DOM already loaded, try immediately
-    initDepartmentProjectsWithRetry();
-}
-
-// Also try after a short delay as fallback
-setTimeout(initDepartmentProjectsWithRetry, 500);
+    });
+});
 
 //Delete sweet Alert
 // Delete SweetAlert for Members
@@ -317,11 +237,59 @@ document.querySelectorAll('.pin-btn').forEach(btn => {
     });
 });
 
-// Auto-close alerts after 5 seconds
-    window.setTimeout(function() {
-        $(".alert").fadeTo(500, 0).slideUp(500, function(){
-            $(this).remove(); 
-        });
-    }, 5000);
+// This ensures the calendar works even if the .init.js misses it
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr("#datepicker-range", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "F j, Y"
+            });
+        }
+    });
 
+// Generate options for the weekly report date dropdown
+function getCurrentReportWeek() {
+    const today = new Date();
+    const daysFromMonday = (today.getDay() + 6) % 7;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - daysFromMonday);
+    const saturday = new Date(monday);
+    saturday.setDate(monday.getDate() + 5);
+    return { start: monday, end: saturday };
+}
 
+document.addEventListener("DOMContentLoaded", function () {
+    const sel = document.getElementById("weekly-report-date");
+    if (!sel) return;
+
+    function fmt(d) {
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return m + "/" + day + "/" + d.getFullYear();
+    }
+
+    const { start, end } = getCurrentReportWeek();
+    const currentLabel = fmt(start) + " - " + fmt(end);
+
+    // Clear placeholder, add "This week" as first and selected
+    sel.innerHTML = "";
+    const currentOpt = document.createElement("option");
+    currentOpt.value = currentLabel;
+    currentOpt.textContent = currentLabel + " (This week)";
+    currentOpt.selected = true;
+    sel.appendChild(currentOpt);
+
+    // Only future report weeks (ahead)
+    for (let i = 1; i <= 12; i++) {
+        const nextMon = new Date(start);
+        nextMon.setDate(start.getDate() + 7 * i);
+        const nextSat = new Date(nextMon);
+        nextSat.setDate(nextMon.getDate() + 5);
+        const opt = document.createElement("option");
+        opt.value = fmt(nextMon) + " - " + fmt(nextSat);
+        opt.textContent = opt.value;
+        sel.appendChild(opt);
+    }
+});
