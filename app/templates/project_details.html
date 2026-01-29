@@ -268,31 +268,15 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
+                                                        {% for task_info in tasks %}
                                                         <tr>
-                                                            <td class="fw-semibold"><a href="{{ url_for('main.task_details') }}" class="text-dark">API integration</a>
+                                                            <td class="fw-semibold"><a href="{{ url_for('main.task_details', id=task_info.task.task_id) }}" class="text-dark">{{ task_info.task.task_name }}</a></td>
                                                             <td style="width: 190px;">
+                                                                {% if task_info.owner %}
                                                                 <div class="d-flex align-items-center">
-                                                                    <img class="rounded-circle avatar-sm" src="static/assets/images/users/avatar-3.jpg" alt="">
+                                                                    <img class="rounded-circle avatar-sm" src="{{ url_for('static', filename='profile_pics/' + task_info.owner.image_file) }}" alt="">
                                                                     <div class="flex-grow-1 ms-3">
-                                                                        Patrick
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <div class="badge bg-soft-secondary text-secondary font-size-12">On-hold</div>
-                                                            </td>
-                                                            <td>
-                                                                4/5
-                                                            </td>
-                                                        </tr>   
-                                                        
-                                                        <tr>
-                                                            <td class="fw-semibold"><a href="#" class="text-dark">Login Form</a>
-                                                            <td style="width: 190px;">
-                                                                <div class="d-flex align-items-center">
-                                                                    <img class="rounded-circle avatar-sm" src="static/assets/images/users/avatar-2.jpg" alt="">
-                                                                    <div class="flex-grow-1 ms-3">
-                                                                        {{ task_data.owner.name if task_data.owner.name else task_data.owner.username }}
+                                                                        {{ task_info.owner.name if task_info.owner.name else task_info.owner.username }}
                                                                     </div>
                                                                 </div>
                                                                 {% else %}
@@ -300,31 +284,23 @@
                                                                 {% endif %}
                                                             </td>
                                                             <td>
-                                                                <div class="badge bg-soft-warning text-warning font-size-12">Ongoing</div>
-                                                            </td>
-                                                            <td>
-                                                                {{ task_data.progress }}
-                                                            </td>
-                                                    
-                                                        </tr>   
-
-                                                        <tr>
-                                                            <td class="fw-semibold"><a href="#" class="text-dark">UI Redesign</a>
-                                                            <td style="width: 190px;">
-                                                                <div class="d-flex align-items-center">
-                                                                    <img class="rounded-circle avatar-sm" src="static/assets/images/users/avatar-4.jpg" alt="">
-                                                                    <div class="flex-grow-1 ms-3">
-                                                                        Kath
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                            <td>
+                                                                {% if task_info.status == 'Completed' %}
                                                                 <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                {% elif task_info.status == 'Ongoing' %}
+                                                                <div class="badge bg-soft-warning text-warning font-size-12">Ongoing</div>
+                                                                {% else %}
+                                                                <div class="badge bg-soft-secondary text-secondary font-size-12">{{ task_info.status }}</div>
+                                                                {% endif %}
                                                             </td>
                                                             <td>
-                                                                4/6
-                                                            </td>                       
-                                                        </tr>   
+                                                                {{ task_info.progress }}
+                                                            </td>
+                                                        </tr>
+                                                        {% else %}
+                                                        <tr>
+                                                            <td colspan="4" class="text-muted text-center py-4">No tasks yet.</td>
+                                                        </tr>
+                                                        {% endfor %}
                                                     </tbody>
                                             </table>
                                             
