@@ -430,7 +430,7 @@
 
             <!-- Edit Project modal (project card Edit – fields from project table) -->
             <div class="modal fade" data-bs-backdrop="static" id="editTaskModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-dialog modal-dialog-centered" style="max-width: 560px;">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">Edit Project</h5>
@@ -439,11 +439,15 @@
                         <div class="modal-body">
                             <form method="POST" action="{{ url_for('main.update_project', id=project.project_id) }}">
                                 <div class="row g-3">
-                                    <div class="col-md-6 col-lg-4">
+                                    <div class="col-md-6">
                                         <label class="form-label">Project Name</label>
                                         <input type="text" class="form-control" name="project_name" value="{{ project.project_name or '' }}" required>
                                     </div>
-                                    <div class="col-md-6 col-lg-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Client</label>
+                                        <input type="text" class="form-control" name="client_name" value="{{ project.client_name or '' }}" placeholder="Client name">
+                                    </div>
+                                    <div class="col-md-6">
                                         <label class="form-label">Priority</label>
                                         <select class="form-select" name="priority">
                                             <option value="Low" {% if project.priority == 'Low' %}selected{% endif %}>Low</option>
@@ -451,15 +455,7 @@
                                             <option value="High" {% if project.priority == 'High' %}selected{% endif %}>High</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-6 col-lg-4">
-                                        <label class="form-label">Start Date</label>
-                                        <input type="date" class="form-control" name="start_date" value="{% if deadline and deadline.start_date %}{{ deadline.start_date.strftime('%Y-%m-%d') }}{% endif %}">
-                                    </div>
-                                    <div class="col-md-6 col-lg-4">
-                                        <label class="form-label">Deadline</label>
-                                        <input type="date" class="form-control" name="end_date" value="{% if deadline and deadline.end_date %}{{ deadline.end_date.strftime('%Y-%m-%d') }}{% endif %}">
-                                    </div>
-                                    <div class="col-md-6 col-lg-4">
+                                    <div class="col-md-6">
                                         <label class="form-label">Status</label>
                                         <select class="form-select" name="project_status">
                                             <option value="Ongoing" {% if display_status == 'Ongoing' %}selected{% endif %}>Ongoing</option>
@@ -467,9 +463,13 @@
                                             <option value="Completed" {% if display_status == 'Completed' %}selected{% endif %}>Completed</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-6 col-lg-4">
-                                        <label class="form-label">Client</label>
-                                        <input type="text" class="form-control" name="client_name" value="{{ project.client_name or '' }}" placeholder="Client name">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Start Date</label>
+                                        <input type="date" class="form-control" name="start_date" value="{% if deadline and deadline.start_date %}{{ deadline.start_date.strftime('%Y-%m-%d') }}{% endif %}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Deadline</label>
+                                        <input type="date" class="form-control" name="end_date" value="{% if deadline and deadline.end_date %}{{ deadline.end_date.strftime('%Y-%m-%d') }}{% endif %}">
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-end gap-2 mt-4">
