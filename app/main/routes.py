@@ -214,7 +214,7 @@ def project_details(id=None):
     if not display_status or display_status == 'Pending' or display_status == 'Cancelled':
         display_status = 'Ongoing'
     
-    # Get assigned members for this project using project_id
+    # Get assigned members for this project (all members, regardless of department)
     assigned_members = []
     if project:
         project_members = ProjectMembers.query.filter_by(project_id=project.project_id).all()
@@ -257,6 +257,22 @@ def project_details(id=None):
                 'status': task_status
             })
     
+    users = User.query.all()
+    users_json = [
+        {'member_id': u.member_id, 'name': u.name or u.username, 'username': u.username, 'department_id': u.department_id}
+        for u in users
+    ]
+    # Current assigned member ids/names for edit modal prefill (manager + assigned_members, no duplicate)
+    manager_id = manager.member_id if manager else None
+    edit_initial = []
+    if manager:
+        edit_initial.append({'member_id': manager.member_id, 'name': manager.name or manager.username})
+    for m in assigned_members:
+        uid = m['user'].member_id
+        if uid != manager_id:
+            edit_initial.append({'member_id': uid, 'name': m['user'].name or m['user'].username})
+    edit_initial_members_json = edit_initial
+    
     return render_template('project_details.html', 
                          project=project, 
                          manager=manager, 
@@ -264,7 +280,132 @@ def project_details(id=None):
                          department=department,
                          display_status=display_status,
                          assigned_members=assigned_members,
-                         tasks=tasks)
+                         tasks=tasks,
+                         users=users,
+                         users_json=users_json,
+                         edit_initial_members_json=edit_initial_members_json)
+
+@main.route("/project_details/<int:id>/update_manager", methods=['POST'])
+@login_required
+def update_project_manager(id):
+    project = Project.query.get_or_404(id)
+    project_manager_id = request.form.get('project_manager')
+    if not project_manager_id:
+        flash('Please select a Project Manager', 'danger')
+        return redirect(url_for('main.project_details', id=id))
+    try:
+        project.project_manager = int(project_manager_id)
+        db.session.commit()
+        flash('Project manager updated successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to update: {}'.format(str(e)), 'danger')
+    return redirect(url_for('main.project_details', id=id))
+
+@main.route("/project_details/<int:id>/update_members", methods=['POST'])
+@login_required
+def update_project_members(id):
+    project = Project.query.get_or_404(id)
+    member_ids = request.form.getlist('project_members')
+    if not member_ids:
+        flash('Please select at least one member', 'danger')
+        return redirect(url_for('main.project_details', id=id))
+    try:
+        # Delete all existing project members
+        ProjectMembers.query.filter_by(project_id=project.project_id).delete()
+        db.session.flush()  # Ensure delete is processed before adding new ones
+        
+        # Add all selected members (from any department)
+        for mid in member_ids:
+            if mid and str(mid).isdigit():
+                member_id_int = int(mid)
+                user = User.query.get(member_id_int)
+                if user:
+                    pm = ProjectMembers(
+                        project_id=project.project_id,
+                        member_id=member_id_int,
+                        role='Team Member'
+                    )
+                    db.session.add(pm)
+        
+        db.session.commit()
+        flash('Project members updated successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to update: {}'.format(str(e)), 'danger')
+    return redirect(url_for('main.project_details', id=id))
+
+@main.route("/project_details/<int:id>/update", methods=['POST'])
+@login_required
+def update_project(id):
+    project = Project.query.get_or_404(id)
+    project_name = request.form.get('project_name', '').strip()
+    if not project_name:
+        flash('Project name is required', 'danger')
+        return redirect(url_for('main.project_details', id=id))
+    try:
+        project.project_name = project_name
+        project.priority = request.form.get('priority') or project.priority
+        project.project_status = request.form.get('project_status') or project.project_status
+        project.client_name = request.form.get('client_name') or None
+        start_str = request.form.get('start_date')
+        end_str = request.form.get('end_date')
+        if start_str and end_str:
+            start_date = datetime.strptime(start_str, '%Y-%m-%d')
+            end_date = datetime.strptime(end_str, '%Y-%m-%d')
+            if project.deadlines_id:
+                dl = Deadlines.query.get(project.deadlines_id)
+                if dl:
+                    dl.start_date = start_date
+                    dl.end_date = end_date
+            else:
+                dl = Deadlines(start_date=start_date, end_date=end_date)
+                db.session.add(dl)
+                db.session.flush()
+                project.deadlines_id = dl.deadlines_id
+        db.session.commit()
+        flash('Project updated successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to update: {}'.format(str(e)), 'danger')
+    return redirect(url_for('main.project_details', id=id))
+
+@main.route("/project_details/<int:id>/update_description", methods=['POST'])
+@login_required
+def update_project_description(id):
+    project = Project.query.get_or_404(id)
+    project_desc = request.form.get('project_desc', '').strip() or None
+    try:
+        project.project_desc = project_desc
+        db.session.commit()
+        flash('Description updated successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to update: {}'.format(str(e)), 'danger')
+    return redirect(url_for('main.project_details', id=id))
+
+@main.route("/project_details/<int:id>/delete", methods=['GET', 'POST'])
+@login_required
+def delete_project(id):
+    project = Project.query.get_or_404(id)
+    try:
+        ProjectMembers.query.filter_by(project_id=project.project_id).delete()
+        tasks = Task.query.filter_by(project_id=project.project_id).all()
+        for task in tasks:
+            SubTask.query.filter_by(parent_task_id=task.task_id).delete()
+        Task.query.filter_by(project_id=project.project_id).delete()
+        deadlines_id = project.deadlines_id
+        db.session.delete(project)
+        if deadlines_id:
+            dl = Deadlines.query.get(deadlines_id)
+            if dl:
+                db.session.delete(dl)
+        db.session.commit()
+        flash('Project deleted successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to delete project: {}'.format(str(e)), 'danger')
+    return redirect(url_for('main.projects'))
 
 @main.route("/profile")
 @login_required

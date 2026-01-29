@@ -113,16 +113,12 @@ class Task(db.Model):
     deadline_id      = db.Column(db.Integer, db.ForeignKey('deadlines_tbl.deadlines_id'))
     project_id       = db.Column(db.Integer, db.ForeignKey('project.project_id'))
     p_members_id     = db.Column(db.Integer, db.ForeignKey('project_members.p_members_id'))
-    # notes_id removed here to break circular dependency
-    
+
     priority         = db.Column(db.String(255))
     task_name        = db.Column(db.String(255), nullable=False)
     task_description = db.Column(db.Text)
     task_status      = db.Column(db.String(255))
     category         = db.Column(db.String(255))
-
-    subtasks         = db.relationship('SubTask', backref='parent_task', lazy=True)
-    notes            = db.relationship('Notes', backref='parent_task', lazy=True)
 
 class SubTask(db.Model):
     __tablename__     = 'sub_task_list'
