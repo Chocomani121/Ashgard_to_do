@@ -177,23 +177,6 @@
                     <div class="d-flex">
 
                         <div class="dropdown d-inline-block">
-                            <button type="button" class="btn header-item noti-icon"
-                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="bx bx-search icon-sm align-middle"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0">
-                                <form class="p-2">
-                                    <div class="search-box">
-                                        <div class="position-relative">
-                                            <input type="text" class="form-control rounded bg-light border-0" placeholder="Search...">
-                                            <i class="bx bx-search search-icon"></i>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-
-                        <div class="dropdown d-inline-block">
                             <button type="button" class="btn header-item noti-icon" id="page-header-notifications-dropdown-v"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="bx bx-bell icon-sm align-middle"></i>
@@ -215,7 +198,7 @@
                                     <a href="#!" class="text-reset notification-item">
                                         <div class="d-flex">
                                             <div class="flex-shrink-0 me-3">
-                                                <img src="../static/assets/images/users/avatar-3.jpg" class="rounded-circle avatar-sm" alt="user-pic">
+                                                <img src="{{ url_for('static', filename='profile_pics/' + current_user.image_file) }}" class="rounded-circle avatar-sm" alt="user-pic">
                                             </div>
                                             <div class="flex-grow-1">
                                                 <p class="text-muted font-size-13 mb-0 float-end">1 hour ago</p>
@@ -286,21 +269,19 @@
                         <div class="dropdown d-inline-block">
                             <button type="button" class="btn header-item user text-start d-flex align-items-center" id="page-header-user-dropdown-v"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <img class="rounded-circle header-profile-user" src="../static/assets/images/users/avatar-3.jpg"
+                                <img class="rounded-circle header-profile-user" src="{{ url_for('static', filename='profile_pics/' + current_user.image_file) }}"
                                 alt="Header Avatar">
-                                <span class="d-none d-xl-inline-block ms-2 fw-medium font-size-15">Martin Gurley</span>
+                                <!-- <span class="d-none d-xl-inline-block ms-2 fw-medium font-size-15">{{ current_user.username}}</span> -->
                             </button>
                             <div class="dropdown-menu dropdown-menu-end pt-0">
                                 <div class="p-3 border-bottom">
-                                    <h6 class="mb-0">Martin Gurley</h6>
-                                    <p class="mb-0 font-size-11 text-muted">martin.gurley@email.com</p>
+                                    <!-- <h6 class="mb-0">{{ current_user.email }}</h6>
+                                    <p class="mb-0 font-size-11 text-muted">{{ current_user.username}}</p> -->
                                 </div>
                                 <a class="dropdown-item" href="{{ url_for('main.profile') }}"><i class="mdi mdi-account-circle text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Profile</span></a>
-                                <a class="dropdown-item" href="apps-chat.html"><i class="mdi mdi-message-text-outline text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Messages</span></a>
-                                <a class="dropdown-item" href="pages-faqs.html"><i class="mdi mdi-lifebuoy text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Help</span></a>
                         
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ url_for('users.login') }}"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Logout</span></a>
+                                <a class="dropdown-item" href="{{ url_for('users.logout') }}"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Logout</span></a>
                             </div>
                         </div>
                     </div>
@@ -336,7 +317,6 @@
         <script src="{{ url_for('static', filename='assets/js/pages/gridjs.init.js') }}"></script> 
 
         <!-- javascript -->
-         <script src="{{ url_for('static', filename='assets/js/tables.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/metismenujs/metismenujs.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/simplebar/simplebar.min.js') }}"></script>
@@ -367,6 +347,9 @@
         <!-- nouisliderribute js -->
         <script src="{{ url_for('static', filename='assets/libs/nouislider/nouislider.min.js')}}"></script>
         <script src="{{url_for('static', filename='assets/libs/wnumb/wNumb.min.js')}}"></script>
+        <!-- ckeditor -->
+        <script src="{{ url_for('static', filename='assets/libs/@ckeditor/ckeditor5-build-classic/build/ckeditor.js') }}"></script>
+
     </body>
 
 </html>

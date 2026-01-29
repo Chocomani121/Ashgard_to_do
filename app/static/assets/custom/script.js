@@ -163,22 +163,24 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 //Delete sweet Alert
-function confirmDelete(taskId) {
- Swal.fire({
+// Delete SweetAlert for Members
+function confirmDelete(memberName, memberId) {
+    Swal.fire({
         title: "Are you sure?",
-        text: "You won't be able to revert this!",
+        text: "You are about to delete " + memberName + ". You won't be able to revert this!",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#51d28c",
         cancelButtonColor: "#f34e4e",
         confirmButtonText: "Yes, delete it!"
-      }).then(function (result) {
-        if (result.value) {
-          Swal.fire("Deleted!", "Deleted Successfully.", "success"
-          );
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            // Redirect to the Flask route you created
+            window.location.href = "/delete_member/" + memberId;
         }
     });
 }
+
 
 // notes view modal
 function prepareNoteModal(taskId, description, footer) {
