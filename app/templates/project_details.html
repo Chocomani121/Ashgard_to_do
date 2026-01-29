@@ -272,14 +272,14 @@
                                                             <td class="fw-semibold"><a href="{{ url_for('main.task_details') }}" class="text-dark">API integration</a>
                                                             <td style="width: 190px;">
                                                                 <div class="d-flex align-items-center">
-                                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
+                                                                    <img class="rounded-circle avatar-sm" src="static/assets/images/users/avatar-3.jpg" alt="">
                                                                     <div class="flex-grow-1 ms-3">
                                                                         Patrick
                                                                     </div>
                                                                 </div>
                                                             </td>
                                                             <td>
-                                                                <div class="badge badge-soft-danger font-size-12">Rejected</div>
+                                                                <div class="badge bg-soft-secondary text-secondary font-size-12">On-hold</div>
                                                             </td>
                                                             <td>
                                                                 4/5
@@ -290,7 +290,7 @@
                                                             <td class="fw-semibold"><a href="#" class="text-dark">Login Form</a>
                                                             <td style="width: 190px;">
                                                                 <div class="d-flex align-items-center">
-                                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
+                                                                    <img class="rounded-circle avatar-sm" src="static/assets/images/users/avatar-2.jpg" alt="">
                                                                     <div class="flex-grow-1 ms-3">
                                                                         {{ task_data.owner.name if task_data.owner.name else task_data.owner.username }}
                                                                     </div>
@@ -300,7 +300,7 @@
                                                                 {% endif %}
                                                             </td>
                                                             <td>
-                                                                <div class="badge badge-soft-primary font-size-12">To be Reviewed</div>
+                                                                <div class="badge bg-soft-warning text-warning font-size-12">Ongoing</div>
                                                             </td>
                                                             <td>
                                                                 {{ task_data.progress }}
@@ -312,14 +312,14 @@
                                                             <td class="fw-semibold"><a href="#" class="text-dark">UI Redesign</a>
                                                             <td style="width: 190px;">
                                                                 <div class="d-flex align-items-center">
-                                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
+                                                                    <img class="rounded-circle avatar-sm" src="static/assets/images/users/avatar-4.jpg" alt="">
                                                                     <div class="flex-grow-1 ms-3">
                                                                         Kath
                                                                     </div>
                                                                 </div>
                                                             </td>
                                                             <td>
-                                                                <div class="badge badge-soft-success font-size-12">Approved</div>
+                                                                <div class="badge badge-soft-success font-size-12">Completed</div>
                                                             </td>
                                                             <td>
                                                                 4/6
@@ -403,7 +403,7 @@
         
   <!--  Extra Large modal example -->
             <div class="modal fade create-task" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-dialog modal-md modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="myExtraLargeModalLabel">Create Task</h5>
@@ -411,47 +411,13 @@
                         </div>
                         <div class="modal-body">
                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label" for="CreateTask-Category">Select Project</label>
-                                        <select class="form-select">
-                                            <option  selected> Select </option>
-                                            <option>Osint</option>
-                                            <option>MDC</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <div class="mb-3">
                                         <label class="form-label" for="CreateTask-Task-Name">Task Name</label>
                                         <input type="text" class="form-control" placeholder="Enter Task Name" id="CreateTask-Task-Name">
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Start Date</label>
-                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                     <div class="mb-3">
-                                        <label class="form-label">Deadline</label>
-                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Client</label>
-                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Department</label>
-                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <div class="mb-3 position-relative" style="max-width: 550px;">
                                         <label class="form-label">Assign Members</label>
                                         <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
@@ -472,12 +438,6 @@
                                                 <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">Confirm</button>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="topicDescription" class="form-label">Description</label>
-                                        <textarea class="form-control" id="topicDescription" rows="3" placeholder="Enter description"></textarea>
                                     </div>
                                 </div>
                            </div>

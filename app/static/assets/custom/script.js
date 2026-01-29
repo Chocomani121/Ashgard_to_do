@@ -78,6 +78,23 @@ if (clearOwnersBtn) {
     };
 }
 
+// Search – only if this page has the owner/CC block
+if (ownerSearch) {
+    ownerSearch.addEventListener("input", e => {
+        renderOwners(e.target.value);
+    });
+}
+
+// Clear – only if this page has the block
+var clearOwnersBtn = document.getElementById("clearOwners");
+if (clearOwnersBtn) {
+    clearOwnersBtn.onclick = () => {
+        selectedOwners = [];
+        renderSelected();
+        renderOwners();
+    };
+}
+
 // Init – only when both list and input exist (e.g. task/member page with CC dropdown)
 if (ownerList && ownerInput) {
     renderOwners();
