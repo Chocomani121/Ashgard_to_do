@@ -4,6 +4,8 @@ from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPass
 from app.models import User, Department
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
+from sqlalchemy.orm import joinedload
+
 
 import os
 import secrets

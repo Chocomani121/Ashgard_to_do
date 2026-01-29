@@ -1,7 +1,7 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask
-from app import db # Required for committing changes
+from app import db 
 from datetime import datetime
 import json
 
@@ -9,9 +9,11 @@ main = Blueprint('main', __name__)
 
 @main.route("/")
 @main.route("/projects") 
+# @cache.cached(timeout=60)
 @login_required
 def projects():
     # Fetch all projects with related data
+    
     projects = Project.query.all()
     departments = Department.query.all()
     users = User.query.all()
@@ -173,6 +175,10 @@ def delete_department(id):
     return redirect(url_for('main.all_departments'))
 
 # --- Existing Routes ---
+
+@main.route("/approvals")
+def approvals():
+    return render_template('approvals.html', title="Approvals")
 
 @main.route("/reports")
 def reports():
