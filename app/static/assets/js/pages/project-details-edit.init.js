@@ -201,5 +201,24 @@ Purpose: Edit Project modal – Edit Project Manager + Edit Members (chip UI, pr
 
     renderChipsEdit();
     renderListEdit("");
+
+    // Create Task form: set owner_id from Assign Members selection before submit
+    const createTaskForm = document.getElementById("createTaskForm");
+    const createTaskOwnerId = document.getElementById("createTaskOwnerId");
+    if (createTaskForm && createTaskOwnerId) {
+      createTaskForm.addEventListener("submit", function (e) {
+        const so = window.selectedOwners;
+        if (!so || so.length === 0) {
+          e.preventDefault();
+          if (typeof Swal !== "undefined") {
+            Swal.fire({ icon: "warning", text: "Please select at least one member to assign." });
+          } else {
+            alert("Please select at least one member to assign.");
+          }
+          return false;
+        }
+        createTaskOwnerId.value = so[0].id;
+      });
+    }
   });
 })();

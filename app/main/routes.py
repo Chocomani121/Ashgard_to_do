@@ -272,7 +272,12 @@ def project_details(id=None):
         if uid != manager_id:
             edit_initial.append({'member_id': uid, 'name': m['user'].name or m['user'].username})
     edit_initial_members_json = edit_initial
-    
+    # For Create Task modal: only project assigned members can be assigned to a task
+    task_assignable_members = [
+        {'id': m['user'].member_id, 'name': m['user'].name or m['user'].username}
+        for m in assigned_members
+    ]
+
     return render_template('project_details.html', 
                          project=project, 
                          manager=manager, 
@@ -283,7 +288,8 @@ def project_details(id=None):
                          tasks=tasks,
                          users=users,
                          users_json=users_json,
-                         edit_initial_members_json=edit_initial_members_json)
+                         edit_initial_members_json=edit_initial_members_json,
+                         task_assignable_members=task_assignable_members)
 
 @main.route("/project_details/<int:id>/update_manager", methods=['POST'])
 @login_required
