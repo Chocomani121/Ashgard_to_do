@@ -153,7 +153,6 @@ class Report(db.Model):
     __tablename__ = 'report_tbl'
     report_id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey('members.member_id'), nullable=False)
-    project_id = db.Column(db.Integer, db.ForeignKey('project.project_id'))
     reviewer_id = db.Column(db.Integer, db.ForeignKey('members.member_id'))
     
     is_checked = db.Column(db.Boolean, default=False) # The "Stamp"
