@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask,  Report, ReportCC
 from app import db 
 from datetime import datetime
+from sqlalchemy import or_
 import json
 
 main = Blueprint('main', __name__)
@@ -197,7 +198,7 @@ def _report_to_dict(report):
         'department_name': department_name,
         'report_content': report.report_content or '',
     }
-    
+
 @main.route("/reports")
 @login_required
 def reports():
@@ -206,10 +207,20 @@ def reports():
         {'member_id': u.member_id, 'name': u.name or u.username, 'username': u.username, 'image': u.image_file}
         for u in users
     ]
-    reports_q = Report.query.order_by(Report.created_on.desc()).all()
+    reports_q = Report.query.filter(
+        or_(
+            Report.member_id == current_user.member_id,
+            Report.reviewer_id == current_user.member_id,
+            Report.report_id.in_(
+                db.session.query(ReportCC.report_id).filter(ReportCC.member_id == current_user.member_id)
+            )
+        )
+    ).order_by(Report.created_on.desc()).all()
+
     pending_reports = [r for r in reports_q if not r.is_checked]
     reviewed_reports = [r for r in reports_q if r.is_checked]
     reports_json = [_report_to_dict(r) for r in reports_q]
+
     return render_template(
         'reports.html',
         title="Reports",
