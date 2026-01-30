@@ -4,30 +4,27 @@
    <div class="main-content">
     <div class="page-content">
         <div class="container-fluid">
-
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
             <div class="row">
                 <div class="col-12">
                     <div class="card">
-                        <div class="card-header">
-                            <h4 class="card-title text-center">To Do Reports</h4>
-                        </div>
+                
                         <!-- end card header -->
-                        <ul class="nav nav-tabs nav-tabs-custom mt-1 mb-2 ecommerce-sortby-list d-flex align-items-center">
+                        <!-- <ul class="nav nav-tabs nav-tabs-custom mt-1 mb-2 ecommerce-sortby-list d-flex align-items-center">
                             <li class="nav-item">
                                 <a class="nav-link" data-bs-toggle="tab" href="#Report" role="tab">Report</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#newReportModal" style="color: #0d6efd;">
-                                    <i class="bx bx-plus me-1"></i>New
-                                </a>
-                            </li>
-                        
-                            <li class="nav-item ms-auto">
-                                <a class="nav-link py-1" href="javascript:void(0);" onclick="location.reload();" title="Refresh Page">
-                                    <i class="bx bx-rotate-right fs-4 text-muted"></i>
-                                </a>
-                            </li>
-                        </ul>
+                           
+                        </ul> -->
 
                         <!-- Home tab pane -->
                         <div class="card-body">
@@ -84,17 +81,29 @@
                                 <div class="tab-pane fade show active" id="Report" role="tabpanel">
                                     <ul class="nav nav-tabs nav-tabs-custom mt-1 mb-2 ecommerce-sortby-list">
                                         <li class="nav-item">
-                                            <a class="nav-link active" data-bs-toggle="tab" href="#Pending" role="tab" href="#">Pending</a>
+                                            <a class="nav-link active" data-bs-toggle="tab" href="#Pending" role="tab">Pending</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" data-bs-toggle="tab" href="#Reviewed" role="tab" href="#">Reviewed</a>
+                                            <a class="nav-link" data-bs-toggle="tab" href="#Reviewed" role="tab" >Reviewed</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" data-bs-toggle="tab" href="#participated" role="tab" href="#">I participated</a>
+                                            <a class="nav-link" data-bs-toggle="tab" href="#cc" role="tab" >CC</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" data-bs-toggle="tab" href="#Company-wide" role="tab" href="#">Company-wide</a>
+                                            <a class="nav-link" data-bs-toggle="tab" href="#Company-wide" role="tab" >Company-wide</a>
                                         </li>
+
+                                        <li class="nav-item ms-auto">
+                                            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#newReportModal" style="color: #0d6efd;">
+                                                <i class="bx bx-plus me-1"></i>New
+                                            </a>
+                                        </li>
+                                    
+                                        <!-- <li class="nav-item ms-auto">
+                                            <a class="nav-link py-1" href="javascript:void(0);" onclick="location.reload();" title="Refresh Page">
+                                                <i class="bx bx-rotate-right fs-4 text-muted"></i>
+                                            </a>
+                                        </li> -->
                                         <!-- <li class="nav-item">
                                             <a class="nav-link" data-bs-toggle="tab" href="#Draft" role="tab" href="#">Draft</a>
                                         </li> -->
@@ -106,138 +115,66 @@
                                     <!-- Tab Content for Report sub-tabs -->
                                     <div class="tab-content">
                                         <div class="tab-pane fade show active" id="Pending" role="tabpanel">
-                                            <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
+                                            <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden; ">
                                         
-                                                <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
-                                                    <div class="list-group list-group-flush">
-                                                        <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto; ">
+                                                    <div class="list-group list-group-flush" id="pendingReportList">
+                                                        {% for report in pending_reports|default([]) %}
+                                                        <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 border-bottom border-light report-list-item" data-report-id="{{ report.report_id }}">
                                                             <div class="d-flex justify-content-between align-items-start">
                                                                 <div class="me-2">
-                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Neil Alfred</h6>
-                                                                    <small class="text-muted d-block">Weekly-Neil Alfred(01/19/2026-01/25/2026)</small>
+                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">{{ report.author.name or report.author.username }}</h6>
+                                                                    <small class="text-muted d-block">Weekly-{{ report.author.name or report.author.username }}({{ report.week_name }})</small>
                                                                 </div>
                                                                 <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
                                                             </div>
                                                         </a>
-                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                            <div class="d-flex justify-content-between align-items-start">
-                                                                <div class="me-2">
-                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                </div>
-                                                                <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
-                                                            </div>
-                                                        </a>
-                                                       
-                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                            <div class="d-flex justify-content-between align-items-start">
-                                                                <div class="me-2">
-                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                </div>
-                                                                <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
-                                                            </div>
-                                                        </a>
-                                                        
-                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                            <div class="d-flex justify-content-between align-items-start">
-                                                                <div class="me-2">
-                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                </div>
-                                                                <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
-                                                            </div>
-                                                        </a>
-        
-                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                            <div class="d-flex justify-content-between align-items-start">
-                                                                <div class="me-2">
-                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                </div>
-                                                                <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
-                                                            </div>
-                                                        </a>
-                                                        
-                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                            <div class="d-flex justify-content-between align-items-start">
-                                                                <div class="me-2">
-                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                </div>
-                                                                <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
-                                                            </div>
-                                                        </a>
-                                                                           
+                                                        {% else %}
+                                                        <div class="list-group-item py-3 text-muted text-center">No pending reports</div>
+                                                        {% endfor %}
                                                     </div>
                                                 </div>
                                                 
                                                 <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
                                                     
-                                                    <div class="p-4 flex-grow-1" style="overflow-y: auto;">
+                                                <div id="reportDetailPlaceholder" class="text-muted text-center py-5">Select a report from the list.</div>
+                                                   <div id="reportDetailContent" class="p-4 flex-grow-1" style="display: none; overflow-y: auto; min-height: 0;">
+                                                    <input type="hidden" id="currentActiveReportId" value="">
                                                         <div class="d-flex align-items-center mb-3">
                                                             <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
-                                                            <h5 class="mb-0 fw-bold">Weekly-Neil Alfred(01/19/2026-01/25/2026)</h5>
+                                                            <h5 class="mb-0 fw-bold" id="reportDetailTitle"></h5>
                                                         </div>
-                                        
                                                         <div class="table-responsive mb-4">
                                                             <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
                                                                 <tr>
                                                                     <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
-                                                                    <td class="p-2">Lurs Aldrhyz Lastimosa</td>
+                                                                    <td class="p-2" id="reportDetailReviewer"></td>
                                                                     <td class="p-2 bg-light" style="width: 10%;">CC</td>
-                                                                    <td class="p-2">Marcelino, Jr Cutamora, Richie Lavina...</td>
+                                                                    <td class="p-2" id="reportDetailCC"></td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td class="p-2 bg-light">Department</td>
-                                                                    <td class="p-2">Cyber</td>
+                                                                    <td class="p-2" id="reportDetailDepartment"></td>
                                                                     <td class="p-2 bg-light">Created</td>
-                                                                    <td class="p-2">01/24/2026 11:53</td>
+                                                                    <td class="p-2" id="reportDetailCreated"></td>
                                                                 </tr>
                                                             </table>
                                                         </div>
-                                        
-                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
-                                                            <p>Good day,</p>
-                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
-                                                            <ol class="ps-3">
-                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
-                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
-                                                            </ol>
-                                                        </div>
-        
-                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
-                                                            <p>Good day,</p>
-                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
-                                                            <ol class="ps-3">
-                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
-                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
-                                                            </ol>
-                                                        </div>
-                                                       
-                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
-                                                            <p>Good day,</p>
-                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
-                                                            <ol class="ps-3">
-                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
-                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
-                                                            </ol>
-                                                        </div>
-                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
-                                                            <p>Good day,</p>
-                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
-                                                            <ol class="ps-3">
-                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
-                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
-                                                            </ol>
-                                                        </div>
-                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
-                                                            <p>Good day,</p>
-                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
-                                                            <ol class="ps-3">
-                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
-                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
-                                                            </ol>
+                                                        <div id="reportDetailBody" class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;"></div>
+
+                                                        <div id="reportDetailActions" class="p-3 border-top bg-white" style="display: none;">
+                                                            <div id="reportDetailActionsAuthor" class="d-flex gap-2 justify-content-end" style="display: none;">
+                                                                <button type="button" 
+                                                                        id="deleteReportBtn"
+                                                                        class="btn btn-outline-danger btn-sm px-4" 
+                                                                        onclick="confirmReportDelete()">
+                                                                    Delete
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-warning btn-sm px-4" data-bs-toggle="modal" data-bs-target="#newReportModal">Update</button>
+                                                            </div>
+                                                            <div id="reportDetailActionsReviewer" class="d-flex gap-2 justify-content-end" style="display: none;">
+                                                                <button type="button" class="btn btn-success btn-sm px-4" id="reportApprovedBtn">Approved</button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div class="d-flex gap-2 justify-content-end p-3 border-top bg-white">
@@ -266,116 +203,54 @@
                                         </div>  
                                         <div class="tab-pane fade" id="Reviewed" role="tabpanel">
                                             <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
-                                                
-                                                <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
-                                                    <div class="list-group list-group-flush">
-                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                            <div class="d-flex justify-content-between align-items-start">
-                                                                <div class="me-2">
-                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Neil Alfred</h6>
-                                                                    <small class="text-muted d-block">Weekly-Neil Alfred(01/19/2026-01/25/2026)</small>
-                                                                </div>
-                                                                <span class="badge bg-secondary bg-opacity-75 px-2 py-1">Reviewed</span>
+                                                        <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
+                                                            <div class="list-group list-group-flush" id="reviewedReportList">
+                                                                {% for report in reviewed_reports|default([]) %}
+                                                                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 border-bottom border-light reviewed-report-list-item" data-report-id="{{ report.report_id }}">
+                                                                    <div class="d-flex justify-content-between align-items-start">
+                                                                        <div class="me-2">
+                                                                            <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">{{ report.author.name or report.author.username }}</h6>
+                                                                            <small class="text-muted d-block">Weekly-{{ report.author.name or report.author.username }}({{ report.week_name }})</small>
+                                                                        </div>
+                                                                        <span class="badge bg-secondary bg-opacity-75 px-2 py-1">Reviewed</span>
+                                                                    </div>
+                                                                </a>
+                                                                {% else %}
+                                                                <div class="list-group-item py-3 text-muted text-center">No reviewed reports</div>
+                                                                {% endfor %}
                                                             </div>
-                                                        </a>
-                                        
-                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                            <div class="d-flex justify-content-between align-items-start">
-                                                                <div class="me-2">
-                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                </div>
-                                                                <span class="badge bg-secondary bg-opacity-75 px-2 py-1">Reviewed</span>
-                                                            </div>
-                                                        </a>
-        
-                                                    
-                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                            <div class="d-flex justify-content-between align-items-start">
-                                                                <div class="me-2">
-                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                </div>
-                                                                <span class="badge bg-secondary bg-opacity-75 px-2 py-1">Reviewed</span>
-                                                            </div>
-                                                        </a>
+                                                        </div>
                                                         
-                                                      
-                                                        
-                                                        <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                            <div class="d-flex justify-content-between align-items-start">
-                                                                <div class="me-2">
-                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                    <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                        <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
+                                                            <div id="reviewedDetailPlaceholder" class="text-muted text-center py-5">Select a report from the list.</div>
+                                                            <div id="reviewedDetailContent" class="p-4 flex-grow-1" style="display: none; overflow-y: auto; min-height: 0;">
+                                                                <div class="d-flex align-items-center mb-3">
+                                                                    <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
+                                                                    <h5 class="mb-0 fw-bold" id="reviewedDetailTitle"></h5>
                                                                 </div>
-                                                                <span class="badge bg-secondary bg-opacity-75 px-2 py-1">Reviewed</span>
+                                                                <div class="table-responsive mb-4">
+                                                                    <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
+                                                                        <tr>
+                                                                            <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
+                                                                            <td class="p-2" id="reviewedDetailReviewer"></td>
+                                                                            <td class="p-2 bg-light" style="width: 10%;">CC</td>
+                                                                            <td class="p-2" id="reviewedDetailCC"></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="p-2 bg-light">Department</td>
+                                                                            <td class="p-2" id="reviewedDetailDepartment"></td>
+                                                                            <td class="p-2 bg-light">Created</td>
+                                                                            <td class="p-2" id="reviewedDetailCreated"></td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </div>
+                                                                <div id="reviewedDetailBody" class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;"></div>
                                                             </div>
-                                                        </a>                        
-                                                    </div>
-                                                </div>
+                                                            <div class="p-3 bg-light border-top">
+                                                                <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
+                                                            </div>
+                                                        </div>
                                                 
-                                                <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
-                                                    
-                                                    <div class="p-4 flex-grow-1" style="overflow-y: auto;">
-                                                        <div class="d-flex align-items-center mb-3">
-                                                            <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
-                                                            <h5 class="mb-0 fw-bold">Weekly-Neil Alfred(01/19/2026-01/25/2026)</h5>
-                                                        </div>
-                                        
-                                                        <div class="table-responsive mb-4">
-                                                            <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
-                                                                <tr>
-                                                                    <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
-                                                                    <td class="p-2">Lurs Aldrhyz Lastimosa</td>
-                                                                    <td class="p-2 bg-light" style="width: 10%;">CC</td>
-                                                                    <td class="p-2">Marcelino, Jr Cutamora, Richie Lavina...</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="p-2 bg-light">Department</td>
-                                                                    <td class="p-2">Cyber</td>
-                                                                    <td class="p-2 bg-light">Created</td>
-                                                                    <td class="p-2">01/24/2026 11:53</td>
-                                                                </tr>
-                                                            </table>
-                                                        </div>
-                                        
-                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
-                                                            <p>Good day,</p>
-                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
-                                                            <ol class="ps-3">
-                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
-                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
-                                                            </ol>
-                                                        </div>
-        
-                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
-                                                            <p>Good day,</p>
-                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
-                                                            <ol class="ps-3">
-                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
-                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
-                                                            </ol>
-                                                        </div>
-                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
-                                                            <p>Good day,</p>
-                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
-                                                            <ol class="ps-3">
-                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
-                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
-                                                            </ol>
-                                                        </div>
-                                                        <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
-                                                            <p>Good day,</p>
-                                                            <p class="fw-bold mb-2">This Week's Summary:</p>
-                                                            <ol class="ps-3">
-                                                                <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
-                                                                <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
-                                                            </ol>
-                                                        </div>
-                       
-                                                    </div>
-                                                    <div class="p-3 bg-light border-top">
-                                                        <textarea class="form-control border-0 shadow-sm" rows="1" placeholder="Comment content(Ctrl+Enter send)" style="resize: none; background-color: #efefef;"></textarea>
                                                     </div>
                                                 </div>
                                         
@@ -393,7 +268,7 @@
                                                                         <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Neil Alfred</h6>
                                                                         <small class="text-muted d-block">Weekly-Neil Alfred(01/19/2026-01/25/2026)</small>
                                                                     </div>
-                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                    <!-- <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span> -->
                                                                 </div>  
                                                             </a>
                                             
@@ -437,15 +312,6 @@
                                                                 </div>
                                                             </a>
                                                             
-                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                                <div class="d-flex justify-content-between align-items-start">
-                                                                    <div class="me-2">
-                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                    </div>
-                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
-                                                                </div>
-                                                            </a>
                                                                                
                                                         </div>
                                                     </div>
@@ -484,23 +350,7 @@
                                                                 </ol>
                                                             </div>
             
-                                                            <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
-                                                                <p>Good day,</p>
-                                                                <p class="fw-bold mb-2">This Week's Summary:</p>
-                                                                <ol class="ps-3">
-                                                                    <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
-                                                                    <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
-                                                                </ol>
-                                                            </div>
                                                            
-                                                            <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
-                                                                <p>Good day,</p>
-                                                                <p class="fw-bold mb-2">This Week's Summary:</p>
-                                                                <ol class="ps-3">
-                                                                    <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
-                                                                    <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
-                                                                </ol>
-                                                            </div>
                                                         </div>
                                             
                                                         <div class="p-3 bg-light border-top">
@@ -523,61 +373,11 @@
                                                                         <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Neil Alfred</h6>
                                                                         <small class="text-muted d-block">Weekly-Neil Alfred(01/19/2026-01/25/2026)</small>
                                                                     </div>
-                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                    <!-- <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span> -->
                                                                 </div>
                                                             </a>
                                             
-                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                                <div class="d-flex justify-content-between align-items-start">
-                                                                    <div class="me-2">
-                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                    </div>
-                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
-                                                                </div>
-                                                            </a>
-            
-                                                           
-                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                                <div class="d-flex justify-content-between align-items-start">
-                                                                    <div class="me-2">
-                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                    </div>
-                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
-                                                                </div>
-                                                            </a>
-                                                            
-                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                                <div class="d-flex justify-content-between align-items-start">
-                                                                    <div class="me-2">
-                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                    </div>
-                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
-                                                                </div>
-                                                            </a>
-            
-                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                                <div class="d-flex justify-content-between align-items-start">
-                                                                    <div class="me-2">
-                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                    </div>
-                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
-                                                                </div>
-                                                            </a>
-                                                            
-                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                                <div class="d-flex justify-content-between align-items-start">
-                                                                    <div class="me-2">
-                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                    </div>
-                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
-                                                                </div>
-                                                            </a>
-                                                                               
+                                                                 
                                                         </div>
                                                     </div>
                                                     
@@ -615,23 +415,7 @@
                                                                 </ol>
                                                             </div>
             
-                                                            <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
-                                                                <p>Good day,</p>
-                                                                <p class="fw-bold mb-2">This Week's Summary:</p>
-                                                                <ol class="ps-3">
-                                                                    <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
-                                                                    <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
-                                                                </ol>
-                                                            </div>
-                                                           
-                                                            <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
-                                                                <p>Good day,</p>
-                                                                <p class="fw-bold mb-2">This Week's Summary:</p>
-                                                                <ol class="ps-3">
-                                                                    <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
-                                                                    <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
-                                                                </ol>
-                                                            </div>
+                                                          
                                                             
                                                             <div class="d-flex gap-2 mb-4">
                                                                 <button class="btn btn-primary btn-sm px-4">Revoke</button>
@@ -647,7 +431,7 @@
                                                 </div>
                                             </div>
 
-<!--                                         
+                                            <!--                                         
                                             <div class="tab-pane fade" id="Draft" role="tabpanel">
                                                 <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
                                                     <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
@@ -777,80 +561,110 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <div class="modal-body pt-0">
-                <div class="row g-3">
-                    <div class="col-lg-7">
-                        <div class="border rounded mb-3">
-                            <div class="p-2 text-muted bg-light border-bottom small fw-bold">Select date:</div>
-                            <select id="weekly-report-date" class="form-select border-0 shadow-none py-2">
-                            <option value="">Select a week...</option>
-                            <!-- options added by JS -->
-                            </select>
+            <form action="{{ url_for('main.create_report') }}" method="POST" id="reportForm">
+                <div class="modal-body pt-0">
+                    <div class="row g-3">
+                        <div class="col-lg-7">
+                            <div class="border rounded mb-3">
+                                <div class="p-2 text-muted bg-light border-bottom small fw-bold">Select date:</div>
+                                <select id="weekly-report-date" name="report_date" class="form-select border-0 shadow-none py-2" required>
+                                    <option value="">Select a week...</option>
+                                    </select>
                             </div>
 
                             <div class="border rounded">
                                 <div class="p-2 bg-light border-bottom small fw-bold">Report content</div>
                                 <div class="p-3 bg-white">
-                                    <textarea id="reportCKEditor" name="reportBody" class="form-control" style="min-height: 350px;"><p><strong>This week's summary:</strong></p>
-                                    <p>1.</p><p>2.</p>
-                                    <p><strong>Next week's plan:</strong></p>
-                                    <p>1.</p><p>2.</p>
-                                    <p><strong>Issues and suggestions:</strong></p>
-                                    <p>1.</p><p>2.</p></textarea>
+                                    <input type="hidden" name="reportBody" id="reportBodyHidden">
+                                    <textarea id="reportCKEditor" class="form-control" style="min-height: 350px;">
+                                        <p><strong>This week's summary:</strong></p>
+                                        <p>1.</p><p>2.</p>
+                                        <p><strong>Next week's plan:</strong></p>
+                                        <p>1.</p><p>2.</p>
+                                        <p><strong>Issues and suggestions:</strong></p>
+                                        <p>1.</p><p>2.</p></textarea>
+                                    </textarea>
                                 </div>
-                                <div class="p-2 bg-light border-top d-flex gap-3 text-muted" style="font-size: 0.8rem;">
+                                <!-- <div class="p-2 bg-light border-top d-flex gap-3 text-muted" style="font-size: 0.8rem;">
                                     <span><i class="bx bx-paperclip"></i> Attachment</span>
                                     <span><i class="bx bx-font-color"></i> Content style</span>
-                                </div>
+                                </div> -->
                             </div>
-                    </div>
+                        </div>
 
-                    <div class="col-lg-5">
-                        <div class="border rounded mb-3">
-                            <div class="p-2 text-muted bg-light border-bottom small fw-bold">Reviewer:</div>
-                            <div class="position-relative">
-                                <div id="reportReviewerDisplay" class="form-control border-0 shadow-none py-2" style="cursor: pointer;">
-                                    <span class="text-muted">Select reviewer...</span>
-                                </div>
-                                <div id="reportReviewerDropdown" class="border rounded shadow-sm p-3 mt-1 d-none" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 10; background: #fff; max-height: 320px; overflow: hidden; display: flex; flex-direction: column;">
-                                    <input type="text" class="form-control mb-2 form-control-sm" id="reportReviewerSearch" placeholder="Search colleague">
-                                    <small class="text-muted mb-2">Contacts</small>
-                                    <div id="reportReviewerList" class="list-group list-group-flush flex-grow-1" style="overflow-y: auto; max-height: 220px;"></div>
-                                    <div class="d-flex justify-content-end mt-2">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" id="reportReviewerClear">Clear</button>
+                        <div class="col-lg-5">
+                            <div class="border rounded mb-3">
+                                <div class="p-2 text-muted bg-light border-bottom small fw-bold">Reviewer:</div>
+                                <div class="position-relative">
+                                    <input type="hidden" name="reviewer_id" id="selectedReviewerId">
+                                    
+                                    <div id="reportReviewerDisplay" class="form-control border-0 shadow-none py-2" style="cursor: pointer;">
+                                        <span class="text-muted">Select reviewer...</span>
+                                    </div>
+                                    
+                                    <div id="reportReviewerDropdown" class="border rounded shadow-sm p-3 mt-1 d-none" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 10; background: #fff; max-height: 320px; overflow: hidden; display: flex; flex-direction: column;">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <input type="text" class="form-control form-control-sm" id="reportReviewerSearch" placeholder="Search colleague">
+                                            <i class="bx bx-x fs-4 text-muted" style="cursor: pointer;" onclick="document.getElementById('reportReviewerDropdown').classList.add('d-none')"></i>
+                                        </div>
+                                        <small class="text-muted mb-2">Contacts</small>
+                                        <div id="reportReviewerList" class="list-group list-group-flush flex-grow-1" style="overflow-y: auto; max-height: 220px;"></div>
+                                        <div class="d-flex justify-content-end mt-2">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="reportReviewerClear">Clear</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="border rounded" style="height: calc(100% - 85px);">
-                            <div class="p-2 text-muted bg-light border-bottom small fw-bold">List of members in CC:</div>
-                            <div class="p-3 flex-grow-1 d-flex flex-column" style="overflow: hidden;">
-                                <!-- Selected members (chips) -->
-                                <div id="reportCCChips" class="d-flex flex-wrap align-items-center gap-2 mb-3" style="min-height: 42px;">
-                                    <span class="text-muted small">Click contacts below to add...</span>
-                                </div>
-                        
-                                <input type="text" class="form-control mb-3 shadow-none" id="reportCCSearch" placeholder="Search colleague" style="border-radius: 8px;">
-                                
-                                <small class="text-muted mb-2">Contacts</small>
-                                
-                                <div id="reportCCList" class="list-group list-group-flush border rounded flex-grow-1" style="overflow-y: auto; max-height: 300px;">
-                                    <!-- filled by JS -->
-                                </div>
-                                
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <button type="button" id="reportCCClear" class="btn btn-link btn-sm text-muted text-decoration-none p-0">Clear</button>
-                                    <!-- <button type="button" class="btn btn-primary btn-sm px-4" id="reportCCConfirm" style="border-radius: 6px;">Confirm</button> -->
+
+                            <div class="border rounded" style="height: calc(100% - 85px);">
+                                <div class="p-2 text-muted bg-light border-bottom small fw-bold">List of members in CC:</div>
+                                <div class="p-3 flex-grow-1 d-flex flex-column" style="overflow: hidden;">
+                                    
+                                    <div id="ccIdsContainer"></div>
+
+                                    <div id="reportCCChips" class="d-flex flex-wrap align-items-center gap-2 mb-3" style="min-height: 42px;">
+                                        <span class="text-muted small">Click contacts below to add...</span>
+                                    </div>
+                            
+                                    <input type="text" class="form-control mb-3 shadow-none" id="reportCCSearch" placeholder="Search colleague" style="border-radius: 8px;">
+                                    
+                                    <small class="text-muted mb-2">Contacts</small>
+                                    
+                                    <div id="reportCCList" class="list-group list-group-flush border rounded flex-grow-1" style="overflow-y: auto; max-height: 300px;">
+                                        </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <button type="button" id="reportCCClear" class="btn btn-link btn-sm text-muted text-decoration-none p-0">Clear all</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-            <div class="modal-footer border-0 justify-content-center pb-4" style="padding-top: 1.5rem; margin-top: 1rem;">
-                <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary px-5">Submit</button>
-            </div>
+                <div class="modal-footer border-0 justify-content-center pb-4" style="padding-top: 1.5rem; margin-top: 1rem;">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-5">Submit Report</button>
+                </div>
+            </form> </div>
+    </div>
+</div>
+
+<!-- comment modal  -->
+<div class="modal fade" id="newCommentModal" tabindex="-1" aria-labelledby="newCommentModalLabel" aria-hidden="true">
+    <div class="border rounded">
+        <div class="p-2 bg-light border-bottom small fw-bold">Report content</div>
+        <div class="p-3 bg-white">
+            <textarea id="commentreportCKEditor" name="reportBody" class="form-control" style="min-height: 350px;"><p><strong>This week's summary:</strong></p>
+            <p>1.</p><p>2.</p>
+            <p><strong>Next week's plan:</strong></p>
+            <p>1.</p><p>2.</p>
+            <p><strong>Issues and suggestions:</strong></p>
+            <p>1.</p><p>2.</p></textarea>
+        </div>
+        <div class="p-2 bg-light border-top d-flex gap-3 text-muted" style="font-size: 0.8rem;">
+            <span><i class="bx bx-paperclip"></i> Attachment</span>
+            <span><i class="bx bx-font-color"></i> Content style</span>
         </div>
     </div>
 </div>
@@ -875,222 +689,377 @@
 </div>
 
 <script>
-    // CC
-    (function () {
-    "use strict";
-
-    var reportCCMembers = [
-        { id: 1, name: "Kathrina Mirasol", initials: "KM", color: "#6f42c1" },
-        { id: 2, name: "Windyl Orbeta", initials: "WO", color: "#007bff" },
-        { id: 3, name: "Paul Garcia", initials: "PG", color: "#198754" },
-        { id: 4, name: "Neil Javerle", initials: "NJ", color: "#dc3545" },
-        { id: 6, name: "Lurs Lastimosa", initials: "LL", color: "#fd7e14" },
-        { id: 7, name: "Lurs Lastimosa", initials: "LL", color: "#fd7e14" },
-        { id: 8, name: "Lurs Lastimosa", initials: "LL", color: "#fd7e14" },
-        { id: 9, name: "Lurs Lastimosa", initials: "LL", color: "#fd7e14" }
-    ];
-
-    var reportCCSelected = [];
-
-    function reportCCRenderList(filter) {
-        var listEl = document.getElementById("reportCCList");
-        if (!listEl) return;
-        listEl.innerHTML = "";
-        filter = (filter || "").toLowerCase();
-
-        reportCCMembers
-            .filter(function (m) { return m.name.toLowerCase().indexOf(filter) !== -1; })
-            .forEach(function (member) {
-                var checked = reportCCSelected.some(function (s) { return s.id === member.id; });
-                var label = document.createElement("label");
-                label.className = "list-group-item list-group-item-action d-flex align-items-center gap-3 border-0 py-2 cursor-pointer";
-                label.innerHTML =
-                    '<input class="form-check-input flex-shrink-0" type="checkbox" value="' + member.id + '" ' + (checked ? "checked" : "") + '>' +
-                    '<div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 35px; height: 35px; background-color: ' + member.color + '; font-size: 0.75rem;">' + member.initials + '</div>' +
-                    '<span class="small">' + member.name + '</span>';
-                label.querySelector('input[type="checkbox"]').onchange = function () {
-                    if (this.checked) {
-                        reportCCSelected.push(member);
-                    } else {
-                        reportCCSelected = reportCCSelected.filter(function (s) { return s.id !== member.id; });
-                    }
-                    reportCCRenderChips();
-                    reportCCRenderList(document.getElementById("reportCCSearch") ? document.getElementById("reportCCSearch").value : "");
-                };
-                listEl.appendChild(label);
-            });
-    }
-
-    function reportCCRenderChips() {
-        var el = document.getElementById("reportCCChips");
-        if (!el) return;
-        el.innerHTML = "";
-
-        if (reportCCSelected.length === 0) {
-            el.innerHTML = '<span class="text-muted small">Click contacts below to add...</span>';
-            return;
-        }
-
-        reportCCSelected.forEach(function (member) {
-            var chip = document.createElement("span");
-            chip.className = "d-inline-flex align-items-center px-2 py-1 rounded flex-wrap";
-            chip.style.cssText = "background: #e7f1ff; color: #0d6efd; font-size: 0.8rem;";
-            chip.innerHTML = member.name + ' <span class="ms-1" style="cursor: pointer; font-weight: bold;">&times;</span>';
-            chip.querySelector("span").onclick = function (e) {
-                e.stopPropagation();
-                reportCCSelected = reportCCSelected.filter(function (s) { return s.id !== member.id; });
-                reportCCRenderChips();
-                reportCCRenderList(document.getElementById("reportCCSearch") ? document.getElementById("reportCCSearch").value : "");
-            };
-            el.appendChild(chip);
-        });
-    }
-
-    function reportCCInit() {
-        var listEl = document.getElementById("reportCCList");
-        var searchEl = document.getElementById("reportCCSearch");
-        var clearEl = document.getElementById("reportCCClear");
-        var confirmEl = document.getElementById("reportCCConfirm");
-        if (!listEl) return;
-
-        if (searchEl) {
-            searchEl.addEventListener("input", function () { reportCCRenderList(this.value); });
-        }
-        if (clearEl) {
-            clearEl.onclick = function () {
-                reportCCSelected = [];
-                reportCCRenderList(searchEl ? searchEl.value : "");
-                reportCCRenderChips();
-            };
-        }
-        if (confirmEl) {
-            confirmEl.onclick = function () {
-                console.log("Selected CC:", reportCCSelected);
-            };
-        }
-
-        reportCCRenderList("");
-        reportCCRenderChips();
-    }
-
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", reportCCInit);
-    } else {
-        reportCCInit();
-    }
-})();
-
-// reviewer
+    
 (function () {
-    "use strict";
+  "use strict";
 
-    var reportReviewerMembers = [
-        { id: 1, name: "Kathrina Mirasol", initials: "KM", color: "#6f42c1" },
-        { id: 2, name: "Windyl Orbeta", initials: "WO", color: "#007bff" },
-        { id: 3, name: "Paul Garcia", initials: "PG", color: "#198754" },
-        { id: 4, name: "Neil Javerle", initials: "NJ", color: "#dc3545" },
-        { id: 5, name: "Lurs Lastimosa", initials: "LL", color: "#fd7e14" },
-        { id: 6, name: "Marcelino, Jr Cutamora", initials: "MC", color: "#20c997" }
-    ];
+  // --- 1. Helpers ---
+  function getInitials(name) {
+    if (!name) return "??";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+  }
 
-    var reportReviewerSelected = null;  // only one
+  function getAvatarHtml(user, size = "24px", fontSize = "10px") {
+    // Check if user exists and has initials
+    const initials = user.initials || "??";
+    const bg = user.color || "#6c757d";
 
-    function reportReviewerRenderList(filter) {
-        var listEl = document.getElementById("reportReviewerList");
-        if (!listEl) return;
-        listEl.innerHTML = "";
-        filter = (filter || "").toLowerCase();
+    // If there is an image, try to load it, but add an onerror fallback
+    if (user.image && user.image !== 'default.jpg' && user.image !== '') {
+        return `<img src="/static/profile_pics/${user.image}" 
+                     class="rounded-circle shadow-sm" 
+                     style="width:${size}; height:${size}; object-fit: cover; flex-shrink: 0;"
+                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'rounded-circle d-flex align-items-center justify-content-center text-white shadow-sm\' style=\'width:${size}; height:${size}; background:${bg}; font-size:${fontSize}; flex-shrink: 0;\'>${initials}</div>';">`;
+    }
+    
+    // Default to the initials circle
+    return `<div class="rounded-circle d-flex align-items-center justify-content-center text-white shadow-sm" 
+                 style="width:${size}; height:${size}; background:${bg}; font-size:${fontSize}; flex-shrink: 0;">
+                 ${initials}
+            </div>`;
+}
 
-        reportReviewerMembers
-            .filter(function (m) { return m.name.toLowerCase().indexOf(filter) !== -1; })
-            .forEach(function (member) {
-                var isSelected = reportReviewerSelected && reportReviewerSelected.id === member.id;
-                var item = document.createElement("div");
-                item.className = "list-group-item list-group-item-action d-flex align-items-center gap-3 border-0 py-2 cursor-pointer" + (isSelected ? " bg-light" : "");
-                item.innerHTML =
-                    '<div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 35px; height: 35px; background-color: ' + member.color + '; font-size: 0.75rem;">' + member.initials + '</div>' +
-                    '<span class="small">' + member.name + '</span>' +
-                    (isSelected ? ' <span class="ms-auto text-success small">✓</span>' : '');
-                item.onclick = function () {
-                    reportReviewerSelected = member;
-                    reportReviewerUpdateDisplay();
-                    reportReviewerRenderList(document.getElementById("reportReviewerSearch").value);
-                    reportReviewerClose();
-                };
-                listEl.appendChild(item);
-            });
+  function getCurrentReportWeek() {
+    const today = new Date();
+    const daysFromMonday = (today.getDay() + 6) % 7;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - daysFromMonday);
+    const saturday = new Date(monday);
+    saturday.setDate(monday.getDate() + 5);
+    return { start: monday, end: saturday };
+  }
+
+  function fmt(d) {
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return m + "/" + day + "/" + d.getFullYear();
+  }
+
+  const colors = ["#6f42c1", "#0d6efd", "#198754", "#dc3545", "#fd7e14", "#20c997", "#ffc107", "#6610f2"];
+
+  // --- 2. Main Logic ---
+  document.addEventListener("DOMContentLoaded", function () {
+    // A. Setup Date Selector
+    const sel = document.getElementById("weekly-report-date");
+    if (sel) {
+      const { start, end } = getCurrentReportWeek();
+      const currentLabel = fmt(start) + " - " + fmt(end);
+      sel.innerHTML = "";
+      const currentOpt = document.createElement("option");
+      currentOpt.value = currentLabel;
+      currentOpt.textContent = currentLabel + " (This week)";
+      currentOpt.selected = true;
+      sel.appendChild(currentOpt);
+
+      for (let i = 1; i <= 12; i++) {
+        const nextMon = new Date(start);
+        nextMon.setDate(start.getDate() + 7 * i);
+        const nextSat = new Date(nextMon);
+        nextSat.setDate(nextMon.getDate() + 5);
+        const opt = document.createElement("option");
+        opt.value = fmt(nextMon) + " - " + fmt(nextSat);
+        opt.textContent = opt.value;
+        sel.appendChild(opt);
+      }
     }
 
-    function reportReviewerUpdateDisplay() {
-        var el = document.getElementById("reportReviewerDisplay");
-        if (!el) return;
-        if (reportReviewerSelected) {
-            el.innerHTML = '<span class="fw-medium">' + reportReviewerSelected.name + '</span>';
-            el.classList.remove("text-muted");
-        } else {
-            el.innerHTML = '<span class="text-muted">Select reviewer...</span>';
-            el.classList.add("text-muted");
-        }
-    }
+    // B. Setup User Data
+    const usersDataElement = document.getElementById("users-data");
+    if (!usersDataElement) return;
+    const allUsers = JSON.parse(usersDataElement.textContent || "[]").map((user, index) => ({
+      ...user,
+      initials: getInitials(user.name),
+      color: colors[index % colors.length]
+    }));
 
-    function reportReviewerOpen() {
-        var dd = document.getElementById("reportReviewerDropdown");
-        if (dd) {
-            dd.classList.remove("d-none");
-            dd.style.display = "flex";
-        }
-    }
-    function reportReviewerClose() {
-        var dd = document.getElementById("reportReviewerDropdown");
-        if (dd) {
-            dd.classList.add("d-none");
-            dd.style.display = "none";
-        }
-    }
+    // C. Setup UI Elements
+    const reviewerDisplay = document.getElementById("reportReviewerDisplay");
+    const reviewerDropdown = document.getElementById("reportReviewerDropdown");
+    const reviewerSearch = document.getElementById("reportReviewerSearch");
+    const reviewerList = document.getElementById("reportReviewerList");
+    const reviewerIdInput = document.getElementById("selectedReviewerId");
+    const ccSearch = document.getElementById("reportCCSearch");
+    const ccList = document.getElementById("reportCCList");
+    const ccChipsContainer = document.getElementById("reportCCChips");
+    const ccIdsContainer = document.getElementById("ccIdsContainer");
+    const reportForm = document.getElementById("reportForm");
 
-    function reportReviewerInit() {
-        var display = document.getElementById("reportReviewerDisplay");
-        var listEl = document.getElementById("reportReviewerList");
-        var searchEl = document.getElementById("reportReviewerSearch");
-        var clearEl = document.getElementById("reportReviewerClear");
-        if (!display || !listEl) return;
+    let selectedCCMembers = [];
 
-        display.onclick = function (e) {
-            e.stopPropagation();
-            reportReviewerOpen();
-            reportReviewerRenderList(searchEl ? searchEl.value : "");
-            if (searchEl) searchEl.focus();
-        };
+    // D. Reviewer Functions
+        function renderReviewers(filter = "") {
+        if (!reviewerList) return; 
+        reviewerList.innerHTML = "";
 
-        if (searchEl) {
-            searchEl.addEventListener("input", function () { reportReviewerRenderList(this.value); });
-        }
-        if (clearEl) {
-            clearEl.onclick = function () {
-                reportReviewerSelected = null;
-                reportReviewerUpdateDisplay();
-                reportReviewerRenderList(searchEl ? searchEl.value : "");
-            };
-        }
+        // Ensure allUsers exists before filtering
+        const filtered = (allUsers || []).filter(u => 
+            u.name && u.name.toLowerCase().includes(filter.toLowerCase())
+        );
 
-        document.addEventListener("click", function (e) {
-            var dd = document.getElementById("reportReviewerDropdown");
-            if (dd && !dd.contains(e.target) && !document.getElementById("reportReviewerDisplay").contains(e.target)) {
-                reportReviewerClose();
+        filtered.forEach(user => {
+            const item = document.createElement("a");
+            item.className = "list-group-item list-group-item-action border-0 d-flex align-items-center gap-2 small";
+            item.style.cursor = "pointer";
+            
+            // Use a template literal but wrap it in a try-catch if you're still seeing crashes
+            try {
+                item.innerHTML = `${getAvatarHtml(user)} <span>${user.name}</span>`;
+            } catch (err) {
+                item.innerHTML = `<span>${user.name}</span>`;
             }
+
+            item.onclick = (e) => {
+                e.stopPropagation();
+                
+                // 1. Update the visible display
+                reviewerDisplay.innerHTML = `
+                    <div class="d-flex align-items-center gap-2">
+                        ${getAvatarHtml(user)} 
+                        <span class="fw-bold text-primary">${user.name}</span>
+                    </div>`;
+                
+                // 2. THIS IS THE MOST IMPORTANT PART FOR SAVING
+                // It puts the member's ID into the hidden input you just placed
+                if (reviewerIdInput) {
+                    reviewerIdInput.value = user.member_id;
+                    console.log("ID successfully assigned to form:", reviewerIdInput.value);
+                }
+                
+                reviewerDropdown.classList.add("d-none");
+            };
+            reviewerList.appendChild(item);
         });
-
-        reportReviewerUpdateDisplay();
-        reportReviewerRenderList("");
+    }
+    // E. CC Functions
+    function renderCC(filter = "") {
+      ccList.innerHTML = "";
+      allUsers.filter(u => u.name.toLowerCase().includes(filter.toLowerCase())).forEach(user => {
+        const isSelected = selectedCCMembers.find(m => m.member_id === user.member_id);
+        const item = document.createElement("a");
+        item.className = `list-group-item list-group-item-action border-0 d-flex align-items-center gap-2 small ${isSelected ? 'bg-light text-primary' : ''}`;
+        item.innerHTML = `${getAvatarHtml(user)} <span>${user.name}</span>`;
+        item.onclick = () => {
+          const index = selectedCCMembers.findIndex(m => m.member_id === user.member_id);
+          if (index > -1) selectedCCMembers.splice(index, 1);
+          else selectedCCMembers.push(user);
+          renderCCChips();
+          renderCC(ccSearch.value);
+        };
+        ccList.appendChild(item);
+      });
     }
 
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", reportReviewerInit);
-    } else {
-        reportReviewerInit();
+    function renderCCChips() {
+      ccChipsContainer.innerHTML = selectedCCMembers.length === 0 ? '<span class="text-muted small">Click contacts below to add...</span>' : "";
+      selectedCCMembers.forEach(user => {
+        const chip = document.createElement("div");
+        chip.className = "badge bg-white text-dark border p-2 d-flex align-items-center gap-2 shadow-sm";
+        chip.style.borderRadius = "50px";
+        chip.innerHTML = `${getAvatarHtml(user, "20px", "9px")} ${user.name} <i class="bx bx-x ms-1" style="cursor:pointer"></i>`;
+        chip.onclick = () => {
+          selectedCCMembers = selectedCCMembers.filter(m => m.member_id !== user.member_id);
+          renderCCChips();
+          renderCC(ccSearch.value);
+        };
+        ccChipsContainer.appendChild(chip);
+      });
     }
+
+    // F. Form Submission Bridge (Fixes "Not Saving" issue)
+  // Inside your DOMContentLoaded block
+if (reportForm) {
+    reportForm.onsubmit = function (e) {
+        // 1. Sync CKEditor 5 content to the hidden input (reportBody is submitted from here)
+        if (window.reportCKInstance && typeof window.reportCKInstance.getData === 'function') {
+            var reportBodyHidden = document.getElementById('reportBodyHidden');
+            if (reportBodyHidden) reportBodyHidden.value = window.reportCKInstance.getData();
+        }
+
+        // 2. Double-check that we have a Reviewer ID
+        const reviewerId = document.getElementById("selectedReviewerId").value;
+        if (!reviewerId) {
+            alert("Please select a reviewer before submitting.");
+            e.preventDefault(); // Stop the form if no ID is present
+            return false;
+        }
+
+        // 3. Populate CC IDs into the hidden container
+        const ccContainer = document.getElementById("ccIdsContainer");
+        if (ccIdsContainer) {
+            ccIdsContainer.innerHTML = ""; // Clear old entries
+            selectedCCMembers.forEach(user => {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "cc_members"; // Python uses getlist('cc_members')
+                input.value = user.member_id; // ONLY SAVING THE ID
+                ccIdsContainer.appendChild(input);
+            });
+        }
+        
+        console.log("Form is valid. Submitting IDs only...");
+        return true; 
+    };
+}
+    // G. Event Listeners
+    reviewerDisplay.onclick = (e) => { e.stopPropagation(); reviewerDropdown.classList.toggle("d-none"); };
+    reviewerSearch.oninput = (e) => renderReviewers(e.target.value);
+    ccSearch.oninput = (e) => renderCC(e.target.value);
+    document.getElementById("reportCCClear").onclick = () => { selectedCCMembers = []; renderCCChips(); renderCC(); };
+    
+    renderReviewers();
+    renderCC();
+  });
 })();
 
+document.addEventListener("DOMContentLoaded", function () {
+  var reportsDataEl = document.getElementById("reports-data");
+  if (reportsDataEl) {
+    var reportsData = JSON.parse(reportsDataEl.textContent || "[]");
+    var listEl = document.getElementById("pendingReportList");
+    if (listEl) {
+      listEl.addEventListener("click", function (e) {
+        var item = e.target.closest(".report-list-item");
+        if (!item) return;
+        var reportId = parseInt(item.getAttribute("data-report-id"), 10);
+        var report = reportsData.find(function (r) { return r.report_id === reportId; });
+        if (!report) return;
+        document.querySelectorAll(".report-list-item").forEach(function (el) { el.classList.remove("active"); });
+        item.classList.add("active");
+        var placeholder = document.getElementById("reportDetailPlaceholder");
+        var content = document.getElementById("reportDetailContent");
+        if (placeholder) placeholder.style.display = "none";
+        if (content) content.style.display = "block";
+        var titleEl = document.getElementById("reportDetailTitle");
+        var reportIdField = document.getElementById("currentActiveReportId");
+        if (reportIdField) reportIdField.value = report.report_id;
+        if (titleEl) titleEl.textContent = "Weekly-" + report.author_name + "(" + report.week_name + ")";
+        var revEl = document.getElementById("reportDetailReviewer");
+        if (revEl) revEl.textContent = report.reviewer_name || "";
+        var ccEl = document.getElementById("reportDetailCC");
+        if (ccEl) ccEl.textContent = report.cc_names || "";
+        var deptEl = document.getElementById("reportDetailDepartment");
+        if (deptEl) deptEl.textContent = report.department_name || "";
+        var createdEl = document.getElementById("reportDetailCreated");
+        if (createdEl) createdEl.textContent = report.created_on || "";
+        var bodyEl = document.getElementById("reportDetailBody");
+        if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+        var actionsEl = document.getElementById("reportDetailActions");
+        var authorActions = document.getElementById("reportDetailActionsAuthor");
+        var reviewerActions = document.getElementById("reportDetailActionsReviewer");
+        if (actionsEl && authorActions && reviewerActions) {
+          authorActions.style.display = "none";
+          reviewerActions.style.display = "none";
+          authorActions.classList.add("d-none");
+          reviewerActions.classList.add("d-none");
+          if (report.is_author) {
+            actionsEl.style.display = "block";
+            authorActions.classList.remove("d-none");
+            authorActions.style.display = "flex";
+          } else if (report.is_reviewer && !report.is_checked) {
+            actionsEl.style.display = "block";
+            reviewerActions.classList.remove("d-none");
+            reviewerActions.style.display = "flex";
+            var approvedBtn = document.getElementById("reportApprovedBtn");
+            if (approvedBtn) approvedBtn.setAttribute("data-report-id", report.report_id);
+          } else {
+            actionsEl.style.display = "none";
+          }
+        }
+        });
+        }
+        var approvedBtn = document.getElementById("reportApprovedBtn");
+        if (approvedBtn) {
+        approvedBtn.addEventListener("click", function () {
+        var reportId = this.getAttribute("data-report-id");
+        if (!reportId) return;
+        var btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Approving...';
+        var form = document.createElement("form");
+        form.method = "POST";
+        form.action = "/reports/" + reportId + "/approve";
+        document.body.appendChild(form);
+        form.submit();
+        });
+        }
+
+        var reviewedListEl = document.getElementById("reviewedReportList");
+        if (reviewedListEl) {
+        reviewedListEl.addEventListener("click", function (e) {
+            var item = e.target.closest(".reviewed-report-list-item");
+            if (!item) return;
+            var reportId = parseInt(item.getAttribute("data-report-id"), 10);
+            var report = reportsData.find(function (r) { return r.report_id === reportId; });
+            if (!report) return;
+            document.querySelectorAll("#reviewedReportList .reviewed-report-list-item").forEach(function (el) { el.classList.remove("active"); });
+            item.classList.add("active");
+            var placeholder = document.getElementById("reviewedDetailPlaceholder");
+            var content = document.getElementById("reviewedDetailContent");
+            if (placeholder) placeholder.style.display = "none";
+            if (content) content.style.display = "block";
+            var titleEl = document.getElementById("reviewedDetailTitle");
+            if (titleEl) titleEl.textContent = "Weekly-" + report.author_name + "(" + report.week_name + ")";
+            var revEl = document.getElementById("reviewedDetailReviewer");
+            if (revEl) revEl.textContent = report.reviewer_name || "";
+            var ccEl = document.getElementById("reviewedDetailCC");
+            if (ccEl) ccEl.textContent = report.cc_names || "";
+            var deptEl = document.getElementById("reviewedDetailDepartment");
+            if (deptEl) deptEl.textContent = report.department_name || "";
+            var createdEl = document.getElementById("reviewedDetailCreated");
+            if (createdEl) createdEl.textContent = report.created_on || "";
+            var bodyEl = document.getElementById("reviewedDetailBody");
+            if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+        });
+        }
+    }
+});
+
+// function getCurrentReportWeek() {
+//     const today = new Date();
+//     const daysFromMonday = (today.getDay() + 6) % 7;
+//     const monday = new Date(today);
+//     monday.setDate(today.getDate() - daysFromMonday);
+//     const saturday = new Date(monday);
+//     saturday.setDate(monday.getDate() + 5);
+//     return { start: monday, end: saturday };
+// }
+
+// document.addEventListener("DOMContentLoaded", function () {
+//     const sel = document.getElementById("weekly-report-date");
+//     if (!sel) return;
+
+//     function fmt(d) {
+//         const m = String(d.getMonth() + 1).padStart(2, "0");
+//         const day = String(d.getDate()).padStart(2, "0");
+//         return m + "/" + day + "/" + d.getFullYear();
+//     }
+
+//     const { start, end } = getCurrentReportWeek();
+//     const currentLabel = fmt(start) + " - " + fmt(end);
+
+//     sel.innerHTML = "";
+//     const currentOpt = document.createElement("option");
+//     currentOpt.value = currentLabel;
+//     currentOpt.textContent = currentLabel + " (This week)";
+//     currentOpt.selected = true;
+//     sel.appendChild(currentOpt);
+
+//     for (let i = 1; i <= 12; i++) {
+//         const nextMon = new Date(start);
+//         nextMon.setDate(start.getDate() + 7 * i);
+//         const nextSat = new Date(nextMon);
+//         nextSat.setDate(nextMon.getDate() + 5);
+//         const opt = document.createElement("option");
+//         opt.value = fmt(nextMon) + " - " + fmt(nextSat);
+//         opt.textContent = opt.value;
+//         sel.appendChild(opt);
+//     }
+// });
+
+
+// report editor JS
 (function () {
     function initReportCK() {
         if (typeof ClassicEditor === 'undefined') return;
@@ -1242,5 +1211,6 @@
     });
 })();
     </script>
+
 
    {% endblock content %}
