@@ -12,70 +12,70 @@ const ownerSearch = document.getElementById("ownerSearch");
 
 let selectedOwners = [];
 
-// Render list
-function renderOwners(filter = "") {
-    ownerList.innerHTML = "";
-
-    owners
-        .filter(o => o.name.toLowerCase().includes(filter.toLowerCase()))
-        .forEach(owner => {
-            const item = document.createElement("div");
-            item.className = "list-group-item owner-item";
-            if (selectedOwners.find(o => o.id === owner.id)) {
-                item.classList.add("active");
-            }
-
-            item.innerHTML = `
-                <div class="owner-avatar" style="background:${owner.color}">
-                    ${owner.initials}
-                </div>
-                <span>${owner.name}</span>
-            `;
-
-            item.onclick = () => toggleOwner(owner);
-            ownerList.appendChild(item);
+// Only run owner-list UI code when elements exist (e.g. not on project_details)
+if (ownerList && ownerInput && ownerSearch) {
+    // Render list
+    function renderOwners(filter = "") {
+        ownerList.innerHTML = "";
+        owners
+            .filter(o => o.name.toLowerCase().includes(filter.toLowerCase()))
+            .forEach(owner => {
+                const item = document.createElement("div");
+                item.className = "list-group-item owner-item";
+                if (selectedOwners.find(o => o.id === owner.id)) item.classList.add("active");
+                item.innerHTML = `<div class="owner-avatar" style="background:${owner.color}">${owner.initials}</div><span>${owner.name}</span>`;
+                item.onclick = () => toggleOwner(owner);
+                ownerList.appendChild(item);
+            });
+    }
+    function toggleOwner(owner) {
+        const exists = selectedOwners.find(o => o.id === owner.id);
+        if (exists) selectedOwners = selectedOwners.filter(o => o.id !== owner.id);
+        else selectedOwners.push(owner);
+        renderSelected();
+        renderOwners(ownerSearch.value);
+    }
+    function renderSelected() {
+        ownerInput.innerHTML = "";
+        if (selectedOwners.length === 0) {
+            ownerInput.innerHTML = `<span class="text-muted small">Select Members</span>`;
+            return;
+        }
+        selectedOwners.forEach(owner => {
+            const chip = document.createElement("div");
+            chip.className = "owner-chip";
+            chip.innerHTML = `${owner.name} <span onclick="removeOwner(${owner.id})">&times;</span>`;
+            ownerInput.appendChild(chip);
         });
-}
-
-// Toggle selection
-function toggleOwner(owner) {
-    const exists = selectedOwners.find(o => o.id === owner.id);
-
-    if (exists) {
-        selectedOwners = selectedOwners.filter(o => o.id !== owner.id);
-    } else {
-        selectedOwners.push(owner);
     }
-
+    function removeOwner(id) {
+        selectedOwners = selectedOwners.filter(o => o.id !== id);
+        renderSelected();
+        renderOwners(ownerSearch.value);
+    }
+    window.removeOwner = removeOwner;
+    ownerSearch.addEventListener("input", e => { renderOwners(e.target.value); });
+    const clearOwners = document.getElementById("clearOwners");
+    if (clearOwners) clearOwners.onclick = () => { selectedOwners = []; renderSelected(); renderOwners(); };
+    renderOwners();
     renderSelected();
-    renderOwners(ownerSearch.value);
 }
 
-// Render selected chips
-function renderSelected() {
-    ownerInput.innerHTML = "";
-
-    if (selectedOwners.length === 0) {
-        ownerInput.innerHTML = `<span class="text-muted small">Select Members</span>`;
-        return;
-    }
-
-    selectedOwners.forEach(owner => {
-        const chip = document.createElement("div");
-        chip.className = "owner-chip";
-        chip.innerHTML = `
-            ${owner.name}
-            <span onclick="removeOwner(${owner.id})">&times;</span>
-        `;
-        ownerInput.appendChild(chip);
+// Search – only if this page has the owner/CC block
+if (ownerSearch) {
+    ownerSearch.addEventListener("input", e => {
+        renderOwners(e.target.value);
     });
 }
 
-// Remove chip
-function removeOwner(id) {
-    selectedOwners = selectedOwners.filter(o => o.id !== id);
-    renderSelected();
-    renderOwners(ownerSearch.value);
+// Clear – only if this page has the block
+var clearOwnersBtn = document.getElementById("clearOwners");
+if (clearOwnersBtn) {
+    clearOwnersBtn.onclick = () => {
+        selectedOwners = [];
+        renderSelected();
+        renderOwners();
+    };
 }
 
 // Search – only if this page has the owner/CC block
@@ -163,22 +163,47 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 //Delete sweet Alert
-function confirmDelete(taskId) {
- Swal.fire({
+// Delete SweetAlert for Members
+function confirmDelete(memberName, memberId) {
+    Swal.fire({
         title: "Are you sure?",
-        text: "You won't be able to revert this!",
+        text: "You are about to delete " + memberName + ". You won't be able to revert this!",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#51d28c",
         cancelButtonColor: "#f34e4e",
         confirmButtonText: "Yes, delete it!"
-      }).then(function (result) {
-        if (result.value) {
-          Swal.fire("Deleted!", "Deleted Successfully.", "success"
-          );
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            // Redirect to the Flask route you created
+            window.location.href = "/delete_member/" + memberId;
         }
     });
 }
+
+// Delete SweetAlert for Projects (redirects to dashboard after delete)
+function confirmDeleteProject(projectId, projectName) {
+    if (typeof Swal === "undefined") {
+        if (window.confirm("Are you sure you want to delete " + (projectName || "this project") + "? You won't be able to revert this!")) {
+            window.location.href = "/project_details/" + projectId + "/delete";
+        }
+        return;
+    }
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You are about to delete " + (projectName || "this project") + ". You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#51d28c",
+        cancelButtonColor: "#f34e4e",
+        confirmButtonText: "Yes, delete it!"
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            window.location.href = "/project_details/" + projectId + "/delete";
+        }
+    });
+}
+
 
 // notes view modal
 function prepareNoteModal(taskId, description, footer) {
