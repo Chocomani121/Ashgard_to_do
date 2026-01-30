@@ -20,6 +20,8 @@ class Department(db.Model):
     members         = db.relationship('User', backref='dept_info', lazy=True)
     projects        = db.relationship('Project', backref='dept_info', lazy=True)
 
+    edited_on       = db.Column(db.DateTime(timezone=True), onupdate=db.func.now())
+
 class User(db.Model, UserMixin):
     __tablename__ = 'members' 
     member_id       = db.Column(db.Integer, primary_key=True)
@@ -86,6 +88,9 @@ class Project(db.Model):
     progress        = db.Column(db.String(255))
     project_desc    = db.Column(db.Text)
 
+    created_on = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    edited_on  = db.Column(db.DateTime(timezone=True), onupdate=db.func.now())
+
     tasks           = db.relationship('Task', backref='project_info', lazy=True)
     team_members    = db.relationship('ProjectMembers', backref='project_ref', lazy=True)
 
@@ -108,16 +113,12 @@ class Task(db.Model):
     deadline_id      = db.Column(db.Integer, db.ForeignKey('deadlines_tbl.deadlines_id'))
     project_id       = db.Column(db.Integer, db.ForeignKey('project.project_id'))
     p_members_id     = db.Column(db.Integer, db.ForeignKey('project_members.p_members_id'))
-    # notes_id removed here to break circular dependency
-    
+
     priority         = db.Column(db.String(255))
     task_name        = db.Column(db.String(255), nullable=False)
     task_description = db.Column(db.Text)
     task_status      = db.Column(db.String(255))
     category         = db.Column(db.String(255))
-
-    subtasks         = db.relationship('SubTask', backref='parent_task', lazy=True)
-    notes            = db.relationship('Notes', backref='parent_task', lazy=True)
 
 class SubTask(db.Model):
     __tablename__     = 'sub_task_list'
@@ -152,7 +153,6 @@ class Report(db.Model):
     __tablename__ = 'report_tbl'
     report_id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey('members.member_id'), nullable=False)
-    project_id = db.Column(db.Integer, db.ForeignKey('project.project_id'))
     reviewer_id = db.Column(db.Integer, db.ForeignKey('members.member_id'))
     
     is_checked = db.Column(db.Boolean, default=False) # The "Stamp"
@@ -169,7 +169,7 @@ class Report(db.Model):
 
 class ReportCC(db.Model):
     __tablename__ = 'report_cc_tbl'
-    id = db.Column(db.Integer, primary_key=True)
+    cc_id = db.Column(db.Integer, primary_key=True)
     report_id = db.Column(db.Integer, db.ForeignKey('report_tbl.report_id'))
     member_id = db.Column(db.Integer, db.ForeignKey('members.member_id'))
     user = db.relationship('User', backref='cc_reports')
