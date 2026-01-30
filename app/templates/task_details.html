@@ -8,7 +8,7 @@
             <nav aria-label="breadcrumb" class="mb-3">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url_for('main.projects') }}">Projects</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('main.project_details') }}">Project Details</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.project_details', id=task.project_id) }}">Project Details</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Task Details</li>
                 </ol>
             </nav>
@@ -161,43 +161,7 @@
                                 <!-- Scrollable Description -->
                               <div class="flex-grow-1 overflow-auto">
                                     <h6>Description</h6>
-                                    <p class="text-muted mb-0">
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Delectus, vitae mollitia! Consequatur, nihil voluptates.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, vitae voluptates? Sit odio alias tenetur blanditiis laboriosam facere quibusdam quidem!
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni a voluptate nostrum ipsam.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Error minima molestiae ipsa nostrum nihil asperiores.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores, sapiente corporis?
-                                                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Delectus, vitae mollitia! Consequatur, nihil voluptates.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, vitae voluptates? Sit odio alias tenetur blanditiis laboriosam facere quibusdam quidem!
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni a voluptate nostrum ipsam.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Error minima molestiae ipsa nostrum nihil asperiores.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores, sapiente corporis?
-                                                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Delectus, vitae mollitia! Consequatur, nihil voluptates.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, vitae voluptates? Sit odio alias tenetur blanditiis laboriosam facere quibusdam quidem!
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni a voluptate nostrum ipsam.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Error minima molestiae ipsa nostrum nihil asperiores.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores, sapiente corporis?
-                                                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Delectus, vitae mollitia! Consequatur, nihil voluptates.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, vitae voluptates? Sit odio alias tenetur blanditiis laboriosam facere quibusdam quidem!
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni a voluptate nostrum ipsam.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Error minima molestiae ipsa nostrum nihil asperiores.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores, sapiente corporis?
-                                                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Delectus, vitae mollitia! Consequatur, nihil voluptates.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, vitae voluptates? Sit odio alias tenetur blanditiis laboriosam facere quibusdam quidem!
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni a voluptate nostrum ipsam.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Error minima molestiae ipsa nostrum nihil asperiores.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores, sapiente corporis?
-                                                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Delectus, vitae mollitia! Consequatur, nihil voluptates.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, vitae voluptates? Sit odio alias tenetur blanditiis laboriosam facere quibusdam quidem!
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni a voluptate nostrum ipsam.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Error minima molestiae ipsa nostrum nihil asperiores.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores, sapiente corporis?
-                                                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Delectus, vitae mollitia! Consequatur, nihil voluptates.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, vitae voluptates? Sit odio alias tenetur blanditiis laboriosam facere quibusdam quidem!
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni a voluptate nostrum ipsam.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Error minima molestiae ipsa nostrum nihil asperiores.
-                                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores, sapiente corporis?
-                                        <!-- Add more content as needed -->
+                                    <p class="text-muted mb-0">{{ task.task_description or 'No description.' }}
                                     </p>
                                 </div>
                             

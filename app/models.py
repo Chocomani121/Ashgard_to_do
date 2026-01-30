@@ -16,9 +16,12 @@ class Department(db.Model):
     department_id   = db.Column(db.Integer, primary_key=True)
     department_name = db.Column(db.String(255), nullable=False)
     creation_date   = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
-    
+    edited_on       = db.Column(db.DateTime(timezone=True), onupdate=db.func.now())
+
     members         = db.relationship('User', backref='dept_info', lazy=True)
     projects        = db.relationship('Project', backref='dept_info', lazy=True)
+
+    edited_on       = db.Column(db.DateTime(timezone=True), onupdate=db.func.now())
 
 class User(db.Model, UserMixin):
     __tablename__ = 'members' 
@@ -86,6 +89,9 @@ class Project(db.Model):
     progress        = db.Column(db.String(255))
     project_desc    = db.Column(db.Text)
 
+    created_on = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    edited_on  = db.Column(db.DateTime(timezone=True), onupdate=db.func.now())
+
     tasks           = db.relationship('Task', backref='project_info', lazy=True)
     team_members    = db.relationship('ProjectMembers', backref='project_ref', lazy=True)
 
@@ -148,7 +154,6 @@ class Report(db.Model):
     __tablename__ = 'report_tbl'
     report_id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey('members.member_id'), nullable=False)
-    project_id = db.Column(db.Integer, db.ForeignKey('project.project_id'))
     reviewer_id = db.Column(db.Integer, db.ForeignKey('members.member_id'))
     
     is_checked = db.Column(db.Boolean, default=False) # The "Stamp"
@@ -165,7 +170,7 @@ class Report(db.Model):
 
 class ReportCC(db.Model):
     __tablename__ = 'report_cc_tbl'
-    id = db.Column(db.Integer, primary_key=True)
+    cc_id = db.Column(db.Integer, primary_key=True)
     report_id = db.Column(db.Integer, db.ForeignKey('report_tbl.report_id'))
     member_id = db.Column(db.Integer, db.ForeignKey('members.member_id'))
     user = db.relationship('User', backref='cc_reports')

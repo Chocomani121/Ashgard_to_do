@@ -262,6 +262,19 @@ if (table6Req && table6Res) {
     }).render(table6Res);
 }
 
+// 10. Approval Table
+const table10Req = document.getElementById("projectsApproval");
+const table10Res = document.getElementById("table10-gridjs");
+if (table10Req && table10Res) {
+    new gridjs.Grid({
+        from: table10Req,
+        pagination: { limit: 5 },
+        sort: true,
+        search: true,
+        className: { table: "table table-centered align-middle" }
+    }).render(table10Res);
+}
+
 //Members table
 const table7Req = document.getElementById("projectsTableMembers");
 const table7Res = document.getElementById("table7-gridjs");

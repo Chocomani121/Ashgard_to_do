@@ -7,10 +7,8 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_migrate import Migrate
-from flask_caching import Cache
 
 load_dotenv()
-cache = Cache()
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -24,7 +22,6 @@ migrate = Migrate()
 def create_app():
     app = Flask(__name__)
 
-    # cache.init_app(app)
     # --- DATABASE CONFIG ---
     user = os.getenv("DB_USER")
     # Force string conversion to handle the special characters in your password safely
@@ -52,9 +49,6 @@ def create_app():
     app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "true").lower() == "true"
     app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
     app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
-
-    app.config['CACHE_TYPE'] = 'SimpleCache' 
-    app.config['CACHE_DEFAULT_TIMEOUT'] = 300
 
     db.init_app(app)
     bcrypt.init_app(app)
