@@ -197,6 +197,8 @@ def _report_to_dict(report):
         'cc_names': cc_names,
         'department_name': department_name,
         'report_content': report.report_content or '',
+        'is_author': report.member_id == current_user.member_id,
+        'is_reviewer': report.reviewer_id == current_user.member_id if report.reviewer_id else False,
     }
 
 @main.route("/reports")

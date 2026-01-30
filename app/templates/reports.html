@@ -92,17 +92,17 @@
                                         <li class="nav-item">
                                             <a class="nav-link" data-bs-toggle="tab" href="#Company-wide" role="tab" href="#">Company-wide</a>
                                         </li>
-                                        <li class="nav-item">
+                                        <li class="nav-item ms-auto">
                                             <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#newReportModal" style="color: #0d6efd;">
                                                 <i class="bx bx-plus me-1"></i>New
                                             </a>
                                         </li>
                                     
-                                        <li class="nav-item ms-auto">
+                                        <!-- <li class="nav-item ms-auto">
                                             <a class="nav-link py-1" href="javascript:void(0);" onclick="location.reload();" title="Refresh Page">
                                                 <i class="bx bx-rotate-right fs-4 text-muted"></i>
                                             </a>
-                                        </li>
+                                        </li> -->
                                         <!-- <li class="nav-item">
                                             <a class="nav-link" data-bs-toggle="tab" href="#Draft" role="tab" href="#">Draft</a>
                                         </li> -->
@@ -159,13 +159,18 @@
                                                             </table>
                                                         </div>
                                                         <div id="reportDetailBody" class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;"></div>
-                                                    </div>
 
-                                                    <div class="d-flex gap-2 justify-content-end p-3 border-top bg-white">
-                                                        <button type="button" class="btn btn-outline-danger btn-sm px-4">Delete</button>
-                                                        <button type="button" class="btn btn-outline-warning btn-sm px-4" data-bs-toggle="modal" data-bs-target="#newReportModal">Update</button>
+                                                        <div id="reportDetailActions" class="p-3 border-top bg-white" style="display: none;">
+                                                            <div id="reportDetailActionsAuthor" class="d-flex gap-2 justify-content-end" style="display: none;">
+                                                                <button type="button" class="btn btn-outline-danger btn-sm px-4">Delete</button>
+                                                                <button type="button" class="btn btn-outline-warning btn-sm px-4" data-bs-toggle="modal" data-bs-target="#newReportModal">Update</button>
+                                                            </div>
+                                                            <div id="reportDetailActionsReviewer" class="d-flex gap-2 justify-content-end" style="display: none;">
+                                                                <button type="button" class="btn btn-success btn-sm px-4" id="reportApprovedBtn">Approved</button>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                    
+                                                    
                                                     <div class="p-3 bg-light border-top">
                                                         <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
                                                     </div>
@@ -182,7 +187,6 @@
                                                     </div>
                                                 </div>
                                                 
-
                                             </div>
                                         </div>  
                                         <div class="tab-pane fade" id="Reviewed" role="tabpanel">
@@ -1063,6 +1067,26 @@ document.addEventListener("DOMContentLoaded", function () {
         if (createdEl) createdEl.textContent = report.created_on || "";
         var bodyEl = document.getElementById("reportDetailBody");
         if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+        var actionsEl = document.getElementById("reportDetailActions");
+        var authorActions = document.getElementById("reportDetailActionsAuthor");
+        var reviewerActions = document.getElementById("reportDetailActionsReviewer");
+        if (actionsEl && authorActions && reviewerActions) {
+          authorActions.style.display = "none";
+          reviewerActions.style.display = "none";
+          authorActions.classList.add("d-none");
+          reviewerActions.classList.add("d-none");
+          if (report.is_author) {
+            actionsEl.style.display = "block";
+            authorActions.classList.remove("d-none");
+            authorActions.style.display = "flex";
+          } else if (report.is_reviewer && !report.is_checked) {
+            actionsEl.style.display = "block";
+            reviewerActions.classList.remove("d-none");
+            reviewerActions.style.display = "flex";
+          } else {
+            actionsEl.style.display = "none";
+          }
+        }
       });
     }
   }
