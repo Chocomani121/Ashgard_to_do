@@ -11,122 +11,7 @@
                             </ol>
                         </nav>
 
-                        <!-- <div class="mb-3">
-                            <a href="{{ url_for('main.projects') }}" class="btn btn-secondary d-inline-flex align-items-center">
-                                <i class="mdi mdi-arrow-left-bold me-1"></i> Back
-                            </a>
-                        </div> -->
-                        <!-- <div class="row">
-                           `
-                        </div> -->
-                        <!-- end row -->
-
-                 <div class="row"> 
-                            
-                             <!-- <div class="col-xl-6">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-start">
-                                            <div class="flex-grow-1 overflow-hidden">
-                                                <h5 class="card-title mb-4 text-truncate">Project Summary</h5>
-                                            </div>
-                                        </div>
-                                         <div class="flex-shrink-0 ms-4">
-                                            <small class="text-muted d-block mb-3">Assigned Members</small>
-
-                                            <div class="d-flex gap-3"> <div class="d-flex flex-column align-items-center text-center">
-                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="Patrick">
-                                                    <div class="mt-1">
-                                                        Patrick
-                                                    </div>
-                                                </div>
-
-                                                <div class="d-flex flex-column align-items-center text-center">
-                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="Neil">
-                                                    <div class="mt-1">
-                                                        Neil
-                                                    </div>
-                                                </div>
-
-                                                 <div class="d-flex flex-column align-items-center text-center">
-                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="Windyl">
-                                                    <div class="mt-1">
-                                                        Windyl
-                                                    </div>
-                                                </div>
-
-                                                 <div class="d-flex flex-column align-items-center text-center">
-                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="Kathrina">
-                                                    <div class="mt-1">
-                                                        Kathrina
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        
-                                    <div class="flex-shrink-0 ms-4 mt-4"> 
-                                        <small class="text-muted">Status Breakdown</small>
-                                    </div>
-
-                                        <div class="row align-items-center">
-
-                                        
-                                                <div class="col-md-7 text-center">
-                                                    <div
-                                                        id="saleing-categories"
-                                                        class="apex-charts"
-                                                        data-colors='["#28b765", "#4dabf7"]'
-                                                        dir="ltr">
-                                                    </div>
-                                                     <div class="row mt-3 pt-1">
-                                                        <div class="col-md-6">
-                                                            <div class="px-2 mt-2">
-                                                                <div class="d-flex align-items-center mt-sm-0 mt-2">
-                                                                    <i class="mdi mdi-circle font-size-10 text-success"></i>
-                                                                    <div class="flex-grow-1 ms-2 overflow-hidden">
-                                                                        <p class="font-size-15 mb-1 text-truncate">Completed</p>
-                                                                    </div>
-                                                                    <div class="flex-shrink-0 ms-2">
-                                                                        <span class="fw-bold">60.0%</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="col-md-6">
-                                                            <div class="px-2 mt-2">
-                                                                <div class="d-flex align-items-center mt-sm-0 mt-2">
-                                                                    <i class="mdi mdi-circle font-size-10 text-light" style="color: #4dabf7 !important;"></i>
-                                                                    <div class="flex-grow-1 ms-2 overflow-hidden">
-                                                                        <p class="font-size-15 mb-1 text-truncate">Ongoing</p>
-                                                                    </div>
-                                                                    <div class="flex-shrink-0 ms-2">
-                                                                        <span class="fw-bold">40.0%</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-5">
-                                                    <div class="text-md-center text-center">
-
-                                                        <p class="text-success text-uppercase mb-1">Approved</p>
-                                                        <h1 class="fw-bold mb-4">4</h1>
-
-                                                        <p class="text-danger text-uppercase mb-1">Rejected</p>
-                                                        <h1 class="fw-bold mb-0">1</h1>
-
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                    </div>
-                                </div>
-                            </div> -->
-
+                 <div class="row">
                 <div class="col-xl-7">
                     <!-- PROJECT OVERVIEW (Sticky Card) -->
                     <div style="top: 90px;">
@@ -134,7 +19,7 @@
 
                             <!-- Card Header with Button -->
                             <div class="card-header d-flex align-items-center justify-content-between">
-                                <h4 class="card-title mb-0">Project Details</h4>
+                                <h4 class="card-title mb-0">{{ project.project_name or 'Project Details' }}</h4>
                                 <div class="dropdown">
                                     <button class="btn btn-light" data-bs-toggle="dropdown">
                                         <i class="mdi mdi-dots-vertical"></i>
@@ -145,9 +30,10 @@
                                             data-bs-target="#editTaskModal">
                                             Edit
                                         </a>                                    
-                                        <a class="dropdown-item" 
-                                            href="javascript:void(0);" 
-                                            onclick="confirmDelete('UI Redisgn task')">Delete</a>
+                                        <a class="dropdown-item" href="javascript:void(0);"
+                                            data-project-id="{{ project.project_id }}"
+                                            data-project-name="{{ (project.project_name or 'this project')|e }}"
+                                            onclick="confirmDeleteProject(this.dataset.projectId, this.dataset.projectName)">Delete</a>
                                     </div>
                                 </div>
                             </div>
@@ -158,29 +44,45 @@
                                 <!-- Top Info Section -->
                                 <div class="row mb-3 g-3 flex-shrink-0">
                                     <div class="col-md-3 col-sm-6">
-                                        <span class="text-muted">Project Manager:</span> 
-                                        <strong class="ms-1">Lurs</strong>
-                                    </div>
-
-                                    <div class="col-md-3 col-sm-6">
                                         <span class="text-muted">Priority:</span> 
+                                        {% if project.priority == 'High' %}
                                         <span class="badge bg-soft-danger text-danger ms-1">High</span>
+                                        {% elif project.priority == 'Medium' %}
+                                        <span class="badge bg-soft-warning text-warning ms-1">Medium</span>
+                                        {% elif project.priority == 'Low' %}
+                                        <span class="badge bg-soft-info text-info ms-1">Low</span>
+                                        {% else %}
+                                        <span class="badge bg-soft-danger text-danger ms-1">{{ project.priority or 'High' }}</span>
+                                        {% endif %}
                                     </div>
 
                                     <div class="col-md-3 col-sm-6">
                                         <span class="text-muted">Start date:</span> 
-                                        <strong class="ms-1">24, June 2023</strong>
+                                        <strong class="ms-1">
+                                            {% if deadline and deadline.start_date %}
+                                                {{ deadline.start_date.strftime('%B %d, %Y') }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </strong>
                                     </div>
 
                                     <div class="col-md-3 col-sm-6">
                                         <span class="text-muted">End date:</span> 
-                                        <strong class="ms-1">24, June 2023</strong>
+                                        <strong class="ms-1">
+                                            {% if deadline and deadline.end_date %}
+                                                {{ deadline.end_date.strftime('%B %d, %Y') }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </strong>
                                     </div>
 
                                     <div class="col-md-3 col-sm-6">
-                                        <span class="text-muted">Man-hours:</span> 
-                                        <strong class="ms-1">45H:35M:45S</strong>
+                                        <span class="text-muted">Client:</span> 
+                                        <strong class="ms-1">{{ project.client_name or '—' }}</strong>
                                     </div>
+
                                 </div>
 
                                 <div class="row mt-4">
@@ -258,116 +160,81 @@
                         <div class="col-xl-5">
                             <!-- Assigned Members -->
                              <div class="card">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center mb-3">
-                                            <div class="flex-grow-1">
-                                                <h5 class="card-title mb-0">Assigned Members</h5>
+                                    <div class="card-header d-flex align-items-center justify-content-between">
+                                        <h5 class="card-title mb-0">Assigned Members</h5>
+                                        <div class="dropdown">
+                                            <button class="btn btn-light btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="mdi mdi-dots-vertical"></i>
+                                            </button>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editProjectManagerModal">Edit Project Manager</a>
+                                                <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editMembersModal">Edit Members</a>
                                             </div>
                                         </div>
-
+                                    </div>
+                                    <div class="card-body">
                                     <div class="col-xl-12 col-md-7">
                                         <div class="assigned-members overflow-auto pe-4 ps-4" style="max-height: 260px;"> 
                                             <ul class="list-unstyled mb-0">
-                                                
-                                                <li class="d-flex align-items-center mb-4"> 
-                                                    <img src="{{ url_for('static', filename='assets/images/users/avatar-4.jpg') }}" class="rounded-circle avatar-sm me-3">
+                                                {% if manager %}
+                                                <li class="d-flex align-items-center mb-4">
+                                                    <img src="{{ url_for('static', filename='profile_pics/' + manager.image_file) }}" class="rounded-circle avatar-sm me-3" alt="{{ manager.name or manager.username }}">
                                                     <div>
-                                                        <h6 class="mb-0 font-size-16 fw-bold">John Doe</h6>
+                                                        <h6 class="mb-0 font-size-16 fw-bold">{{ manager.name if manager.name else manager.username }}</h6>
                                                         <small class="text-muted font-size-13">Project Manager</small>
                                                     </div>
                                                 </li>
-
-                                                <li class="d-flex align-items-center mb-4">
-                                                    <img src="{{ url_for('static', filename='assets/images/users/avatar-5.jpg') }}" class="rounded-circle avatar-sm me-3">
-                                                    <div>
-                                                        <h6 class="mb-0 font-size-16 fw-bold">Jane Smith</h6>
-                                                        <small class="text-muted font-size-13">Developer</small>
-                                                    </div>
-                                                </li>
-                                                <li class="d-flex align-items-center mb-4">
-                                                    <img src="{{ url_for('static', filename='assets/images/users/avatar-5.jpg') }}" class="rounded-circle avatar-sm me-3">
-                                                    <div>
-                                                        <h6 class="mb-0 font-size-16 fw-bold">Jane Smith</h6>
-                                                        <small class="text-muted font-size-13">Developer</small>
-                                                    </div>
-                                                </li>
-                                                <li class="d-flex align-items-center mb-4">
-                                                    <img src="{{ url_for('static', filename='assets/images/users/avatar-5.jpg') }}" class="rounded-circle avatar-sm me-3">
-                                                    <div>
-                                                        <h6 class="mb-0 font-size-16 fw-bold">Jane Smith</h6>
-                                                        <small class="text-muted font-size-13">Developer</small>
-                                                    </div>
-                                                </li>
-                                                <li class="d-flex align-items-center mb-4">
-                                                    <img src="{{ url_for('static', filename='assets/images/users/avatar-5.jpg') }}" class="rounded-circle avatar-sm me-3">
-                                                    <div>
-                                                        <h6 class="mb-0 font-size-16 fw-bold">Jane Smith</h6>
-                                                        <small class="text-muted font-size-13">Developer</small>
-                                                    </div>
-                                                </li>
-                                                <li class="d-flex align-items-center mb-4">
-                                                    <img src="{{ url_for('static', filename='assets/images/users/avatar-5.jpg') }}" class="rounded-circle avatar-sm me-3">
-                                                    <div>
-                                                        <h6 class="mb-0 font-size-16 fw-bold">Jane Smith</h6>
-                                                        <small class="text-muted font-size-13">Developer</small>
-                                                    </div>
-                                                </li>
-                                                <li class="d-flex align-items-center mb-4">
-                                                    <img src="{{ url_for('static', filename='assets/images/users/avatar-5.jpg') }}" class="rounded-circle avatar-sm me-3">
-                                                    <div>
-                                                        <h6 class="mb-0 font-size-16 fw-bold">Jane Smith</h6>
-                                                        <small class="text-muted font-size-13">Developer</small>
-                                                    </div>
-                                                </li>
-
-                                                </ul>
+                                                {% endif %}
+                                                {% if assigned_members %}
+                                                    {% for member_info in assigned_members %}
+                                                    {% if not project.project_manager or member_info.user.member_id != project.project_manager %}
+                                                    <li class="d-flex align-items-center mb-4">
+                                                        <img src="{{ url_for('static', filename='profile_pics/' + member_info.user.image_file) }}" class="rounded-circle avatar-sm me-3" alt="{{ member_info.user.name or member_info.user.username }}">
+                                                        <div>
+                                                            <h6 class="mb-0 font-size-16 fw-bold">{{ member_info.user.name if member_info.user.name else member_info.user.username }}</h6>
+                                                            <small class="text-muted font-size-13">{{ member_info.role }}</small>
+                                                        </div>
+                                                    </li>
+                                                    {% endif %}
+                                                    {% endfor %}
+                                                {% endif %}
+                                                {% if not manager and (not assigned_members or assigned_members|length == 0) %}
+                                                    <li class="text-muted">No assigned members</li>
+                                                {% endif %}
+                                            </ul>
                                         </div>
                                     </div>
                                     </div>
                                 </div>
                                 <!-- Description card -->
                                 <div class="card">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center mb-3">
-                                            <div class="flex-grow-1">
-                                                <h5 class="card-title mb-0">Description</h5>
+                                    <div class="card-header d-flex align-items-center justify-content-between">
+                                        <h5 class="card-title mb-0">Description</h5>
+                                        <div class="dropdown">
+                                            <button class="btn btn-light btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="mdi mdi-dots-vertical"></i>
+                                            </button>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editDescriptionModal">Edit</a>
+                                                <a class="dropdown-item" href="javascript:void(0);"
+                                                    data-project-id="{{ project.project_id }}"
+                                                    data-project-name="{{ (project.project_name or 'this project')|e }}"
+                                                    onclick="confirmDeleteProject(this.dataset.projectId, this.dataset.projectName)">Delete</a>
                                             </div>
                                         </div>
-
-                                         <!-- RIGHT: DESCRIPTION -->
-                                    <div class="col-xl-12 col-md-7">
-
-                                        <div class="project-description overflow-auto" style="max-height: 260px;">
-                                            <p class="text-muted mb-0">
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Ex inventore quis fugiat, tenetur blanditiis reiciendis eos,
-                                                eum dolorum sint soluta veritatis, laborum veniam omnis.
-                                                Delectus, vitae mollitia! Consequatur, nihil voluptates.
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Alias, vitae voluptates? Sit odio alias tenetur blanditiis
-                                                laboriosam facere quibusdam quidem!
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Magni a voluptate nostrum ipsam.
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Error minima molestiae ipsa nostrum nihil asperiores.
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Maiores, sapiente corporis?
-                                                                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Ex inventore quis fugiat, tenetur blanditiis reiciendis eos,
-                                                eum dolorum sint soluta veritatis, laborum veniam omnis.
-                                                Delectus, vitae mollitia! Consequatur, nihil voluptates.
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Alias, vitae voluptates? Sit odio alias tenetur blanditiis
-                                                laboriosam facere quibusdam quidem!
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Magni a voluptate nostrum ipsam.
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Error minima molestiae ipsa nostrum nihil asperiores.
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                                                Maiores, sapiente corporis?
-                                            </p>
-                                        </div>
                                     </div>
+                                    <div class="card-body">
+                                        <div class="col-xl-12 col-md-7">
+                                            <div class="project-description overflow-auto" style="max-height: 260px;">
+                                                <p class="text-muted mb-0">
+                                                    {% if project and project.project_desc %}
+                                                        {{ project.project_desc }}
+                                                    {% else %}
+                                                        <span class="text-muted">No description available.</span>
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                            </div>
@@ -378,23 +245,26 @@
                             <div class="row mt-2">
                                 <div class="col-12">
                                     <div class="card">
-                                        <div class="card-header d-flex align-items-center">
-                                            <h4 class="card-title mb-0">Tasks </h4>
-                                            <div class="ms-auto d-flex gap-2">
-                                                <button type="button" class="btn btn-primary btn-rounded waves-effect waves-light mb-2 me-2" data-bs-toggle="modal" data-bs-target=".create-task"><i class="mdi mdi-plus me-1"></i> Create Task</button>
-                                            </div>
+                                        <div class="card-header d-flex align-items-center justify-content-between">
+                                            <h4 class="card-title mb-0">Tasks</h4>
+                                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target=".create-task">
+                                                <i class="mdi mdi-plus me-1"></i> Create Task
+                                            </button>
                                         </div>
 
                                         <div class="card-body">
-                                            <div id="table-gridjs"></div>
+                                            <!-- Search Input -->
+                                            <div class="mb-3">
+                                                <input type="text" class="form-control" placeholder="Type a keyword..." id="taskSearchInput" style="width: 30%;">
+                                            </div>
 
-                                            <table id="projectsTable" class="table d-none">
+                                            <table id="projectsTable" class="table table-hover table-nowrap align-middle mb-0" style="table-layout: fixed; width: 100%;">
                                                 <thead>
                                                     <tr>
-                                                        <th>Task Name</th>
-                                                        <th style="width: 190px;">Owner</th>
-                                                        <th>Status</th>
-                                                        <th>Tasks</th>
+                                                        <th style="width: 25%;">Task Name <i class="mdi mdi-sort ms-1"></i></th>
+                                                        <th style="width: 25%;">Owner <i class="mdi mdi-sort ms-1"></i></th>
+                                                        <th style="width: 25%;">Status <i class="mdi mdi-sort ms-1"></i></th>
+                                                        <th style="width: 25%;">Sub Task <i class="mdi mdi-sort ms-1"></i></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -422,15 +292,18 @@
                                                                 <div class="d-flex align-items-center">
                                                                     <img class="rounded-circle avatar-sm" src="static/assets/images/users/avatar-2.jpg" alt="">
                                                                     <div class="flex-grow-1 ms-3">
-                                                                        Neil
+                                                                        {{ task_data.owner.name if task_data.owner.name else task_data.owner.username }}
                                                                     </div>
                                                                 </div>
+                                                                {% else %}
+                                                                <span class="text-muted">Unassigned</span>
+                                                                {% endif %}
                                                             </td>
                                                             <td>
                                                                 <div class="badge bg-soft-warning text-warning font-size-12">Ongoing</div>
                                                             </td>
                                                             <td>
-                                                                4/4
+                                                                {{ task_data.progress }}
                                                             </td>
                                                     
                                                         </tr>   
@@ -454,6 +327,38 @@
                                                         </tr>   
                                                     </tbody>
                                             </table>
+                                            
+                                            <!-- Pagination -->
+                                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                                <div>
+                                                    <span class="text-muted">
+                                                        {% if tasks %}
+                                                            Showing 1 to {{ tasks|length }} of {{ tasks|length }} results
+                                                        {% else %}
+                                                            Showing 0 to 0 of 0 results
+                                                        {% endif %}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <nav aria-label="Page navigation">
+                                                        <ul class="pagination pagination-rounded mb-0">
+                                                            <li class="page-item disabled">
+                                                                <a class="page-link" href="#" aria-label="Previous">
+                                                                    <span aria-hidden="true">Prev</span>
+                                                                </a>
+                                                            </li>
+                                                            <li class="page-item active">
+                                                                <a class="page-link" href="#">1</a>
+                                                            </li>
+                                                            <li class="page-item disabled">
+                                                                <a class="page-link" href="#" aria-label="Next">
+                                                                    <span aria-hidden="true">Next</span>
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </nav>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -547,87 +452,156 @@
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
 
-
+            <!-- Edit Project modal (project card Edit – fields from project table) -->
             <div class="modal fade" data-bs-backdrop="static" id="editTaskModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
                     <div class="modal-content">
-
-                        <!-- Modal Header -->
                         <div class="modal-header">
                             <h5 class="modal-title">Edit Project</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
-
-                        <!-- Modal Body -->
                         <div class="modal-body">
-                            <form>
-
+                            <form method="POST" action="{{ url_for('main.update_project', id=project.project_id) }}">
                                 <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Project Title</label>
-                                        <input type="text" class="form-control" value="UI Redesign">
+                                    <div class="col-md-6 col-lg-4">
+                                        <label class="form-label">Project Name</label>
+                                        <input type="text" class="form-control" name="project_name" value="{{ project.project_name or '' }}" required>
                                     </div>
-
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 col-lg-4">
                                         <label class="form-label">Priority</label>
-                                        <select class="form-select">
-                                            <option>Low</option>
-                                            <option selected>High</option>
-                                            <option>Critical</option>
+                                        <select class="form-select" name="priority">
+                                            <option value="Low" {% if project.priority == 'Low' %}selected{% endif %}>Low</option>
+                                            <option value="Medium" {% if project.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                                            <option value="High" {% if project.priority == 'High' %}selected{% endif %}>High</option>
                                         </select>
                                     </div>
-
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 col-lg-4">
                                         <label class="form-label">Start Date</label>
-                                        <input type="date" class="form-control" value="2023-06-24">
+                                        <input type="date" class="form-control" name="start_date" value="{% if deadline and deadline.start_date %}{{ deadline.start_date.strftime('%Y-%m-%d') }}{% endif %}">
                                     </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">End Date</label>
-                                        <input type="date" class="form-control" value="2023-06-24">
+                                    <div class="col-md-6 col-lg-4">
+                                        <label class="form-label">Deadline</label>
+                                        <input type="date" class="form-control" name="end_date" value="{% if deadline and deadline.end_date %}{{ deadline.end_date.strftime('%Y-%m-%d') }}{% endif %}">
                                     </div>
+                                    <div class="col-md-6 col-lg-4">
+                                        <label class="form-label">Status</label>
+                                        <select class="form-select" name="project_status">
+                                            <option value="Ongoing" {% if display_status == 'Ongoing' %}selected{% endif %}>Ongoing</option>
+                                            <option value="On Hold" {% if display_status == 'On Hold' %}selected{% endif %}>On Hold</option>
+                                            <option value="Completed" {% if display_status == 'Completed' %}selected{% endif %}>Completed</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4">
+                                        <label class="form-label">Client</label>
+                                        <input type="text" class="form-control" name="client_name" value="{{ project.client_name or '' }}" placeholder="Client name">
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end gap-2 mt-4">
+                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                                    <div class="mb-3 position-relative" style="max-width: 390px;">
-                                        <label class="form-label">Owner</label>
+            <!-- Edit Project Manager modal -->
+            <div class="modal fade" data-bs-backdrop="static" id="editProjectManagerModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit Project Manager</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST" action="{{ url_for('main.update_project_manager', id=project.project_id) }}">
+                                <div class="mb-3">
+                                    <label class="form-label">Project Manager</label>
+                                    <select class="form-select" name="project_manager" required>
+                                        <option value="">Select Project Manager</option>
+                                        {% for u in users %}
+                                        <option value="{{ u.member_id }}" {% if manager and manager.member_id == u.member_id %}selected{% endif %}>{{ u.name or u.username }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                                        <!-- Input / Selected chips -->
-                                        <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
-                                            id="ownerInput"
-                                            data-bs-toggle="dropdown">
-
-                                            <span class="text-muted small">Select owner(s)</span>
+            <!-- Edit Members modal -->
+            <div class="modal fade" data-bs-backdrop="static" id="editMembersModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit Members</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body py-4" style="min-height: 320px;">
+                            <form id="editProjectMembersForm" method="POST" action="{{ url_for('main.update_project_members', id=project.project_id) }}">
+                                <div class="mb-4">
+                                    <label class="form-label">Members <span class="text-danger">*</span></label>
+                                    <div id="editMemberIdsContainer"></div>
+                                    <div class="dropdown">
+                                        <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input-edit-project"
+                                            id="ownerInputEditProject"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                            style="min-height: 52px;">
+                                            <span class="text-muted small">Select member(s)</span>
                                         </div>
-
-                                        <!-- Dropdown -->
-                                        <div class="dropdown-menu p-3 shadow owner-dropdown">
-                                            <input type="text"
-                                                class="form-control mb-2"
-                                                id="ownerSearch"
-                                                placeholder="Search colleague">
-
+                                        <div class="dropdown-menu p-3 shadow owner-dropdown-edit-project" style="width: 100%;">
+                                            <input type="text" class="form-control mb-2" id="ownerSearchEditProject" placeholder="Search member">
                                             <small class="text-muted">Contacts</small>
-
-                                            <div class="list-group mt-2 owner-list" value="John, Jane, Lurs"></div>
-
+                                            <div class="list-group mt-2 owner-list-edit-project" style="max-height: 280px; overflow-y: auto;"></div>
                                             <div class="d-flex justify-content-between align-items-center mt-3">
-                                                Clear
-                                                <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">
-                                                    Confirm
-                                                </button>
+                                                <a href="#" id="clearOwnersEditProject" class="text-muted small">Clear</a>
+                                                <button type="button" class="btn btn-sm btn-primary" id="confirmOwnersEditProject">Confirm</button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
                             </form>
                         </div>
-
-                        <!-- Modal Footer -->
-                        <div class="modal-footer">
-                            <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                            <button class="btn btn-primary">Save Changes</button>
-                        </div>
-
                     </div>
                 </div>
-</div>
+            </div>
+
+            <!-- Edit Description modal -->
+            <div class="modal fade" data-bs-backdrop="static" id="editDescriptionModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit Description</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST" action="{{ url_for('main.update_project_description', id=project.project_id) }}">
+                                <div class="mb-3">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-control" name="project_desc" rows="6" placeholder="Enter project description">{{ project.project_desc or '' }}</textarea>
+                                </div>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+<script type="application/json" id="edit-project-users-data">{{ users_json|tojson }}</script>
+<script type="application/json" id="edit-project-initial-members">{{ edit_initial_members_json|tojson }}</script>
+<script src="{{ url_for('static', filename='assets/js/pages/project-details-edit.init.js') }}"></script>
    {% endblock content %}

@@ -3,10 +3,12 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Recover Password | Ashgard To-Do</title>
+    <title>Reset Password | Ashgard To-Do</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Ashgard To-Do Password Reset" name="description" />
     
     <link rel="shortcut icon" href="{{ url_for('static', filename='assets/images/favicon.ico') }}">
+
     <link href="{{ url_for('static', filename='assets/css/bootstrap.min.css') }}" id="bootstrap-style" rel="stylesheet" type="text/css" />
     <link href="{{ url_for('static', filename='assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ url_for('static', filename='assets/css/app.min.css') }}" id="app-style" rel="stylesheet" type="text/css" />
@@ -19,49 +21,56 @@
 
                 <div class="col-md-6 d-none d-md-flex justify-content-center align-items-center bg-dark text-white">
                     <div class="text-center p-4">
-                        <img src="{{ url_for('static', filename='assets/images/ashgard-logo.png') }}" alt="Logo" class="img-fluid mb-3" style="max-height: 200px;">
+                        <img src="{{ url_for('static', filename='assets/images/ashgard-logo.png') }}" alt="Reset Image" class="img-fluid mb-3" style="max-height: 200px;">
                         <h1 class="text-light">Ashgard <br>To-Do</h1>
                     </div>
                 </div>
 
                 <div class="col-12 col-md-6 d-flex flex-column justify-content-center align-items-center bg-light">
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-8 col-lg-6">
 
                         <div class="card">
                             <div class="card-body p-4">
                                 <div class="mt-2 text-center">
-                                    <h5>Reset Password</h5>
-                                    <p class="text-muted">Enter your email to receive reset instructions.</p>
+                                    <h5>Create New Password</h5>
+                                    <p class="text-muted">Please enter and confirm your new password.</p>
                                 </div>
-
-                                {% with messages = get_flashed_messages(with_categories=true) %}
-                                  {% if messages %}
-                                    {% for category, message in messages %}
-                                      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                        {{ message }}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                      </div>
-                                    {% endfor %}
-                                  {% endif %}
-                                {% endwith %}
 
                                 <div class="p-2 mt-4">
                                     <form method="POST" action="">
                                         {{ form.hidden_tag() }}
+
                                         <div class="mb-3">
-                                            <label class="form-label" for="email">Email</label>
+                                            <label class="form-label" for="password">New Password</label>
                                             <div class="position-relative input-custom-icon">
-                                                {% if form.email.errors %}
-                                                    {{ form.email(class="form-control is-invalid", placeholder="Enter email") }}
+                                                {% if form.password.errors %}
+                                                    {{ form.password(class="form-control is-invalid", placeholder="Enter new password") }}
                                                     <div class="invalid-feedback">
-                                                        {% for error in form.email.errors %}
+                                                        {% for error in form.password.errors %}
                                                             <span>{{ error }}</span>
                                                         {% endfor %}
                                                     </div>
                                                 {% else %}
-                                                    {{ form.email(class="form-control", placeholder="Enter email") }}
+                                                    {{ form.password(class="form-control", placeholder="Enter new password") }}
                                                 {% endif %}
-                                                <span class="bx bx-mail-send"></span>
+                                                <span class="bx bx-lock-alt"></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label" for="confirm_password">Confirm Password</label>
+                                            <div class="position-relative input-custom-icon">
+                                                {% if form.confirm_password.errors %}
+                                                    {{ form.confirm_password(class="form-control is-invalid", placeholder="Confirm new password") }}
+                                                    <div class="invalid-feedback">
+                                                        {% for error in form.confirm_password.errors %}
+                                                            <span>{{ error }}</span>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% else %}
+                                                    {{ form.confirm_password(class="form-control", placeholder="Confirm new password") }}
+                                                {% endif %}
+                                                <span class="bx bx-lock-open-alt"></span>
                                             </div>
                                         </div>
 
@@ -71,7 +80,7 @@
 
                                         <div class="mt-4 text-center">
                                             <p class="mb-0">
-                                                Remember it? <a href="{{ url_for('users.login') }}" class="fw-medium text-primary">Sign in</a>
+                                                Back to <a href="{{ url_for('users.login') }}" class="fw-medium text-primary">Sign in</a>
                                             </p>
                                         </div>
                                     </form>
@@ -87,5 +96,8 @@
     </div>
 
     <script src="{{ url_for('static', filename='assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/libs/metismenujs/metismenujs.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/libs/simplebar/simplebar.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/libs/eva-icons/eva.min.js') }}"></script>
 </body>
 </html>
