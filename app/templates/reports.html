@@ -139,6 +139,7 @@
                                                     
                                                 <div id="reportDetailPlaceholder" class="text-muted text-center py-5">Select a report from the list.</div>
                                                    <div id="reportDetailContent" class="p-4 flex-grow-1" style="display: none; overflow-y: auto; min-height: 0;">
+                                                    <input type="hidden" id="currentActiveReportId" value="">
                                                         <div class="d-flex align-items-center mb-3">
                                                             <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
                                                             <h5 class="mb-0 fw-bold" id="reportDetailTitle"></h5>
@@ -163,7 +164,12 @@
 
                                                         <div id="reportDetailActions" class="p-3 border-top bg-white" style="display: none;">
                                                             <div id="reportDetailActionsAuthor" class="d-flex gap-2 justify-content-end" style="display: none;">
-                                                                <button type="button" class="btn btn-outline-danger btn-sm px-4">Delete</button>
+                                                                <button type="button" 
+                                                                        id="deleteReportBtn"
+                                                                        class="btn btn-outline-danger btn-sm px-4" 
+                                                                        onclick="confirmReportDelete()">
+                                                                    Delete
+                                                                </button>
                                                                 <button type="button" class="btn btn-outline-warning btn-sm px-4" data-bs-toggle="modal" data-bs-target="#newReportModal">Update</button>
                                                             </div>
                                                             <div id="reportDetailActionsReviewer" class="d-flex gap-2 justify-content-end" style="display: none;">
@@ -862,6 +868,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (placeholder) placeholder.style.display = "none";
         if (content) content.style.display = "block";
         var titleEl = document.getElementById("reportDetailTitle");
+        var reportIdField = document.getElementById("currentActiveReportId");
+        if (reportIdField) reportIdField.value = report.report_id;
         if (titleEl) titleEl.textContent = "Weekly-" + report.author_name + "(" + report.week_name + ")";
         var revEl = document.getElementById("reportDetailReviewer");
         if (revEl) revEl.textContent = report.reviewer_name || "";
@@ -1138,6 +1146,28 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 })();
+
+function confirmReportDelete() {
+    var reportId = document.getElementById("currentActiveReportId").value;
+    
+    if (!reportId) return;
+
+    Swal.fire({
+        title: "Are you sure?",
+        text: "This report will be permanently removed!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#51d28c",
+        cancelButtonColor: "#f34e4e",
+        confirmButtonText: "Yes, delete it!"
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            // No prefix needed because your blueprint has no url_prefix
+            window.location.href = "/reports/delete/" + reportId;
+        }
+    });
+}
     </script>
+
 
    {% endblock content %}

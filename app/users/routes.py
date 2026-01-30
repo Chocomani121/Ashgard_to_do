@@ -1,10 +1,11 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint, current_app
 from app import db, bcrypt, mail
 from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm, UpdateAccountForm
-from app.models import User, Department
+from app.models import User, Department, Report
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 from sqlalchemy.orm import joinedload
+# Look for your existing imports at the top of app/users/routes.py
 
 
 import os
@@ -236,3 +237,30 @@ def update_member(member_id):
     db.session.commit()
     flash(f'Updated {member.name}!', 'update_success')
     return redirect(url_for('users.members'))
+
+
+@users.route("/reports/delete/<int:report_id>")
+@login_required
+def delete_report(report_id):
+    # Import inside to prevent circular dependency
+    from app.models import Report, ReportCC 
+    
+    report = Report.query.get_or_404(report_id)
+    
+    # Check if the current user is the author
+    # Note: current_user works because it's an instance of the User class
+    if report.member_id != current_user.member_id:
+        flash("You do not have permission to delete this report.", "danger")
+        return redirect(url_for('main.reports'))
+    
+    try:
+        # Since you added cascade="all, delete-orphan" in models.py, 
+        # SQLAlchemy will automatically delete CC entries and Comments!
+        db.session.delete(report)
+        db.session.commit()
+        flash("Report deleted successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting report: {str(e)}", "danger")
+        
+    return redirect(url_for('main.reports'))
