@@ -97,3 +97,15 @@ tr:has(a[href]):hover {
 #sidebar-menu ul li.mm-active:last-child > a {
     background-color: #28b7651a;
 }
+
+/* Reports: light highlight for selected report in list (not blue) */
+#pendingReportList .list-group-item.report-list-item.active {
+    background-color: #f0f0f0 !important;
+    color: #212529 !important;
+    border-color: #dee2e6 !important;
+}
+
+#pendingReportList .list-group-item.report-list-item.active:hover {
+    background-color: #e9ecef !important;
+    color: #212529 !important;
+}

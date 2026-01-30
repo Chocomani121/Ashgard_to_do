@@ -1,6 +1,6 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask
+from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask,  Report, ReportCC
 from app import db 
 from datetime import datetime
 import json
@@ -134,18 +134,15 @@ def add_department():
 @main.route("/department/edit/<int:id>", methods=['GET', 'POST'])
 @login_required
 def edit_department(id):
-    # This 'id' comes from the URL and is used to find the department
+
     department = Department.query.get_or_404(id)
     if request.method == 'POST':
         department.department_name = request.form.get('department_name')
-        member_ids = request.form.getlist('member_ids')  # Get list of selected member IDs
-        
-        # Update department members
-        # First, remove all current members from this department
+        member_ids = request.form.getlist('member_ids')  
+
         for user in department.members:
             user.department_id = None
         
-        # Then assign new members to the department
         if member_ids:
             for member_id in member_ids:
                 try:
@@ -180,9 +177,99 @@ def delete_department(id):
 def approvals():
     return render_template('approvals.html', title="Approvals")
 
+# ---- Report routes ----
+def _report_to_dict(report):
+    """Build a dict for one report (list + detail panel)."""
+    author_name = (report.author.name or report.author.username) if report.author else ''
+    reviewer_name = (report.reviewer_user.name or report.reviewer_user.username) if report.reviewer_user else ''
+    cc_names = ', '.join((e.user.name or e.user.username or '') for e in (report.cc_entries or []))
+    dept = getattr(report.author, 'dept_info', None) if report.author else None
+    department_name = dept.department_name if dept else ''
+    created_str = report.created_on.strftime('%m/%d/%Y %H:%M') if report.created_on else ''
+    return {
+        'report_id': report.report_id,
+        'author_name': author_name,
+        'week_name': report.week_name,
+        'is_checked': report.is_checked,
+        'created_on': created_str,
+        'reviewer_name': reviewer_name,
+        'cc_names': cc_names,
+        'department_name': department_name,
+        'report_content': report.report_content or '',
+    }
+    
 @main.route("/reports")
+@login_required
 def reports():
-    return render_template('reports.html', title="Reports")
+    users = User.query.all()
+    users_json = [
+        {'member_id': u.member_id, 'name': u.name or u.username, 'username': u.username, 'image': u.image_file}
+        for u in users
+    ]
+    reports_q = Report.query.order_by(Report.created_on.desc()).all()
+    pending_reports = [r for r in reports_q if not r.is_checked]
+    reviewed_reports = [r for r in reports_q if r.is_checked]
+    reports_json = [_report_to_dict(r) for r in reports_q]
+    return render_template(
+        'reports.html',
+        title="Reports",
+        users=users,
+        users_json=users_json,
+        pending_reports=pending_reports,
+        reviewed_reports=reviewed_reports,
+        reports_json=reports_json,
+    )
+
+# ---- create_report routes ----
+@main.route("/reports/create", methods=['POST'])
+@login_required
+def create_report():
+    try:
+        # 1. Get Form Data
+        # Note: 'report_date' in your HTML maps to 'week_name' in your Model
+        week_name = request.form.get('report_date') 
+        report_content = request.form.get('reportBody')
+        reviewer_id = request.form.get('reviewer_id')
+        member_id = current_user.member_id # The Author
+        
+        # Validation
+        if not all([week_name, report_content, reviewer_id]):
+            flash('Please complete the report and select a reviewer.', 'danger')
+            return redirect(url_for('main.reports'))
+
+        # 2. Create the Report (report_tbl)
+        new_report = Report(
+            member_id=int(member_id),
+            reviewer_id=int(reviewer_id),
+            week_name=week_name,
+            report_content=report_content,
+            is_checked=False  # Explicitly setting default
+        )
+        
+        db.session.add(new_report)
+        db.session.flush()  # Gets the new_report.report_id
+
+        # 3. Create CC Entries (report_cc_tbl)
+        cc_member_ids = request.form.getlist('cc_members')
+        if cc_member_ids:
+            for m_id in cc_member_ids:
+                try:
+                    cc_entry = ReportCC(
+                        report_id=new_report.report_id,
+                        member_id=int(m_id)
+                    )
+                    db.session.add(cc_entry)
+                except (ValueError, TypeError):
+                    continue
+
+        db.session.commit()
+        flash('Weekly report created and sent for review!', 'success')
+        return redirect(url_for('main.reports'))
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error creating report: {str(e)}', 'danger')
+        return redirect(url_for('main.reports'))
 
 @main.route("/members")
 @login_required
