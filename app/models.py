@@ -16,7 +16,8 @@ class Department(db.Model):
     department_id   = db.Column(db.Integer, primary_key=True)
     department_name = db.Column(db.String(255), nullable=False)
     creation_date   = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
-    
+    edited_on       = db.Column(db.DateTime(timezone=True), onupdate=db.func.now())
+
     members         = db.relationship('User', backref='dept_info', lazy=True)
     projects        = db.relationship('Project', backref='dept_info', lazy=True)
 

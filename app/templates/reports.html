@@ -177,7 +177,11 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    
+                                                    <div class="d-flex gap-2 justify-content-end p-3 border-top bg-white">
+                                                        <button type="button" class="btn btn-outline-danger btn-sm px-4">Delete</button>
+                                                        <button type="button" class="btn btn-outline-warning btn-sm px-4" data-bs-toggle="modal" data-bs-target="#newReportModal">Update</button>
+                                                    </div>
+                                    
                                                     <div class="p-3 bg-light border-top">
                                                         <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
                                                     </div>
@@ -194,6 +198,7 @@
                                                     </div>
                                                 </div>
                                                 
+
                                             </div>
                                         </div>  
                                         <div class="tab-pane fade" id="Reviewed" role="tabpanel">
@@ -248,8 +253,11 @@
                                                 
                                                     </div>
                                                 </div>
-                        
-                                            <div class="tab-pane fade" id="cc" role="tabpanel">
+                                        
+                                            </div>
+                                        </div>      
+                                                                              
+                                            <div class="tab-pane fade" id="participated" role="tabpanel">
                                                 <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
                                         
                                                     <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
@@ -264,6 +272,45 @@
                                                                 </div>  
                                                             </a>
                                             
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-secondary bg-opacity-75 px-2 py-1">Reviewed</span>
+                                                                </div>
+                                                            </a>
+                                                           
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                </div>
+                                                            </a>
+                                                            
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                </div>
+                                                            </a>
+            
+                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="me-2">
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
+                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
+                                                                    </div>
+                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                </div>
+                                                            </a>
                                                             
                                                                                
                                                         </div>
@@ -622,8 +669,25 @@
     </div>
 </div>
 
-<script type="application/json" id="users-data">{{ users_json|tojson }}</script>
-<script type="application/json" id="reports-data">{{ reports_json|tojson }}</script>
+<!-- comment modal  -->
+<div class="modal fade" id="newCommentModal" tabindex="-1" aria-labelledby="newCommentModalLabel" aria-hidden="true">
+    <div class="border rounded">
+        <div class="p-2 bg-light border-bottom small fw-bold">Report content</div>
+        <div class="p-3 bg-white">
+            <textarea id="reportCKEditor" name="reportBody" class="form-control" style="min-height: 350px;"><p><strong>This week's summary:</strong></p>
+            <p>1.</p><p>2.</p>
+            <p><strong>Next week's plan:</strong></p>
+            <p>1.</p><p>2.</p>
+            <p><strong>Issues and suggestions:</strong></p>
+            <p>1.</p><p>2.</p></textarea>
+        </div>
+        <div class="p-2 bg-light border-top d-flex gap-3 text-muted" style="font-size: 0.8rem;">
+            <span><i class="bx bx-paperclip"></i> Attachment</span>
+            <span><i class="bx bx-font-color"></i> Content style</span>
+        </div>
+    </div>
+</div>
+
 <script>
     
 (function () {
@@ -1072,7 +1136,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // 2. Show the popover container
         popover.style.display = "block";
 
-        var textarea = document.getElementById("commentreportCKEditor");
+        var textarea = document.getElementById("commentCKEditor");
         if (!textarea) return;
 
         if (typeof ClassicEditor !== "undefined" && !commentEditorInstance) {
@@ -1112,7 +1176,7 @@ document.addEventListener("DOMContentLoaded", function () {
             currentPlaceholder.style.display = ""; 
             currentPlaceholder = null;
         }
-        var textarea = document.getElementById("commentreportCKEditor");
+        var textarea = document.getElementById("commentCKEditor");
         if (textarea) textarea.value = "";
     }
 
@@ -1146,27 +1210,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 })();
-
-function confirmReportDelete() {
-    var reportId = document.getElementById("currentActiveReportId").value;
-    
-    if (!reportId) return;
-
-    Swal.fire({
-        title: "Are you sure?",
-        text: "This report will be permanently removed!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#51d28c",
-        cancelButtonColor: "#f34e4e",
-        confirmButtonText: "Yes, delete it!"
-    }).then(function (result) {
-        if (result.isConfirmed) {
-            // No prefix needed because your blueprint has no url_prefix
-            window.location.href = "/reports/delete/" + reportId;
-        }
-    });
-}
     </script>
 
 
