@@ -94,6 +94,6 @@ tr:has(a[href]):hover {
     color: #133577; 
 }
 
-#sidebar-menu ul li.mm-active:last-child > a {
+/* #sidebar-menu ul li.mm-active:last-child > a {
     background-color: #28b7651a;
-}
+} */
