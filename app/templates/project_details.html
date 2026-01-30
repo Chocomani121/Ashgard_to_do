@@ -437,7 +437,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <form method="POST" action="{{ url_for('main.update_project', id=project.project_id) }}">
+                            <form method="POST" action="{{ url_for('main.update_project', id=project.project_id) }}" id="editProjectForm">
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="form-label">Project Name</label>
@@ -465,11 +465,11 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Start Date</label>
-                                        <input type="date" class="form-control" name="start_date" value="{% if deadline and deadline.start_date %}{{ deadline.start_date.strftime('%Y-%m-%d') }}{% endif %}">
+                                        <input type="date" class="form-control" name="start_date" id="editProjectStartDate" value="{% if deadline and deadline.start_date %}{{ deadline.start_date.strftime('%Y-%m-%d') }}{% endif %}">
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Deadline</label>
-                                        <input type="date" class="form-control" name="end_date" value="{% if deadline and deadline.end_date %}{{ deadline.end_date.strftime('%Y-%m-%d') }}{% endif %}">
+                                        <input type="date" class="form-control" name="end_date" id="editProjectEndDate" value="{% if deadline and deadline.end_date %}{{ deadline.end_date.strftime('%Y-%m-%d') }}{% endif %}">
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-end gap-2 mt-4">

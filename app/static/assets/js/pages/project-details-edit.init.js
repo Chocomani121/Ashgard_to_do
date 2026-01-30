@@ -173,6 +173,32 @@ Purpose: Edit Project modal – Edit Project Manager + Edit Members (chip UI, pr
       });
     }
 
+    // Edit Project form: deadline cannot be earlier than start date
+    const editProjectStartDate = document.getElementById("editProjectStartDate");
+    const editProjectEndDate = document.getElementById("editProjectEndDate");
+    const editProjectForm = document.getElementById("editProjectForm");
+    if (editProjectStartDate && editProjectEndDate) {
+      editProjectStartDate.addEventListener("change", function () {
+        editProjectEndDate.min = this.value || "";
+      });
+      if (editProjectStartDate.value) editProjectEndDate.min = editProjectStartDate.value;
+    }
+    if (editProjectForm && editProjectStartDate && editProjectEndDate) {
+      editProjectForm.addEventListener("submit", function (e) {
+        const start = editProjectStartDate.value;
+        const end = editProjectEndDate.value;
+        if (start && end && end < start) {
+          e.preventDefault();
+          if (typeof Swal !== "undefined") {
+            Swal.fire({ icon: "warning", title: "Invalid dates", text: "Deadline cannot be earlier than the start date." });
+          } else {
+            alert("Deadline cannot be earlier than the start date.");
+          }
+          return false;
+        }
+      });
+    }
+
     renderChipsEdit();
     renderListEdit("");
   });

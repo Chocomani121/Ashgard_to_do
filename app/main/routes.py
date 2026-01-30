@@ -353,6 +353,9 @@ def update_project(id):
         if start_str and end_str:
             start_date = datetime.strptime(start_str, '%Y-%m-%d')
             end_date = datetime.strptime(end_str, '%Y-%m-%d')
+            if end_date < start_date:
+                flash('Deadline cannot be earlier than the start date.', 'danger')
+                return redirect(url_for('main.project_details', id=id))
             if project.deadlines_id:
                 dl = Deadlines.query.get(project.deadlines_id)
                 if dl:
@@ -506,7 +509,10 @@ def create_project():
         except ValueError:
             flash('Invalid date format', 'danger')
             return redirect(url_for('main.projects'))
-        
+        if end_date < start_date:
+            flash('Deadline cannot be earlier than the start date.', 'danger')
+            return redirect(url_for('main.projects'))
+
         # Create deadline entry first
         deadline = Deadlines(
             start_date=start_date,
