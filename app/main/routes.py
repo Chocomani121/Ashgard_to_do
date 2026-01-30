@@ -1,8 +1,9 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask
+from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask,  Report, ReportCC
 from app import db 
 from datetime import datetime
+from sqlalchemy import or_
 import json
 
 main = Blueprint('main', __name__)
@@ -134,18 +135,15 @@ def add_department():
 @main.route("/department/edit/<int:id>", methods=['GET', 'POST'])
 @login_required
 def edit_department(id):
-    # This 'id' comes from the URL and is used to find the department
+
     department = Department.query.get_or_404(id)
     if request.method == 'POST':
         department.department_name = request.form.get('department_name')
-        member_ids = request.form.getlist('member_ids')  # Get list of selected member IDs
-        
-        # Update department members
-        # First, remove all current members from this department
+        member_ids = request.form.getlist('member_ids')  
+
         for user in department.members:
             user.department_id = None
         
-        # Then assign new members to the department
         if member_ids:
             for member_id in member_ids:
                 try:
@@ -180,10 +178,134 @@ def delete_department(id):
 def approvals():
     return render_template('approvals.html', title="Approvals")
 
-@main.route("/reports")
-def reports():
-    return render_template('reports.html', title="Reports")
+# ---- Report routes ----
+def _report_to_dict(report):
+    """Build a dict for one report (list + detail panel)."""
+    author_name = (report.author.name or report.author.username) if report.author else ''
+    reviewer_name = (report.reviewer_user.name or report.reviewer_user.username) if report.reviewer_user else ''
+    cc_names = ', '.join((e.user.name or e.user.username or '') for e in (report.cc_entries or []))
+    dept = getattr(report.author, 'dept_info', None) if report.author else None
+    department_name = dept.department_name if dept else ''
+    created_str = report.created_on.strftime('%m/%d/%Y %H:%M') if report.created_on else ''
+    return {
+        'report_id': report.report_id,
+        'author_name': author_name,
+        'week_name': report.week_name,
+        'is_checked': report.is_checked,
+        'created_on': created_str,
+        'reviewer_name': reviewer_name,
+        'cc_names': cc_names,
+        'department_name': department_name,
+        'report_content': report.report_content or '',
+        'is_author': report.member_id == current_user.member_id,
+        'is_reviewer': report.reviewer_id == current_user.member_id if report.reviewer_id else False,
+    }
 
+@main.route("/reports")
+@login_required
+def reports():
+    users = User.query.all()
+    users_json = [
+        {'member_id': u.member_id, 'name': u.name or u.username, 'username': u.username, 'image': u.image_file}
+        for u in users
+    ]
+    reports_q = Report.query.filter(
+        or_(
+            Report.member_id == current_user.member_id,
+            Report.reviewer_id == current_user.member_id,
+            Report.report_id.in_(
+                db.session.query(ReportCC.report_id).filter(ReportCC.member_id == current_user.member_id)
+            )
+        )
+    ).order_by(Report.created_on.desc()).all()
+
+    pending_reports = [r for r in reports_q if not r.is_checked]
+    reviewed_reports = [r for r in reports_q if r.is_checked]
+    reports_json = [_report_to_dict(r) for r in reports_q]
+
+    return render_template(
+        'reports.html',
+        title="Reports",
+        users=users,
+        users_json=users_json,
+        pending_reports=pending_reports,
+        reviewed_reports=reviewed_reports,
+        reports_json=reports_json,
+    )
+
+# ---- create_report routes ----
+@main.route("/reports/create", methods=['POST'])
+@login_required
+def create_report():
+    try:
+        # 1. Get Form Data
+        # Note: 'report_date' in your HTML maps to 'week_name' in your Model
+        week_name = request.form.get('report_date') 
+        report_content = request.form.get('reportBody')
+        reviewer_id = request.form.get('reviewer_id')
+        member_id = current_user.member_id # The Author
+        
+        # Validation
+        if not all([week_name, report_content, reviewer_id]):
+            flash('Please complete the report and select a reviewer.', 'danger')
+            return redirect(url_for('main.reports'))
+
+        # 2. Create the Report (report_tbl)
+        new_report = Report(
+            member_id=int(member_id),
+            reviewer_id=int(reviewer_id),
+            week_name=week_name,
+            report_content=report_content,
+            is_checked=False  # Explicitly setting default
+        )
+        
+        db.session.add(new_report)
+        db.session.flush()  # Gets the new_report.report_id
+
+        # 3. Create CC Entries (report_cc_tbl)
+        cc_member_ids = request.form.getlist('cc_members')
+        if cc_member_ids:
+            for m_id in cc_member_ids:
+                try:
+                    cc_entry = ReportCC(
+                        report_id=new_report.report_id,
+                        member_id=int(m_id)
+                    )
+                    db.session.add(cc_entry)
+                except (ValueError, TypeError):
+                    continue
+
+        db.session.commit()
+        flash('Weekly report created and sent for review!', 'success')
+        return redirect(url_for('main.reports'))
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error creating report: {str(e)}', 'danger')
+        return redirect(url_for('main.reports'))
+
+# ---- Approve report (reviewer marks as approved) ----
+@main.route("/reports/<int:report_id>/approve", methods=['POST'])
+@login_required
+def approve_report(report_id):
+    report = Report.query.get_or_404(report_id)
+    if report.reviewer_id != current_user.member_id:
+        flash('Only the assigned reviewer can approve this report.', 'danger')
+        return redirect(url_for('main.reports'))
+    if report.is_checked:
+        flash('This report is already approved.', 'info')
+        return redirect(url_for('main.reports'))
+    try:
+        report.is_checked = True
+        report.checked_at = datetime.utcnow()
+        db.session.commit()
+        flash('Report approved successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error: {str(e)}', 'danger')
+    return redirect(url_for('main.reports'))
+
+    
 @main.route("/members")
 @login_required
 def members():
@@ -272,10 +394,16 @@ def project_details(id=None):
         if uid != manager_id:
             edit_initial.append({'member_id': uid, 'name': m['user'].name or m['user'].username})
     edit_initial_members_json = edit_initial
-    
-    return render_template('project_details.html', 
-                         project=project, 
-                         manager=manager, 
+    # For Create Task modal: only project assigned members can be assigned to a task
+    task_assignable_members = [
+        {'id': m['user'].member_id, 'name': m['user'].name or m['user'].username}
+        for m in assigned_members
+    ]
+    is_project_manager = (current_user.member_id == project.project_manager) if project.project_manager else False
+
+    return render_template('project_details.html',
+                         project=project,
+                         manager=manager,
                          deadline=deadline,
                          department=department,
                          display_status=display_status,
@@ -283,12 +411,17 @@ def project_details(id=None):
                          tasks=tasks,
                          users=users,
                          users_json=users_json,
-                         edit_initial_members_json=edit_initial_members_json)
+                         edit_initial_members_json=edit_initial_members_json,
+                         task_assignable_members=task_assignable_members,
+                         is_project_manager=is_project_manager)
 
 @main.route("/project_details/<int:id>/update_manager", methods=['POST'])
 @login_required
 def update_project_manager(id):
     project = Project.query.get_or_404(id)
+    if current_user.member_id != project.project_manager:
+        flash('Only the project manager can perform this action.', 'danger')
+        return redirect(url_for('main.projects'))
     project_manager_id = request.form.get('project_manager')
     if not project_manager_id:
         flash('Please select a Project Manager', 'danger')
@@ -306,6 +439,9 @@ def update_project_manager(id):
 @login_required
 def update_project_members(id):
     project = Project.query.get_or_404(id)
+    if current_user.member_id != project.project_manager:
+        flash('Only the project manager can perform this action.', 'danger')
+        return redirect(url_for('main.projects'))
     member_ids = request.form.getlist('project_members')
     if not member_ids:
         flash('Please select at least one member', 'danger')
@@ -339,6 +475,9 @@ def update_project_members(id):
 @login_required
 def update_project(id):
     project = Project.query.get_or_404(id)
+    if current_user.member_id != project.project_manager:
+        flash('Only the project manager can perform this action.', 'danger')
+        return redirect(url_for('main.projects'))
     project_name = request.form.get('project_name', '').strip()
     if not project_name:
         flash('Project name is required', 'danger')
@@ -353,6 +492,9 @@ def update_project(id):
         if start_str and end_str:
             start_date = datetime.strptime(start_str, '%Y-%m-%d')
             end_date = datetime.strptime(end_str, '%Y-%m-%d')
+            if end_date < start_date:
+                flash('Deadline cannot be earlier than the start date.', 'danger')
+                return redirect(url_for('main.project_details', id=id))
             if project.deadlines_id:
                 dl = Deadlines.query.get(project.deadlines_id)
                 if dl:
@@ -374,6 +516,9 @@ def update_project(id):
 @login_required
 def update_project_description(id):
     project = Project.query.get_or_404(id)
+    if current_user.member_id != project.project_manager:
+        flash('Only the project manager can perform this action.', 'danger')
+        return redirect(url_for('main.projects'))
     project_desc = request.form.get('project_desc', '').strip() or None
     try:
         project.project_desc = project_desc
@@ -388,6 +533,9 @@ def update_project_description(id):
 @login_required
 def delete_project(id):
     project = Project.query.get_or_404(id)
+    if current_user.member_id != project.project_manager:
+        flash('Only the project manager can perform this action.', 'danger')
+        return redirect(url_for('main.projects'))
     try:
         ProjectMembers.query.filter_by(project_id=project.project_id).delete()
         tasks = Task.query.filter_by(project_id=project.project_id).all()
@@ -431,10 +579,11 @@ def task_details(id=None):
 @main.route("/project_details/<int:id>/task/create", methods=['POST'])
 @login_required
 def create_task(id):
+    project = Project.query.get_or_404(id)
+    if current_user.member_id != project.project_manager:
+        flash('Only the project manager can create tasks.', 'danger')
+        return redirect(url_for('main.projects'))
     try:
-        # Get the project
-        project = Project.query.get_or_404(id)
-        
         # Get form data
         task_name = request.form.get('task_name')
         owner_id = request.form.get('owner_id')
@@ -506,7 +655,10 @@ def create_project():
         except ValueError:
             flash('Invalid date format', 'danger')
             return redirect(url_for('main.projects'))
-        
+        if end_date < start_date:
+            flash('Deadline cannot be earlier than the start date.', 'danger')
+            return redirect(url_for('main.projects'))
+
         # Create deadline entry first
         deadline = Deadlines(
             start_date=start_date,
