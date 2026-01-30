@@ -75,8 +75,6 @@ def login():
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('main.projects'))
         
-        # This replaces the flash message
-        # It injects the error into the email field's error list
         form.email.errors.append('Invalid email or password.')
         
     return render_template('auth-login.html', title='Login', form=form)
@@ -137,19 +135,6 @@ def members():
         departments=departments,
         total_users=len(members)
     )
-
-# @users.route("/members")
-# @login_required
-# def members():
-#     page = request.args.get('page', 1, type=int)
-#     # This pagination object contains the logic for your HTML loop
-#     pagination = User.query.order_by(User.name.asc()).paginate(page=page, per_page=10)
-    
-#     return render_template('members.html', 
-#                            title='Members',
-#                            members=pagination.items, 
-#                            pagination=pagination, 
-#                            total_users=User.query.count())
 
 @users.route("/delete_member/<int:member_id>", methods=['GET','POST'])
 @login_required
