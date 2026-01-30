@@ -20,6 +20,7 @@
                             <!-- Card Header with Button -->
                             <div class="card-header d-flex align-items-center justify-content-between">
                                 <h4 class="card-title mb-0">{{ project.project_name or 'Project Details' }}</h4>
+                                {% if is_project_manager %}
                                 <div class="dropdown">
                                     <button class="btn btn-light" data-bs-toggle="dropdown">
                                         <i class="mdi mdi-dots-vertical"></i>
@@ -36,6 +37,7 @@
                                             onclick="confirmDeleteProject(this.dataset.projectId, this.dataset.projectName)">Delete</a>
                                     </div>
                                 </div>
+                                {% endif %}
                             </div>
 
                             <!-- Card Body -->
@@ -162,6 +164,7 @@
                              <div class="card">
                                     <div class="card-header d-flex align-items-center justify-content-between">
                                         <h5 class="card-title mb-0">Assigned Members</h5>
+                                        {% if is_project_manager %}
                                         <div class="dropdown">
                                             <button class="btn btn-light btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
                                                 <i class="mdi mdi-dots-vertical"></i>
@@ -171,6 +174,7 @@
                                                 <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editMembersModal">Edit Members</a>
                                             </div>
                                         </div>
+                                        {% endif %}
                                     </div>
                                     <div class="card-body">
                                     <div class="col-xl-12 col-md-7">
@@ -210,6 +214,7 @@
                                 <div class="card">
                                     <div class="card-header d-flex align-items-center justify-content-between">
                                         <h5 class="card-title mb-0">Description</h5>
+                                        {% if is_project_manager %}
                                         <div class="dropdown">
                                             <button class="btn btn-light btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
                                                 <i class="mdi mdi-dots-vertical"></i>
@@ -222,6 +227,7 @@
                                                     onclick="confirmDeleteProject(this.dataset.projectId, this.dataset.projectName)">Delete</a>
                                             </div>
                                         </div>
+                                        {% endif %}
                                     </div>
                                     <div class="card-body">
                                         <div class="col-xl-12 col-md-7">
@@ -247,9 +253,11 @@
                                     <div class="card">
                                         <div class="card-header d-flex align-items-center justify-content-between">
                                             <h4 class="card-title mb-0">Tasks</h4>
+                                            {% if is_project_manager %}
                                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target=".create-task">
                                                 <i class="mdi mdi-plus me-1"></i> Create Task
                                             </button>
+                                            {% endif %}
                                         </div>
 
                                         <div class="card-body">
@@ -377,6 +385,7 @@
         </div>
     
         
+  {% if is_project_manager %}
   <!--  Create Task modal -->
             <form method="POST" action="{{ url_for('main.create_task', id=project.project_id) }}" id="createTaskForm">
                 <input type="hidden" name="owner_id" id="createTaskOwnerId" value="">
@@ -585,6 +594,7 @@
                     </div>
                 </div>
             </div>
+  {% endif %}
 
 <script type="application/json" id="project-assigned-members-for-task">{{ task_assignable_members|tojson }}</script>
 <script type="application/json" id="edit-project-users-data">{{ users_json|tojson }}</script>

@@ -277,10 +277,11 @@ def project_details(id=None):
         {'id': m['user'].member_id, 'name': m['user'].name or m['user'].username}
         for m in assigned_members
     ]
+    is_project_manager = (current_user.member_id == project.project_manager) if project.project_manager else False
 
-    return render_template('project_details.html', 
-                         project=project, 
-                         manager=manager, 
+    return render_template('project_details.html',
+                         project=project,
+                         manager=manager,
                          deadline=deadline,
                          department=department,
                          display_status=display_status,
@@ -289,12 +290,16 @@ def project_details(id=None):
                          users=users,
                          users_json=users_json,
                          edit_initial_members_json=edit_initial_members_json,
-                         task_assignable_members=task_assignable_members)
+                         task_assignable_members=task_assignable_members,
+                         is_project_manager=is_project_manager)
 
 @main.route("/project_details/<int:id>/update_manager", methods=['POST'])
 @login_required
 def update_project_manager(id):
     project = Project.query.get_or_404(id)
+    if current_user.member_id != project.project_manager:
+        flash('Only the project manager can perform this action.', 'danger')
+        return redirect(url_for('main.projects'))
     project_manager_id = request.form.get('project_manager')
     if not project_manager_id:
         flash('Please select a Project Manager', 'danger')
@@ -312,6 +317,9 @@ def update_project_manager(id):
 @login_required
 def update_project_members(id):
     project = Project.query.get_or_404(id)
+    if current_user.member_id != project.project_manager:
+        flash('Only the project manager can perform this action.', 'danger')
+        return redirect(url_for('main.projects'))
     member_ids = request.form.getlist('project_members')
     if not member_ids:
         flash('Please select at least one member', 'danger')
@@ -345,6 +353,9 @@ def update_project_members(id):
 @login_required
 def update_project(id):
     project = Project.query.get_or_404(id)
+    if current_user.member_id != project.project_manager:
+        flash('Only the project manager can perform this action.', 'danger')
+        return redirect(url_for('main.projects'))
     project_name = request.form.get('project_name', '').strip()
     if not project_name:
         flash('Project name is required', 'danger')
@@ -383,6 +394,9 @@ def update_project(id):
 @login_required
 def update_project_description(id):
     project = Project.query.get_or_404(id)
+    if current_user.member_id != project.project_manager:
+        flash('Only the project manager can perform this action.', 'danger')
+        return redirect(url_for('main.projects'))
     project_desc = request.form.get('project_desc', '').strip() or None
     try:
         project.project_desc = project_desc
@@ -397,6 +411,9 @@ def update_project_description(id):
 @login_required
 def delete_project(id):
     project = Project.query.get_or_404(id)
+    if current_user.member_id != project.project_manager:
+        flash('Only the project manager can perform this action.', 'danger')
+        return redirect(url_for('main.projects'))
     try:
         ProjectMembers.query.filter_by(project_id=project.project_id).delete()
         tasks = Task.query.filter_by(project_id=project.project_id).all()
@@ -440,10 +457,11 @@ def task_details(id=None):
 @main.route("/project_details/<int:id>/task/create", methods=['POST'])
 @login_required
 def create_task(id):
+    project = Project.query.get_or_404(id)
+    if current_user.member_id != project.project_manager:
+        flash('Only the project manager can create tasks.', 'danger')
+        return redirect(url_for('main.projects'))
     try:
-        # Get the project
-        project = Project.query.get_or_404(id)
-        
         # Get form data
         task_name = request.form.get('task_name')
         owner_id = request.form.get('owner_id')
