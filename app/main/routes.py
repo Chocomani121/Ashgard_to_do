@@ -284,6 +284,28 @@ def create_report():
         flash(f'Error creating report: {str(e)}', 'danger')
         return redirect(url_for('main.reports'))
 
+# ---- Approve report (reviewer marks as approved) ----
+@main.route("/reports/<int:report_id>/approve", methods=['POST'])
+@login_required
+def approve_report(report_id):
+    report = Report.query.get_or_404(report_id)
+    if report.reviewer_id != current_user.member_id:
+        flash('Only the assigned reviewer can approve this report.', 'danger')
+        return redirect(url_for('main.reports'))
+    if report.is_checked:
+        flash('This report is already approved.', 'info')
+        return redirect(url_for('main.reports'))
+    try:
+        report.is_checked = True
+        report.checked_at = datetime.utcnow()
+        db.session.commit()
+        flash('Report approved successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error: {str(e)}', 'danger')
+    return redirect(url_for('main.reports'))
+
+    
 @main.route("/members")
 @login_required
 def members():

@@ -109,3 +109,14 @@ tr:has(a[href]):hover {
     background-color: #e9ecef !important;
     color: #212529 !important;
 }
+
+#reviewedReportList .list-group-item.reviewed-report-list-item.active {
+    background-color: #f0f0f0 !important;
+    color: #212529 !important;
+    border-color: #dee2e6 !important;
+}
+
+#reviewedReportList .list-group-item.reviewed-report-list-item.active:hover {
+    background-color: #e9ecef !important;
+    color: #212529 !important;
+}
