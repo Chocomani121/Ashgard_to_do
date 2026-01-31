@@ -98,12 +98,6 @@
                                         </li>
                                 
                                     
-                                        <li class="nav-item ms-auto">
-                                            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#newReportModal" style="color: #0d6efd;">
-                                                <i class="bx bx-plus me-1"></i>New
-                                            </a>
-                                        </li>
-                                    
                                         <!-- <li class="nav-item ms-auto">
                                             <a class="nav-link py-1" href="javascript:void(0);" onclick="location.reload();" title="Refresh Page">
                                                 <i class="bx bx-rotate-right fs-4 text-muted"></i>
@@ -142,7 +136,7 @@
                                                 
                                                 <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
                                                     
-                                                <div id="reportDetailPlaceholder" class="text-muted text-center py-5">Select a report from the list.</div>
+                                                <div id="reportDetailPlaceholder" class="text-muted text-center py-5" style="height: 100%;">Select a report from the list.</div>
                                                    <div id="reportDetailContent" class="p-4 flex-grow-1" style="display: none; overflow-y: auto; min-height: 0;">
                                                     <input type="hidden" id="currentActiveReportId" value="">
                                                         <div class="d-flex align-items-center mb-3">
@@ -182,11 +176,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="d-flex gap-2 justify-content-end p-3 border-top bg-white">
-                                                        <button type="button" class="btn btn-outline-danger btn-sm px-4">Delete</button>
-                                                        <button type="button" class="btn btn-outline-warning btn-sm px-4" data-bs-toggle="modal" data-bs-target="#newReportModal">Update</button>
-                                                    </div>
-                                    
+                                                    
                                                     <div class="p-3 bg-light border-top">
                                                         <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
                                                     </div>
@@ -227,7 +217,7 @@
                                                         </div>
                                                         
                                                         <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
-                                                            <div id="reviewedDetailPlaceholder" class="text-muted text-center py-5">Select a report from the list.</div>
+                                                            <div id="reviewedDetailPlaceholder" class="text-muted text-center py-5" style="height: 100%;">Select a report from the list.</div>
                                                             <div id="reviewedDetailContent" class="p-4 flex-grow-1" style="display: none; overflow-y: auto; min-height: 0;">
                                                                 <div class="d-flex align-items-center mb-3">
                                                                     <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
@@ -255,10 +245,12 @@
                                                                 <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
                                                             </div>
                                                         </div>
-                                            </div>
-                                        </div>      
+                                                
+                                                    </div>
+                                                </div>
+                                        
 
-                                            <div class="tab-pane fade" id="participated" role="tabpanel">
+                                            <div class="tab-pane fade" id="cc" role="tabpanel">
                                                 <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
                                         
                                                     <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
@@ -675,4 +667,4 @@
 <script src="{{ url_for('static', filename='assets/js/pages/report.js') }}"></script>
 
 
-   {% endblock content %}
+{% endblock content %}
