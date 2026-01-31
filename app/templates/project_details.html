@@ -20,6 +20,7 @@
                             <!-- Card Header with Button -->
                             <div class="card-header d-flex align-items-center justify-content-between">
                                 <h4 class="card-title mb-0">{{ project.project_name or 'Project Details' }}</h4>
+                                {% if is_project_manager %}
                                 <div class="dropdown">
                                     <button class="btn btn-light" data-bs-toggle="dropdown">
                                         <i class="mdi mdi-dots-vertical"></i>
@@ -36,6 +37,7 @@
                                             onclick="confirmDeleteProject(this.dataset.projectId, this.dataset.projectName)">Delete</a>
                                     </div>
                                 </div>
+                                {% endif %}
                             </div>
 
                             <!-- Card Body -->
@@ -162,6 +164,7 @@
                              <div class="card">
                                     <div class="card-header d-flex align-items-center justify-content-between">
                                         <h5 class="card-title mb-0">Assigned Members</h5>
+                                        {% if is_project_manager %}
                                         <div class="dropdown">
                                             <button class="btn btn-light btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
                                                 <i class="mdi mdi-dots-vertical"></i>
@@ -171,6 +174,7 @@
                                                 <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editMembersModal">Edit Members</a>
                                             </div>
                                         </div>
+                                        {% endif %}
                                     </div>
                                     <div class="card-body">
                                     <div class="col-xl-12 col-md-7">
@@ -210,6 +214,7 @@
                                 <div class="card">
                                     <div class="card-header d-flex align-items-center justify-content-between">
                                         <h5 class="card-title mb-0">Description</h5>
+                                        {% if is_project_manager %}
                                         <div class="dropdown">
                                             <button class="btn btn-light btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
                                                 <i class="mdi mdi-dots-vertical"></i>
@@ -222,6 +227,7 @@
                                                     onclick="confirmDeleteProject(this.dataset.projectId, this.dataset.projectName)">Delete</a>
                                             </div>
                                         </div>
+                                        {% endif %}
                                     </div>
                                     <div class="card-body">
                                         <div class="col-xl-12 col-md-7">
@@ -247,9 +253,11 @@
                                     <div class="card">
                                         <div class="card-header d-flex align-items-center justify-content-between">
                                             <h4 class="card-title mb-0">Tasks</h4>
+                                            {% if is_project_manager %}
                                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target=".create-task">
                                                 <i class="mdi mdi-plus me-1"></i> Create Task
                                             </button>
+                                            {% endif %}
                                         </div>
 
                                         <div class="card-body">
@@ -268,31 +276,15 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
+                                                        {% for task_info in tasks %}
                                                         <tr>
-                                                            <td class="fw-semibold"><a href="{{ url_for('main.task_details') }}" class="text-dark">API integration</a>
+                                                            <td class="fw-semibold"><a href="{{ url_for('main.task_details', id=task_info.task.task_id) }}" class="text-dark">{{ task_info.task.task_name }}</a></td>
                                                             <td style="width: 190px;">
+                                                                {% if task_info.owner %}
                                                                 <div class="d-flex align-items-center">
-                                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
+                                                                    <img class="rounded-circle avatar-sm" src="{{ url_for('static', filename='profile_pics/' + task_info.owner.image_file) }}" alt="">
                                                                     <div class="flex-grow-1 ms-3">
-                                                                        Patrick
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <div class="badge badge-soft-danger font-size-12">Rejected</div>
-                                                            </td>
-                                                            <td>
-                                                                4/5
-                                                            </td>
-                                                        </tr>   
-                                                        
-                                                        <tr>
-                                                            <td class="fw-semibold"><a href="#" class="text-dark">Login Form</a>
-                                                            <td style="width: 190px;">
-                                                                <div class="d-flex align-items-center">
-                                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
-                                                                    <div class="flex-grow-1 ms-3">
-                                                                        {{ task_data.owner.name if task_data.owner.name else task_data.owner.username }}
+                                                                        {{ task_info.owner.name if task_info.owner.name else task_info.owner.username }}
                                                                     </div>
                                                                 </div>
                                                                 {% else %}
@@ -300,31 +292,23 @@
                                                                 {% endif %}
                                                             </td>
                                                             <td>
-                                                                <div class="badge badge-soft-primary font-size-12">To be Reviewed</div>
+                                                                {% if task_info.status == 'Completed' %}
+                                                                <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                {% elif task_info.status == 'Ongoing' %}
+                                                                <div class="badge bg-soft-warning text-warning font-size-12">Ongoing</div>
+                                                                {% else %}
+                                                                <div class="badge bg-soft-secondary text-secondary font-size-12">{{ task_info.status }}</div>
+                                                                {% endif %}
                                                             </td>
                                                             <td>
-                                                                {{ task_data.progress }}
+                                                                {{ task_info.progress }}
                                                             </td>
-                                                    
-                                                        </tr>   
-
+                                                        </tr>
+                                                        {% else %}
                                                         <tr>
-                                                            <td class="fw-semibold"><a href="#" class="text-dark">UI Redesign</a>
-                                                            <td style="width: 190px;">
-                                                                <div class="d-flex align-items-center">
-                                                                    <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
-                                                                    <div class="flex-grow-1 ms-3">
-                                                                        Kath
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <div class="badge badge-soft-success font-size-12">Approved</div>
-                                                            </td>
-                                                            <td>
-                                                                4/6
-                                                            </td>                       
-                                                        </tr>   
+                                                            <td colspan="4" class="text-muted text-center py-4">No tasks yet.</td>
+                                                        </tr>
+                                                        {% endfor %}
                                                     </tbody>
                                             </table>
                                             
@@ -401,113 +385,87 @@
         </div>
     
         
-  <!--  Extra Large modal example -->
-            <div class="modal fade create-task" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-xl modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="myExtraLargeModalLabel">Create Task</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                           <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label" for="CreateTask-Category">Select Project</label>
-                                        <select class="form-select">
-                                            <option  selected> Select </option>
-                                            <option>Osint</option>
-                                            <option>MDC</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label" for="CreateTask-Task-Name">Task Name</label>
-                                        <input type="text" class="form-control" placeholder="Enter Task Name" id="CreateTask-Task-Name">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Start Date</label>
-                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                     <div class="mb-3">
-                                        <label class="form-label">Deadline</label>
-                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Client</label>
-                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Department</label>
-                                        <input type="text" class="form-control" placeholder="Select Due Date" id="CreateTask-due-date" disabled>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3 position-relative" style="max-width: 550px;">
-                                        <label class="form-label">Assign Members</label>
-                                        <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
-                                            id="ownerInput"
-                                            data-bs-toggle="dropdown"
-                                            style="max-height: 100px; overflow-y: auto;">
+  {% if is_project_manager %}
+  <!--  Create Task modal -->
+            <form method="POST" action="{{ url_for('main.create_task', id=project.project_id) }}" id="createTaskForm">
+                <input type="hidden" name="owner_id" id="createTaskOwnerId" value="">
+                <div class="modal fade create-task" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-md modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="myExtraLargeModalLabel">Create Task</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                               <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="CreateTask-Task-Name">Task Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" name="task_name" id="CreateTask-Task-Name" placeholder="Enter Task Name" required>
                                         </div>
-                                        <!-- Dropdown -->
-                                        <div class="dropdown-menu p-3 shadow owner-dropdown">
-                                            <input type="text"
-                                                class="form-control mb-2"
-                                                id="ownerSearch"
-                                                placeholder="Search colleague">
-                                            <small class="text-muted">Contacts</small>
-                                            <div class="list-group mt-2 owner-list"></div>
-                                            <div class="d-flex justify-content-between align-items-center mt-3">
-                                                <a href="#" id="clearOwners" class="text-muted small">Clear</a>
-                                                <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">Confirm</button>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="mb-3 position-relative" style="max-width: 550px;">
+                                            <label class="form-label">Assign Members <span class="text-danger">*</span></label>
+                                            <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
+                                                id="ownerInput"
+                                                data-bs-toggle="dropdown"
+                                                style="max-height: 100px; overflow-y: auto;">
+                                            </div>
+                                            <!-- Dropdown -->
+                                            <div class="dropdown-menu p-3 shadow owner-dropdown">
+                                                <input type="text"
+                                                    class="form-control mb-2"
+                                                    id="ownerSearch"
+                                                    placeholder="Search colleague">
+                                                <small class="text-muted">Contacts</small>
+                                                <div class="list-group mt-2 owner-list"></div>
+                                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                                    <a href="#" id="clearOwners" class="text-muted small">Clear</a>
+                                                    <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">Confirm</button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="topicDescription" class="form-label">Description</label>
-                                        <textarea class="form-control" id="topicDescription" rows="3" placeholder="Enter description"></textarea>
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="CreateTask-Description">Description</label>
+                                            <textarea class="form-control" name="task_description" id="CreateTask-Description" rows="3" placeholder="Enter task description"></textarea>
+                                        </div>
                                     </div>
+                               </div>
+                               <div class="row mt-2">
+                                <div class="col-12 text-end">
+                                    <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal"><i class="bx bx-x me-1 align-middle"></i> Cancel</button>
+                                    <button type="submit" class="btn btn-success" id="btn-save-event"><i class="bx bx-check me-1 align-middle"></i> Confirm</button>
                                 </div>
-                           </div>
-                           <div class="row mt-2">
-                            <div class="col-12 text-end">
-                                <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal"><i class="bx bx-x me-1 align-middle"></i> Cancel</button>
-                                <button type="submit" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#success-btn" id="btn-save-event"><i class="bx bx-check me-1 align-middle"></i> Confirm</button>
                             </div>
-                        </div>
-                        </div>
-                    </div><!-- /.modal-content -->
-                </div><!-- /.modal-dialog -->
-            </div><!-- /.modal -->
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div><!-- /.modal -->
+            </form>
 
             <!-- Edit Project modal (project card Edit – fields from project table) -->
             <div class="modal fade" data-bs-backdrop="static" id="editTaskModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-dialog modal-dialog-centered" style="max-width: 560px;">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">Edit Project</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <form method="POST" action="{{ url_for('main.update_project', id=project.project_id) }}">
+                            <form method="POST" action="{{ url_for('main.update_project', id=project.project_id) }}" id="editProjectForm">
                                 <div class="row g-3">
-                                    <div class="col-md-6 col-lg-4">
+                                    <div class="col-md-6">
                                         <label class="form-label">Project Name</label>
                                         <input type="text" class="form-control" name="project_name" value="{{ project.project_name or '' }}" required>
                                     </div>
-                                    <div class="col-md-6 col-lg-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Client</label>
+                                        <input type="text" class="form-control" name="client_name" value="{{ project.client_name or '' }}" placeholder="Client name">
+                                    </div>
+                                    <div class="col-md-6">
                                         <label class="form-label">Priority</label>
                                         <select class="form-select" name="priority">
                                             <option value="Low" {% if project.priority == 'Low' %}selected{% endif %}>Low</option>
@@ -515,15 +473,7 @@
                                             <option value="High" {% if project.priority == 'High' %}selected{% endif %}>High</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-6 col-lg-4">
-                                        <label class="form-label">Start Date</label>
-                                        <input type="date" class="form-control" name="start_date" value="{% if deadline and deadline.start_date %}{{ deadline.start_date.strftime('%Y-%m-%d') }}{% endif %}">
-                                    </div>
-                                    <div class="col-md-6 col-lg-4">
-                                        <label class="form-label">Deadline</label>
-                                        <input type="date" class="form-control" name="end_date" value="{% if deadline and deadline.end_date %}{{ deadline.end_date.strftime('%Y-%m-%d') }}{% endif %}">
-                                    </div>
-                                    <div class="col-md-6 col-lg-4">
+                                    <div class="col-md-6">
                                         <label class="form-label">Status</label>
                                         <select class="form-select" name="project_status">
                                             <option value="Ongoing" {% if display_status == 'Ongoing' %}selected{% endif %}>Ongoing</option>
@@ -531,9 +481,13 @@
                                             <option value="Completed" {% if display_status == 'Completed' %}selected{% endif %}>Completed</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-6 col-lg-4">
-                                        <label class="form-label">Client</label>
-                                        <input type="text" class="form-control" name="client_name" value="{{ project.client_name or '' }}" placeholder="Client name">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Start Date</label>
+                                        <input type="date" class="form-control" name="start_date" id="editProjectStartDate" value="{% if deadline and deadline.start_date %}{{ deadline.start_date.strftime('%Y-%m-%d') }}{% endif %}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Deadline</label>
+                                        <input type="date" class="form-control" name="end_date" id="editProjectEndDate" value="{% if deadline and deadline.end_date %}{{ deadline.end_date.strftime('%Y-%m-%d') }}{% endif %}">
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-end gap-2 mt-4">
@@ -640,7 +594,9 @@
                     </div>
                 </div>
             </div>
+  {% endif %}
 
+<script type="application/json" id="project-assigned-members-for-task">{{ task_assignable_members|tojson }}</script>
 <script type="application/json" id="edit-project-users-data">{{ users_json|tojson }}</script>
 <script type="application/json" id="edit-project-initial-members">{{ edit_initial_members_json|tojson }}</script>
 <script src="{{ url_for('static', filename='assets/js/pages/project-details-edit.init.js') }}"></script>

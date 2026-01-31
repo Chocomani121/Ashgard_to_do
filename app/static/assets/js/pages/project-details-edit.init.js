@@ -173,7 +173,52 @@ Purpose: Edit Project modal – Edit Project Manager + Edit Members (chip UI, pr
       });
     }
 
+    // Edit Project form: deadline cannot be earlier than start date
+    const editProjectStartDate = document.getElementById("editProjectStartDate");
+    const editProjectEndDate = document.getElementById("editProjectEndDate");
+    const editProjectForm = document.getElementById("editProjectForm");
+    if (editProjectStartDate && editProjectEndDate) {
+      editProjectStartDate.addEventListener("change", function () {
+        editProjectEndDate.min = this.value || "";
+      });
+      if (editProjectStartDate.value) editProjectEndDate.min = editProjectStartDate.value;
+    }
+    if (editProjectForm && editProjectStartDate && editProjectEndDate) {
+      editProjectForm.addEventListener("submit", function (e) {
+        const start = editProjectStartDate.value;
+        const end = editProjectEndDate.value;
+        if (start && end && end < start) {
+          e.preventDefault();
+          if (typeof Swal !== "undefined") {
+            Swal.fire({ icon: "warning", title: "Invalid dates", text: "Deadline cannot be earlier than the start date." });
+          } else {
+            alert("Deadline cannot be earlier than the start date.");
+          }
+          return false;
+        }
+      });
+    }
+
     renderChipsEdit();
     renderListEdit("");
+
+    // Create Task form: set owner_id from Assign Members selection before submit
+    const createTaskForm = document.getElementById("createTaskForm");
+    const createTaskOwnerId = document.getElementById("createTaskOwnerId");
+    if (createTaskForm && createTaskOwnerId) {
+      createTaskForm.addEventListener("submit", function (e) {
+        const so = window.selectedOwners;
+        if (!so || so.length === 0) {
+          e.preventDefault();
+          if (typeof Swal !== "undefined") {
+            Swal.fire({ icon: "warning", text: "Please select at least one member to assign." });
+          } else {
+            alert("Please select at least one member to assign.");
+          }
+          return false;
+        }
+        createTaskOwnerId.value = so[0].id;
+      });
+    }
   });
 })();
