@@ -662,25 +662,6 @@
     </div>
 </div>
 
-<!-- comment modal  -->
-<div class="modal fade" id="newCommentModal" tabindex="-1" aria-labelledby="newCommentModalLabel" aria-hidden="true">
-    <div class="border rounded">
-        <div class="p-2 bg-light border-bottom small fw-bold">Report content</div>
-        <div class="p-3 bg-white">
-            <textarea id="reportCKEditor" name="reportBody" class="form-control" style="min-height: 350px;"><p><strong>This week's summary:</strong></p>
-            <p>1.</p><p>2.</p>
-            <p><strong>Next week's plan:</strong></p>
-            <p>1.</p><p>2.</p>
-            <p><strong>Issues and suggestions:</strong></p>
-            <p>1.</p><p>2.</p></textarea>
-        </div>
-        <div class="p-2 bg-light border-top d-flex gap-3 text-muted" style="font-size: 0.8rem;">
-            <span><i class="bx bx-paperclip"></i> Attachment</span>
-            <span><i class="bx bx-font-color"></i> Content style</span>
-        </div>
-    </div>
-</div>
-
 <script type="application/json" id="users-data">{{ users_json|tojson }}</script>
 <script type="application/json" id="reports-data">{{ reports_json|tojson }}</script>
 <script src="{{ url_for('static', filename='assets/js/pages/report.js') }}"></script>
