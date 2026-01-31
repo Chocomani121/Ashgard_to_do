@@ -230,5 +230,213 @@ Purpose: Chip-based member selection for Create Project modal
     // initial render
     populateAvailableMembers();
     renderSelectedProject();
+
+    // ----- Table pagination (Department-Wide and Company-Wide projects) -----
+    const projectsTable = document.getElementById("projectsTable");
+    const projectsTablePagination = document.getElementById("projectsTablePagination");
+    const projectsTableSummary = document.getElementById("projectsTableSummary");
+    const projectsTableCompany = document.getElementById("projectsTableCompany");
+    const projectsTableCompanyPagination = document.getElementById("projectsTableCompanyPagination");
+    const projectsTableCompanySummary = document.getElementById("projectsTableCompanySummary");
+
+    const PAGE_SIZE = 10;
+    let departmentPage = 1;
+    let companyPage = 1;
+
+    function getDepartmentDataRows() {
+      if (!projectsTable) return [];
+      const tbody = projectsTable.querySelector("tbody");
+      if (!tbody) return [];
+      return Array.from(tbody.querySelectorAll("tr")).filter(function (tr) {
+        return tr.getAttribute("data-status") != null;
+      });
+    }
+
+    function getCompanyDataRows() {
+      if (!projectsTableCompany) return [];
+      const tbody = projectsTableCompany.querySelector("tbody");
+      if (!tbody) return [];
+      return Array.from(tbody.querySelectorAll("tr")).filter(function (tr) {
+        const td = tr.querySelector("td[colspan]");
+        return !td;
+      });
+    }
+
+    function parseDateRangeInput() {
+      const input = document.getElementById("datepicker-range");
+      if (!input || !input.value || typeof input.value !== "string") return null;
+      const parts = input.value.split(/\s+to\s+|\s+-\s+/).map(function (s) { return s.trim(); });
+      if (parts.length !== 2) return null;
+      const d1 = new Date(parts[0]);
+      const d2 = new Date(parts[1]);
+      if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return null;
+      return [parts[0], parts[1]];
+    }
+
+    function rowMatchesDepartmentFilters(row, statusVal, priorityVal, dateRange) {
+      if (statusVal && statusVal !== "all" && (row.getAttribute("data-status") || "") !== statusVal) return false;
+      if (priorityVal && priorityVal !== "all" && (row.getAttribute("data-priority") || "") !== priorityVal) return false;
+      if (dateRange && dateRange.length === 2) {
+        const start = row.getAttribute("data-start-date") || "";
+        const end = row.getAttribute("data-end-date") || "";
+        const filterStart = new Date(dateRange[0]);
+        const filterEnd = new Date(dateRange[1]);
+        filterStart.setHours(0, 0, 0, 0);
+        filterEnd.setHours(23, 59, 59, 999);
+        var inRange = false;
+        if (start) {
+          var d = new Date(start);
+          d.setHours(0, 0, 0, 0);
+          if (d >= filterStart && d <= filterEnd) inRange = true;
+        }
+        if (!inRange && end) {
+          var d = new Date(end);
+          d.setHours(23, 59, 59, 999);
+          if (d >= filterStart && d <= filterEnd) inRange = true;
+        }
+        if (!inRange && start && end) {
+          var ps = new Date(start);
+          var pe = new Date(end);
+          ps.setHours(0, 0, 0, 0);
+          pe.setHours(23, 59, 59, 999);
+          if (ps <= filterEnd && pe >= filterStart) inRange = true;
+        }
+        if (!inRange) return false;
+      }
+      return true;
+    }
+
+    function renderPaginationUl(container, currentPage, totalPages, goToPage) {
+      if (!container) return;
+      container.innerHTML = "";
+      if (totalPages <= 0) return;
+
+      var prevLi = document.createElement("li");
+      prevLi.className = "page-item" + (currentPage <= 1 ? " disabled" : "");
+      prevLi.innerHTML = '<a class="page-link" href="javascript:void(0);" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>';
+      if (currentPage > 1) {
+        prevLi.querySelector("a").addEventListener("click", function (e) { e.preventDefault(); goToPage(currentPage - 1); });
+      }
+      container.appendChild(prevLi);
+
+      var start = Math.max(1, currentPage - 2);
+      var end = Math.min(totalPages, currentPage + 2);
+      for (var p = start; p <= end; p++) {
+        (function (page) {
+          var li = document.createElement("li");
+          li.className = "page-item" + (page === currentPage ? " active" : "");
+          var a = document.createElement("a");
+          a.className = "page-link";
+          a.href = "javascript:void(0);";
+          a.textContent = page;
+          a.addEventListener("click", function (e) { e.preventDefault(); goToPage(page); });
+          li.appendChild(a);
+          container.appendChild(li);
+        })(p);
+      }
+
+      var nextLi = document.createElement("li");
+      nextLi.className = "page-item" + (currentPage >= totalPages ? " disabled" : "");
+      nextLi.innerHTML = '<a class="page-link" href="javascript:void(0);" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>';
+      if (currentPage < totalPages) {
+        nextLi.querySelector("a").addEventListener("click", function (e) { e.preventDefault(); goToPage(currentPage + 1); });
+      }
+      container.appendChild(nextLi);
+    }
+
+    function applyDepartmentPagination() {
+      var statusVal = (document.getElementById("statusFilter") && document.getElementById("statusFilter").value) || "all";
+      var priorityVal = (document.getElementById("priorityFilter") && document.getElementById("priorityFilter").value) || "all";
+      var dateRange = parseDateRangeInput();
+
+      var allRows = getDepartmentDataRows();
+      var filtered = allRows.filter(function (row) { return rowMatchesDepartmentFilters(row, statusVal, priorityVal, dateRange); });
+      var total = filtered.length;
+      var totalPages = total === 0 ? 0 : Math.max(1, Math.ceil(total / PAGE_SIZE));
+      departmentPage = totalPages === 0 ? 1 : Math.min(Math.max(1, departmentPage), totalPages);
+
+      var startIdx = (departmentPage - 1) * PAGE_SIZE;
+      var endIdx = Math.min(startIdx + PAGE_SIZE, total);
+
+      allRows.forEach(function (row) {
+        row.style.display = "none";
+      });
+      filtered.forEach(function (row, i) {
+        if (i >= startIdx && i < endIdx) row.style.display = "";
+      });
+
+      if (projectsTableSummary) {
+        if (total === 0) {
+          projectsTableSummary.textContent = "Showing 0 to 0 of 0 results";
+        } else {
+          projectsTableSummary.textContent = "Showing " + (startIdx + 1) + " to " + endIdx + " of " + total + " results";
+        }
+      }
+      renderPaginationUl(projectsTablePagination, departmentPage, totalPages, function (p) {
+        departmentPage = p;
+        applyDepartmentPagination();
+      });
+    }
+
+    function applyCompanyPagination() {
+      var allRows = getCompanyDataRows();
+      var total = allRows.length;
+      var totalPages = total === 0 ? 0 : Math.max(1, Math.ceil(total / PAGE_SIZE));
+      companyPage = totalPages === 0 ? 1 : Math.min(Math.max(1, companyPage), totalPages);
+
+      var startIdx = (companyPage - 1) * PAGE_SIZE;
+      var endIdx = Math.min(startIdx + PAGE_SIZE, total);
+
+      allRows.forEach(function (row, i) {
+        row.style.display = (i >= startIdx && i < endIdx) ? "" : "none";
+      });
+
+      if (projectsTableCompanySummary) {
+        if (total === 0) {
+          projectsTableCompanySummary.textContent = "Showing 0 to 0 of 0 results";
+        } else {
+          projectsTableCompanySummary.textContent = "Showing " + (startIdx + 1) + " to " + endIdx + " of " + total + " results";
+        }
+      }
+      renderPaginationUl(projectsTableCompanyPagination, companyPage, totalPages, function (p) {
+        companyPage = p;
+        applyCompanyPagination();
+      });
+    }
+
+    if (projectsTable && projectsTablePagination) {
+      applyDepartmentPagination();
+
+      var statusFilter = document.getElementById("statusFilter");
+      var priorityFilter = document.getElementById("priorityFilter");
+      var datepickerRange = document.getElementById("datepicker-range");
+
+      if (statusFilter) {
+        statusFilter.addEventListener("change", function () {
+          departmentPage = 1;
+          applyDepartmentPagination();
+        });
+      }
+      if (priorityFilter) {
+        priorityFilter.addEventListener("change", function () {
+          departmentPage = 1;
+          applyDepartmentPagination();
+        });
+      }
+      if (datepickerRange) {
+        datepickerRange.addEventListener("change", function () {
+          departmentPage = 1;
+          applyDepartmentPagination();
+        });
+        datepickerRange.addEventListener("input", function () {
+          departmentPage = 1;
+          applyDepartmentPagination();
+        });
+      }
+    }
+
+    if (projectsTableCompany && projectsTableCompanyPagination) {
+      applyCompanyPagination();
+    }
   });
 })();
