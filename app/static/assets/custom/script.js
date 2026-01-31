@@ -1,32 +1,57 @@
-const owners = [
-    { id: 1, name: "Kathrina Mirasol", initials: "KM", color: "#6f42c1" },
-    { id: 2, name: "Windyl Orbeta", initials: "WO", color: "#0d6efd" },
-    { id: 3, name: "Patrick Genon", initials: "PG", color: "#198754" },
-    { id: 4, name: "Neil Javerle", initials: "NJ", color: "#dc3545" },
-    { id: 5, name: "Lurs Lastimosa", initials: "LL", color: "#fd7e14" }
-];
+// Create Task modal: owners list is populated from project-assigned-members (Project Details) or left empty
+let owners = [];
+(function () {
+    const el = document.getElementById("project-assigned-members-for-task");
+    if (el && el.textContent) {
+        try {
+            const list = JSON.parse(el.textContent);
+            const colors = ["#6f42c1", "#0d6efd", "#198754", "#dc3545", "#fd7e14", "#20c997", "#ffc107", "#6610f2"];
+            function getInitials(name) {
+                if (!name) return "??";
+                const parts = String(name).trim().split(/\s+/);
+                if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+                return String(name).substring(0, 2).toUpperCase();
+            }
+            owners = list.map(function (u, i) {
+                return {
+                    id: u.id,
+                    name: u.name || "",
+                    initials: getInitials(u.name),
+                    color: colors[i % colors.length]
+                };
+            });
+        } catch (e) {}
+    }
+})();
 
 const ownerList = document.querySelector(".owner-list");
 const ownerInput = document.getElementById("ownerInput");
 const ownerSearch = document.getElementById("ownerSearch");
 
 let selectedOwners = [];
+window.selectedOwners = selectedOwners; // for Create Task form (project_details) to set owner_id
 
 // Only run owner-list UI code when elements exist (e.g. not on project_details)
 if (ownerList && ownerInput && ownerSearch) {
-    // Render list
+    // Render list (no hardcoded data; on Project Details owners come from project-assigned-members)
     function renderOwners(filter = "") {
         ownerList.innerHTML = "";
-        owners
-            .filter(o => o.name.toLowerCase().includes(filter.toLowerCase()))
-            .forEach(owner => {
-                const item = document.createElement("div");
-                item.className = "list-group-item owner-item";
-                if (selectedOwners.find(o => o.id === owner.id)) item.classList.add("active");
-                item.innerHTML = `<div class="owner-avatar" style="background:${owner.color}">${owner.initials}</div><span>${owner.name}</span>`;
-                item.onclick = () => toggleOwner(owner);
-                ownerList.appendChild(item);
-            });
+        const filtered = owners.filter(o => (o.name || "").toLowerCase().includes((filter || "").toLowerCase()));
+        if (filtered.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "list-group-item text-muted text-center";
+            empty.textContent = owners.length === 0 ? "No members available (open from a project to assign)." : "No matching members.";
+            ownerList.appendChild(empty);
+            return;
+        }
+        filtered.forEach(owner => {
+            const item = document.createElement("div");
+            item.className = "list-group-item owner-item";
+            if (selectedOwners.find(o => o.id === owner.id)) item.classList.add("active");
+            item.innerHTML = `<div class="owner-avatar" style="background:${owner.color}">${owner.initials}</div><span>${owner.name}</span>`;
+            item.onclick = () => toggleOwner(owner);
+            ownerList.appendChild(item);
+        });
     }
     function toggleOwner(owner) {
         const exists = selectedOwners.find(o => o.id === owner.id);
@@ -59,6 +84,23 @@ if (ownerList && ownerInput && ownerSearch) {
     if (clearOwners) clearOwners.onclick = () => { selectedOwners = []; renderSelected(); renderOwners(); };
     renderOwners();
     renderSelected();
+}
+
+// Search – only if this page has the owner/CC block
+if (ownerSearch) {
+    ownerSearch.addEventListener("input", e => {
+        renderOwners(e.target.value);
+    });
+}
+
+// Clear – only if this page has the block
+var clearOwnersBtn = document.getElementById("clearOwners");
+if (clearOwnersBtn) {
+    clearOwnersBtn.onclick = () => {
+        selectedOwners = [];
+        renderSelected();
+        renderOwners();
+    };
 }
 
 // Search – only if this page has the owner/CC block
@@ -255,3 +297,47 @@ document.querySelectorAll('.pin-btn').forEach(btn => {
         }
     });
 
+// Generate options for the weekly report date dropdown
+function getCurrentReportWeek() {
+    const today = new Date();
+    const daysFromMonday = (today.getDay() + 6) % 7;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - daysFromMonday);
+    const saturday = new Date(monday);
+    saturday.setDate(monday.getDate() + 5);
+    return { start: monday, end: saturday };
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const sel = document.getElementById("weekly-report-date");
+    if (!sel) return;
+
+    function fmt(d) {
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return m + "/" + day + "/" + d.getFullYear();
+    }
+
+    const { start, end } = getCurrentReportWeek();
+    const currentLabel = fmt(start) + " - " + fmt(end);
+
+    // Clear placeholder, add "This week" as first and selected
+    sel.innerHTML = "";
+    const currentOpt = document.createElement("option");
+    currentOpt.value = currentLabel;
+    currentOpt.textContent = currentLabel + " (This week)";
+    currentOpt.selected = true;
+    sel.appendChild(currentOpt);
+
+    // Only future report weeks (ahead)
+    for (let i = 1; i <= 12; i++) {
+        const nextMon = new Date(start);
+        nextMon.setDate(start.getDate() + 7 * i);
+        const nextSat = new Date(nextMon);
+        nextSat.setDate(nextMon.getDate() + 5);
+        const opt = document.createElement("option");
+        opt.value = fmt(nextMon) + " - " + fmt(nextSat);
+        opt.textContent = opt.value;
+        sel.appendChild(opt);
+    }
+});

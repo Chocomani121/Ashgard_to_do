@@ -181,10 +181,32 @@ Purpose: Chip-based member selection for Create Project modal
       };
     }
 
-    // Handle form submission - add selected member IDs to form
+    // Start date / deadline: deadline cannot be earlier than start date
+    const startDateEl = document.getElementById("start_date");
+    const endDateEl = document.getElementById("end_date");
+    if (startDateEl && endDateEl) {
+      startDateEl.addEventListener("change", function () {
+        endDateEl.min = this.value || "";
+      });
+    }
+
+    // Handle form submission - add selected member IDs to form + validate dates
     const createProjectForm = document.getElementById("createProjectForm");
     if (createProjectForm) {
       createProjectForm.addEventListener("submit", function (e) {
+        if (startDateEl && endDateEl) {
+          const start = startDateEl.value;
+          const end = endDateEl.value;
+          if (start && end && end < start) {
+            e.preventDefault();
+            if (typeof Swal !== "undefined") {
+              Swal.fire({ icon: "warning", title: "Invalid dates", text: "Deadline cannot be earlier than the start date." });
+            } else {
+              alert("Deadline cannot be earlier than the start date.");
+            }
+            return false;
+          }
+        }
         if (selectedOwnersProject.length === 0) {
           e.preventDefault();
           alert("Please select at least one member for the project");
