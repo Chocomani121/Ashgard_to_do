@@ -287,18 +287,7 @@ if (table7Req && table7Res) {
         className: { table: "table table-centered align-middle" }
     }).render(table7Res);
 }
-// 10. Approval Table
-const table10Req = document.getElementById("projectsApproval");
-const table10Res = document.getElementById("table10-gridjs");
-if (table10Req && table10Res) {
-    new gridjs.Grid({
-        from: table10Req,
-        pagination: { limit: 5 },
-        sort: true,
-        search: true,
-        className: { table: "table table-centered align-middle" }
-    }).render(table10Res);
-}
+
 // 6. Department Projects Table (from all_departments.html)
 document.addEventListener('DOMContentLoaded', function() {
     let grid = null;
