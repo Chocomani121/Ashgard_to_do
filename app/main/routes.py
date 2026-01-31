@@ -116,7 +116,7 @@ def add_department():
     if name:
         new_dept = Department(department_name=name)
         db.session.add(new_dept)
-        db.session.flush()  # Flush to get the department_id
+        db.session.flush()
         
         # Assign selected members to the new department
         if member_ids:
@@ -305,7 +305,7 @@ def approve_report(report_id):
         flash(f'Error: {str(e)}', 'danger')
     return redirect(url_for('main.reports'))
 
-    
+
 @main.route("/members")
 @login_required
 def members():
