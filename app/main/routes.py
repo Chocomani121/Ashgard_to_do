@@ -1,6 +1,6 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask,  Report, ReportCC
+from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask,  Report, ReportCC, Comment
 from app import db 
 from datetime import datetime
 from sqlalchemy import or_
@@ -326,6 +326,38 @@ def approve_report(report_id):
         flash('Report approved successfully.', 'success')
     except Exception as e:
         db.session.rollback()
+        flash(f'Error: {str(e)}', 'danger')
+    return redirect(url_for('main.reports'))
+
+
+# ---- Add comment to report ----
+@main.route("/reports/<int:report_id>/comment", methods=['POST'])
+@login_required
+def add_report_comment(report_id):
+    report = Report.query.get_or_404(report_id)
+    # Optional: restrict to users who can see the report (author, reviewer, or CC)
+    comment_body = request.form.get('comment_body') or (request.get_json() or {}).get('comment_body', '')
+    comment_body = (comment_body or '').strip()
+    if not comment_body:
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'error': 'Comment is empty'}), 400
+        flash('Comment cannot be empty.', 'warning')
+        return redirect(url_for('main.reports'))
+    try:
+        comment = Comment(
+            report_id=report_id,
+            member_id=current_user.member_id,
+            comment_body=comment_body
+        )
+        db.session.add(comment)
+        db.session.commit()
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': True, 'comment_id': comment.comment_id})
+        flash('Comment added.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'error': str(e)}), 500
         flash(f'Error: {str(e)}', 'danger')
     return redirect(url_for('main.reports'))
 

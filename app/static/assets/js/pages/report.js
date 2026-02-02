@@ -510,7 +510,7 @@
           
           // 1. Hide the placeholder immediately
           currentPlaceholder = placeholder;
-          currentPlaceholder.style.visibility = "hidden"; // Use visibility to keep layout stable, or 'none' if you want collapse
+          currentPlaceholder.style.visibility = "hidden"; 
   
           // 2. Show the popover container
           popover.style.display = "block";
@@ -555,16 +555,49 @@
               currentPlaceholder.style.display = ""; 
               currentPlaceholder = null;
           }
-          var textarea = document.getElementById("commentreportCKEditor");
+          var textarea = document.getElementById("commentCKEditor");
           if (textarea) textarea.value = "";
       }
   
       function sendComment() {
-          var html = commentEditorInstance ? commentEditorInstance.getData() : "";
-          console.log("Sending comment:", html);
-          // Add your AJAX logic here to save to DB
-          closeCommentEditor();
-      }
+        var commentReportIdEl = document.getElementById("commentReportId");
+        var reportId = commentReportIdEl ? commentReportIdEl.value : null;
+        if (!reportId) {
+            alert("Please select a report first.");
+            return;
+        }
+        var body = commentEditorInstance ? commentEditorInstance.getData() : "";
+        body = (body || "").trim();
+        if (!body) {
+            alert("Please write a comment.");
+            return;
+        }
+        var formData = new FormData();
+        formData.append("comment_body", body);
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/reports/" + reportId + "/comment");
+        xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+        xhr.setRequestHeader("Cache-Control", "no-cache");
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                try {
+                    var res = JSON.parse(xhr.responseText);
+                    if (res && res.success) {
+                        closeCommentEditor();
+                        if (typeof Swal !== "undefined") {
+                            Swal.fire({ title: "Comment added", icon: "success", timer: 1500, showConfirmButton: false });
+                        } else {
+                            alert("Comment added.");
+                        }
+                        return;
+                    }
+                } catch (e) {}
+            }
+            alert("Failed to save comment.");
+        };
+        xhr.onerror = function () { alert("Failed to save comment."); };
+        xhr.send(formData);
+    }
   
       // Event Listeners
       if (cancelBtn) cancelBtn.addEventListener("click", closeCommentEditor);
@@ -590,6 +623,7 @@
       });
   })();
   
+  // Delete report
   function confirmReportDelete() {
       var reportId = document.getElementById("currentActiveReportId").value;
       
