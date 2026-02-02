@@ -320,3 +320,4 @@ def edit_report(report_id):
         flash(f"Error updating report: {str(e)}", "danger")
 
     return redirect(url_for('main.reports'))
+
