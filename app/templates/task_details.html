@@ -21,7 +21,7 @@
 
                             <!-- Card Header with Button -->
                             <div class="card-header d-flex align-items-center justify-content-between">
-                                <h4 class="card-title mb-0">Task Details</h4>
+                                <h4 class="card-title mb-0">{{ task.task_name or 'Task Details' }}</h4>
                                 <div class="dropdown">
                                     <button class="btn btn-light" data-bs-toggle="dropdown">
                                         <i class="mdi mdi-dots-vertical"></i>
@@ -32,9 +32,10 @@
                                             data-bs-target="#editTaskModal">
                                             Edit Task
                                         </a>                                    
-                                        <a class="dropdown-item" 
+                                        <a class="dropdown-item text-danger" 
                                             href="javascript:void(0);" 
-                                            onclick="confirmDelete('UI Redisgn task')">Delete</a>
+                                            data-task-name="{{ (task.task_name or 'this task')|e }}"
+                                            onclick="confirmDeleteTask(this.getAttribute('data-task-name'))">Delete</a>
                                     </div>
                                 </div>
                             </div>
@@ -42,118 +43,67 @@
                             <!-- Card Body -->
                           <div class="card-body d-flex flex-column overflow-hidden">
 
-                                <!-- Top Info Section -->
-                                <div class="row mb-3 g-3 flex-shrink-0">
-                                    <div class="col-md-3 col-sm-6">
-                                        <span class="text-muted">Project Manager:</span> 
-                                        <strong class="ms-1">Lurs</strong>
+                                <!-- Top Info Section: Project Manager, Priority, Task ID, Task Status, Assigned Members -->
+                                <div class="row mb-3 g-3 flex-shrink-0 align-items-start">
+                                    <div class="col-6 col-md-3">
+                                        <div class="text-muted small">Project Manager</div>
+                                        <strong class="d-block mt-1">{% if task.project_info and task.project_info.manager %}{{ task.project_info.manager.name or task.project_info.manager.username }}{% else %}N/A{% endif %}</strong>
                                     </div>
-
-                                    <div class="col-md-3 col-sm-6">
-                                        <span class="text-muted">Priority:</span> 
-                                        <span class="badge bg-soft-danger text-danger ms-1">High</span>
-                                    </div>
-
-                                    <div class="col-md-3 col-sm-6">
-                                        <span class="text-muted">Start date:</span> 
-                                        <strong class="ms-1">24, June 2023</strong>
-                                    </div>
-
-                                    <div class="col-md-3 col-sm-6">
-                                        <span class="text-muted">End date:</span> 
-                                        <strong class="ms-1">24, June 2023</strong>
-                                    </div>
-
-                                    <div class="col-md-3 col-sm-6">
-                                        <span class="text-muted">Task ID:</span> 
-                                        <strong class="ms-1">#112</strong>
-                                    </div>
-
-                                    <div class="col-md-3 col-sm-6">
-                                        <span class="text-muted">Progress:</span>
-                                        <div class="progress mt-1" style="height: 20px;">
-                                            <div class="progress-bar bg-success" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
-                                                75%
-                                            </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="text-muted small">Priority</div>
+                                        <div class="mt-1">
+                                        {% if task.priority == 'High' %}
+                                        <span class="badge bg-soft-danger text-danger">High</span>
+                                        {% elif task.priority == 'Medium' %}
+                                        <span class="badge bg-soft-warning text-warning">Medium</span>
+                                        {% elif task.priority == 'Low' %}
+                                        <span class="badge bg-soft-info text-info">Low</span>
+                                        {% else %}
+                                        <span class="badge bg-soft-secondary text-secondary">{{ task.priority or 'N/A' }}</span>
+                                        {% endif %}
                                         </div>
                                     </div>
-
-                                    <div class="col-md-3 col-sm-6">
-                                        <span class="text-muted">Man-hours:</span> 
-                                        <strong class="ms-1">45H:35M:45S</strong>
+                                    <div class="col-6 col-md-3">
+                                        <div class="text-muted small">Task ID</div>
+                                        <strong class="d-block mt-1">#{{ task.task_id }}</strong>
                                     </div>
-
-                                    <div class="col-md-3 col-sm-6">
-                                        <span class="text-muted">Assigned to / Members:</span> 
-                                         <div class="avatar-group d-inline-flex align-items-center">
-                                                <div class="avatar-group-item" style="margin-right: -10px;">
-                                                    <a href="javascript: void(0);" 
-                                                    class="d-inline-block" 
-                                                    data-bs-toggle="tooltip" 
-                                                    data-bs-placement="top" 
-                                                    title="John Doe">
-                                                        <img src="../static/assets/images/users/avatar-4.jpg" class="rounded-circle avatar-sm border border-2 border-white">
-                                                    </a>
-                                                </div>
-
-                                                <div class="avatar-group-item" style="margin-right: -10px;">
-                                                    <a href="javascript: void(0);" 
-                                                    class="d-inline-block" 
-                                                    data-bs-toggle="tooltip" 
-                                                    data-bs-placement="top" 
-                                                    title="Jane Smith">
-                                                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-sm border border-2 border-white">
-                                                    </a>
-                                                </div>
-                                                
-                                                <div class="avatar-group-item" style="margin-right: -10px;">
-                                                    <a href="javascript: void(0);" 
-                                                    class="d-inline-block" 
-                                                    data-bs-toggle="tooltip" 
-                                                    data-bs-placement="top" 
-                                                    title="Jane Smith">
-                                                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-sm border border-2 border-white">
-                                                    </a>
-                                                </div>
-                                                
-                                                <div class="avatar-group-item" style="margin-right: -10px;">
-                                                    <a href="javascript: void(0);" 
-                                                    class="d-inline-block" 
-                                                    data-bs-toggle="tooltip" 
-                                                    data-bs-placement="top" 
-                                                    title="Jane Smith">
-                                                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-sm border border-2 border-white">
-                                                    </a>
-                                                </div>
-                                                
-                                                <div class="avatar-group-item" style="margin-right: -10px;">
-                                                    <a href="javascript: void(0);" 
-                                                    class="d-inline-block" 
-                                                    data-bs-toggle="tooltip" 
-                                                    data-bs-placement="top" 
-                                                    title="Jane Smith">
-                                                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-sm border border-2 border-white">
-                                                    </a>
-                                                </div>
-                                                 <div class="avatar-group-item" style="margin-right: -10px;">
-                                                    <a href="javascript: void(0);" 
-                                                    class="d-inline-block" 
-                                                    data-bs-toggle="tooltip" 
-                                                    data-bs-placement="top" 
-                                                    title="Jane Smith">
-                                                        <img src="../static/assets/images/users/avatar-5.jpg" class="rounded-circle avatar-sm border border-2 border-white">
-                                                    </a>
-                                                </div>
-                                               <div class="avatar-group-item">
-                                                <a href="javascript: void(0);" class="d-inline-block" data-bs-toggle="modal" data-bs-target="#membersModalAssign">
-                                                    <div class="avatar-sm">
-                                                        <div class="avatar-title rounded-circle bg-light border border-2 border-white text-primary font-size-16 fw-medium">
-                                                            +3
-                                                        </div>
-                                                    </div>
-                                                </a>
-                                            </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="text-muted small">Task Status</div>
+                                        <div class="mt-1">
+                                        {% set display_status = task.task_status or 'Ongoing' %}
+                                        {% if display_status == 'Ongoing' %}
+                                        <span class="badge bg-soft-warning text-warning">Ongoing</span>
+                                        {% elif display_status == 'Completed' %}
+                                        <span class="badge badge-soft-success font-size-12">Completed</span>
+                                        {% elif display_status == 'On Hold' %}
+                                        <span class="badge bg-soft-secondary text-secondary">On Hold</span>
+                                        {% else %}
+                                        <span class="badge bg-soft-secondary text-secondary">{{ display_status }}</span>
+                                        {% endif %}
                                         </div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="text-muted small">Assigned Members</div>
+                                        <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
+                                        {% if task_assignees %}
+                                        {% for assignee in task_assignees %}
+                                        <div class="d-flex align-items-center">
+                                            <img class="rounded-circle avatar-xs me-1" src="{{ url_for('static', filename='profile_pics/' + assignee.image_file) }}" alt="" title="{{ assignee.name or assignee.username }}">
+                                            <span class="small">{{ assignee.name or assignee.username }}{% if not loop.last %},{% endif %}</span>
+                                        </div>
+                                        {% endfor %}
+                                        {% else %}
+                                        <span class="text-muted small">Unassigned</span>
+                                        {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-sm-6 d-none">
+                                        <div class="text-muted small">Start date</div>
+                                        <strong class="d-block mt-1">24, June 2023</strong>
+                                    </div>
+                                    <div class="col-md-3 col-sm-6 d-none">
+                                        <div class="text-muted small">End date</div>
+                                        <strong class="d-block mt-1">24, June 2023</strong>
                                     </div>
                                 </div>
                             
@@ -980,89 +930,52 @@
     </div>
 </div>
 
-<!-- Edit Task Modal -->
+<!-- Edit Task Modal: Task name, Priority, Task status, Description only -->
 <div class="modal fade" data-bs-backdrop="static" id="editTaskModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-
-            <!-- Modal Header -->
             <div class="modal-header">
                 <h5 class="modal-title">Edit Task</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-
-            <!-- Modal Body -->
-            <div class="modal-body">
-                <form>
-
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Task Title</label>
-                            <input type="text" class="form-control" value="UI Redesign">
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Priority</label>
-                            <select class="form-select">
-                                <option>Low</option>
-                                <option selected>High</option>
-                                <option>Critical</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Start Date</label>
-                            <input type="date" class="form-control" value="2023-06-24">
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">End Date</label>
-                            <input type="date" class="form-control" value="2023-06-24">
-                        </div>
-
-                          <div class="mb-3 position-relative" style="max-width: 390px;">
-                            <label class="form-label">Owner</label>
-
-                            <!-- Input / Selected chips -->
-                            <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
-                                id="ownerInput"
-                                data-bs-toggle="dropdown">
-
-                                <span class="text-muted small">Select owner(s)</span>
-                            </div>
-
-                            <!-- Dropdown -->
-                            <div class="dropdown-menu p-3 shadow owner-dropdown">
-                                <input type="text"
-                                    class="form-control mb-2"
-                                    id="ownerSearch"
-                                    placeholder="Search colleague">
-
-                                <small class="text-muted">Contacts</small>
-
-                                <div class="list-group mt-2 owner-list" value="John, Jane, Lurs"></div>
-
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    Clear
-                                    <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">
-                                        Confirm
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+            <form method="POST" action="{{ url_for('main.update_task', id=task.task_id) }}" id="editTaskForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Task Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="task_name" id="editTaskName" value="{{ task.task_name or '' }}" required>
                     </div>
-                </form>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="modal-footer">
-                <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-primary">Save Changes</button>
-            </div>
-
+                    <div class="mb-3">
+                        <label class="form-label">Priority</label>
+                        <select class="form-select" name="priority" id="editTaskPriority">
+                            <option value="Low" {% if task.priority == 'Low' %}selected{% endif %}>Low</option>
+                            <option value="Medium" {% if task.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                            <option value="High" {% if task.priority == 'High' %}selected{% endif %}>High</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Task Status</label>
+                        <select class="form-select" name="task_status" id="editTaskStatus">
+                            <option value="Ongoing" {% if (task.task_status or 'Ongoing') == 'Ongoing' %}selected{% endif %}>Ongoing</option>
+                            <option value="Completed" {% if task.task_status == 'Completed' %}selected{% endif %}>Completed</option>
+                            <option value="On Hold" {% if task.task_status == 'On Hold' %}selected{% endif %}>On Hold</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="task_description" id="editTaskDescription" rows="3" placeholder="Task description">{{ task.task_description or '' }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+<!-- Hidden form for delete task (submitted by JS after confirm) -->
+<form id="deleteTaskForm" method="POST" action="{{ url_for('main.delete_task', id=task.task_id) }}" style="display: none;"></form>
 
 <!-- Notes Modal -->
 <div class="modal fade notes-modal" data-bs-backdrop="static" id="note-modal" tabindex="-1" aria-hidden="true">

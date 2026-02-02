@@ -1,9 +1,10 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask,  Report, ReportCC
+from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, TaskAssignee, SubTask, Report, ReportCC
 from app import db 
 from datetime import datetime
-from sqlalchemy import or_
+from sqlalchemy import or_, text
+from sqlalchemy.exc import ProgrammingError, OperationalError
 import json
 
 main = Blueprint('main', __name__)
@@ -401,6 +402,14 @@ def project_details(id=None):
     ]
     is_project_manager = (current_user.member_id == project.project_manager) if project.project_manager else False
 
+    # Task progress for donut chart: count completed vs ongoing, compute percentages
+    task_completed_count = sum(1 for t in tasks if t.get('status') == 'Completed')
+    task_ongoing_count = sum(1 for t in tasks if t.get('status') == 'Ongoing')
+    task_total = len(tasks)
+    task_completed_pct = round(task_completed_count / task_total * 100, 1) if task_total else 0
+    task_ongoing_pct = round(task_ongoing_count / task_total * 100, 1) if task_total else 0
+    progress_pct = task_completed_pct  # center label: progress = completed %
+
     return render_template('project_details.html',
                          project=project,
                          manager=manager,
@@ -413,7 +422,13 @@ def project_details(id=None):
                          users_json=users_json,
                          edit_initial_members_json=edit_initial_members_json,
                          task_assignable_members=task_assignable_members,
-                         is_project_manager=is_project_manager)
+                         is_project_manager=is_project_manager,
+                         task_completed_count=task_completed_count,
+                         task_ongoing_count=task_ongoing_count,
+                         task_total=task_total,
+                         task_completed_pct=task_completed_pct,
+                         task_ongoing_pct=task_ongoing_pct,
+                         progress_pct=progress_pct)
 
 @main.route("/project_details/<int:id>/update_manager", methods=['POST'])
 @login_required
@@ -574,7 +589,80 @@ def task_details(id=None):
         flash('Task not found', 'error')
         return redirect(url_for('main.projects'))
     
-    return render_template('task_details.html', task=task)
+    # Assignees for this task (from TaskAssignee or fallback to single owner from p_members_id)
+    task_assignees = []
+    try:
+        if task.assignees:
+            for ta in task.assignees:
+                if ta.project_member and ta.project_member.member_id:
+                    u = User.query.get(ta.project_member.member_id)
+                    if u:
+                        task_assignees.append(u)
+    except (ProgrammingError, OperationalError):
+        pass  # task_assignees table may not exist yet
+    if not task_assignees and task.p_members_id:
+        pm = ProjectMembers.query.get(task.p_members_id)
+        if pm and pm.member_id:
+            u = User.query.get(pm.member_id)
+            if u:
+                task_assignees.append(u)
+    
+    return render_template('task_details.html', task=task, task_assignees=task_assignees)
+
+@main.route("/task_details/<int:id>/update", methods=['POST'])
+@login_required
+def update_task(id):
+    task = Task.query.get_or_404(id)
+    task_name = request.form.get('task_name', '').strip()
+    if not task_name:
+        flash('Task name is required.', 'danger')
+        return redirect(url_for('main.task_details', id=id))
+    task.task_name = task_name
+    task.priority = request.form.get('priority') or task.priority
+    task.task_status = request.form.get('task_status') or 'Ongoing'
+    task.task_description = request.form.get('task_description', '').strip() or None
+    try:
+        db.session.commit()
+        flash('Task updated successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to update task: {}'.format(str(e)), 'danger')
+    return redirect(url_for('main.task_details', id=id))
+
+@main.route("/task_details/<int:id>/delete", methods=['POST'])
+@login_required
+def delete_task(id):
+    task = Task.query.get_or_404(id)
+    project_id = task.project_id
+    task_id = task.task_id
+    try:
+        try:
+            TaskAssignee.query.filter_by(task_id=task_id).delete()
+        except Exception:
+            pass  # task_assignees table may not exist
+        SubTask.query.filter_by(parent_task_id=task_id).delete()
+        db.session.delete(task)
+        db.session.commit()
+        flash('Task deleted successfully.', 'success')
+    except (ProgrammingError, OperationalError) as e:
+        # task_assignees table may not exist; db.session.delete(task) loads assignees and fails
+        if 'task_assignees' in str(e) or '1146' in str(e):
+            db.session.rollback()
+            try:
+                SubTask.query.filter_by(parent_task_id=task_id).delete()
+                db.session.execute(text('DELETE FROM task_tbl WHERE task_id = :id'), {'id': task_id})
+                db.session.commit()
+                flash('Task deleted successfully.', 'success')
+            except Exception as e2:
+                db.session.rollback()
+                flash('Failed to delete task: {}'.format(str(e2)), 'danger')
+        else:
+            db.session.rollback()
+            flash('Failed to delete task: {}'.format(str(e)), 'danger')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to delete task: {}'.format(str(e)), 'danger')
+    return redirect(url_for('main.project_details', id=project_id))
 
 @main.route("/project_details/<int:id>/task/create", methods=['POST'])
 @login_required

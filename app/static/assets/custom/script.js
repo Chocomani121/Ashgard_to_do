@@ -126,6 +126,27 @@ if (ownerList && ownerInput) {
     renderSelected();
 }
 
+// Create Task form (project_details): set owner_id from Assign Members before submit
+document.addEventListener("DOMContentLoaded", function() {
+    var createTaskForm = document.getElementById("createTaskForm");
+    var createTaskOwnerId = document.getElementById("createTaskOwnerId");
+    if (createTaskForm && createTaskOwnerId) {
+        createTaskForm.addEventListener("submit", function(e) {
+            var so = window.selectedOwners;
+            if (!so || so.length === 0) {
+                e.preventDefault();
+                if (typeof Swal !== "undefined") {
+                    Swal.fire({ icon: "warning", text: "Please select at least one member to assign." });
+                } else {
+                    alert("Please select at least one member to assign.");
+                }
+                return false;
+            }
+            createTaskOwnerId.value = so[0].id;
+        });
+    }
+});
+
 function toggleInput(btn, className) {
 
     const parent = btn.closest('.flex-grow-1');
@@ -202,6 +223,31 @@ function confirmDelete(memberName, memberId) {
         if (result.isConfirmed) {
             // Redirect to the Flask route you created
             window.location.href = "/delete_member/" + memberId;
+        }
+    });
+}
+
+// Delete SweetAlert for Task (submits hidden form to delete_task route)
+function confirmDeleteTask(taskName) {
+    var form = document.getElementById("deleteTaskForm");
+    if (!form) return;
+    if (typeof Swal === "undefined") {
+        if (window.confirm("Are you sure you want to delete " + (taskName || "this task") + "? You won't be able to revert this!")) {
+            form.submit();
+        }
+        return;
+    }
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You are about to delete " + (taskName || "this task") + ". You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#51d28c",
+        cancelButtonColor: "#f34e4e",
+        confirmButtonText: "Yes, delete it!"
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            form.submit();
         }
     });
 }

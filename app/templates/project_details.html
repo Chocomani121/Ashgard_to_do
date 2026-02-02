@@ -105,21 +105,24 @@
                                     <div class="col-xl-6 col-md-5">
 
                                         <div class="text-center">
-                                            <!-- DONUT CHART -->
+                                            <!-- DONUT CHART (series from task counts: completed, ongoing) -->
                                             <div
                                                 id="saleing-categories"
                                                 class="apex-charts mb-3"
                                                 data-colors='["#28b765", "#f4c238c2"]'
+                                                data-task-completed="{{ task_completed_count|default(0) }}"
+                                                data-task-ongoing="{{ task_ongoing_count|default(0) }}"
+                                                data-progress-pct="{{ progress_pct|default(0) }}"
                                                 dir="ltr">
                                             </div>
 
-                                            <!-- LEGEND -->
+                                            <!-- LEGEND (percentages from task counts) -->
                                             <div class="row pt-1">
                                                 <div class="col-6">
                                                     <div class="d-flex align-items-center">
                                                         <i class="mdi mdi-circle font-size-10 text-success"></i>
                                                         <p class="mb-0 ms-2">Completed</p>
-                                                        <span class="ms-2 fw-bold">60%</span>
+                                                        <span class="ms-2 fw-bold">{{ task_completed_pct|default(0) }}%</span>
                                                     </div>
                                                 </div>
 
@@ -127,7 +130,7 @@
                                                     <div class="d-flex align-items-center">
                                                         <i class="mdi mdi-circle font-size-10 text-warning"></i>
                                                         <p class="mb-0 ms-2">Ongoing</p>
-                                                        <span class="ms-2 fw-bold">40%</span>
+                                                        <span class="ms-2 fw-bold">{{ task_ongoing_pct|default(0) }}%</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -145,7 +148,7 @@
                                                 Approved
                                             </span>
                                             <span class="fw-bold fs-3">
-                                                4
+                                                {{ task_completed_count|default(0) }}
                                             </span>
                                         </div>
 
@@ -154,7 +157,7 @@
                                                 Ongoing
                                             </span>
                                             <span class="fw-bold fs-3 ">
-                                                1
+                                                {{ task_ongoing_count|default(0) }}
                                             </span>
                                         </div>
 

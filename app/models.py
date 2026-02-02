@@ -108,6 +108,13 @@ class ProjectMembers(db.Model):
 
 # --- TASKS & NOTES (Constraint Fix Applied) ---
 
+class TaskAssignee(db.Model):
+    """Many-to-many: task can have multiple assigned members (project_members)."""
+    __tablename__    = 'task_assignees'
+    task_id          = db.Column(db.Integer, db.ForeignKey('task_tbl.task_id', ondelete='CASCADE'), primary_key=True)
+    p_members_id     = db.Column(db.Integer, db.ForeignKey('project_members.p_members_id', ondelete='CASCADE'), primary_key=True)
+    project_member   = db.relationship('ProjectMembers', backref='task_assignments', lazy=True)
+
 class Task(db.Model):
     __tablename__    = 'task_tbl'
     task_id          = db.Column(db.Integer, primary_key=True)
@@ -120,6 +127,8 @@ class Task(db.Model):
     task_description = db.Column(db.Text)
     task_status      = db.Column(db.String(255))
     category         = db.Column(db.String(255))
+
+    assignees        = db.relationship('TaskAssignee', backref='task', lazy=True, cascade='all, delete-orphan')
 
 class SubTask(db.Model):
     __tablename__     = 'sub_task_list'
