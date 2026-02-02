@@ -766,3 +766,16 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    const toastElList = [].slice.call(document.querySelectorAll('.toast'));
+    const toastList = toastElList.map(function (toastEl) {
+        // Initialize and show immediately
+        const toast = new bootstrap.Toast(toastEl, {
+            autohide: true,
+            delay: 4000 // Lasts 5 seconds
+        });
+        toast.show();
+        return toast;
+    });
+});

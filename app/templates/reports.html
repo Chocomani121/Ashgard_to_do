@@ -5,16 +5,25 @@
     <div class="page-content">
         <div class="container-fluid">
             {# Only show messages labeled 'report_success' or 'report_error' #}
-            {% with messages = get_flashed_messages(category_filter=["report_success", "report_error"]) %}
-            {% if messages %}
-                {% for message in messages %}
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                {% endfor %}
-            {% endif %}
-            {% endwith %}
+           <div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+            <div id="toastPlacement" class="toast-container">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="toast align-items-center text-white bg-{{ 'danger' if category == 'error' else category if category != 'message' else 'primary' }} border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="bx {{ 'bx-error-circle' if category == 'error' else 'bx-check-circle' }} me-2"></i>
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </div>
+            </div>
             <div class="row">
                 <div class="col-12">
                     <div class="card">
