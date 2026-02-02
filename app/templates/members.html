@@ -17,13 +17,13 @@
 
                         </div>
                         <!-- end row -->
-                    {% with messages = get_flashed_messages(category_filter=["update_success", "delete_success", "danger_error"]) %}
-                                {% if messages %}
-                                    {% for message in messages %}
-                                        <div class="alert alert-success flash-message">{{ message }}</div>
-                                    {% endfor %}
-                                {% endif %}
-                            {% endwith %}
+                        {% with messages = get_flashed_messages(category_filter=["update_success", "delete_success", "danger_error"]) %}
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-success flash-message">{{ message }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="card">

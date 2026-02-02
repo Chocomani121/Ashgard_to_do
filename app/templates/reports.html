@@ -170,19 +170,23 @@
                                                                         onclick="confirmReportDelete()">
                                                                     Delete
                                                                 </button>
-                                                                <button type="button" 
-                                                                        class="btn btn-outline-warning btn-sm px-4" 
-                                                                        onclick="openEditModal()">
-                                                                    Edit
-                                                                </button>
+                                                                <button type="button" class="btn btn-outline-warning btn-sm px-4" data-bs-toggle="modal" data-bs-target="#newReportModal">Update</button>
                                                             </div>
                                                             <div id="reportDetailActionsReviewer" class="d-flex gap-2 justify-content-end" style="display: none;">
                                                                 <button type="button" class="btn btn-success btn-sm px-4" id="reportApprovedBtn">Approved</button>
                                                             </div>
                                                         </div>
-                                                        <div class="p-3 bg-light border-top">
-                                                            <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
+                                                        <div id="reportDetailComments" class="mt-4 mb-3">
+                                                            <h6 class="text-muted small text-uppercase mb-2">Comments</h6>
+                                                            <div id="reportDetailCommentsList" class="list-group list-group-flush border rounded">
+                                                                <!-- JS will append comment cards here -->
+                                                            </div>
+                                                            <div id="reportDetailCommentsEmpty" class="text-muted small py-2" style="display: none;">No comments yet.</div>
                                                         </div>
+                                                    </div>
+
+                                                    <div class="p-3 bg-light border-top">
+                                                        <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
                                                     </div>
                                                     
                                                     <div id="commentEditorPopover" class="border rounded shadow-sm bg-white p-0" style="display: none; position: fixed; z-index: 1050; min-width: 450px; max-width: 650px; width: 90vw;">

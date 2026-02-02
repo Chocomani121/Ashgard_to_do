@@ -142,3 +142,10 @@ tr:has(a[href]):hover {
     background-color: #e9ecef !important;
     color: #212529 !important;
 }
+
+.comment-placeholder-disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    cursor: not-allowed !important;
+    color: #999;
+  }

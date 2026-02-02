@@ -10,6 +10,7 @@
       return name.substring(0, 2).toUpperCase();
     }
   
+    
     function getAvatarHtml(user, size = "24px", fontSize = "10px") {
       // Check if user exists and has initials
       const initials = user.initials || "??";
@@ -227,6 +228,26 @@
     var reportsDataEl = document.getElementById("reports-data");
     if (reportsDataEl) {
       var reportsData = JSON.parse(reportsDataEl.textContent || "[]");
+      
+      function renderReportComments(comments, listId, emptyId) {
+        var listEl = document.getElementById(listId);
+        var emptyEl = document.getElementById(emptyId);
+        if (!listEl) return;
+        listEl.innerHTML = '';
+        if (emptyEl) emptyEl.style.display = (comments && comments.length) ? 'none' : 'block';
+        if (!comments || !comments.length) return;
+        comments.forEach(function (c) {
+            var div = document.createElement('div');
+            div.className = 'list-group-item list-group-item-action border-0 py-2 px-3';
+            div.innerHTML =
+                '<div class="d-flex justify-content-between align-items-start small text-muted mb-1">' +
+                '<span class="fw-semibold text-dark">' + (c.author_name || '') + '</span>' +
+                '<span>' + (c.created_at || '') + '</span></div>' +
+                '<div class="small text-secondary">' + (c.comment_body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+            listEl.appendChild(div);
+        });
+    }
+    
       var listEl = document.getElementById("pendingReportList");
       if (listEl) {
         listEl.addEventListener("click", function (e) {
@@ -244,6 +265,8 @@
           var titleEl = document.getElementById("reportDetailTitle");
           var reportIdField = document.getElementById("currentActiveReportId");
           if (reportIdField) reportIdField.value = report.report_id;
+          var commentReportIdEl = document.getElementById("commentReportId");
+          if (commentReportIdEl) commentReportIdEl.value = report.report_id;
           if (titleEl) titleEl.textContent = "Weekly-" + report.author_name + "(" + report.week_name + ")";
           var revEl = document.getElementById("reportDetailReviewer");
           if (revEl) revEl.textContent = report.reviewer_name || "";
@@ -303,6 +326,8 @@
               var reportId = parseInt(item.getAttribute("data-report-id"), 10);
               var report = reportsData.find(function (r) { return r.report_id === reportId; });
               if (!report) return;
+              var commentReportIdEl = document.getElementById("commentReportId");
+              if (commentReportIdEl) commentReportIdEl.value = report.report_id;
               document.querySelectorAll("#reviewedReportList .reviewed-report-list-item").forEach(function (el) { el.classList.remove("active"); });
               item.classList.add("active");
               var placeholder = document.getElementById("reviewedDetailPlaceholder");
@@ -328,6 +353,8 @@
         var ccListEl = document.getElementById("ccReportList");
         if (ccListEl) {
             ccListEl.addEventListener("click", function (e) {
+                var commentReportIdEl = document.getElementById("commentReportId");
+                if (commentReportIdEl) commentReportIdEl.value = reportId;
                 var item = e.target.closest(".cc-report-list-item");
                 if (!item) return;
                 var reportId = parseInt(item.getAttribute("data-report-id"), 10);
@@ -363,6 +390,8 @@
             // Company-wide tab click handler
             var companyWideListEl = document.getElementById("companyWideReportList");
             if (companyWideListEl) {
+                var commentReportIdEl = document.getElementById("commentReportId");
+                if (commentReportIdEl) commentReportIdEl.value = report.report_id;
                 companyWideListEl.addEventListener("click", function (e) {
                     var item = e.target.closest(".company-wide-report-list-item");
                     if (!item) return;

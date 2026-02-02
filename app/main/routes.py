@@ -180,13 +180,25 @@ def approvals():
 
 # ---- Report routes ----
 def _report_to_dict(report):
+
     """Build a dict for one report (list + detail panel)."""
+    comments_list = []
+    for c in (report.comments or []):
+        comment_author = (c.author.name or c.author.username) if c.author else ''
+        comments_list.append({
+            'comment_id': c.comment_id,
+            'comment_body': c.comment_body or '',
+            'created_at': c.created_at.strftime('%m/%d/%Y %H:%M') if c.created_at else '',
+            'author_name': comment_author,
+        })
+
     author_name = (report.author.name or report.author.username) if report.author else ''
     reviewer_name = (report.reviewer_user.name or report.reviewer_user.username) if report.reviewer_user else ''
     cc_names = ', '.join((e.user.name or e.user.username or '') for e in (report.cc_entries or []))
     dept = getattr(report.author, 'dept_info', None) if report.author else None
     department_name = dept.department_name if dept else ''
     created_str = report.created_on.strftime('%m/%d/%Y %H:%M') if report.created_on else ''
+
     return {
         'report_id': report.report_id,
         'author_name': author_name,
@@ -199,6 +211,7 @@ def _report_to_dict(report):
         'report_content': report.report_content or '',
         'is_author': report.member_id == current_user.member_id,
         'is_reviewer': report.reviewer_id == current_user.member_id if report.reviewer_id else False,
+        'comments': comments_list,
     }
 
 @main.route("/reports")
