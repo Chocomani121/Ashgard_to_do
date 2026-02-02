@@ -1,10 +1,11 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint, current_app
-from app import db, bcrypt, mail
+from app import db, bcrypt, mail, cache
 from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm, UpdateAccountForm
 from app.models import User, Department, Report
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 from sqlalchemy.orm import joinedload
+
 # Look for your existing imports at the top of app/users/routes.py
 
 
@@ -125,6 +126,7 @@ def profile():
 
 @users.route("/members")
 @login_required
+@cache.cached(timeout=60)
 def members():
     members = User.query.order_by(User.name.asc()).all()
     departments = Department.query.order_by(Department.department_name.asc()).all()
@@ -145,8 +147,12 @@ def delete_member(member_id):
         return redirect(url_for('users.members'))
     
     member = User.query.get_or_404(member_id)
+
     db.session.delete(member)
     db.session.commit()
+    
+    cache.clear()
+
     flash('Member deleted.', 'delete_success')
     return redirect(url_for('users.members'))
 
