@@ -94,7 +94,7 @@
                                         </li>
 
                                         <li class="nav-item ms-auto">
-                                            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#newReportModal" style="color: #0d6efd;">
+                                            <a class="btn btn-outline-primary btn-sm px-3 py-1" href="#" data-bs-toggle="modal" data-bs-target="#newReportModal" style="color: #0d6efd;">
                                                 <i class="bx bx-plus me-1"></i>New
                                             </a>
                                         </li>
@@ -251,105 +251,59 @@
                                                     </div>
                                                 </div>
                                         
-          
+        
                                             <div class="tab-pane fade" id="cc" role="tabpanel">
                                                 <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
-                                        
+                                                    
                                                     <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
-                                                        <div class="list-group list-group-flush">
-                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                        <div class="list-group list-group-flush" id="ccReportList">
+                                                            {% for report in cc_reports|default([]) %}
+                                                            <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 border-bottom border-light cc-report-list-item" data-report-id="{{ report.report_id }}">
                                                                 <div class="d-flex justify-content-between align-items-start">
                                                                     <div class="me-2">
-                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Neil Alfred</h6>
-                                                                        <small class="text-muted d-block">Weekly-Neil Alfred(01/19/2026-01/25/2026)</small>
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">{{ report.author.name or report.author.username }}</h6>
+                                                                        <small class="text-muted d-block">Weekly-{{ report.author.name or report.author.username }}({{ report.week_name }})</small>
                                                                     </div>
-                                                                    <!-- <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span> -->
-                                                                </div>  
-                                                            </a>
-                                            
-                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                                <div class="d-flex justify-content-between align-items-start">
-                                                                    <div class="me-2">
-                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                    </div>
+                                                                    {% if report.is_checked %}
                                                                     <span class="badge bg-secondary bg-opacity-75 px-2 py-1">Reviewed</span>
-                                                                </div>
-                                                            </a>
-                                                           
-                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                                <div class="d-flex justify-content-between align-items-start">
-                                                                    <div class="me-2">
-                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                    </div>
+                                                                    {% else %}
                                                                     <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                    {% endif %}
                                                                 </div>
                                                             </a>
-                                                            
-                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                                <div class="d-flex justify-content-between align-items-start">
-                                                                    <div class="me-2">
-                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                    </div>
-                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
-                                                                </div>
-                                                            </a>
-            
-                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
-                                                                <div class="d-flex justify-content-between align-items-start">
-                                                                    <div class="me-2">
-                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Windyl Orbeta</h6>
-                                                                        <small class="text-muted d-block">Weekly-Windyl Orbeta(01/19/2026-01/25/2026)</small>
-                                                                    </div>
-                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
-                                                                </div>
-                                                            </a>
-                                                            
-                                                                               
+                                                            {% else %}
+                                                            <div class="list-group-item py-3 text-muted text-center">No CC reports</div>
+                                                            {% endfor %}
                                                         </div>
                                                     </div>
                                                     
                                                     <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
-                                                        
-                                                        <div class="p-4 flex-grow-1" style="overflow-y: auto;">
+                                                        <div id="ccDetailPlaceholder" class="text-muted text-center py-5" style="height: 100%;">Select a report from the list.</div>
+                                                        <div id="ccDetailContent" class="p-4 flex-grow-1" style="display: none; overflow-y: auto; min-height: 0;">
                                                             <div class="d-flex align-items-center mb-3">
                                                                 <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
-                                                                <h5 class="mb-0 fw-bold">Weekly-Neil Alfred(01/19/2026-01/25/2026)</h5>
+                                                                <h5 class="mb-0 fw-bold" id="ccDetailTitle"></h5>
                                                             </div>
-                                            
                                                             <div class="table-responsive mb-4">
                                                                 <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
                                                                     <tr>
                                                                         <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
-                                                                        <td class="p-2">Lurs Aldrhyz Lastimosa</td>
+                                                                        <td class="p-2" id="ccDetailReviewer"></td>
                                                                         <td class="p-2 bg-light" style="width: 10%;">CC</td>
-                                                                        <td class="p-2">Marcelino, Jr Cutamora, Richie Lavina...</td>
+                                                                        <td class="p-2" id="ccDetailCC"></td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td class="p-2 bg-light">Department</td>
-                                                                        <td class="p-2">Cyber</td>
+                                                                        <td class="p-2" id="ccDetailDepartment"></td>
                                                                         <td class="p-2 bg-light">Created</td>
-                                                                        <td class="p-2">01/24/2026 11:53</td>
+                                                                        <td class="p-2" id="ccDetailCreated"></td>
                                                                     </tr>
                                                                 </table>
                                                             </div>
-                                            
-                                                            <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
-                                                                <p>Good day,</p>
-                                                                <p class="fw-bold mb-2">This Week's Summary:</p>
-                                                                <ol class="ps-3">
-                                                                    <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
-                                                                    <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
-                                                                </ol>
-                                                            </div>
-            
-                                                           
+                                                            <div id="ccDetailBody" class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;"></div>
                                                         </div>
-                                            
                                                         <div class="p-3 bg-light border-top">
-                                                            <textarea class="form-control border-0 shadow-sm" rows="1" placeholder="Comment content(Ctrl+Enter send)" style="resize: none; background-color: #efefef;"></textarea>
+                                                            <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
                                                         </div>
                                                     </div>
                                             
@@ -361,65 +315,54 @@
                                                 <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
                                         
                                                     <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
-                                                        <div class="list-group list-group-flush">
-                                                            <a href="#" class="list-group-item list-group-item-action py-3 border-bottom border-light">
+                                                        <div class="list-group list-group-flush" id="companyWideReportList">
+                                                            {% for report in company_wide_reports|default([]) %}
+                                                            <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 border-bottom border-light company-wide-report-list-item" data-report-id="{{ report.report_id }}">
                                                                 <div class="d-flex justify-content-between align-items-start">
                                                                     <div class="me-2">
-                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">Neil Alfred</h6>
-                                                                        <small class="text-muted d-block">Weekly-Neil Alfred(01/19/2026-01/25/2026)</small>
+                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">{{ report.author.name or report.author.username }}</h6>
+                                                                        <small class="text-muted d-block">Weekly-{{ report.author.name or report.author.username }}({{ report.week_name }})</small>
                                                                     </div>
-                                                                    <!-- <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span> -->
+                                                                    {% if report.is_checked %}
+                                                                    <span class="badge bg-secondary bg-opacity-75 px-2 py-1">Reviewed</span>
+                                                                    {% else %}
+                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                    {% endif %}
                                                                 </div>
                                                             </a>
-                                            
-                                                                 
+                                                            {% else %}
+                                                            <div class="list-group-item py-3 text-muted text-center">No reports</div>
+                                                            {% endfor %}
                                                         </div>
                                                     </div>
                                                     
                                                     <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
-                                                        
-                                                        <div class="p-4 flex-grow-1" style="overflow-y: auto;">
+                                                        <div id="companyWideDetailPlaceholder" class="text-muted text-center py-5">Select a report from the list.</div>
+                                                        <div id="companyWideDetailContent" class="p-4 flex-grow-1" style="display: none; overflow-y: auto; min-height: 0;">
                                                             <div class="d-flex align-items-center mb-3">
                                                                 <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
-                                                                <h5 class="mb-0 fw-bold">Weekly-Neil Alfred(01/19/2026-01/25/2026)</h5>
+                                                                <h5 class="mb-0 fw-bold" id="companyWideDetailTitle"></h5>
                                                             </div>
-                                            
                                                             <div class="table-responsive mb-4">
                                                                 <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
                                                                     <tr>
                                                                         <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
-                                                                        <td class="p-2">Lurs Aldrhyz Lastimosa</td>
+                                                                        <td class="p-2" id="companyWideDetailReviewer"></td>
                                                                         <td class="p-2 bg-light" style="width: 10%;">CC</td>
-                                                                        <td class="p-2">Marcelino, Jr Cutamora, Richie Lavina...</td>
+                                                                        <td class="p-2" id="companyWideDetailCC"></td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td class="p-2 bg-light">Department</td>
-                                                                        <td class="p-2">Cyber</td>
+                                                                        <td class="p-2" id="companyWideDetailDepartment"></td>
                                                                         <td class="p-2 bg-light">Created</td>
-                                                                        <td class="p-2">01/24/2026 11:53</td>
+                                                                        <td class="p-2" id="companyWideDetailCreated"></td>
                                                                     </tr>
                                                                 </table>
                                                             </div>
-                                            
-                                                            <div class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
-                                                                <p>Good day,</p>
-                                                                <p class="fw-bold mb-2">This Week's Summary:</p>
-                                                                <ol class="ps-3">
-                                                                    <li class="mb-2">Implemented and refined the Project CRUD functionality...</li>
-                                                                    <li class="mb-2">Updated the Create Project workflow to ensure required fields...</li>
-                                                                </ol>
-                                                            </div>
-            
-                                                          
-                                                            
-                                                            <div class="d-flex gap-2 mb-4">
-                                                                <button class="btn btn-primary btn-sm px-4">Revoke</button>
-                                                                <button class="btn btn-danger btn-sm px-4">Delete</button>
-                                                            </div>
+                                                            <div id="companyWideDetailBody" class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;"></div>
                                                         </div>
-
                                                         <div class="p-3 bg-light border-top">
-                                                            <textarea class="form-control border-0 shadow-sm" rows="1" placeholder="Comment content(Ctrl+Enter send)" style="resize: none; background-color: #efefef;"></textarea>
+                                                            <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
                                                         </div>
                                                     </div>
                                             

@@ -222,6 +222,7 @@
     });
   })();
   
+  // Report list click handler
   document.addEventListener("DOMContentLoaded", function () {
     var reportsDataEl = document.getElementById("reports-data");
     if (reportsDataEl) {
@@ -322,6 +323,75 @@
               if (bodyEl) bodyEl.innerHTML = report.report_content || "";
           });
           }
+
+        // CC tab click handler
+        var ccListEl = document.getElementById("ccReportList");
+        if (ccListEl) {
+            ccListEl.addEventListener("click", function (e) {
+                var item = e.target.closest(".cc-report-list-item");
+                if (!item) return;
+                var reportId = parseInt(item.getAttribute("data-report-id"), 10);
+                var report = reportsData.find(function (r) { return r.report_id === reportId; });
+                if (!report) return;
+                
+                // Set active state only on CC list items
+                document.querySelectorAll("#ccReportList .cc-report-list-item").forEach(function (el) { el.classList.remove("active"); });
+                item.classList.add("active");
+                
+                // Show detail, hide placeholder
+                var placeholder = document.getElementById("ccDetailPlaceholder");
+                var content = document.getElementById("ccDetailContent");
+                if (placeholder) placeholder.style.display = "none";
+                if (content) content.style.display = "block";
+                
+                // Populate detail fields
+                var titleEl = document.getElementById("ccDetailTitle");
+                if (titleEl) titleEl.textContent = "Weekly-" + report.author_name + "(" + report.week_name + ")";
+                var revEl = document.getElementById("ccDetailReviewer");
+                if (revEl) revEl.textContent = report.reviewer_name || "";
+                var ccEl = document.getElementById("ccDetailCC");
+                if (ccEl) ccEl.textContent = report.cc_names || "";
+                var deptEl = document.getElementById("ccDetailDepartment");
+                if (deptEl) deptEl.textContent = report.department_name || "";
+                var createdEl = document.getElementById("ccDetailCreated");
+                if (createdEl) createdEl.textContent = report.created_on || "";
+                var bodyEl = document.getElementById("ccDetailBody");
+                if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+            });
+        }
+
+            // Company-wide tab click handler
+            var companyWideListEl = document.getElementById("companyWideReportList");
+            if (companyWideListEl) {
+                companyWideListEl.addEventListener("click", function (e) {
+                    var item = e.target.closest(".company-wide-report-list-item");
+                    if (!item) return;
+                    var reportId = parseInt(item.getAttribute("data-report-id"), 10);
+                    var report = reportsData.find(function (r) { return r.report_id === reportId; });
+                    if (!report) return;
+                    
+                    document.querySelectorAll("#companyWideReportList .company-wide-report-list-item").forEach(function (el) { el.classList.remove("active"); });
+                    item.classList.add("active");
+                    
+                    var placeholder = document.getElementById("companyWideDetailPlaceholder");
+                    var content = document.getElementById("companyWideDetailContent");
+                    if (placeholder) placeholder.style.display = "none";
+                    if (content) content.style.display = "block";
+                    
+                    var titleEl = document.getElementById("companyWideDetailTitle");
+                    if (titleEl) titleEl.textContent = "Weekly-" + report.author_name + "(" + report.week_name + ")";
+                    var revEl = document.getElementById("companyWideDetailReviewer");
+                    if (revEl) revEl.textContent = report.reviewer_name || "";
+                    var ccEl = document.getElementById("companyWideDetailCC");
+                    if (ccEl) ccEl.textContent = report.cc_names || "";
+                    var deptEl = document.getElementById("companyWideDetailDepartment");
+                    if (deptEl) deptEl.textContent = report.department_name || "";
+                    var createdEl = document.getElementById("companyWideDetailCreated");
+                    if (createdEl) createdEl.textContent = report.created_on || "";
+                    var bodyEl = document.getElementById("companyWideDetailBody");
+                    if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+                });
+            }
       }
   });
   
