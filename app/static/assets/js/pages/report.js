@@ -754,3 +754,18 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
+
+window.showToast = function (message, type, duration) {
+    type = type || 'success';
+    duration = duration || 4000;
+    if (typeof Swal === 'undefined') { alert(message); return; }
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: type,
+        title: message,
+        showConfirmButton: false,
+        timer: duration,
+        timerProgressBar: true
+    });
+};
