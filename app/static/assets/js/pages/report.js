@@ -610,3 +610,84 @@
           }
       });
   }
+
+  // --- 1. THE EDIT FUNCTION ---
+function openEditModal() {
+    var reportIdField = document.getElementById("currentActiveReportId");
+    if (!reportIdField || !reportIdField.value) return;
+    
+    var reportId = parseInt(reportIdField.value, 10);
+    var reportsDataEl = document.getElementById("reports-data");
+    var reportsData = JSON.parse(reportsDataEl.textContent || "[]");
+    
+    // Find the report data
+    var report = reportsData.find(function (r) { return r.report_id === reportId; });
+    
+    if (report) {
+        // Change Modal UI to Edit Mode
+        document.getElementById("newReportModalLabel").textContent = "Edit Weekly Report";
+        var form = document.querySelector("#newReportModal form");
+        form.action = "/reports/edit/" + reportId;
+        
+        var submitBtn = document.querySelector("#newReportModal button[type='submit']");
+        if (submitBtn) submitBtn.textContent = "Update Report";
+
+        // Fill Basic Fields (Ensure these 'name' attributes match your form)
+        var dateSelect = document.querySelector("select[name='report_date']");
+        if (dateSelect) dateSelect.value = report.week_name;
+        
+        var revSelect = document.querySelector("select[name='reviewer_id']");
+        if (revSelect) revSelect.value = report.reviewer_id;
+
+        // Fill Rich Text (TinyMCE)
+        if (window.tinymce && tinymce.get('reportBody')) {
+            tinymce.get('reportBody').setContent(report.report_content || "");
+        } else {
+            var bodyField = document.getElementById("reportBody");
+            if (bodyField) bodyField.value = report.report_content || "";
+        }
+
+        // Re-populate CC Chips
+        // We trigger the 'Clear all' button first to avoid duplicates
+        var clearBtn = document.getElementById("reportCCClear");
+        if (clearBtn) clearBtn.click();
+
+        // If your Python sends 'cc_member_ids', we 'click' them in the list to recreate chips
+        if (report.cc_member_ids && report.cc_member_ids.length > 0) {
+            report.cc_member_ids.forEach(function(id) {
+                var contactItem = document.querySelector('#reportCCList [data-member-id="' + id + '"]');
+                if (contactItem) contactItem.click();
+            });
+        }
+
+        // Open the Modal
+        var modalEl = document.getElementById('newReportModal');
+        var modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modalInstance.show();
+    }
+}
+
+// --- 2. THE MODAL RESET ---
+// This ensures that when you click "+ New", the modal isn't still showing the old "Edit" data
+document.addEventListener("DOMContentLoaded", function() {
+    var modalEl = document.getElementById('newReportModal');
+    if (modalEl) {
+        modalEl.addEventListener('hidden.bs.modal', function () {
+            var form = this.querySelector('form');
+            if (form) {
+                form.reset();
+                form.action = "/reports/create"; 
+            }
+            document.getElementById("newReportModalLabel").textContent = "Weekly report";
+            var submitBtn = this.querySelector("button[type='submit']");
+            if (submitBtn) submitBtn.textContent = "Submit Report";
+            
+            var clearBtn = document.getElementById("reportCCClear");
+            if (clearBtn) clearBtn.click();
+            
+            if (window.tinymce && tinymce.get('reportBody')) {
+                tinymce.get('reportBody').setContent('');
+            }
+        });
+    }
+});

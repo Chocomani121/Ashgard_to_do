@@ -150,7 +150,7 @@ def delete_member(member_id):
 
     db.session.delete(member)
     db.session.commit()
-    
+
     cache.clear()
 
     flash('Member deleted.', 'delete_success')
@@ -269,4 +269,54 @@ def delete_report(report_id):
         db.session.rollback()
         flash(f"Error deleting report: {str(e)}", "danger")
         
+    return redirect(url_for('main.reports'))
+
+def _report_to_dict(report):
+    return {
+        'report_id': report.report_id,
+        'week_name': report.week_name,
+        'report_content': report.report_content,
+        'reviewer_id': report.reviewer_id,
+        'author_name': report.author.name,
+        # This is the crucial line for the CC list populate:
+        'cc_member_ids': [cc.member_id for cc in report.cc_entries]
+    }
+
+@users.route("/reports/edit/<int:report_id>", methods=['POST'])
+@login_required
+def edit_report(report_id):
+    from app.models import Report, ReportCC
+    
+    # 1. Fetch the existing report
+    report = Report.query.get_or_404(report_id)
+
+    # 2. Security: Ensure the user is actually the author
+    if report.member_id != current_user.member_id:
+        flash("You do not have permission to edit this report.", "danger")
+        return redirect(url_for('main.reports'))
+
+    try:
+        # 3. Update the main fields from the form
+        report.week_name = request.form.get('report_date')
+        report.report_content = request.form.get('reportBody')
+        report.reviewer_id = request.form.get('reviewer_id')
+        
+        # Optional: Reset "checked" status so it needs new approval after edit
+        report.is_checked = False 
+
+        # 4. Update CC Members (Delete old ones and add new ones)
+        ReportCC.query.filter_by(report_id=report_id).delete()
+        cc_ids = request.form.getlist('cc_members')
+        for m_id in cc_ids:
+            if m_id:
+                new_cc = ReportCC(report_id=report_id, member_id=int(m_id))
+                db.session.add(new_cc)
+
+        db.session.commit()
+        flash("Report updated successfully!", "success")
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error updating report: {str(e)}", "danger")
+
     return redirect(url_for('main.reports'))
