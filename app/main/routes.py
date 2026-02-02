@@ -209,19 +209,41 @@ def reports():
         {'member_id': u.member_id, 'name': u.name or u.username, 'username': u.username, 'image': u.image_file}
         for u in users
     ]
-    reports_q = Report.query.filter(
-        or_(
-            Report.member_id == current_user.member_id,
-            Report.reviewer_id == current_user.member_id,
-            Report.report_id.in_(
-                db.session.query(ReportCC.report_id).filter(ReportCC.member_id == current_user.member_id)
+    
+    # Admin sees all reports; non-admin sees only reports they're author, reviewer, or CC on
+    if getattr(current_user, 'account_type', None) == 'admin':
+        reports_q = Report.query.order_by(Report.created_on.desc()).all()
+    else:
+        reports_q = Report.query.filter(
+            or_(
+                Report.member_id == current_user.member_id,
+                Report.reviewer_id == current_user.member_id,
+                Report.report_id.in_(
+                    db.session.query(ReportCC.report_id).filter(ReportCC.member_id == current_user.member_id)
+                )
             )
-        )
-    ).order_by(Report.created_on.desc()).all()
+        ).order_by(Report.created_on.desc()).all()
 
     pending_reports = [r for r in reports_q if not r.is_checked]
     reviewed_reports = [r for r in reports_q if r.is_checked]
-    reports_json = [_report_to_dict(r) for r in reports_q]
+    
+       # CC tab: admin sees all reports; non-admin sees only reports where they're reviewer or in CC
+    if getattr(current_user, 'account_type', None) == 'admin':
+        cc_reports = reports_q  # Admin sees all
+    else:
+        cc_reports = Report.query.filter(
+            or_(
+                Report.reviewer_id == current_user.member_id,
+                Report.report_id.in_(
+                    db.session.query(ReportCC.report_id).filter(ReportCC.member_id == current_user.member_id)
+                )
+            )
+        ).order_by(Report.created_on.desc()).all()
+    
+    # Company-wide: all reports from all users, no restriction
+    company_wide_reports = Report.query.order_by(Report.created_on.desc()).all()
+    # reports_json must include all reports for Company-wide detail lookup to work
+    reports_json = [_report_to_dict(r) for r in company_wide_reports]
 
     return render_template(
         'reports.html',
@@ -230,6 +252,8 @@ def reports():
         users_json=users_json,
         pending_reports=pending_reports,
         reviewed_reports=reviewed_reports,
+        cc_reports=cc_reports,
+        company_wide_reports=company_wide_reports,
         reports_json=reports_json,
     )
 
