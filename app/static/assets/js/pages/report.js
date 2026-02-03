@@ -594,25 +594,33 @@ document.addEventListener("DOMContentLoaded", function () {
           if (textarea) textarea.value = "";
       }
 
-      function showCommentSuccessToast() {
-        var container = document.getElementById("toastPlacement");
-        if (!container) return;
-        var toastEl = document.createElement("div");
-        toastEl.className = "toast align-items-center text-white bg-success border-0 shadow-lg";
-        toastEl.setAttribute("role", "alert");
-        toastEl.setAttribute("aria-live", "assertive");
-        toastEl.setAttribute("aria-atomic", "true");
-        toastEl.innerHTML =
-            "<div class=\"d-flex\">" +
-            "<div class=\"toast-body\"><i class=\"bx bx-check-circle me-2\"></i>Comment added.</div>" +
-            "<button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>" +
-            "</div>";
-        container.appendChild(toastEl);
-        var toast = new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 });
-        toast.show();
-        toastEl.addEventListener("hidden.bs.toast", function () { toastEl.remove(); });
-    }
+    //   function showCommentSuccessToast() {
+    //     var container = document.getElementById("toastPlacement");
+    //     if (!container) return;
+    //     var toastEl = document.createElement("div");
+    //     toastEl.className = "toast align-items-center text-white bg-success border-0 shadow-lg";
+    //     toastEl.setAttribute("role", "alert");
+    //     toastEl.setAttribute("aria-live", "assertive");
+    //     toastEl.setAttribute("aria-atomic", "true");
+    //     toastEl.innerHTML =
+    //         "<div class=\"d-flex\">" +
+    //         "<div class=\"toast-body\"><i class=\"bx bx-check-circle me-2\"></i>Comment added.</div>" +
+    //         "<button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>" +
+    //         "</div>";
+    //     container.appendChild(toastEl);
+    //     var toast = new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 });
+    //     toast.show();
+    //     toastEl.addEventListener("hidden.bs.toast", function () { toastEl.remove(); });
+    // }
 
+    function showCommentSuccessToast() {
+        if (typeof alertify !== "undefined") {
+          alertify.success("Comment added.");
+        } else {
+          alert("Comment added.");
+        }
+      }
+      
       function sendComment() {
         var commentReportIdEl = document.getElementById("commentReportId");
         var reportId = commentReportIdEl ? commentReportIdEl.value : null;
@@ -775,7 +783,6 @@ function openEditModal() {
 }
 
 // --- 2. THE MODAL RESET ---
-// This ensures that when you click "+ New", the modal isn't still showing the old "Edit" data
 document.addEventListener("DOMContentLoaded", function() {
     var modalEl = document.getElementById('newReportModal');
     if (modalEl) {
@@ -799,18 +806,18 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    const toastElList = [].slice.call(document.querySelectorAll('.toast'));
-    const toastList = toastElList.map(function (toastEl) {
-        // Initialize and show immediately
-        const toast = new bootstrap.Toast(toastEl, {
-            autohide: true,
-            delay: 5000 // Lasts 5 seconds
-        });
-        toast.show();
-        return toast;
-    });
-});
+// document.addEventListener('DOMContentLoaded', function () {
+//     const toastElList = [].slice.call(document.querySelectorAll('.toast'));
+//     const toastList = toastElList.map(function (toastEl) {
+      
+//         const toast = new bootstrap.Toast(toastEl, {
+//             autohide: true,
+//             delay: 5000 
+//         });
+//         toast.show();
+//         return toast;
+//     });
+// });
 
 
 // Comments Section//
