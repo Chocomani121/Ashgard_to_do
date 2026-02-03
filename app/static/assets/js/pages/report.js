@@ -190,7 +190,15 @@
                 // 2. Double-check Reviewer ID
                 const reviewerId = document.getElementById("selectedReviewerId").value;
                 if (!reviewerId) {
-                    alert("Please select a reviewer before submitting.");
+                    if (typeof Swal !== "undefined") {
+                        Swal.fire({
+                            icon: "warning",
+                            title: "Reviewer required",
+                            text: "Please select a reviewer before submitting."
+                        });
+                    } else {
+                        alert("Please select a reviewer before submitting.");
+                    }
                     e.preventDefault();
                     return false;
                 }
@@ -220,7 +228,6 @@
                     });
                 }
                 
-                console.log("Form is valid. Submitting...");
                 return true; 
             };
         }
@@ -579,7 +586,7 @@ document.addEventListener("DOMContentLoaded", function () {
       function finalizeClose() {
           popover.style.display = "none";
           if (currentPlaceholder) {
-              currentPlaceholder.style.visibility = "visible"; // Show it again
+              currentPlaceholder.style.visibility = "visible"; 
               currentPlaceholder.style.display = ""; 
               currentPlaceholder = null;
           }
