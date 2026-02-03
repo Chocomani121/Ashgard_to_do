@@ -5,25 +5,16 @@
     <div class="page-content">
         <div class="container-fluid">
             {# Only show messages labeled 'report_success' or 'report_error' #}
-           <div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
-                <div id="toastPlacement" class="toast-container">
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                        <div class="toast align-items-center text-white bg-{{ 'danger' if category == 'error' else category if category != 'message' else 'primary' }} border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
-                            <div class="d-flex">
-                            <div class="toast-body">
-                                <i class="bx {{ 'bx-error-circle' if category == 'error' else 'bx-check-circle' }} me-2"></i>
-                                {{ message }}
-                            </div>
-                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-                    {% endwith %}
+            {% with messages = get_flashed_messages(category_filter=["report_success", "report_error"]) %}
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-            </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
             <div class="row">
                 <div class="col-12">
                     <div class="card">
@@ -145,7 +136,7 @@
                                                     </div>
                                                 </div>
                                                 
-                                             <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
+                                                <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
                                                     
                                                 <div id="reportDetailPlaceholder" class="text-muted text-center py-5"  style="height: 100%;">Select a report from the list.</div>
                                                    <div id="reportDetailContent" class="p-4 flex-grow-1" style="display: none; overflow-y: auto; min-height: 0;">
@@ -180,62 +171,37 @@
                                                                         onclick="confirmReportDelete()">
                                                                     Delete
                                                                 </button>
-                                                                <button type="button" class="btn btn-outline-warning btn-sm px-4" data-bs-toggle="modal" data-bs-target="#newReportModal">Update</button>
+                                                                <button type="button" 
+                                                                        class="btn btn-outline-warning btn-sm px-4" 
+                                                                        onclick="openEditModal()">
+                                                                    Edit
+                                                                </button>
                                                             </div>
                                                             <div id="reportDetailActionsReviewer" class="d-flex gap-2 justify-content-end" style="display: none;">
                                                                 <button type="button" class="btn btn-success btn-sm px-4" id="reportApprovedBtn">Approved</button>
                                                             </div>
                                                         </div>
-                                                     
                                                     </div>
 
-                                                    <div id="reportDetailComments" class="mt-4 mb-3">
-                                                        <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
-                                                            <h6 class="text-muted small fw-bold text-uppercase mb-0">
-                                                                <i class="bi bi-chat-left-text me-1"></i> Comments
-                                                            </h6>
-                                                            <div class="d-flex gap-3">
-                                                                <a href="javascript:void(0)" class="text-muted" onclick="toggleCommentHeight()" title="Expand View">
-                                                                    <i class="bi bi-arrows-angle-expand" id="expandIcon" style="font-size: 0.8rem;"></i>
-                                                                </a>
-                                                                <a href="javascript:void(0)" class="text-decoration-none small fw-bold" 
-                                                                   data-bs-toggle="collapse" data-bs-target="#commentSectionWrapper" id="toggleLink">
-                                                                   Hide
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        <div class="collapse show" id="commentSectionWrapper">
-                                                            <div id="reportDetailCommentsList" 
-                                                                 class="list-group list-group-flush bg-white" 
-                                                                 style="max-height: 250px; overflow-y: auto; transition: max-height 0.3s ease;">
-                                                                </div>
-                                                        </div>
-                                                    
-                                                        <div id="reportDetailCommentsEmpty" class="text-muted small py-2 text-center italic" style="display: none;">
-                                                            No comments yet.
-                                                        </div>
-                                                    </div>
                                                     <div class="p-3 bg-light border-top">
                                                         <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
                                                     </div>
                                                     
-                                                    <div id="commentEditorPopover" class="border rounded shadow-sm bg-white p-0" style="display: none; position: fixed; z-index: 1050; min-width: 450px; max-width: 650px; width: 90vw; overflow-y: auto; overflow-x: hidden;">
+                                                    <div id="commentEditorPopover" class="border rounded shadow-sm bg-white p-0" style="display: none; position: fixed; z-index: 1050; min-width: 450px; max-width: 650px; width: 90vw;">
                                                         <div class="p-2 bg-light border-bottom small fw-bold">Comment</div>
                                                         <div class="p-2 bg-white">
-                                                            <textarea id="commentreportCKEditor" class="form-control border-0" style="min-height: 150px;" placeholder="Write your comment..."></textarea>
+                                                            <textarea id="commentCKEditor" class="form-control border-0" style="min-height: 150px;" placeholder="Write your comment..."></textarea>
                                                         </div>
                                                         <div class="p-2 bg-light border-top d-flex justify-content-end gap-2">
                                                             <button type="button" id="commentEditorCancel" class="btn btn-outline-secondary btn-sm">Cancel</button>
                                                             <button type="button" id="commentEditorSend" class="btn btn-primary btn-sm">Send</button>
                                                         </div>
                                                     </div>
-                                                    <input type="hidden" id="commentReportId" value="">
-                                                </div>                                     
+                                                </div>
+                                                
 
                                             </div>
                                         </div>  
-
                                         <div class="tab-pane fade" id="Reviewed" role="tabpanel">
                                             <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
                                                 <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
@@ -606,10 +572,7 @@
 
                 <div class="modal-footer border-0 justify-content-center pb-4" style="padding-top: 1.5rem; margin-top: 1rem;">
                     <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
-                   <button type="submit" class="btn btn-primary px-5" id="submitReportBtn">
-                        <span id="submitSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                        <span id="submitText">Submit Report</span>
-                    </button>
+                    <button type="submit" class="btn btn-primary px-5">Submit Report</button>
                 </div>
             </form> </div>
     </div>
@@ -651,7 +614,5 @@
 <script type="application/json" id="users-data">{{ users_json|tojson }}</script>
 <script type="application/json" id="reports-data">{{ reports_json|tojson }}</script>
 <script src="{{ url_for('static', filename='assets/js/pages/report.js') }}"></script>
-
-
 
 {% endblock content %}
