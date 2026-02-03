@@ -6,8 +6,18 @@ from datetime import datetime
 from sqlalchemy import or_, text
 from sqlalchemy.exc import ProgrammingError, OperationalError
 import json
+import random
 
 main = Blueprint('main', __name__)
+
+
+def _generate_task_code():
+    """Return a unique task code in the form TK#### (e.g. TK0001, TK4721)."""
+    for _ in range(100):
+        code = 'TK{:04d}'.format(random.randint(0, 9999))
+        if not Task.query.filter_by(generated_code=code).first():
+            return code
+    raise ValueError('Could not generate unique task code')
 
 @main.route("/")
 @main.route("/projects") 
@@ -621,6 +631,36 @@ def update_task(id):
     task.priority = request.form.get('priority') or task.priority
     task.task_status = request.form.get('task_status') or 'Ongoing'
     task.task_description = request.form.get('task_description', '').strip() or None
+
+    start_date_str = request.form.get('start_date', '').strip()
+    end_date_str = request.form.get('end_date', '').strip()
+    if start_date_str and end_date_str:
+        try:
+            start_dt = datetime.strptime(start_date_str, '%Y-%m-%d')
+            end_dt = datetime.strptime(end_date_str, '%Y-%m-%d')
+            if end_dt < start_dt:
+                flash('End date cannot be before start date.', 'danger')
+                return redirect(url_for('main.task_details', id=id))
+            if task.deadline_id:
+                deadline = Deadlines.query.get(task.deadline_id)
+                if deadline:
+                    deadline.start_date = start_dt
+                    deadline.end_date = end_dt
+                else:
+                    deadline = Deadlines(start_date=start_dt, end_date=end_dt, flag='active')
+                    db.session.add(deadline)
+                    db.session.flush()
+                    task.deadline_id = deadline.deadlines_id
+            else:
+                deadline = Deadlines(start_date=start_dt, end_date=end_dt, flag='active')
+                db.session.add(deadline)
+                db.session.flush()
+                task.deadline_id = deadline.deadlines_id
+        except ValueError:
+            pass
+    elif not start_date_str and not end_date_str:
+        task.deadline_id = None
+
     try:
         db.session.commit()
         flash('Task updated successfully.', 'success')
@@ -676,6 +716,8 @@ def create_task(id):
         task_name = request.form.get('task_name')
         owner_id = request.form.get('owner_id')
         task_description = request.form.get('task_description', '')
+        start_date_str = request.form.get('start_date')
+        end_date_str = request.form.get('end_date')
         
         # Validate required fields
         if not task_name or not owner_id:
@@ -692,14 +734,32 @@ def create_task(id):
             flash('Selected owner must be assigned to this project', 'danger')
             return redirect(url_for('main.project_details', id=id))
         
-        # Create the task
+        # Optional: create a deadline in deadlines_tbl and get FK for task
+        deadline_id = None
+        if start_date_str and end_date_str:
+            try:
+                start_dt = datetime.strptime(start_date_str, '%Y-%m-%d')
+                end_dt = datetime.strptime(end_date_str, '%Y-%m-%d')
+                if end_dt < start_dt:
+                    flash('End date cannot be before start date.', 'danger')
+                    return redirect(url_for('main.project_details', id=id))
+                deadline = Deadlines(start_date=start_dt, end_date=end_dt, flag='active')
+                db.session.add(deadline)
+                db.session.flush()
+                deadline_id = deadline.deadlines_id
+            except ValueError:
+                pass
+        
+        # Create the task (with unique generated code TK####; deadline_id links to deadlines_tbl)
         task = Task(
             project_id=project.project_id,
             p_members_id=project_member.p_members_id,
             task_name=task_name,
             task_description=task_description.strip() if task_description else None,
             task_status='Ongoing',
-            priority='Medium'
+            priority='Medium',
+            generated_code=_generate_task_code(),
+            deadline_id=deadline_id
         )
         
         db.session.add(task)

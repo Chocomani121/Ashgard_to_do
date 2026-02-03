@@ -126,10 +126,29 @@ if (ownerList && ownerInput) {
     renderSelected();
 }
 
-// Create Task form (project_details): set owner_id from Assign Members before submit
+// Create Task form (project_details): set owner_id from Assign Members; validate start/end date
 document.addEventListener("DOMContentLoaded", function() {
     var createTaskForm = document.getElementById("createTaskForm");
     var createTaskOwnerId = document.getElementById("createTaskOwnerId");
+    var startDateInput = document.getElementById("CreateTask-StartDate");
+    var endDateInput = document.getElementById("CreateTask-EndDate");
+
+    // End date cannot be before start date: set min/max on date inputs
+    if (startDateInput && endDateInput) {
+        startDateInput.addEventListener("change", function() {
+            endDateInput.min = startDateInput.value || "";
+            if (endDateInput.value && endDateInput.value < startDateInput.value) {
+                endDateInput.value = startDateInput.value;
+            }
+        });
+        endDateInput.addEventListener("change", function() {
+            startDateInput.max = endDateInput.value || "";
+            if (startDateInput.value && startDateInput.value > endDateInput.value) {
+                startDateInput.value = endDateInput.value;
+            }
+        });
+    }
+
     if (createTaskForm && createTaskOwnerId) {
         createTaskForm.addEventListener("submit", function(e) {
             var so = window.selectedOwners;
@@ -142,7 +161,51 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
                 return false;
             }
+            // End date cannot be before start date
+            if (startDateInput && endDateInput && startDateInput.value && endDateInput.value) {
+                if (endDateInput.value < startDateInput.value) {
+                    e.preventDefault();
+                    if (typeof Swal !== "undefined") {
+                        Swal.fire({ icon: "warning", text: "End date cannot be before start date." });
+                    } else {
+                        alert("End date cannot be before start date.");
+                    }
+                    return false;
+                }
+            }
             createTaskOwnerId.value = so[0].id;
+        });
+    }
+
+    // Edit Task form (task_details): end date cannot be before start date
+    var editTaskForm = document.getElementById("editTaskForm");
+    var editStartDateInput = document.getElementById("editTaskStartDate");
+    var editEndDateInput = document.getElementById("editTaskEndDate");
+    if (editStartDateInput && editEndDateInput) {
+        editStartDateInput.addEventListener("change", function() {
+            editEndDateInput.min = editStartDateInput.value || "";
+            if (editEndDateInput.value && editEndDateInput.value < editStartDateInput.value) {
+                editEndDateInput.value = editStartDateInput.value;
+            }
+        });
+        editEndDateInput.addEventListener("change", function() {
+            editStartDateInput.max = editEndDateInput.value || "";
+            if (editStartDateInput.value && editStartDateInput.value > editEndDateInput.value) {
+                editStartDateInput.value = editEndDateInput.value;
+            }
+        });
+    }
+    if (editTaskForm && editStartDateInput && editEndDateInput) {
+        editTaskForm.addEventListener("submit", function(e) {
+            if (editStartDateInput.value && editEndDateInput.value && editEndDateInput.value < editStartDateInput.value) {
+                e.preventDefault();
+                if (typeof Swal !== "undefined") {
+                    Swal.fire({ icon: "warning", text: "End date cannot be before start date." });
+                } else {
+                    alert("End date cannot be before start date.");
+                }
+                return false;
+            }
         });
     }
 });

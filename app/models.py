@@ -127,6 +127,7 @@ class Task(db.Model):
     task_description = db.Column(db.Text)
     task_status      = db.Column(db.String(255))
     category         = db.Column(db.String(255))
+    generated_code   = db.Column(db.String(6), unique=True, nullable=True)  # e.g. TK4721
 
     assignees        = db.relationship('TaskAssignee', backref='task', lazy=True, cascade='all, delete-orphan')
 
