@@ -179,39 +179,51 @@
   
       // F. Form Submission Bridge (Fixes "Not Saving" issue)
     // Inside your DOMContentLoaded block
-  if (reportForm) {
-      reportForm.onsubmit = function (e) {
-          // 1. Sync CKEditor 5 content to the hidden input (reportBody is submitted from here)
-          if (window.reportCKInstance && typeof window.reportCKInstance.getData === 'function') {
-              var reportBodyHidden = document.getElementById('reportBodyHidden');
-              if (reportBodyHidden) reportBodyHidden.value = window.reportCKInstance.getData();
-          }
-  
-          // 2. Double-check that we have a Reviewer ID
-          const reviewerId = document.getElementById("selectedReviewerId").value;
-          if (!reviewerId) {
-              alert("Please select a reviewer before submitting.");
-              e.preventDefault(); // Stop the form if no ID is present
-              return false;
-          }
-  
-          // 3. Populate CC IDs into the hidden container
-          const ccContainer = document.getElementById("ccIdsContainer");
-          if (ccIdsContainer) {
-              ccIdsContainer.innerHTML = ""; // Clear old entries
-              selectedCCMembers.forEach(user => {
-                  const input = document.createElement("input");
-                  input.type = "hidden";
-                  input.name = "cc_members"; // Python uses getlist('cc_members')
-                  input.value = user.member_id; // ONLY SAVING THE ID
-                  ccIdsContainer.appendChild(input);
-              });
-          }
-          
-          console.log("Form is valid. Submitting IDs only...");
-          return true; 
-      };
-  }
+        if (reportForm) {
+            reportForm.onsubmit = function (e) {
+                // 1. Sync CKEditor content
+                if (window.reportCKInstance && typeof window.reportCKInstance.getData === 'function') {
+                    var reportBodyHidden = document.getElementById('reportBodyHidden');
+                    if (reportBodyHidden) reportBodyHidden.value = window.reportCKInstance.getData();
+                }
+
+                // 2. Double-check Reviewer ID
+                const reviewerId = document.getElementById("selectedReviewerId").value;
+                if (!reviewerId) {
+                    alert("Please select a reviewer before submitting.");
+                    e.preventDefault();
+                    return false;
+                }
+
+                // --- NEW SPINNER LOGIC START ---
+                const btn = document.getElementById("submitReportBtn");
+                const spinner = document.getElementById("submitSpinner");
+                const btnText = document.getElementById("submitText");
+
+                if (btn && spinner) {
+                    btn.disabled = true;           // Prevent double submission
+                    spinner.classList.remove("d-none"); // Show spinner
+                    btnText.textContent = " Submitting..."; // Update text
+                }
+                // --- NEW SPINNER LOGIC END ---
+
+                // 3. Populate CC IDs
+                const ccIdsContainer = document.getElementById("ccIdsContainer");
+                if (ccIdsContainer) {
+                    ccIdsContainer.innerHTML = ""; 
+                    selectedCCMembers.forEach(user => {
+                        const input = document.createElement("input");
+                        input.type = "hidden";
+                        input.name = "cc_members";
+                        input.value = user.member_id;
+                        ccIdsContainer.appendChild(input);
+                    });
+                }
+                
+                console.log("Form is valid. Submitting...");
+                return true; 
+            };
+        }
       // G. Event Listeners
       reviewerDisplay.onclick = (e) => { e.stopPropagation(); reviewerDropdown.classList.toggle("d-none"); };
       reviewerSearch.oninput = (e) => renderReviewers(e.target.value);
@@ -755,17 +767,15 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
-window.showToast = function (message, type, duration) {
-    type = type || 'success';
-    duration = duration || 4000;
-    if (typeof Swal === 'undefined') { alert(message); return; }
-    Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon: type,
-        title: message,
-        showConfirmButton: false,
-        timer: duration,
-        timerProgressBar: true
+document.addEventListener('DOMContentLoaded', function () {
+    const toastElList = [].slice.call(document.querySelectorAll('.toast'));
+    const toastList = toastElList.map(function (toastEl) {
+        // Initialize and show immediately
+        const toast = new bootstrap.Toast(toastEl, {
+            autohide: true,
+            delay: 4000 // Lasts 5 seconds
+        });
+        toast.show();
+        return toast;
     });
-};
+});
