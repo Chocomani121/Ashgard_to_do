@@ -185,11 +185,13 @@ def _report_to_dict(report):
     comments_list = []
     for c in (report.comments or []):
         comment_author = (c.author.name or c.author.username) if c.author else ''
+        author_img = getattr(c.author, 'image_file', None) or 'default.jpg'
         comments_list.append({
             'comment_id': c.comment_id,
             'comment_body': c.comment_body or '',
             'created_at': c.created_at.strftime('%m/%d/%Y %H:%M') if c.created_at else '',
             'author_name': comment_author,
+            'author_image': author_img,
         })
 
     author_name = (report.author.name or report.author.username) if report.author else ''
@@ -365,7 +367,17 @@ def add_report_comment(report_id):
         db.session.add(comment)
         db.session.commit()
         if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({'success': True, 'comment_id': comment.comment_id})
+            author_name = (current_user.name or current_user.username) or ''
+            created_str = comment.created_at.strftime('%m/%d/%Y %H:%M') if comment.created_at else ''
+            user_img = getattr(current_user, 'image_file', None) or 'default.jpg'
+            return jsonify({
+                'success': True,
+                'comment_id': comment.comment_id,
+                'comment_body': comment.comment_body or '',
+                'author_name': author_name,
+                'created_at': created_str,
+                'user_image': user_img
+            })
         flash('Comment added.', 'success')
     except Exception as e:
         db.session.rollback()
