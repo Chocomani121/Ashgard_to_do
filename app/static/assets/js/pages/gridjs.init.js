@@ -169,13 +169,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                         selectedDates[1].toISOString().split('T')[0]
                                     ];
                                     updateGrid();
-                                } else if (selectedDates.length === 0) {
-                                    currentFilters1.dateRange = null;
+                                } else if (selectedDates.length === 1) {
+                                    // Single date: filter to projects active on that day (same start and end)
+                                    const d = selectedDates[0].toISOString().split('T')[0];
+                                    currentFilters1.dateRange = [d, d];
                                     updateGrid();
-                                }
-                            },
-                            onClose: function(selectedDates, dateStr, instance) {
-                                if (selectedDates.length === 1) {
+                                } else if (selectedDates.length === 0) {
                                     currentFilters1.dateRange = null;
                                     updateGrid();
                                 }
@@ -512,13 +511,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                         selectedDates[1].toISOString().split('T')[0]
                                     ];
                                     updateGrid();
-                                } else if (selectedDates.length === 0) {
-                                    currentFilters.dateRange = null;
+                                } else if (selectedDates.length === 1) {
+                                    // Single date: filter to projects active on that day (same start and end)
+                                    const d = selectedDates[0].toISOString().split('T')[0];
+                                    currentFilters.dateRange = [d, d];
                                     updateGrid();
-                                }
-                            },
-                            onClose: function(selectedDates, dateStr, instance) {
-                                if (selectedDates.length === 1) {
+                                } else if (selectedDates.length === 0) {
                                     currentFilters.dateRange = null;
                                     updateGrid();
                                 }
