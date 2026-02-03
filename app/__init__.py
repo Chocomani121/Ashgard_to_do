@@ -7,6 +7,7 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_migrate import Migrate
+from flask_caching import Cache
 
 load_dotenv()
 
@@ -18,9 +19,15 @@ login_manager.login_message_category = 'info'
 login_manager.login_message = None
 mail = Mail()
 migrate = Migrate()
+cache = Cache()
 
 def create_app():
     app = Flask(__name__)
+
+
+    app.config["CACHE_TYPE"] = "FileSystemCache"
+    app.config["CACHE_DIR"] = "flask_cache"  # Folder for cache files
+    app.config["CACHE_DEFAULT_TIMEOUT"] = 300 # 5-minute default
 
     # --- DATABASE CONFIG ---
     user = os.getenv("DB_USER")
@@ -51,6 +58,9 @@ def create_app():
     app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 
     db.init_app(app)
+    cache.init_app(app)
+
+ 
     bcrypt.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)

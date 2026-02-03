@@ -10,6 +10,7 @@
       return name.substring(0, 2).toUpperCase();
     }
   
+    
     function getAvatarHtml(user, size = "24px", fontSize = "10px") {
       // Check if user exists and has initials
       const initials = user.initials || "??";
@@ -178,39 +179,51 @@
   
       // F. Form Submission Bridge (Fixes "Not Saving" issue)
     // Inside your DOMContentLoaded block
-  if (reportForm) {
-      reportForm.onsubmit = function (e) {
-          // 1. Sync CKEditor 5 content to the hidden input (reportBody is submitted from here)
-          if (window.reportCKInstance && typeof window.reportCKInstance.getData === 'function') {
-              var reportBodyHidden = document.getElementById('reportBodyHidden');
-              if (reportBodyHidden) reportBodyHidden.value = window.reportCKInstance.getData();
-          }
-  
-          // 2. Double-check that we have a Reviewer ID
-          const reviewerId = document.getElementById("selectedReviewerId").value;
-          if (!reviewerId) {
-              alert("Please select a reviewer before submitting.");
-              e.preventDefault(); // Stop the form if no ID is present
-              return false;
-          }
-  
-          // 3. Populate CC IDs into the hidden container
-          const ccContainer = document.getElementById("ccIdsContainer");
-          if (ccIdsContainer) {
-              ccIdsContainer.innerHTML = ""; // Clear old entries
-              selectedCCMembers.forEach(user => {
-                  const input = document.createElement("input");
-                  input.type = "hidden";
-                  input.name = "cc_members"; // Python uses getlist('cc_members')
-                  input.value = user.member_id; // ONLY SAVING THE ID
-                  ccIdsContainer.appendChild(input);
-              });
-          }
-          
-          console.log("Form is valid. Submitting IDs only...");
-          return true; 
-      };
-  }
+        if (reportForm) {
+            reportForm.onsubmit = function (e) {
+                // 1. Sync CKEditor content
+                if (window.reportCKInstance && typeof window.reportCKInstance.getData === 'function') {
+                    var reportBodyHidden = document.getElementById('reportBodyHidden');
+                    if (reportBodyHidden) reportBodyHidden.value = window.reportCKInstance.getData();
+                }
+
+                // 2. Double-check Reviewer ID
+                const reviewerId = document.getElementById("selectedReviewerId").value;
+                if (!reviewerId) {
+                    alert("Please select a reviewer before submitting.");
+                    e.preventDefault();
+                    return false;
+                }
+
+                // --- NEW SPINNER LOGIC START ---
+                const btn = document.getElementById("submitReportBtn");
+                const spinner = document.getElementById("submitSpinner");
+                const btnText = document.getElementById("submitText");
+
+                if (btn && spinner) {
+                    btn.disabled = true;           // Prevent double submission
+                    spinner.classList.remove("d-none"); // Show spinner
+                    btnText.textContent = " Submitting..."; // Update text
+                }
+                // --- NEW SPINNER LOGIC END ---
+
+                // 3. Populate CC IDs
+                const ccIdsContainer = document.getElementById("ccIdsContainer");
+                if (ccIdsContainer) {
+                    ccIdsContainer.innerHTML = ""; 
+                    selectedCCMembers.forEach(user => {
+                        const input = document.createElement("input");
+                        input.type = "hidden";
+                        input.name = "cc_members";
+                        input.value = user.member_id;
+                        ccIdsContainer.appendChild(input);
+                    });
+                }
+                
+                console.log("Form is valid. Submitting...");
+                return true; 
+            };
+        }
       // G. Event Listeners
       reviewerDisplay.onclick = (e) => { e.stopPropagation(); reviewerDropdown.classList.toggle("d-none"); };
       reviewerSearch.oninput = (e) => renderReviewers(e.target.value);
@@ -222,10 +235,31 @@
     });
   })();
   
+  // Report list click handler
   document.addEventListener("DOMContentLoaded", function () {
     var reportsDataEl = document.getElementById("reports-data");
     if (reportsDataEl) {
       var reportsData = JSON.parse(reportsDataEl.textContent || "[]");
+      
+      function renderReportComments(comments, listId, emptyId) {
+        var listEl = document.getElementById(listId);
+        var emptyEl = document.getElementById(emptyId);
+        if (!listEl) return;
+        listEl.innerHTML = '';
+        if (emptyEl) emptyEl.style.display = (comments && comments.length) ? 'none' : 'block';
+        if (!comments || !comments.length) return;
+        comments.forEach(function (c) {
+            var div = document.createElement('div');
+            div.className = 'list-group-item list-group-item-action border-0 py-2 px-3';
+            div.innerHTML =
+                '<div class="d-flex justify-content-between align-items-start small text-muted mb-1">' +
+                '<span class="fw-semibold text-dark">' + (c.author_name || '') + '</span>' +
+                '<span>' + (c.created_at || '') + '</span></div>' +
+                '<div class="small text-secondary">' + (c.comment_body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+            listEl.appendChild(div);
+        });
+    }
+    
       var listEl = document.getElementById("pendingReportList");
       if (listEl) {
         listEl.addEventListener("click", function (e) {
@@ -243,6 +277,8 @@
           var titleEl = document.getElementById("reportDetailTitle");
           var reportIdField = document.getElementById("currentActiveReportId");
           if (reportIdField) reportIdField.value = report.report_id;
+          var commentReportIdEl = document.getElementById("commentReportId");
+          if (commentReportIdEl) commentReportIdEl.value = report.report_id;
           if (titleEl) titleEl.textContent = "Weekly-" + report.author_name + "(" + report.week_name + ")";
           var revEl = document.getElementById("reportDetailReviewer");
           if (revEl) revEl.textContent = report.reviewer_name || "";
@@ -302,6 +338,8 @@
               var reportId = parseInt(item.getAttribute("data-report-id"), 10);
               var report = reportsData.find(function (r) { return r.report_id === reportId; });
               if (!report) return;
+              var commentReportIdEl = document.getElementById("commentReportId");
+              if (commentReportIdEl) commentReportIdEl.value = report.report_id;
               document.querySelectorAll("#reviewedReportList .reviewed-report-list-item").forEach(function (el) { el.classList.remove("active"); });
               item.classList.add("active");
               var placeholder = document.getElementById("reviewedDetailPlaceholder");
@@ -322,6 +360,79 @@
               if (bodyEl) bodyEl.innerHTML = report.report_content || "";
           });
           }
+
+        // CC tab click handler
+        var ccListEl = document.getElementById("ccReportList");
+        if (ccListEl) {
+            ccListEl.addEventListener("click", function (e) {
+                var commentReportIdEl = document.getElementById("commentReportId");
+                if (commentReportIdEl) commentReportIdEl.value = reportId;
+                var item = e.target.closest(".cc-report-list-item");
+                if (!item) return;
+                var reportId = parseInt(item.getAttribute("data-report-id"), 10);
+                var report = reportsData.find(function (r) { return r.report_id === reportId; });
+                if (!report) return;
+                
+                // Set active state only on CC list items
+                document.querySelectorAll("#ccReportList .cc-report-list-item").forEach(function (el) { el.classList.remove("active"); });
+                item.classList.add("active");
+                
+                // Show detail, hide placeholder
+                var placeholder = document.getElementById("ccDetailPlaceholder");
+                var content = document.getElementById("ccDetailContent");
+                if (placeholder) placeholder.style.display = "none";
+                if (content) content.style.display = "block";
+                
+                // Populate detail fields
+                var titleEl = document.getElementById("ccDetailTitle");
+                if (titleEl) titleEl.textContent = "Weekly-" + report.author_name + "(" + report.week_name + ")";
+                var revEl = document.getElementById("ccDetailReviewer");
+                if (revEl) revEl.textContent = report.reviewer_name || "";
+                var ccEl = document.getElementById("ccDetailCC");
+                if (ccEl) ccEl.textContent = report.cc_names || "";
+                var deptEl = document.getElementById("ccDetailDepartment");
+                if (deptEl) deptEl.textContent = report.department_name || "";
+                var createdEl = document.getElementById("ccDetailCreated");
+                if (createdEl) createdEl.textContent = report.created_on || "";
+                var bodyEl = document.getElementById("ccDetailBody");
+                if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+            });
+        }
+
+            // Company-wide tab click handler
+            var companyWideListEl = document.getElementById("companyWideReportList");
+            if (companyWideListEl) {
+                var commentReportIdEl = document.getElementById("commentReportId");
+                if (commentReportIdEl) commentReportIdEl.value = report.report_id;
+                companyWideListEl.addEventListener("click", function (e) {
+                    var item = e.target.closest(".company-wide-report-list-item");
+                    if (!item) return;
+                    var reportId = parseInt(item.getAttribute("data-report-id"), 10);
+                    var report = reportsData.find(function (r) { return r.report_id === reportId; });
+                    if (!report) return;
+                    
+                    document.querySelectorAll("#companyWideReportList .company-wide-report-list-item").forEach(function (el) { el.classList.remove("active"); });
+                    item.classList.add("active");
+                    
+                    var placeholder = document.getElementById("companyWideDetailPlaceholder");
+                    var content = document.getElementById("companyWideDetailContent");
+                    if (placeholder) placeholder.style.display = "none";
+                    if (content) content.style.display = "block";
+                    
+                    var titleEl = document.getElementById("companyWideDetailTitle");
+                    if (titleEl) titleEl.textContent = "Weekly-" + report.author_name + "(" + report.week_name + ")";
+                    var revEl = document.getElementById("companyWideDetailReviewer");
+                    if (revEl) revEl.textContent = report.reviewer_name || "";
+                    var ccEl = document.getElementById("companyWideDetailCC");
+                    if (ccEl) ccEl.textContent = report.cc_names || "";
+                    var deptEl = document.getElementById("companyWideDetailDepartment");
+                    if (deptEl) deptEl.textContent = report.department_name || "";
+                    var createdEl = document.getElementById("companyWideDetailCreated");
+                    if (createdEl) createdEl.textContent = report.created_on || "";
+                    var bodyEl = document.getElementById("companyWideDetailBody");
+                    if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+                });
+            }
       }
   });
   
@@ -440,7 +551,7 @@
           
           // 1. Hide the placeholder immediately
           currentPlaceholder = placeholder;
-          currentPlaceholder.style.visibility = "hidden"; // Use visibility to keep layout stable, or 'none' if you want collapse
+          currentPlaceholder.style.visibility = "hidden"; 
   
           // 2. Show the popover container
           popover.style.display = "block";
@@ -485,16 +596,49 @@
               currentPlaceholder.style.display = ""; 
               currentPlaceholder = null;
           }
-          var textarea = document.getElementById("commentreportCKEditor");
+          var textarea = document.getElementById("commentCKEditor");
           if (textarea) textarea.value = "";
       }
   
       function sendComment() {
-          var html = commentEditorInstance ? commentEditorInstance.getData() : "";
-          console.log("Sending comment:", html);
-          // Add your AJAX logic here to save to DB
-          closeCommentEditor();
-      }
+        var commentReportIdEl = document.getElementById("commentReportId");
+        var reportId = commentReportIdEl ? commentReportIdEl.value : null;
+        if (!reportId) {
+            alert("Please select a report first.");
+            return;
+        }
+        var body = commentEditorInstance ? commentEditorInstance.getData() : "";
+        body = (body || "").trim();
+        if (!body) {
+            alert("Please write a comment.");
+            return;
+        }
+        var formData = new FormData();
+        formData.append("comment_body", body);
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/reports/" + reportId + "/comment");
+        xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+        xhr.setRequestHeader("Cache-Control", "no-cache");
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                try {
+                    var res = JSON.parse(xhr.responseText);
+                    if (res && res.success) {
+                        closeCommentEditor();
+                        if (typeof Swal !== "undefined") {
+                            Swal.fire({ title: "Comment added", icon: "success", timer: 1500, showConfirmButton: false });
+                        } else {
+                            alert("Comment added.");
+                        }
+                        return;
+                    }
+                } catch (e) {}
+            }
+            alert("Failed to save comment.");
+        };
+        xhr.onerror = function () { alert("Failed to save comment."); };
+        xhr.send(formData);
+    }
   
       // Event Listeners
       if (cancelBtn) cancelBtn.addEventListener("click", closeCommentEditor);
@@ -520,6 +664,7 @@
       });
   })();
   
+  // Delete report
   function confirmReportDelete() {
       var reportId = document.getElementById("currentActiveReportId").value;
       
@@ -540,3 +685,97 @@
           }
       });
   }
+
+  // --- 1. THE EDIT FUNCTION ---
+function openEditModal() {
+    var reportIdField = document.getElementById("currentActiveReportId");
+    if (!reportIdField || !reportIdField.value) return;
+    
+    var reportId = parseInt(reportIdField.value, 10);
+    var reportsDataEl = document.getElementById("reports-data");
+    var reportsData = JSON.parse(reportsDataEl.textContent || "[]");
+    
+    // Find the report data
+    var report = reportsData.find(function (r) { return r.report_id === reportId; });
+    
+    if (report) {
+        // Change Modal UI to Edit Mode
+        document.getElementById("newReportModalLabel").textContent = "Edit Weekly Report";
+        var form = document.querySelector("#newReportModal form");
+        form.action = "/reports/edit/" + reportId;
+        
+        var submitBtn = document.querySelector("#newReportModal button[type='submit']");
+        if (submitBtn) submitBtn.textContent = "Update Report";
+
+        // Fill Basic Fields (Ensure these 'name' attributes match your form)
+        var dateSelect = document.querySelector("select[name='report_date']");
+        if (dateSelect) dateSelect.value = report.week_name;
+        
+        var revSelect = document.querySelector("select[name='reviewer_id']");
+        if (revSelect) revSelect.value = report.reviewer_id;
+
+        // Fill Rich Text (TinyMCE)
+        if (window.tinymce && tinymce.get('reportBody')) {
+            tinymce.get('reportBody').setContent(report.report_content || "");
+        } else {
+            var bodyField = document.getElementById("reportBody");
+            if (bodyField) bodyField.value = report.report_content || "";
+        }
+
+        // Re-populate CC Chips
+        // We trigger the 'Clear all' button first to avoid duplicates
+        var clearBtn = document.getElementById("reportCCClear");
+        if (clearBtn) clearBtn.click();
+
+        // If your Python sends 'cc_member_ids', we 'click' them in the list to recreate chips
+        if (report.cc_member_ids && report.cc_member_ids.length > 0) {
+            report.cc_member_ids.forEach(function(id) {
+                var contactItem = document.querySelector('#reportCCList [data-member-id="' + id + '"]');
+                if (contactItem) contactItem.click();
+            });
+        }
+
+        // Open the Modal
+        var modalEl = document.getElementById('newReportModal');
+        var modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modalInstance.show();
+    }
+}
+
+// --- 2. THE MODAL RESET ---
+// This ensures that when you click "+ New", the modal isn't still showing the old "Edit" data
+document.addEventListener("DOMContentLoaded", function() {
+    var modalEl = document.getElementById('newReportModal');
+    if (modalEl) {
+        modalEl.addEventListener('hidden.bs.modal', function () {
+            var form = this.querySelector('form');
+            if (form) {
+                form.reset();
+                form.action = "/reports/create"; 
+            }
+            document.getElementById("newReportModalLabel").textContent = "Weekly report";
+            var submitBtn = this.querySelector("button[type='submit']");
+            if (submitBtn) submitBtn.textContent = "Submit Report";
+            
+            var clearBtn = document.getElementById("reportCCClear");
+            if (clearBtn) clearBtn.click();
+            
+            if (window.tinymce && tinymce.get('reportBody')) {
+                tinymce.get('reportBody').setContent('');
+            }
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const toastElList = [].slice.call(document.querySelectorAll('.toast'));
+    const toastList = toastElList.map(function (toastEl) {
+        // Initialize and show immediately
+        const toast = new bootstrap.Toast(toastEl, {
+            autohide: true,
+            delay: 4000 // Lasts 5 seconds
+        });
+        toast.show();
+        return toast;
+    });
+});

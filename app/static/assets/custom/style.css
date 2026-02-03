@@ -120,3 +120,32 @@ tr:has(a[href]):hover {
     background-color: #e9ecef !important;
     color: #212529 !important;
 }
+
+#ccReportList .list-group-item.cc-report-list-item.active {
+    background-color: #f0f0f0 !important;
+    color: #212529 !important;
+    border-color: #dee2e6 !important;
+}
+
+#ccReportList .list-group-item.cc-report-list-item.active:hover {
+    background-color: #e9ecef !important;
+    color: #212529 !important;
+}
+
+#companyWideReportList .list-group-item.company-wide-report-list-item.active {
+    background-color: #f0f0f0 !important;
+    color: #212529 !important;
+    border-color: #dee2e6 !important;
+}
+
+#companyWideReportList .list-group-item.company-wide-report-list-item.active:hover {
+    background-color: #e9ecef !important;
+    color: #212529 !important;
+}
+
+.comment-placeholder-disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    cursor: not-allowed !important;
+    color: #999;
+  }
