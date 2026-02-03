@@ -4,17 +4,25 @@
  <div class="main-content">
     <div class="page-content">
         <div class="container-fluid">
-            {# Only show messages labeled 'report_success' or 'report_error' #}
-            {% with messages = get_flashed_messages(category_filter=["report_success", "report_error"]) %}
-            {% if messages %}
-                {% for message in messages %}
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+                <div id="toastPlacement" class="toast-container">
+                  {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                      {% for category, message in messages %}
+                        <div class="toast align-items-center text-white bg-{{ 'danger' if category == 'error' else category if category != 'message' else 'primary' }} border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+                          <div class="d-flex">
+                            <div class="toast-body">
+                              <i class="bx {{ 'bx-error-circle' if category == 'error' else 'bx-check-circle' }} me-2"></i>
+                              {{ message }}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                          </div>
+                        </div>
+                      {% endfor %}
+                    {% endif %}
+                  {% endwith %}
                 </div>
-                {% endfor %}
-            {% endif %}
-            {% endwith %}
+              </div>
             <div class="row">
                 <div class="col-12">
                     <div class="card">
@@ -136,7 +144,7 @@
                                                     </div>
                                                 </div>
                                                 
-                                                <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
+                                             <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
                                                     
                                                 <div id="reportDetailPlaceholder" class="text-muted text-center py-5"  style="height: 100%;">Select a report from the list.</div>
                                                    <div id="reportDetailContent" class="p-4 flex-grow-1" style="display: none; overflow-y: auto; min-height: 0;">
@@ -149,19 +157,19 @@
                                                             <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
                                                                 <tr>
                                                                     <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
-                                                                    <td class="p-2" id="reportDetailReviewer"></td>
+                                                                    <td class="p-2 text-dark" id="reportDetailReviewer"></td>
                                                                     <td class="p-2 bg-light" style="width: 10%;">CC</td>
-                                                                    <td class="p-2" id="reportDetailCC"></td>
+                                                                    <td class="p-2 text-dark" id="reportDetailCC"></td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td class="p-2 bg-light">Department</td>
-                                                                    <td class="p-2" id="reportDetailDepartment"></td>
+                                                                    <td class="p-2 text-dark" id="reportDetailDepartment"></td>
                                                                     <td class="p-2 bg-light">Created</td>
-                                                                    <td class="p-2" id="reportDetailCreated"></td>
+                                                                    <td class="p-2 text-dark" id="reportDetailCreated"></td>
                                                                 </tr>
                                                             </table>
                                                         </div>
-                                                        <div id="reportDetailBody" class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;"></div>
+                                                        <div id="reportDetailBody" class="report-body text-dark" style="font-size: 0.95rem; line-height: 1.6;"></div>
 
                                                         <div id="reportDetailActions" class="p-3 border-top bg-white" style="display: none;">
                                                             <div id="reportDetailActionsAuthor" class="d-flex gap-2 justify-content-end" style="display: none;">
@@ -181,79 +189,107 @@
                                                                 <button type="button" class="btn btn-success btn-sm px-4" id="reportApprovedBtn">Approved</button>
                                                             </div>
                                                         </div>
+                                                     
                                                     </div>
 
+                                                    <div id="reportDetailComments" class="mt-4 mb-3">
+                                                        <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+                                                            <h6 class="text-muted small fw-bold text-uppercase mb-0">
+                                                                <i class="bi bi-chat-left-text me-1"></i> Comments
+                                                            </h6>
+                                                            <div class="d-flex gap-3">
+                                                                <a href="javascript:void(0)" class="text-muted" onclick="toggleCommentHeight()" title="Expand View">
+                                                                    <i class="bi bi-arrows-angle-expand" id="expandIcon" style="font-size: 0.8rem;"></i>
+                                                                </a>
+                                                                <a href="javascript:void(0)" class="text-decoration-none small fw-bold" 
+                                                                   data-bs-toggle="collapse" data-bs-target="#commentSectionWrapper" id="toggleLink">
+                                                                   Hide
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="collapse show" id="commentSectionWrapper">
+                                                            <div id="reportDetailCommentsList" 
+                                                                 class="list-group list-group-flush bg-white" 
+                                                                 style="max-height: 250px; overflow-y: auto; transition: max-height 0.3s ease;">
+                                                                </div>
+                                                        </div>
+                                                    
+                                                        <div id="reportDetailCommentsEmpty" class="text-muted small py-2 text-center italic" style="display: none;">
+                                                            No comments yet.
+                                                        </div>
+                                                    </div>
                                                     <div class="p-3 bg-light border-top">
                                                         <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
                                                     </div>
                                                     
-                                                    <div id="commentEditorPopover" class="border rounded shadow-sm bg-white p-0" style="display: none; position: fixed; z-index: 1050; min-width: 450px; max-width: 650px; width: 90vw;">
+                                                    <div id="commentEditorPopover" class="border rounded shadow-sm bg-white p-0" style="display: none; position: fixed; z-index: 1050; min-width: 450px; max-width: 650px; width: 90vw; overflow-y: auto; overflow-x: hidden;">
                                                         <div class="p-2 bg-light border-bottom small fw-bold">Comment</div>
                                                         <div class="p-2 bg-white">
-                                                            <textarea id="commentCKEditor" class="form-control border-0" style="min-height: 150px;" placeholder="Write your comment..."></textarea>
+                                                            <textarea id="commentreportCKEditor" class="form-control border-0" style="min-height: 150px;" placeholder="Write your comment..."></textarea>
                                                         </div>
                                                         <div class="p-2 bg-light border-top d-flex justify-content-end gap-2">
                                                             <button type="button" id="commentEditorCancel" class="btn btn-outline-secondary btn-sm">Cancel</button>
                                                             <button type="button" id="commentEditorSend" class="btn btn-primary btn-sm">Send</button>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                
+                                                    <input type="hidden" id="commentReportId" value="">
+                                                </div>                                     
 
                                             </div>
                                         </div>  
                                         <div class="tab-pane fade" id="Reviewed" role="tabpanel">
                                             <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
-                                                        <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
-                                                            <div class="list-group list-group-flush" id="reviewedReportList">
-                                                                {% for report in reviewed_reports|default([]) %}
-                                                                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 border-bottom border-light reviewed-report-list-item" data-report-id="{{ report.report_id }}">
-                                                                    <div class="d-flex justify-content-between align-items-start">
-                                                                        <div class="me-2">
-                                                                            <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">{{ report.author.name or report.author.username }}</h6>
-                                                                            <small class="text-muted d-block">Weekly-{{ report.author.name or report.author.username }}({{ report.week_name }})</small>
-                                                                        </div>
-                                                                        <span class="badge bg-secondary bg-opacity-75 px-2 py-1">Reviewed</span>
-                                                                    </div>
-                                                                </a>
-                                                                {% else %}
-                                                                <div class="list-group-item py-3 text-muted text-center">No reviewed reports</div>
-                                                                {% endfor %}
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
-                                                            <div id="reviewedDetailPlaceholder" class="text-muted text-center py-5" style="height: 100%;">Select a report from the list.</div>
-                                                            <div id="reviewedDetailContent" class="p-4 flex-grow-1" style="display: none; overflow-y: auto; min-height: 0;">
-                                                                <div class="d-flex align-items-center mb-3">
-                                                                    <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
-                                                                    <h5 class="mb-0 fw-bold" id="reviewedDetailTitle"></h5>
+                                                <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
+                                                    <div class="list-group list-group-flush" id="reviewedReportList">
+                                                        {% for report in reviewed_reports|default([]) %}
+                                                        <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 border-bottom border-light reviewed-report-list-item" data-report-id="{{ report.report_id }}">
+                                                            <div class="d-flex justify-content-between align-items-start">
+                                                                <div class="me-2">
+                                                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">{{ report.author.name or report.author.username }}</h6>
+                                                                    <small class="text-muted d-block">Weekly-{{ report.author.name or report.author.username }}({{ report.week_name }})</small>
                                                                 </div>
-                                                                <div class="table-responsive mb-4">
-                                                                    <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
-                                                                        <tr>
-                                                                            <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
-                                                                            <td class="p-2" id="reviewedDetailReviewer"></td>
-                                                                            <td class="p-2 bg-light" style="width: 10%;">CC</td>
-                                                                            <td class="p-2" id="reviewedDetailCC"></td>
-                                                                        </tr>
-                                                                        <tr>
-                                                                            <td class="p-2 bg-light">Department</td>
-                                                                            <td class="p-2" id="reviewedDetailDepartment"></td>
-                                                                            <td class="p-2 bg-light">Created</td>
-                                                                            <td class="p-2" id="reviewedDetailCreated"></td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </div>
-                                                                <div id="reviewedDetailBody" class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;"></div>
+                                                                <span class="badge bg-secondary bg-opacity-75 px-2 py-1">Reviewed</span>
                                                             </div>
-                                                            <div class="p-3 bg-light border-top">
-                                                                <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
-                                                            </div>
-                                                        </div>
-                                                
+                                                        </a>
+                                                        {% else %}
+                                                        <div class="list-group-item py-3 text-muted text-center">No reviewed reports</div>
+                                                        {% endfor %}
                                                     </div>
                                                 </div>
+                                                
+                                                <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
+                                                    <div id="reviewedDetailPlaceholder" class="text-muted text-center py-5" style="height: 100%;">Select a report from the list.</div>
+                                                    <div id="reviewedDetailContent" class="p-4 flex-grow-1" style="display: none; overflow-y: auto; min-height: 0;">
+                                                        <div class="d-flex align-items-center mb-3">
+                                                            <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
+                                                            <h5 class="mb-0 fw-bold" id="reviewedDetailTitle"></h5>
+                                                        </div>
+                                                        <div class="table-responsive mb-4">
+                                                            <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
+                                                                <tr>
+                                                                    <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
+                                                                    <td class="p-2 text-dark" id="reviewedDetailReviewer"></td>
+                                                                    <td class="p-2 bg-light" style="width: 10%;">CC</td>
+                                                                    <td class="p-2 text-dark" id="reviewedDetailCC"></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="p-2 bg-light">Department</td>
+                                                                    <td class="p-2 text-dark" id="reviewedDetailDepartment"></td>
+                                                                    <td class="p-2 bg-light">Created</td>
+                                                                    <td class="p-2 text-dark" id="reviewedDetailCreated"></td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+                                                        <div id="reviewedDetailBody" class="report-body text-dark" style="font-size: 0.95rem; line-height: 1.6;"></div>
+                                                    </div>
+                                                    <div class="p-3 bg-light border-top">
+                                                        <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
+                                                    </div>
+                                                </div>
+                                
+                                            </div>
+                                        </div>
                                         
         
                                             <div class="tab-pane fade" id="cc" role="tabpanel">
@@ -292,19 +328,19 @@
                                                                 <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
                                                                     <tr>
                                                                         <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
-                                                                        <td class="p-2" id="ccDetailReviewer"></td>
+                                                                        <td class="p-2 text-dark" id="ccDetailReviewer"></td>
                                                                         <td class="p-2 bg-light" style="width: 10%;">CC</td>
-                                                                        <td class="p-2" id="ccDetailCC"></td>
+                                                                        <td class="p-2 text-dark" id="ccDetailCC"></td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td class="p-2 bg-light">Department</td>
-                                                                        <td class="p-2" id="ccDetailDepartment"></td>
+                                                                        <td class="p-2 text-dark" id="ccDetailDepartment"></td>
                                                                         <td class="p-2 bg-light">Created</td>
-                                                                        <td class="p-2" id="ccDetailCreated"></td>
+                                                                        <td class="p-2 text-dark" id="ccDetailCreated"></td>
                                                                     </tr>
                                                                 </table>
                                                             </div>
-                                                            <div id="ccDetailBody" class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;"></div>
+                                                            <div id="ccDetailBody" class="report-body text-dark" style="font-size: 0.95rem; line-height: 1.6;"></div>
                                                         </div>
                                                         <div class="p-3 bg-light border-top">
                                                             <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
@@ -317,59 +353,45 @@
                                     
                                             <div class="tab-pane fade" id="Company-wide" role="tabpanel">
                                                 <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
-                                        
-                                                    <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
-                                                        <div class="list-group list-group-flush" id="companyWideReportList">
-                                                            {% for report in company_wide_reports|default([]) %}
-                                                            <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 border-bottom border-light company-wide-report-list-item" data-report-id="{{ report.report_id }}">
-                                                                <div class="d-flex justify-content-between align-items-start">
-                                                                    <div class="me-2">
-                                                                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">{{ report.author.name or report.author.username }}</h6>
-                                                                        <small class="text-muted d-block">Weekly-{{ report.author.name or report.author.username }}({{ report.week_name }})</small>
-                                                                    </div>
-                                                                    {% if report.is_checked %}
-                                                                    <span class="badge bg-secondary bg-opacity-75 px-2 py-1">Reviewed</span>
+                                                    <div class="col-12 bg-white d-flex flex-column" style="height: 100%; overflow-y: auto;">
+                                                        <div id="companyWideReportList" class="table-responsive" style="max-height: 100%; overflow-y: auto;">
+                                                            <table class="table table-bordered table-sm table-hover mb-0" style="font-size: 0.9rem;">
+                                                                <thead class="table-light">
+                                                                    <tr>
+                                                                        <th class="text-center fw-bold py-2" rowspan="2">Name</th>
+                                                                        <th class="text-center fw-bold py-2" colspan="2">week range</th>
+                                                                        <th class="text-center fw-bold py-2" rowspan="2">reviewer</th>
+                                                                        <!-- <th class="text-center fw-bold py-2" rowspan="2">actions</th> -->
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <th class="text-center fw-bold py-2">start</th>
+                                                                        <th class="text-center fw-bold py-2">end</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for report in company_wide_reports|default([]) %}
+                                                                    {% set wn = report.week_name or '' %}
+                                                                    {% set wp = wn.split(' - ') if wn else [] %}
+                                                                    <tr class="company-wide-report-list-item" data-report-id="{{ report.report_id }}" role="button" tabindex="0" style="cursor: pointer;">
+                                                                        <td class="py-2">{{ report.author.name or report.author.username }}</td>
+                                                                        <td class="py-2 text-center">{{ wp[0] if wp|length > 0 else wn }}</td>
+                                                                        <td class="py-2 text-center">{{ wp[1] if wp|length > 1 else '' }}</td>
+                                                                        <td class="py-2">{{ report.reviewer_user.name or report.reviewer_user.username if report.reviewer_user else '—' }}</td>
+                                                                        <!-- <td class="py-2 text-center">
+                                                                            <button type="button" class="btn btn-sm btn-outline-primary" title="View full report">
+                                                                                <i class="bx bx-show"></i>
+                                                                            </button>                                                        
+                                                                        </td> -->
+                                                                    </tr>
                                                                     {% else %}
-                                                                    <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
-                                                                    {% endif %}
-                                                                </div>
-                                                            </a>
-                                                            {% else %}
-                                                            <div class="list-group-item py-3 text-muted text-center">No reports</div>
-                                                            {% endfor %}
+                                                                    <tr>
+                                                                        <td colspan="5" class="text-muted text-center py-4">No reports</td>
+                                                                    </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
                                                         </div>
                                                     </div>
-                                                    
-                                                    <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
-                                                        <div id="companyWideDetailPlaceholder" class="text-muted text-center py-5">Select a report from the list.</div>
-                                                        <div id="companyWideDetailContent" class="p-4 flex-grow-1" style="display: none; overflow-y: auto; min-height: 0;">
-                                                            <div class="d-flex align-items-center mb-3">
-                                                                <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
-                                                                <h5 class="mb-0 fw-bold" id="companyWideDetailTitle"></h5>
-                                                            </div>
-                                                            <div class="table-responsive mb-4">
-                                                                <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
-                                                                    <tr>
-                                                                        <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
-                                                                        <td class="p-2" id="companyWideDetailReviewer"></td>
-                                                                        <td class="p-2 bg-light" style="width: 10%;">CC</td>
-                                                                        <td class="p-2" id="companyWideDetailCC"></td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td class="p-2 bg-light">Department</td>
-                                                                        <td class="p-2" id="companyWideDetailDepartment"></td>
-                                                                        <td class="p-2 bg-light">Created</td>
-                                                                        <td class="p-2" id="companyWideDetailCreated"></td>
-                                                                    </tr>
-                                                                </table>
-                                                            </div>
-                                                            <div id="companyWideDetailBody" class="report-body text-secondary" style="font-size: 0.95rem; line-height: 1.6;"></div>
-                                                        </div>
-                                                        <div class="p-3 bg-light border-top">
-                                                            <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
-                                                        </div>
-                                                    </div>
-                                            
                                                 </div>
                                             </div>
 
@@ -586,27 +608,44 @@
 
                 <div class="modal-footer border-0 justify-content-center pb-4" style="padding-top: 1.5rem; margin-top: 1rem;">
                     <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-5">Submit Report</button>
+                    <button type="submit" class="btn btn-primary px-5" id="submitReportBtn">
+                        <span id="submitSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span id="submitText">Submit Report</span>
+                    </button>
                 </div>
             </form> </div>
     </div>
 </div>
 
-<!-- comment modal  -->
-<div class="modal fade" id="newCommentModal" tabindex="-1" aria-labelledby="newCommentModalLabel" aria-hidden="true">
-    <div class="border rounded">
-        <div class="p-2 bg-light border-bottom small fw-bold">Report content</div>
-        <div class="p-3 bg-white">
-            <textarea id="commentreportCKEditor" name="reportBody" class="form-control" style="min-height: 350px;"><p><strong>This week's summary:</strong></p>
-            <p>1.</p><p>2.</p>
-            <p><strong>Next week's plan:</strong></p>
-            <p>1.</p><p>2.</p>
-            <p><strong>Issues and suggestions:</strong></p>
-            <p>1.</p><p>2.</p></textarea>
-        </div>
-        <div class="p-2 bg-light border-top d-flex gap-3 text-muted" style="font-size: 0.8rem;">
-            <span><i class="bx bx-paperclip"></i> Attachment</span>
-            <span><i class="bx bx-font-color"></i> Content style</span>
+<!-- Modal: view full report -->
+<div class="modal fade" id="companyWideReportModal" tabindex="-1" aria-labelledby="companyWideReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="companyWideReportModalLabel">Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <p class="text-dark small mb-2 " id="companyWideModalTitle"></p>
+                <table class="table table-bordered table-sm text-muted mb-3" style="font-size: 0.9rem;">
+                    <tr>
+                        <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
+                        <td class="p-2 text-dark" id="companyWideModalReviewer"></td>
+                        <td class="p-2 bg-light" style="width: 10%;">CC</td>
+                        <td class="p-2 text-dark" id="companyWideModalCC"></td>
+                    </tr>
+                    <tr>
+                        <td class="p-2 bg-light">Department</td>
+                        <td class="p-2 text-dark" id="companyWideModalDepartment"></td>
+                        <td class="p-2 bg-light">Created</td>
+                        <td class="p-2 text-dark" id="companyWideModalCreated"></td>
+                    </tr>
+                </table>
+                <div class="border-top pt-3">
+                    <h6 class="text-muted small text-uppercase mb-2">Content</h6>
+                    <div id="companyWideModalBody" class="report-body text-dark" style="font-size: 0.95rem; line-height: 1.6;"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
