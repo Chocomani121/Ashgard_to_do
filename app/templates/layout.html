@@ -27,6 +27,13 @@
         <link href="{{ url_for('static', filename='assets/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
         <!-- choices css -->
         <link href="{{ url_for('static', filename='assets/libs/choices.js/public/assets/styles/choices.min.css') }}" rel="stylesheet" type="text/css" />
+        
+        <!-- alertifyjs Css -->
+        <link href="{{ url_for('static', filename='assets/libs/alertifyjs/build/css/alertify.min.css') }}" rel="stylesheet" type="text/css" />
+
+        <!-- alertifyjs default themes  Css -->
+        <link href="assets/libs/alertifyjs/build/css/themes/default.min.css" rel="stylesheet" type="text/css" />
+        
 
         <!-- color picker css -->
         <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/@simonwep/pickr/themes/classic.min.css') }}"/> <!-- 'classic' theme -->
@@ -300,6 +307,7 @@
         <script src="{{ url_for('static', filename='assets/js/app.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/jsvectormap/js/jsvectormap.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/jsvectormap/maps/world-merc.js') }}"></script>
+
         <!-- ApexCharts must load before dashboard.init (donut chart on project_details) -->
         <script src="{{ url_for('static', filename='assets/libs/apexcharts/apexcharts.min.js') }}"></script>
 
@@ -329,7 +337,7 @@
         <!-- Charts and Apex JS -->
         <script src="{{ url_for('static', filename='assets/libs/apexcharts/apexcharts.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/chart.js/chart.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='assets/js/pages/chartjs.init.js') }}"></script> 
+        <script src="{{ url_for('static', filename='assets/js/pages/chartjs.init.js') }}"></script>
 
         <!-- ckeditor -->
         <script src="{{ url_for('static', filename='assets/libs/@ckeditor/ckeditor5-build-classic/build/ckeditor.js') }}"></script>
@@ -349,6 +357,11 @@
 
         <!-- swiper js -->
         <script src="{{ url_for('static', filename='assets/libs/swiper/swiper-bundle.min.js')}}"></script>
+
+        <!-- alertifyjs js -->
+        <script src="{{ url_for('static', filename='assets/libs/alertifyjs/build/alertify.min.js') }}"></script>
+        <!-- notification init -->
+        <script src="{{ url_for('static', filename='assets/js/pages/notification.init.js') }}"></script>
         
         <!-- nouisliderribute js -->
         <script src="{{ url_for('static', filename='assets/libs/nouislider/nouislider.min.js')}}"></script>
