@@ -149,3 +149,14 @@ tr:has(a[href]):hover {
     cursor: not-allowed !important;
     color: #999;
   }
+
+#reportDetailCommentsList::-webkit-scrollbar {
+    width: 6px;
+}
+#reportDetailCommentsList::-webkit-scrollbar-thumb {
+    background: #e0e0e0;
+    border-radius: 10px;
+}
+#reportDetailCommentsList::-webkit-scrollbar-track {
+    background: transparent;
+}

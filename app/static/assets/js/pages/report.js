@@ -241,24 +241,36 @@
     if (reportsDataEl) {
       var reportsData = JSON.parse(reportsDataEl.textContent || "[]");
       
-      function renderReportComments(comments, listId, emptyId) {
-        var listEl = document.getElementById(listId);
-        var emptyEl = document.getElementById(emptyId);
+      function renderReportComments(report) {
+        var listEl = document.getElementById("reportDetailCommentsList");
+        var emptyEl = document.getElementById("reportDetailCommentsEmpty");
         if (!listEl) return;
-        listEl.innerHTML = '';
-        if (emptyEl) emptyEl.style.display = (comments && comments.length) ? 'none' : 'block';
-        if (!comments || !comments.length) return;
+        var comments = (report && report.comments) ? report.comments : [];
+        listEl.innerHTML = "";
+        if (comments.length === 0) {
+          if (emptyEl) {
+            emptyEl.style.display = "block";
+          }
+          return;
+        }
+
+        if (emptyEl) emptyEl.style.display = "none";
         comments.forEach(function (c) {
-            var div = document.createElement('div');
-            div.className = 'list-group-item list-group-item-action border-0 py-2 px-3';
-            div.innerHTML =
-                '<div class="d-flex justify-content-between align-items-start small text-muted mb-1">' +
-                '<span class="fw-semibold text-dark">' + (c.author_name || '') + '</span>' +
-                '<span>' + (c.created_at || '') + '</span></div>' +
-                '<div class="small text-secondary">' + (c.comment_body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
-            listEl.appendChild(div);
+          var card = document.createElement("div");
+          var imgSrc = "/static/profile_pics/" + (c.author_image || "default.jpg");
+          card.className = "list-group-item list-group-item-action border-0 py-3 d-flex gap-3";
+          card.innerHTML =
+            "<img src=\"" + imgSrc + "\" alt=\"\" class=\"rounded-circle border flex-shrink-0\" style=\"width: 32px; height: 32px; object-fit: cover;\" onerror=\"this.src='/static/profile_pics/default.jpg'; this.onerror=null;\">" +
+            "<div class=\"flex-grow-1 min-width-0\">" +
+              "<div class=\"d-flex justify-content-between align-items-start mb-1\">" +
+                "<span class=\"fw-bold small\">" + (c.author_name || "Unknown") + "</span>" +
+                "<small class=\"text-muted\">" + (c.created_at || "") + "</small>" +
+              "</div>" +
+              "<div class=\"small text-secondary report-comment-body\">" + (c.comment_body || "") + "</div>" +
+            "</div>";
+          listEl.appendChild(card);
         });
-    }
+      }
     
       var listEl = document.getElementById("pendingReportList");
       if (listEl) {
@@ -290,6 +302,7 @@
           if (createdEl) createdEl.textContent = report.created_on || "";
           var bodyEl = document.getElementById("reportDetailBody");
           if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+          renderReportComments(report);
           var actionsEl = document.getElementById("reportDetailActions");
           var authorActions = document.getElementById("reportDetailActionsAuthor");
           var reviewerActions = document.getElementById("reportDetailActionsReviewer");
@@ -599,7 +612,26 @@
           var textarea = document.getElementById("commentCKEditor");
           if (textarea) textarea.value = "";
       }
-  
+
+      function showCommentSuccessToast() {
+        var container = document.getElementById("toastPlacement");
+        if (!container) return;
+        var toastEl = document.createElement("div");
+        toastEl.className = "toast align-items-center text-white bg-success border-0 shadow-lg";
+        toastEl.setAttribute("role", "alert");
+        toastEl.setAttribute("aria-live", "assertive");
+        toastEl.setAttribute("aria-atomic", "true");
+        toastEl.innerHTML =
+            "<div class=\"d-flex\">" +
+            "<div class=\"toast-body\"><i class=\"bx bx-check-circle me-2\"></i>Comment added.</div>" +
+            "<button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>" +
+            "</div>";
+        container.appendChild(toastEl);
+        var toast = new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 });
+        toast.show();
+        toastEl.addEventListener("hidden.bs.toast", function () { toastEl.remove(); });
+    }
+
       function sendComment() {
         var commentReportIdEl = document.getElementById("commentReportId");
         var reportId = commentReportIdEl ? commentReportIdEl.value : null;
@@ -613,6 +645,7 @@
             alert("Please write a comment.");
             return;
         }
+        
         var formData = new FormData();
         formData.append("comment_body", body);
         var xhr = new XMLHttpRequest();
@@ -625,8 +658,26 @@
                     var res = JSON.parse(xhr.responseText);
                     if (res && res.success) {
                         closeCommentEditor();
-                        if (typeof Swal !== "undefined") {
-                            Swal.fire({ title: "Comment added", icon: "success", timer: 1500, showConfirmButton: false });
+                        var listEl = document.getElementById("reportDetailCommentsList");
+                        var emptyEl = document.getElementById("reportDetailCommentsEmpty");
+                        if (res.author_name !== undefined && listEl) {
+                            if (emptyEl) emptyEl.style.display = "none";
+                            var card = document.createElement("div");
+                            var imgSrc = "/static/profile_pics/" + (res.user_image || "default.jpg");
+                            card.className = "list-group-item list-group-item-action border-0 py-3 d-flex gap-3";
+                            card.innerHTML =
+                                "<img src=\"" + imgSrc + "\" alt=\"\" class=\"rounded-circle border flex-shrink-0\" style=\"width: 32px; height: 32px; object-fit: cover;\" onerror=\"this.src='/static/profile_pics/default.jpg'; this.onerror=null;\">" +
+                                "<div class=\"flex-grow-1 min-width-0\">" +
+                                "<div class=\"d-flex justify-content-between align-items-start mb-1\">" +
+                                "<span class=\"fw-bold small\">" + (res.author_name || "Unknown") + "</span>" +
+                                "<small class=\"text-muted\">" + (res.created_at || "") + "</small>" +
+                                "</div>" +
+                                "<div class=\"small text-secondary report-comment-body\">" + (res.comment_body || "") + "</div>" +
+                                "</div>";
+                            listEl.appendChild(card);
+                        }
+                        if (typeof bootstrap !== "undefined" && bootstrap.Toast) {
+                            showCommentSuccessToast();
                         } else {
                             alert("Comment added.");
                         }
@@ -773,9 +824,71 @@ document.addEventListener('DOMContentLoaded', function () {
         // Initialize and show immediately
         const toast = new bootstrap.Toast(toastEl, {
             autohide: true,
-            delay: 4000 // Lasts 5 seconds
+            delay: 5000 // Lasts 5 seconds
         });
         toast.show();
         return toast;
     });
 });
+
+
+// Comments Section//
+function toggleMaximizeComments() {
+    const list = document.getElementById('reportDetailCommentsList');
+    
+    // Check if it's currently at the fixed height
+    if (list.style.maxHeight === "350px") {
+        list.style.maxHeight = "800px"; // Maximize it
+    } else {
+        list.style.maxHeight = "350px"; // Back to normal
+    }
+}
+
+// Update the "Hide/Show" text when the collapse happens
+document.getElementById('commentSectionWrapper').addEventListener('hide.bs.collapse', function () {
+    document.getElementById('toggleText').innerText = 'Show';
+});
+document.getElementById('commentSectionWrapper').addEventListener('show.bs.collapse', function () {
+    document.getElementById('toggleText').innerText = 'Hide';
+});
+
+function toggleCommentHeight() {
+    const list = document.getElementById('reportDetailCommentsList');
+    const icon = document.getElementById('expandIcon');
+    
+    if (list.style.maxHeight === "280px") {
+        list.style.maxHeight = "600px";
+        icon.classList.replace('bi-arrows-angle-expand', 'bi-arrows-angle-contract');
+    } else {
+        list.style.maxHeight = "280px";
+        icon.classList.replace('bi-arrows-angle-contract', 'bi-arrows-angle-expand');
+    }
+}
+
+// Update text when Bootstrap collapse runs
+const wrapper = document.getElementById('commentSectionWrapper');
+wrapper.addEventListener('hide.bs.collapse', () => document.getElementById('toggleLink').innerText = 'Show');
+wrapper.addEventListener('show.bs.collapse', () => document.getElementById('toggleLink').innerText = 'Hide');
+
+function appendComment(comment) {
+    const list = document.getElementById('reportDetailCommentsList');
+    var imgFile = comment.user_image || comment.author_image || 'default.jpg';
+    var imgSrc = '/static/profile_pics/' + imgFile;
+    var name = comment.author_name || 'Unknown';
+    var time = comment.created_at || comment.timestamp || '';
+    var body = comment.comment_body || comment.content || '';
+    const commentHtml = `
+    <div class="list-group-item border-0 d-flex gap-3 py-2 px-3 bg-transparent">
+        <img src="${imgSrc}" alt="" class="rounded-circle border flex-shrink-0" style="width: 32px; height: 32px; object-fit: cover;" onerror="this.src='/static/profile_pics/default.jpg'; this.onerror=null;">
+        <div class="flex-grow-1 p-2 rounded-3" style="background-color: #f0f2f5;">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-bold text-dark" style="font-size: 0.85rem;">${name}</span>
+                <small class="text-muted" style="font-size: 0.7rem;">${time}</small>
+            </div>
+            <div class="text-secondary report-comment-body" style="font-size: 0.88rem; line-height: 1.4;">
+                ${body}
+            </div>
+        </div>
+    </div>`;
+    list.insertAdjacentHTML('beforeend', commentHtml);
+}
