@@ -24,9 +24,8 @@ def _generate_task_code():
 # @cache.cached(timeout=60)
 @login_required
 def projects():
-    # Fetch all projects with related data
-    
-    projects = Project.query.all()
+    # Fetch all projects with related data (newest first)
+    projects = Project.query.order_by(Project.project_id.desc()).all()
     departments = Department.query.all()
     users = User.query.all()
     
@@ -96,8 +95,8 @@ def all_departments():
     departments = Department.query.all()
     # Get all users (we'll filter unassigned ones in JavaScript for dropdown, but need all for Edit modal)
     users = User.query.all()
-    projects = Project.query.all()
-    # Build department projects data for the Department Projects table
+    # Build department projects data for the Department Projects table (newest first)
+    projects = Project.query.order_by(Project.project_id.desc()).all()
     dept_projects_data = []
     for project in projects:
         dept = Department.query.get(project.department_id) if project.department_id else None
@@ -360,10 +359,10 @@ def project_details(id=None):
                         'role': project_member.role or 'Team Member'
                     })
     
-    # Get tasks for this project
+    # Get tasks for this project (newest first)
     tasks = []
     if project:
-        project_tasks = Task.query.filter_by(project_id=project.project_id).all()
+        project_tasks = Task.query.filter_by(project_id=project.project_id).order_by(Task.task_id.desc()).all()
         for task in project_tasks:
             # Get task owner
             owner = None
@@ -781,7 +780,6 @@ def create_project():
         project_name = request.form.get('project_name')
         priority = request.form.get('priority', 'High')
         client_name = request.form.get('client_name')
-        department_id = request.form.get('department_id')
         # Project manager is automatically set to the current user
         project_manager = current_user.member_id
         start_date_str = request.form.get('start_date')
@@ -790,10 +788,14 @@ def create_project():
         project_status = 'Ongoing'
         progress = request.form.get('progress', '0%')
         project_description = request.form.get('topicDescription', '')
+        member_ids = request.form.getlist('project_members')
         
-        # Validate required fields
-        if not all([project_name, priority, client_name, department_id, start_date_str, end_date_str]):
+        # Validate required fields (department removed; at least one member required)
+        if not all([project_name, priority, client_name, start_date_str, end_date_str]):
             flash('Please fill in all required fields', 'danger')
+            return redirect(url_for('main.projects'))
+        if not member_ids:
+            flash('Please select at least one member for the project', 'danger')
             return redirect(url_for('main.projects'))
         
         # Parse dates
@@ -807,6 +809,18 @@ def create_project():
             flash('Deadline cannot be earlier than the start date.', 'danger')
             return redirect(url_for('main.projects'))
 
+        # Derive department from first selected member, else current user's department
+        department_id = None
+        try:
+            first_member_id = int(member_ids[0])
+            first_user = User.query.get(first_member_id)
+            if first_user and first_user.department_id:
+                department_id = first_user.department_id
+        except (ValueError, TypeError, IndexError):
+            pass
+        if department_id is None and current_user.department_id:
+            department_id = current_user.department_id
+
         # Create deadline entry first
         deadline = Deadlines(
             start_date=start_date,
@@ -818,7 +832,7 @@ def create_project():
         
         # Create project entry
         project = Project(
-            department_id=int(department_id),
+            department_id=department_id,
             project_manager=int(project_manager),
             deadlines_id=deadline.deadlines_id,
             priority=priority,
@@ -831,9 +845,6 @@ def create_project():
         
         db.session.add(project)
         db.session.flush()  # Get the project_id
-        
-        # Get assigned members from form
-        member_ids = request.form.getlist('project_members')
         
         # Create ProjectMembers entries for assigned members using project_id
         if member_ids:
