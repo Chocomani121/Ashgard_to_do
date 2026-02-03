@@ -236,7 +236,7 @@
   })();
   
   // Report list click handler
-  document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
     var reportsDataEl = document.getElementById("reports-data");
     if (reportsDataEl) {
       var reportsData = JSON.parse(reportsDataEl.textContent || "[]");
@@ -415,8 +415,6 @@
             // Company-wide tab click handler
             var companyWideListEl = document.getElementById("companyWideReportList");
             if (companyWideListEl) {
-                var commentReportIdEl = document.getElementById("commentReportId");
-                if (commentReportIdEl) commentReportIdEl.value = report.report_id;
                 companyWideListEl.addEventListener("click", function (e) {
                     var item = e.target.closest(".company-wide-report-list-item");
                     if (!item) return;
@@ -444,55 +442,30 @@
                     if (createdEl) createdEl.textContent = report.created_on || "";
                     var bodyEl = document.getElementById("companyWideDetailBody");
                     if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+
+                    var modal = document.getElementById("companyWideReportModal");
+                    if (modal && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+                        document.getElementById("companyWideModalTitle").textContent = "Weekly-" + report.author_name + " (" + report.week_name + ")";
+                        var mRev = document.getElementById("companyWideModalReviewer");
+                        if (mRev) mRev.textContent = report.reviewer_name || "";
+                        var mCc = document.getElementById("companyWideModalCC");
+                        if (mCc) mCc.textContent = report.cc_names || "";
+                        var mDept = document.getElementById("companyWideModalDepartment");
+                        if (mDept) mDept.textContent = report.department_name || "";
+                        var mCreated = document.getElementById("companyWideModalCreated");
+                        if (mCreated) mCreated.textContent = report.created_on || "";
+                        var mBody = document.getElementById("companyWideModalBody");
+                        if (mBody) mBody.innerHTML = report.report_content || "";
+                        var bsModal = new bootstrap.Modal(modal);
+                        bsModal.show();
+                    }
                 });
             }
       }
   });
   
-  // function getCurrentReportWeek() {
-  //     const today = new Date();
-  //     const daysFromMonday = (today.getDay() + 6) % 7;
-  //     const monday = new Date(today);
-  //     monday.setDate(today.getDate() - daysFromMonday);
-  //     const saturday = new Date(monday);
-  //     saturday.setDate(monday.getDate() + 5);
-  //     return { start: monday, end: saturday };
-  // }
   
-  // document.addEventListener("DOMContentLoaded", function () {
-  //     const sel = document.getElementById("weekly-report-date");
-  //     if (!sel) return;
-  
-  //     function fmt(d) {
-  //         const m = String(d.getMonth() + 1).padStart(2, "0");
-  //         const day = String(d.getDate()).padStart(2, "0");
-  //         return m + "/" + day + "/" + d.getFullYear();
-  //     }
-  
-  //     const { start, end } = getCurrentReportWeek();
-  //     const currentLabel = fmt(start) + " - " + fmt(end);
-  
-  //     sel.innerHTML = "";
-  //     const currentOpt = document.createElement("option");
-  //     currentOpt.value = currentLabel;
-  //     currentOpt.textContent = currentLabel + " (This week)";
-  //     currentOpt.selected = true;
-  //     sel.appendChild(currentOpt);
-  
-  //     for (let i = 1; i <= 12; i++) {
-  //         const nextMon = new Date(start);
-  //         nextMon.setDate(start.getDate() + 7 * i);
-  //         const nextSat = new Date(nextMon);
-  //         nextSat.setDate(nextMon.getDate() + 5);
-  //         const opt = document.createElement("option");
-  //         opt.value = fmt(nextMon) + " - " + fmt(nextSat);
-  //         opt.textContent = opt.value;
-  //         sel.appendChild(opt);
-  //     }
-  // });
-  
-  
-  // report editor JS
+  // report editor JS CKEditor
   (function () {
       function initReportCK() {
           if (typeof ClassicEditor === 'undefined') return;
@@ -512,6 +485,7 @@
       }
   })();
   
+  //edit report modal
   (function () {
       var modal = document.getElementById("newReportModal");
       var modalTitle = document.getElementById("newReportModalLabel");
