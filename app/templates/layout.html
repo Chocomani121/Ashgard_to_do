@@ -45,7 +45,13 @@
 
         <!-- nouisliderribute css -->
         <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/nouislider/nouislider.min.css')}}">
-          
+        <!-- choices css -->
+        <link href="{{ url_for('static', filename='assets/libs/choices.js/public/assets/styles/choices.min.css') }}" rel="stylesheet" type="text/css" />
+        
+        <!-- alertifyjs Css -->
+        <link href="{{ url_for('static', filename='assets/libs/alertifyjs/build/css/alertify.min.css') }}" rel="stylesheet" type="text/css" />
+
+        
 
     </head>
     </head>
@@ -353,9 +359,11 @@
         <!-- nouisliderribute js -->
         <script src="{{ url_for('static', filename='assets/libs/nouislider/nouislider.min.js')}}"></script>
         <script src="{{url_for('static', filename='assets/libs/wnumb/wNumb.min.js')}}"></script>
-        <!-- ckeditor -->
-        <script src="{{ url_for('static', filename='assets/libs/@ckeditor/ckeditor5-build-classic/build/ckeditor.js') }}"></script>
 
+       <!-- alertifyjs js -->
+       <script src="{{ url_for('static', filename='assets/libs/alertifyjs/build/alertify.min.js') }}"></script>
+       <!-- notification init -->
+       <script src="{{ url_for('static', filename='assets/js/pages/notification.init.js') }}"></script>
     </body>
 
 </html>

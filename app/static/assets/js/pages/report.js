@@ -10,6 +10,7 @@
       return name.substring(0, 2).toUpperCase();
     }
   
+    
     function getAvatarHtml(user, size = "24px", fontSize = "10px") {
       // Check if user exists and has initials
       const initials = user.initials || "??";
@@ -178,39 +179,58 @@
   
       // F. Form Submission Bridge (Fixes "Not Saving" issue)
     // Inside your DOMContentLoaded block
-  if (reportForm) {
-      reportForm.onsubmit = function (e) {
-          // 1. Sync CKEditor 5 content to the hidden input (reportBody is submitted from here)
-          if (window.reportCKInstance && typeof window.reportCKInstance.getData === 'function') {
-              var reportBodyHidden = document.getElementById('reportBodyHidden');
-              if (reportBodyHidden) reportBodyHidden.value = window.reportCKInstance.getData();
-          }
-  
-          // 2. Double-check that we have a Reviewer ID
-          const reviewerId = document.getElementById("selectedReviewerId").value;
-          if (!reviewerId) {
-              alert("Please select a reviewer before submitting.");
-              e.preventDefault(); // Stop the form if no ID is present
-              return false;
-          }
-  
-          // 3. Populate CC IDs into the hidden container
-          const ccContainer = document.getElementById("ccIdsContainer");
-          if (ccIdsContainer) {
-              ccIdsContainer.innerHTML = ""; // Clear old entries
-              selectedCCMembers.forEach(user => {
-                  const input = document.createElement("input");
-                  input.type = "hidden";
-                  input.name = "cc_members"; // Python uses getlist('cc_members')
-                  input.value = user.member_id; // ONLY SAVING THE ID
-                  ccIdsContainer.appendChild(input);
-              });
-          }
-          
-          console.log("Form is valid. Submitting IDs only...");
-          return true; 
-      };
-  }
+        if (reportForm) {
+            reportForm.onsubmit = function (e) {
+                // 1. Sync CKEditor content
+                if (window.reportCKInstance && typeof window.reportCKInstance.getData === 'function') {
+                    var reportBodyHidden = document.getElementById('reportBodyHidden');
+                    if (reportBodyHidden) reportBodyHidden.value = window.reportCKInstance.getData();
+                }
+
+                // 2. Double-check Reviewer ID
+                const reviewerId = document.getElementById("selectedReviewerId").value;
+                if (!reviewerId) {
+                    if (typeof Swal !== "undefined") {
+                        Swal.fire({
+                            icon: "warning",
+                            title: "Reviewer required",
+                            text: "Please select a reviewer before submitting."
+                        });
+                    } else {
+                        alert("Please select a reviewer before submitting.");
+                    }
+                    e.preventDefault();
+                    return false;
+                }
+
+                // --- NEW SPINNER LOGIC START ---
+                const btn = document.getElementById("submitReportBtn");
+                const spinner = document.getElementById("submitSpinner");
+                const btnText = document.getElementById("submitText");
+
+                if (btn && spinner) {
+                    btn.disabled = true;           // Prevent double submission
+                    spinner.classList.remove("d-none"); // Show spinner
+                    btnText.textContent = " Submitting..."; // Update text
+                }
+                // --- NEW SPINNER LOGIC END ---
+
+                // 3. Populate CC IDs
+                const ccIdsContainer = document.getElementById("ccIdsContainer");
+                if (ccIdsContainer) {
+                    ccIdsContainer.innerHTML = ""; 
+                    selectedCCMembers.forEach(user => {
+                        const input = document.createElement("input");
+                        input.type = "hidden";
+                        input.name = "cc_members";
+                        input.value = user.member_id;
+                        ccIdsContainer.appendChild(input);
+                    });
+                }
+                
+                return true; 
+            };
+        }
       // G. Event Listeners
       reviewerDisplay.onclick = (e) => { e.stopPropagation(); reviewerDropdown.classList.toggle("d-none"); };
       reviewerSearch.oninput = (e) => renderReviewers(e.target.value);
@@ -222,10 +242,43 @@
     });
   })();
   
-  document.addEventListener("DOMContentLoaded", function () {
+  // Report list click handler
+document.addEventListener("DOMContentLoaded", function () {
     var reportsDataEl = document.getElementById("reports-data");
     if (reportsDataEl) {
       var reportsData = JSON.parse(reportsDataEl.textContent || "[]");
+      
+      function renderReportComments(report) {
+        var listEl = document.getElementById("reportDetailCommentsList");
+        var emptyEl = document.getElementById("reportDetailCommentsEmpty");
+        if (!listEl) return;
+        var comments = (report && report.comments) ? report.comments : [];
+        listEl.innerHTML = "";
+        if (comments.length === 0) {
+          if (emptyEl) {
+            emptyEl.style.display = "block";
+          }
+          return;
+        }
+
+        if (emptyEl) emptyEl.style.display = "none";
+        comments.forEach(function (c) {
+          var card = document.createElement("div");
+          var imgSrc = "/static/profile_pics/" + (c.author_image || "default.jpg");
+          card.className = "list-group-item list-group-item-action border-0 py-3 d-flex gap-3";
+          card.innerHTML =
+            "<img src=\"" + imgSrc + "\" alt=\"\" class=\"rounded-circle border flex-shrink-0\" style=\"width: 32px; height: 32px; object-fit: cover;\" onerror=\"this.src='/static/profile_pics/default.jpg'; this.onerror=null;\">" +
+            "<div class=\"flex-grow-1 min-width-0\">" +
+              "<div class=\"d-flex justify-content-between align-items-start mb-1\">" +
+                "<span class=\"fw-bold small\">" + (c.author_name || "Unknown") + "</span>" +
+                "<small class=\"text-muted\">" + (c.created_at || "") + "</small>" +
+              "</div>" +
+              "<div class=\"small text-secondary report-comment-body\">" + (c.comment_body || "") + "</div>" +
+            "</div>";
+          listEl.appendChild(card);
+        });
+      }
+    
       var listEl = document.getElementById("pendingReportList");
       if (listEl) {
         listEl.addEventListener("click", function (e) {
@@ -240,9 +293,14 @@
           var content = document.getElementById("reportDetailContent");
           if (placeholder) placeholder.style.display = "none";
           if (content) content.style.display = "block";
+          var sharedCommentSection = document.getElementById("sharedCommentSection");
+          var pendingDetailCol = document.querySelector("#reportDetailContent").closest(".col-md-8");
+          if (sharedCommentSection && pendingDetailCol) pendingDetailCol.appendChild(sharedCommentSection);
           var titleEl = document.getElementById("reportDetailTitle");
           var reportIdField = document.getElementById("currentActiveReportId");
           if (reportIdField) reportIdField.value = report.report_id;
+          var commentReportIdEl = document.getElementById("commentReportId");
+          if (commentReportIdEl) commentReportIdEl.value = report.report_id;
           if (titleEl) titleEl.textContent = "Weekly-" + report.author_name + "(" + report.week_name + ")";
           var revEl = document.getElementById("reportDetailReviewer");
           if (revEl) revEl.textContent = report.reviewer_name || "";
@@ -254,6 +312,7 @@
           if (createdEl) createdEl.textContent = report.created_on || "";
           var bodyEl = document.getElementById("reportDetailBody");
           if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+          renderReportComments(report);
           var actionsEl = document.getElementById("reportDetailActions");
           var authorActions = document.getElementById("reportDetailActionsAuthor");
           var reviewerActions = document.getElementById("reportDetailActionsReviewer");
@@ -302,6 +361,8 @@
               var reportId = parseInt(item.getAttribute("data-report-id"), 10);
               var report = reportsData.find(function (r) { return r.report_id === reportId; });
               if (!report) return;
+              var commentReportIdEl = document.getElementById("commentReportId");
+              if (commentReportIdEl) commentReportIdEl.value = report.report_id;
               document.querySelectorAll("#reviewedReportList .reviewed-report-list-item").forEach(function (el) { el.classList.remove("active"); });
               item.classList.add("active");
               var placeholder = document.getElementById("reviewedDetailPlaceholder");
@@ -320,55 +381,157 @@
               if (createdEl) createdEl.textContent = report.created_on || "";
               var bodyEl = document.getElementById("reviewedDetailBody");
               if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+              var sharedCommentSection = document.getElementById("sharedCommentSection");
+              var reviewedDetailCol = document.querySelector("#reviewedDetailContent").closest(".col-md-8");
+              if (sharedCommentSection && reviewedDetailCol) reviewedDetailCol.appendChild(sharedCommentSection);
+              var commentReportIdEl = document.getElementById("commentReportId");
+              if (commentReportIdEl) commentReportIdEl.value = report.report_id;
+              renderReportComments(report);
           });
           }
+        // CC tab click handler
+        var ccListEl = document.getElementById("ccReportList");
+        if (ccListEl) {
+            ccListEl.addEventListener("click", function (e) {
+                var commentReportIdEl = document.getElementById("commentReportId");
+                if (commentReportIdEl) commentReportIdEl.value = reportId;
+                var item = e.target.closest(".cc-report-list-item");
+                if (!item) return;
+                var reportId = parseInt(item.getAttribute("data-report-id"), 10);
+                var report = reportsData.find(function (r) { return r.report_id === reportId; });
+                if (!report) return;
+                
+                // Set active state only on CC list items
+                document.querySelectorAll("#ccReportList .cc-report-list-item").forEach(function (el) { el.classList.remove("active"); });
+                item.classList.add("active");
+                
+                // Show detail, hide placeholder
+                var placeholder = document.getElementById("ccDetailPlaceholder");
+                var content = document.getElementById("ccDetailContent");
+                if (placeholder) placeholder.style.display = "none";
+                if (content) content.style.display = "block";
+                
+                // Populate detail fields
+                var titleEl = document.getElementById("ccDetailTitle");
+                if (titleEl) titleEl.textContent = "Weekly-" + report.author_name + "(" + report.week_name + ")";
+                var revEl = document.getElementById("ccDetailReviewer");
+                if (revEl) revEl.textContent = report.reviewer_name || "";
+                var ccEl = document.getElementById("ccDetailCC");
+                if (ccEl) ccEl.textContent = report.cc_names || "";
+                var deptEl = document.getElementById("ccDetailDepartment");
+                if (deptEl) deptEl.textContent = report.department_name || "";
+                var createdEl = document.getElementById("ccDetailCreated");
+                if (createdEl) createdEl.textContent = report.created_on || "";
+                var bodyEl = document.getElementById("ccDetailBody");
+                if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+            });
+        }
+
+            // Company-wide tab click handler
+            var companyWideListEl = document.getElementById("companyWideReportList");
+            if (companyWideListEl) {
+                companyWideListEl.addEventListener("click", function (e) {
+                    var item = e.target.closest(".company-wide-report-list-item");
+                    if (!item) return;
+                    var reportId = parseInt(item.getAttribute("data-report-id"), 10);
+                    var report = reportsData.find(function (r) { return r.report_id === reportId; });
+                    if (!report) return;
+                    
+                    document.querySelectorAll("#companyWideReportList .company-wide-report-list-item").forEach(function (el) { el.classList.remove("active"); });
+                    item.classList.add("active");
+                    
+                    var placeholder = document.getElementById("companyWideDetailPlaceholder");
+                    var content = document.getElementById("companyWideDetailContent");
+                    if (placeholder) placeholder.style.display = "none";
+                    if (content) content.style.display = "block";
+                    
+                    var titleEl = document.getElementById("companyWideDetailTitle");
+                    if (titleEl) titleEl.textContent = "Weekly-" + report.author_name + "(" + report.week_name + ")";
+                    var revEl = document.getElementById("companyWideDetailReviewer");
+                    if (revEl) revEl.textContent = report.reviewer_name || "";
+                    var ccEl = document.getElementById("companyWideDetailCC");
+                    if (ccEl) ccEl.textContent = report.cc_names || "";
+                    var deptEl = document.getElementById("companyWideDetailDepartment");
+                    if (deptEl) deptEl.textContent = report.department_name || "";
+                    var createdEl = document.getElementById("companyWideDetailCreated");
+                    if (createdEl) createdEl.textContent = report.created_on || "";
+                    var bodyEl = document.getElementById("companyWideDetailBody");
+                    if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+
+                    var modal = document.getElementById("companyWideReportModal");
+                    if (modal && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+                        document.getElementById("companyWideModalTitle").textContent = "Weekly-" + report.author_name + " (" + report.week_name + ")";
+                        var mRev = document.getElementById("companyWideModalReviewer");
+                        if (mRev) mRev.textContent = report.reviewer_name || "";
+                        var mCc = document.getElementById("companyWideModalCC");
+                        if (mCc) mCc.textContent = report.cc_names || "";
+                        var mDept = document.getElementById("companyWideModalDepartment");
+                        if (mDept) mDept.textContent = report.department_name || "";
+                        var mCreated = document.getElementById("companyWideModalCreated");
+                        if (mCreated) mCreated.textContent = report.created_on || "";
+                        var mBody = document.getElementById("companyWideModalBody");
+                        if (mBody) mBody.innerHTML = report.report_content || "";
+                        var bsModal = new bootstrap.Modal(modal);
+                        bsModal.show();
+                    }
+                });
+            }
+
+            // When switching to a tab, re-show the selected report detail if one was already selected (so it doesn't disappear)
+        document.addEventListener('shown.bs.tab', function (e) {
+            if (!e.target || !e.target.getAttribute || e.target.getAttribute('data-bs-toggle') !== 'tab') return;
+            var href = e.target.getAttribute('href') || '';
+            var reportId, report, placeholder, content, sharedCommentSection;
+
+            if (href === '#Pending') {
+                var activeItem = document.querySelector('#pendingReportList .report-list-item.active');
+                if (!activeItem) return;
+                reportId = parseInt(activeItem.getAttribute('data-report-id'), 10);
+                report = reportsData.find(function (r) { return r.report_id === reportId; });
+                if (!report) return;
+                placeholder = document.getElementById("reportDetailPlaceholder");
+                content = document.getElementById("reportDetailContent");
+                if (placeholder) placeholder.style.display = "none";
+                if (content) content.style.display = "block";
+                sharedCommentSection = document.getElementById("sharedCommentSection");
+                var pendingDetailCol = document.querySelector("#reportDetailContent").closest(".col-md-8");
+                if (sharedCommentSection && pendingDetailCol) pendingDetailCol.appendChild(sharedCommentSection);
+                var commentReportIdEl = document.getElementById("commentReportId");
+                if (commentReportIdEl) commentReportIdEl.value = report.report_id;
+                var reportIdField = document.getElementById("currentActiveReportId");
+                if (reportIdField) reportIdField.value = report.report_id;
+                renderReportComments(report);
+            } else if (href === '#Reviewed') {
+                var activeItemRev = document.querySelector('#reviewedReportList .reviewed-report-list-item.active');
+                if (!activeItemRev) return;
+                reportId = parseInt(activeItemRev.getAttribute('data-report-id'), 10);
+                report = reportsData.find(function (r) { return r.report_id === reportId; });
+                if (!report) return;
+                placeholder = document.getElementById("reviewedDetailPlaceholder");
+                content = document.getElementById("reviewedDetailContent");
+                if (placeholder) placeholder.style.display = "none";
+                if (content) content.style.display = "block";
+                sharedCommentSection = document.getElementById("sharedCommentSection");
+                var reviewedDetailCol = document.querySelector("#reviewedDetailContent").closest(".col-md-8");
+                if (sharedCommentSection && reviewedDetailCol) reviewedDetailCol.appendChild(sharedCommentSection);
+                var commentReportIdEl = document.getElementById("commentReportId");
+                if (commentReportIdEl) commentReportIdEl.value = report.report_id;
+                renderReportComments(report);
+            } else if (href === '#cc') {
+                var activeItemCc = document.querySelector('#ccReportList .cc-report-list-item.active');
+                if (!activeItemCc) return;
+                reportId = parseInt(activeItemCc.getAttribute('data-report-id'), 10);
+                placeholder = document.getElementById("ccDetailPlaceholder");
+                content = document.getElementById("ccDetailContent");
+                if (placeholder) placeholder.style.display = "none";
+                if (content) content.style.display = "block";
+            }
+        });
       }
   });
   
-  // function getCurrentReportWeek() {
-  //     const today = new Date();
-  //     const daysFromMonday = (today.getDay() + 6) % 7;
-  //     const monday = new Date(today);
-  //     monday.setDate(today.getDate() - daysFromMonday);
-  //     const saturday = new Date(monday);
-  //     saturday.setDate(monday.getDate() + 5);
-  //     return { start: monday, end: saturday };
-  // }
   
-  // document.addEventListener("DOMContentLoaded", function () {
-  //     const sel = document.getElementById("weekly-report-date");
-  //     if (!sel) return;
-  
-  //     function fmt(d) {
-  //         const m = String(d.getMonth() + 1).padStart(2, "0");
-  //         const day = String(d.getDate()).padStart(2, "0");
-  //         return m + "/" + day + "/" + d.getFullYear();
-  //     }
-  
-  //     const { start, end } = getCurrentReportWeek();
-  //     const currentLabel = fmt(start) + " - " + fmt(end);
-  
-  //     sel.innerHTML = "";
-  //     const currentOpt = document.createElement("option");
-  //     currentOpt.value = currentLabel;
-  //     currentOpt.textContent = currentLabel + " (This week)";
-  //     currentOpt.selected = true;
-  //     sel.appendChild(currentOpt);
-  
-  //     for (let i = 1; i <= 12; i++) {
-  //         const nextMon = new Date(start);
-  //         nextMon.setDate(start.getDate() + 7 * i);
-  //         const nextSat = new Date(nextMon);
-  //         nextSat.setDate(nextMon.getDate() + 5);
-  //         const opt = document.createElement("option");
-  //         opt.value = fmt(nextMon) + " - " + fmt(nextSat);
-  //         opt.textContent = opt.value;
-  //         sel.appendChild(opt);
-  //     }
-  // });
-  
-  
-  // report editor JS
+  // report editor JS CKEditor
   (function () {
       function initReportCK() {
           if (typeof ClassicEditor === 'undefined') return;
@@ -388,6 +551,7 @@
       }
   })();
   
+  //edit report modal
   (function () {
       var modal = document.getElementById("newReportModal");
       var modalTitle = document.getElementById("newReportModalLabel");
@@ -440,7 +604,7 @@
           
           // 1. Hide the placeholder immediately
           currentPlaceholder = placeholder;
-          currentPlaceholder.style.visibility = "hidden"; // Use visibility to keep layout stable, or 'none' if you want collapse
+          currentPlaceholder.style.visibility = "hidden"; 
   
           // 2. Show the popover container
           popover.style.display = "block";
@@ -481,20 +645,99 @@
       function finalizeClose() {
           popover.style.display = "none";
           if (currentPlaceholder) {
-              currentPlaceholder.style.visibility = "visible"; // Show it again
+              currentPlaceholder.style.visibility = "visible"; 
               currentPlaceholder.style.display = ""; 
               currentPlaceholder = null;
           }
-          var textarea = document.getElementById("commentreportCKEditor");
+          var textarea = document.getElementById("commentCKEditor");
           if (textarea) textarea.value = "";
       }
-  
-      function sendComment() {
-          var html = commentEditorInstance ? commentEditorInstance.getData() : "";
-          console.log("Sending comment:", html);
-          // Add your AJAX logic here to save to DB
-          closeCommentEditor();
+
+    //   function showCommentSuccessToast() {
+    //     var container = document.getElementById("toastPlacement");
+    //     if (!container) return;
+    //     var toastEl = document.createElement("div");
+    //     toastEl.className = "toast align-items-center text-white bg-success border-0 shadow-lg";
+    //     toastEl.setAttribute("role", "alert");
+    //     toastEl.setAttribute("aria-live", "assertive");
+    //     toastEl.setAttribute("aria-atomic", "true");
+    //     toastEl.innerHTML =
+    //         "<div class=\"d-flex\">" +
+    //         "<div class=\"toast-body\"><i class=\"bx bx-check-circle me-2\"></i>Comment added.</div>" +
+    //         "<button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>" +
+    //         "</div>";
+    //     container.appendChild(toastEl);
+    //     var toast = new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 });
+    //     toast.show();
+    //     toastEl.addEventListener("hidden.bs.toast", function () { toastEl.remove(); });
+    // }
+
+    function showCommentSuccessToast() {
+        if (typeof alertify !== "undefined") {
+          alertify.success("Comment added.");
+        } else {
+          alert("Comment added.");
+        }
       }
+
+      function sendComment() {
+        var commentReportIdEl = document.getElementById("commentReportId");
+        var reportId = commentReportIdEl ? commentReportIdEl.value : null;
+        if (!reportId) {
+            alert("Please select a report first.");
+            return;
+        }
+        var body = commentEditorInstance ? commentEditorInstance.getData() : "";
+        body = (body || "").trim();
+        if (!body) {
+            alert("Please write a comment.");
+            return;
+        }
+        
+        var formData = new FormData();
+        formData.append("comment_body", body);
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/reports/" + reportId + "/comment");
+        xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+        xhr.setRequestHeader("Cache-Control", "no-cache");
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                try {
+                    var res = JSON.parse(xhr.responseText);
+                    if (res && res.success) {
+                        closeCommentEditor();
+                        var listEl = document.getElementById("reportDetailCommentsList");
+                        var emptyEl = document.getElementById("reportDetailCommentsEmpty");
+                        if (res.author_name !== undefined && listEl) {
+                            if (emptyEl) emptyEl.style.display = "none";
+                            var card = document.createElement("div");
+                            var imgSrc = "/static/profile_pics/" + (res.user_image || "default.jpg");
+                            card.className = "list-group-item list-group-item-action border-0 py-3 d-flex gap-3";
+                            card.innerHTML =
+                                "<img src=\"" + imgSrc + "\" alt=\"\" class=\"rounded-circle border flex-shrink-0\" style=\"width: 32px; height: 32px; object-fit: cover;\" onerror=\"this.src='/static/profile_pics/default.jpg'; this.onerror=null;\">" +
+                                "<div class=\"flex-grow-1 min-width-0\">" +
+                                "<div class=\"d-flex justify-content-between align-items-start mb-1\">" +
+                                "<span class=\"fw-bold small\">" + (res.author_name || "Unknown") + "</span>" +
+                                "<small class=\"text-muted\">" + (res.created_at || "") + "</small>" +
+                                "</div>" +
+                                "<div class=\"small text-secondary report-comment-body\">" + (res.comment_body || "") + "</div>" +
+                                "</div>";
+                            listEl.appendChild(card);
+                        }
+                        if (typeof bootstrap !== "undefined" && bootstrap.Toast) {
+                            showCommentSuccessToast();
+                        } else {
+                            alert("Comment added.");
+                        }
+                        return;
+                    }
+                } catch (e) {}
+            }
+            alert("Failed to save comment.");
+        };
+        xhr.onerror = function () { alert("Failed to save comment."); };
+        xhr.send(formData);
+    }
   
       // Event Listeners
       if (cancelBtn) cancelBtn.addEventListener("click", closeCommentEditor);
@@ -520,6 +763,7 @@
       });
   })();
   
+  // Delete report
   function confirmReportDelete() {
       var reportId = document.getElementById("currentActiveReportId").value;
       
@@ -540,3 +784,189 @@
           }
       });
   }
+
+  // --- 1. THE EDIT FUNCTION ---
+function openEditModal() {
+    var reportIdField = document.getElementById("currentActiveReportId");
+    if (!reportIdField || !reportIdField.value) return;
+    
+    var reportId = parseInt(reportIdField.value, 10);
+    var reportsDataEl = document.getElementById("reports-data");
+    var reportsData = JSON.parse(reportsDataEl.textContent || "[]");
+    
+    // Find the report data
+    var report = reportsData.find(function (r) { return r.report_id === reportId; });
+    
+    if (report) {
+        // Change Modal UI to Edit Mode
+        document.getElementById("newReportModalLabel").textContent = "Edit Weekly Report";
+        var form = document.querySelector("#newReportModal form");
+        form.action = "/reports/edit/" + reportId;
+        
+        var submitBtn = document.querySelector("#newReportModal button[type='submit']");
+        if (submitBtn) submitBtn.textContent = "Update Report";
+
+        // Fill Basic Fields (Ensure these 'name' attributes match your form)
+        var dateSelect = document.querySelector("select[name='report_date']");
+        if (dateSelect) dateSelect.value = report.week_name;
+        
+        var revSelect = document.querySelector("select[name='reviewer_id']");
+        if (revSelect) revSelect.value = report.reviewer_id;
+
+        // Fill Rich Text (TinyMCE)
+        if (window.tinymce && tinymce.get('reportBody')) {
+            tinymce.get('reportBody').setContent(report.report_content || "");
+        } else {
+            var bodyField = document.getElementById("reportBody");
+            if (bodyField) bodyField.value = report.report_content || "";
+        }
+
+        // Re-populate CC Chips
+        // We trigger the 'Clear all' button first to avoid duplicates
+        var clearBtn = document.getElementById("reportCCClear");
+        if (clearBtn) clearBtn.click();
+
+        // If your Python sends 'cc_member_ids', we 'click' them in the list to recreate chips
+        if (report.cc_member_ids && report.cc_member_ids.length > 0) {
+            report.cc_member_ids.forEach(function(id) {
+                var contactItem = document.querySelector('#reportCCList [data-member-id="' + id + '"]');
+                if (contactItem) contactItem.click();
+            });
+        }
+
+        // Open the Modal
+        var modalEl = document.getElementById('newReportModal');
+        var modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modalInstance.show();
+    }
+}
+
+// --- 2. THE MODAL RESET ---
+document.addEventListener("DOMContentLoaded", function() {
+    var modalEl = document.getElementById('newReportModal');
+    if (modalEl) {
+        modalEl.addEventListener('hidden.bs.modal', function () {
+            var form = this.querySelector('form');
+            if (form) {
+                form.reset();
+                form.action = "/reports/create"; 
+            }
+            document.getElementById("newReportModalLabel").textContent = "Weekly report";
+            var submitBtn = this.querySelector("button[type='submit']");
+            if (submitBtn) submitBtn.textContent = "Submit Report";
+            
+            var clearBtn = document.getElementById("reportCCClear");
+            if (clearBtn) clearBtn.click();
+            
+            if (window.tinymce && tinymce.get('reportBody')) {
+                tinymce.get('reportBody').setContent('');
+            }
+        });
+    }
+});
+
+// document.addEventListener('DOMContentLoaded', function () {
+//     const toastElList = [].slice.call(document.querySelectorAll('.toast'));
+//     const toastList = toastElList.map(function (toastEl) {
+      
+//         const toast = new bootstrap.Toast(toastEl, {
+//             autohide: true,
+//             delay: 5000 
+//         });
+//         toast.show();
+//         return toast;
+//     });
+// });
+
+
+// Comments Section//
+function toggleMaximizeComments() {
+    const list = document.getElementById('reportDetailCommentsList');
+    
+    // Check if it's currently at the fixed height
+    if (list.style.maxHeight === "350px") {
+        list.style.maxHeight = "800px"; // Maximize it
+    } else {
+        list.style.maxHeight = "350px"; // Back to normal
+    }
+}
+
+// Update the "Hide/Show" text when the collapse happens
+document.getElementById('commentSectionWrapper').addEventListener('hide.bs.collapse', function () {
+    document.getElementById('toggleText').innerText = 'Show';
+});
+document.getElementById('commentSectionWrapper').addEventListener('show.bs.collapse', function () {
+    document.getElementById('toggleText').innerText = 'Hide';
+});
+
+function toggleCommentHeight() {
+    const list = document.getElementById('reportDetailCommentsList');
+    const icon = document.getElementById('expandIcon');
+    
+    if (list.style.maxHeight === "280px") {
+        list.style.maxHeight = "600px";
+        icon.classList.replace('bi-arrows-angle-expand', 'bi-arrows-angle-contract');
+    } else {
+        list.style.maxHeight = "280px";
+        icon.classList.replace('bi-arrows-angle-contract', 'bi-arrows-angle-expand');
+    }
+}
+
+// Update text when Bootstrap collapse runs
+const wrapper = document.getElementById('commentSectionWrapper');
+wrapper.addEventListener('hide.bs.collapse', () => document.getElementById('toggleLink').innerText = 'Show');
+wrapper.addEventListener('show.bs.collapse', () => document.getElementById('toggleLink').innerText = 'Hide');
+
+function appendComment(comment) {
+    const list = document.getElementById('reportDetailCommentsList');
+    var imgFile = comment.user_image || comment.author_image || 'default.jpg';
+    var imgSrc = '/static/profile_pics/' + imgFile;
+    var name = comment.author_name || 'Unknown';
+    var time = comment.created_at || comment.timestamp || '';
+    var body = comment.comment_body || comment.content || '';
+    const commentHtml = `
+    <div class="list-group-item border-0 d-flex gap-3 py-2 px-3 bg-transparent">
+        <img src="${imgSrc}" alt="" class="rounded-circle border flex-shrink-0" style="width: 32px; height: 32px; object-fit: cover;" onerror="this.src='/static/profile_pics/default.jpg'; this.onerror=null;">
+        <div class="flex-grow-1 p-2 rounded-3" style="background-color: #f0f2f5;">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-bold text-dark" style="font-size: 0.85rem;">${name}</span>
+                <small class="text-muted" style="font-size: 0.7rem;">${time}</small>
+            </div>
+            <div class="text-secondary report-comment-body" style="font-size: 0.88rem; line-height: 1.4;">
+                ${body}
+            </div>
+        </div>
+    </div>`;
+    list.insertAdjacentHTML('beforeend', commentHtml);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Grab the JSON you already have in your <script> tag
+    const reportsData = JSON.parse(document.getElementById('reports-data').textContent);
+    const reportModalElement = document.getElementById('companyWideReportModal');
+    const bsModal = new bootstrap.Modal(reportModalElement);
+
+    // Listen for clicks on the table rows
+    document.querySelectorAll('.clickable-row').forEach(row => {
+        row.addEventListener('click', function() {
+            const reportId = this.getAttribute('data-report-id');
+            
+            // Find the report in your JSON array by ID
+            const report = reportsData.find(r => r.report_id == reportId);
+
+            if (report) {
+                // Populate metadata
+                document.getElementById('companyWideModalTitle').innerText = `Weekly-${report.author_name} (${report.week_name})`;
+                document.getElementById('companyWideModalReviewer').innerText = report.reviewer_name || '—';
+                document.getElementById('companyWideModalCC').innerText = report.cc_list || 'None';
+                document.getElementById('companyWideModalDepartment').innerText = report.department_name || 'N/A';
+                document.getElementById('companyWideModalCreated').innerText = report.created_at;
+
+                // POPULATE CONTENT: Injects the <strong>, <ol>, and <li> tags from your DB
+                document.getElementById('companyWideModalBody').innerHTML = report.report_content;
+
+                bsModal.show();
+            }
+        });
+    });
+});
