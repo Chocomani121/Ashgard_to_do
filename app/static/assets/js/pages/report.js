@@ -293,6 +293,9 @@ document.addEventListener("DOMContentLoaded", function () {
           var content = document.getElementById("reportDetailContent");
           if (placeholder) placeholder.style.display = "none";
           if (content) content.style.display = "block";
+          var sharedCommentSection = document.getElementById("sharedCommentSection");
+          var pendingDetailCol = document.querySelector("#reportDetailContent").closest(".col-md-8");
+          if (sharedCommentSection && pendingDetailCol) pendingDetailCol.appendChild(sharedCommentSection);
           var titleEl = document.getElementById("reportDetailTitle");
           var reportIdField = document.getElementById("currentActiveReportId");
           if (reportIdField) reportIdField.value = report.report_id;
@@ -378,9 +381,14 @@ document.addEventListener("DOMContentLoaded", function () {
               if (createdEl) createdEl.textContent = report.created_on || "";
               var bodyEl = document.getElementById("reviewedDetailBody");
               if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+              var sharedCommentSection = document.getElementById("sharedCommentSection");
+              var reviewedDetailCol = document.querySelector("#reviewedDetailContent").closest(".col-md-8");
+              if (sharedCommentSection && reviewedDetailCol) reviewedDetailCol.appendChild(sharedCommentSection);
+              var commentReportIdEl = document.getElementById("commentReportId");
+              if (commentReportIdEl) commentReportIdEl.value = report.report_id;
+              renderReportComments(report);
           });
           }
-
         // CC tab click handler
         var ccListEl = document.getElementById("ccReportList");
         if (ccListEl) {
@@ -468,6 +476,57 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 });
             }
+
+            // When switching to a tab, re-show the selected report detail if one was already selected (so it doesn't disappear)
+        document.addEventListener('shown.bs.tab', function (e) {
+            if (!e.target || !e.target.getAttribute || e.target.getAttribute('data-bs-toggle') !== 'tab') return;
+            var href = e.target.getAttribute('href') || '';
+            var reportId, report, placeholder, content, sharedCommentSection;
+
+            if (href === '#Pending') {
+                var activeItem = document.querySelector('#pendingReportList .report-list-item.active');
+                if (!activeItem) return;
+                reportId = parseInt(activeItem.getAttribute('data-report-id'), 10);
+                report = reportsData.find(function (r) { return r.report_id === reportId; });
+                if (!report) return;
+                placeholder = document.getElementById("reportDetailPlaceholder");
+                content = document.getElementById("reportDetailContent");
+                if (placeholder) placeholder.style.display = "none";
+                if (content) content.style.display = "block";
+                sharedCommentSection = document.getElementById("sharedCommentSection");
+                var pendingDetailCol = document.querySelector("#reportDetailContent").closest(".col-md-8");
+                if (sharedCommentSection && pendingDetailCol) pendingDetailCol.appendChild(sharedCommentSection);
+                var commentReportIdEl = document.getElementById("commentReportId");
+                if (commentReportIdEl) commentReportIdEl.value = report.report_id;
+                var reportIdField = document.getElementById("currentActiveReportId");
+                if (reportIdField) reportIdField.value = report.report_id;
+                renderReportComments(report);
+            } else if (href === '#Reviewed') {
+                var activeItemRev = document.querySelector('#reviewedReportList .reviewed-report-list-item.active');
+                if (!activeItemRev) return;
+                reportId = parseInt(activeItemRev.getAttribute('data-report-id'), 10);
+                report = reportsData.find(function (r) { return r.report_id === reportId; });
+                if (!report) return;
+                placeholder = document.getElementById("reviewedDetailPlaceholder");
+                content = document.getElementById("reviewedDetailContent");
+                if (placeholder) placeholder.style.display = "none";
+                if (content) content.style.display = "block";
+                sharedCommentSection = document.getElementById("sharedCommentSection");
+                var reviewedDetailCol = document.querySelector("#reviewedDetailContent").closest(".col-md-8");
+                if (sharedCommentSection && reviewedDetailCol) reviewedDetailCol.appendChild(sharedCommentSection);
+                var commentReportIdEl = document.getElementById("commentReportId");
+                if (commentReportIdEl) commentReportIdEl.value = report.report_id;
+                renderReportComments(report);
+            } else if (href === '#cc') {
+                var activeItemCc = document.querySelector('#ccReportList .cc-report-list-item.active');
+                if (!activeItemCc) return;
+                reportId = parseInt(activeItemCc.getAttribute('data-report-id'), 10);
+                placeholder = document.getElementById("ccDetailPlaceholder");
+                content = document.getElementById("ccDetailContent");
+                if (placeholder) placeholder.style.display = "none";
+                if (content) content.style.display = "block";
+            }
+        });
       }
   });
   
@@ -620,7 +679,7 @@ document.addEventListener("DOMContentLoaded", function () {
           alert("Comment added.");
         }
       }
-      
+
       function sendComment() {
         var commentReportIdEl = document.getElementById("commentReportId");
         var reportId = commentReportIdEl ? commentReportIdEl.value : null;

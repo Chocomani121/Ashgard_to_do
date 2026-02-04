@@ -196,7 +196,7 @@ def _report_to_dict(report):
 
     author_name = (report.author.name or report.author.username) if report.author else ''
     reviewer_name = (report.reviewer_user.name or report.reviewer_user.username) if report.reviewer_user else ''
-    cc_names = ', '.join((e.user.name or e.user.username or '') for e in (report.cc_entries or []))
+    cc_names = ', '.join((e.user.name or e.user.username or '') if e.user else '' for e in (report.cc_entries or []))
     dept = getattr(report.author, 'dept_info', None) if report.author else None
     department_name = dept.department_name if dept else ''
     created_str = report.created_on.strftime('%m/%d/%Y %H:%M') if report.created_on else ''
