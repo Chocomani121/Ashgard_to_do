@@ -214,7 +214,7 @@ def reset_token(token):
 @login_required
 def update_member(member_id):
     if current_user.account_type != 'admin':
-        flash('Unauthorized!', 'danger_error')
+        flash('Unauthorized!', 'error')
         return redirect(url_for('users.members'))
         
     member = User.query.get_or_404(member_id)
@@ -224,12 +224,12 @@ def update_member(member_id):
 
     existing_user = User.query.filter(User.username == new_username, User.member_id != member_id).first()
     if existing_user:
-        flash('The username is already taken!', 'modal_error')
+        flash('The username is already taken!', 'error')
         return redirect(url_for('users.members'))
 
     existing_email = User.query.filter(User.email == new_email, User.member_id != member_id).first()
     if existing_email:
-        flash('The email is already in use!', 'modal_error')
+        flash('The email is already in use!', 'error')
         return redirect(url_for('users.members'))
 
     member.name = request.form.get('name')
@@ -241,7 +241,7 @@ def update_member(member_id):
         member.department_id = int(dept_id)
 
     db.session.commit()
-    flash(f'Updated {member.name}!', 'update_success')
+    flash(f'Updated {member.name}!', 'success')
     return redirect(url_for('users.members'))
 
 
