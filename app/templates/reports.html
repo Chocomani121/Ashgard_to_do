@@ -343,23 +343,25 @@
                                             
                                                 </div>
                                             </div>
-
-                                    
+          
                                             <div class="tab-pane fade" id="Company-wide" role="tabpanel">
                                                 <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
                                                     <div class="col-12 bg-white d-flex flex-column" style="height: 100%; overflow-y: auto;">
-                                                        <div id="companyWideReportList" class="table-responsive" style="max-height: 100%; overflow-y: auto;">
-                                                            <table class="table table-bordered table-sm table-hover mb-0" style="font-size: 0.9rem;">
+                                                        <div id="companyWideReportList" class="table-responsive d-flex flex-column" style="max-height: 100%; overflow-y: auto;">
+                                                            <div class="d-flex align-items-center gap-2 flex-nowrap mb-2 justify-content-between">
+                                                                <div class="input-group flex-shrink-0" style="width: 280px;">
+                                                                    <span class="input-group-text"><i class="mdi mdi-calendar-range text-muted"></i></span>
+                                                                    <input type="text" id="datepicker-range" class="form-control" placeholder="Select Date Range">
+                                                                </div>
+                                                                <div id="table11-gridjs" class="flex-grow-1 flex-shrink-1" style="min-width: 0; min-height: 400px;"></div>
+                                                            </div>
+                                                            <table id="companyWideReport" class="table table-bordered table-sm table-hover mb-0" style="font-size: 0.9rem;">
                                                                 <thead class="table-light">
                                                                     <tr>
                                                                         <th class="text-center fw-bold py-2" rowspan="2">Name</th>
-                                                                        <th class="text-center fw-bold py-2" colspan="2">week range</th>
-                                                                        <th class="text-center fw-bold py-2" rowspan="2">reviewer</th>
-                                                                        <!-- <th class="text-center fw-bold py-2" rowspan="2">actions</t    h> -->
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <th class="text-center fw-bold py-2">start</th>
-                                                                        <th class="text-center fw-bold py-2">end</th>
+                                                                        <th class="text-center fw-bold py-2">Start</th>
+                                                                        <th class="text-center fw-bold py-2">End</th>
+                                                                        <th class="text-center fw-bold py-2" rowspan="2">reviewer</th> 
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
