@@ -143,9 +143,35 @@ tr:has(a[href]):hover {
     color: #212529 !important;
 }
 
+/* Company-wide table row styles */
+#companyWideReportList tr.company-wide-report-list-item:hover {
+    background-color: rgba(13, 110, 253, 0.06);
+}
+#companyWideReportList tr.company-wide-report-list-item.active {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+#companyWideReportList tr.company-wide-report-list-item.active:hover {
+    background-color: rgba(13, 110, 253, 0.14);
+}
+.company-wide-table thead.sticky-top th {
+    background: #f8f9fa;
+    box-shadow: 0 1px 0 0 #dee2e6;
+}
+
 .comment-placeholder-disabled {
     opacity: 0.6;
     pointer-events: none;
     cursor: not-allowed !important;
     color: #999;
   }
+
+#reportDetailCommentsList::-webkit-scrollbar {
+    width: 6px;
+}
+#reportDetailCommentsList::-webkit-scrollbar-thumb {
+    background: #e0e0e0;
+    border-radius: 10px;
+}
+#reportDetailCommentsList::-webkit-scrollbar-track {
+    background: transparent;
+}

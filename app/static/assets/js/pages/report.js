@@ -190,7 +190,15 @@
                 // 2. Double-check Reviewer ID
                 const reviewerId = document.getElementById("selectedReviewerId").value;
                 if (!reviewerId) {
-                    alert("Please select a reviewer before submitting.");
+                    if (typeof Swal !== "undefined") {
+                        Swal.fire({
+                            icon: "warning",
+                            title: "Reviewer required",
+                            text: "Please select a reviewer before submitting."
+                        });
+                    } else {
+                        alert("Please select a reviewer before submitting.");
+                    }
                     e.preventDefault();
                     return false;
                 }
@@ -220,7 +228,6 @@
                     });
                 }
                 
-                console.log("Form is valid. Submitting...");
                 return true; 
             };
         }
@@ -236,29 +243,41 @@
   })();
   
   // Report list click handler
-  document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
     var reportsDataEl = document.getElementById("reports-data");
     if (reportsDataEl) {
       var reportsData = JSON.parse(reportsDataEl.textContent || "[]");
       
-      function renderReportComments(comments, listId, emptyId) {
-        var listEl = document.getElementById(listId);
-        var emptyEl = document.getElementById(emptyId);
+      function renderReportComments(report) {
+        var listEl = document.getElementById("reportDetailCommentsList");
+        var emptyEl = document.getElementById("reportDetailCommentsEmpty");
         if (!listEl) return;
-        listEl.innerHTML = '';
-        if (emptyEl) emptyEl.style.display = (comments && comments.length) ? 'none' : 'block';
-        if (!comments || !comments.length) return;
+        var comments = (report && report.comments) ? report.comments : [];
+        listEl.innerHTML = "";
+        if (comments.length === 0) {
+          if (emptyEl) {
+            emptyEl.style.display = "block";
+          }
+          return;
+        }
+
+        if (emptyEl) emptyEl.style.display = "none";
         comments.forEach(function (c) {
-            var div = document.createElement('div');
-            div.className = 'list-group-item list-group-item-action border-0 py-2 px-3';
-            div.innerHTML =
-                '<div class="d-flex justify-content-between align-items-start small text-muted mb-1">' +
-                '<span class="fw-semibold text-dark">' + (c.author_name || '') + '</span>' +
-                '<span>' + (c.created_at || '') + '</span></div>' +
-                '<div class="small text-secondary">' + (c.comment_body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
-            listEl.appendChild(div);
+          var card = document.createElement("div");
+          var imgSrc = "/static/profile_pics/" + (c.author_image || "default.jpg");
+          card.className = "list-group-item list-group-item-action border-0 py-3 d-flex gap-3";
+          card.innerHTML =
+            "<img src=\"" + imgSrc + "\" alt=\"\" class=\"rounded-circle border flex-shrink-0\" style=\"width: 32px; height: 32px; object-fit: cover;\" onerror=\"this.src='/static/profile_pics/default.jpg'; this.onerror=null;\">" +
+            "<div class=\"flex-grow-1 min-width-0\">" +
+              "<div class=\"d-flex justify-content-between align-items-start mb-1\">" +
+                "<span class=\"fw-bold small\">" + (c.author_name || "Unknown") + "</span>" +
+                "<small class=\"text-muted\">" + (c.created_at || "") + "</small>" +
+              "</div>" +
+              "<div class=\"small text-secondary report-comment-body\">" + (c.comment_body || "") + "</div>" +
+            "</div>";
+          listEl.appendChild(card);
         });
-    }
+      }
     
       var listEl = document.getElementById("pendingReportList");
       if (listEl) {
@@ -274,6 +293,9 @@
           var content = document.getElementById("reportDetailContent");
           if (placeholder) placeholder.style.display = "none";
           if (content) content.style.display = "block";
+          var sharedCommentSection = document.getElementById("sharedCommentSection");
+          var pendingDetailCol = document.querySelector("#reportDetailContent").closest(".col-md-8");
+          if (sharedCommentSection && pendingDetailCol) pendingDetailCol.appendChild(sharedCommentSection);
           var titleEl = document.getElementById("reportDetailTitle");
           var reportIdField = document.getElementById("currentActiveReportId");
           if (reportIdField) reportIdField.value = report.report_id;
@@ -290,6 +312,7 @@
           if (createdEl) createdEl.textContent = report.created_on || "";
           var bodyEl = document.getElementById("reportDetailBody");
           if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+          renderReportComments(report);
           var actionsEl = document.getElementById("reportDetailActions");
           var authorActions = document.getElementById("reportDetailActionsAuthor");
           var reviewerActions = document.getElementById("reportDetailActionsReviewer");
@@ -358,9 +381,14 @@
               if (createdEl) createdEl.textContent = report.created_on || "";
               var bodyEl = document.getElementById("reviewedDetailBody");
               if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+              var sharedCommentSection = document.getElementById("sharedCommentSection");
+              var reviewedDetailCol = document.querySelector("#reviewedDetailContent").closest(".col-md-8");
+              if (sharedCommentSection && reviewedDetailCol) reviewedDetailCol.appendChild(sharedCommentSection);
+              var commentReportIdEl = document.getElementById("commentReportId");
+              if (commentReportIdEl) commentReportIdEl.value = report.report_id;
+              renderReportComments(report);
           });
           }
-
         // CC tab click handler
         var ccListEl = document.getElementById("ccReportList");
         if (ccListEl) {
@@ -402,8 +430,6 @@
             // Company-wide tab click handler
             var companyWideListEl = document.getElementById("companyWideReportList");
             if (companyWideListEl) {
-                var commentReportIdEl = document.getElementById("commentReportId");
-                if (commentReportIdEl) commentReportIdEl.value = report.report_id;
                 companyWideListEl.addEventListener("click", function (e) {
                     var item = e.target.closest(".company-wide-report-list-item");
                     if (!item) return;
@@ -431,55 +457,81 @@
                     if (createdEl) createdEl.textContent = report.created_on || "";
                     var bodyEl = document.getElementById("companyWideDetailBody");
                     if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+
+                    var modal = document.getElementById("companyWideReportModal");
+                    if (modal && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+                        document.getElementById("companyWideModalTitle").textContent = "Weekly-" + report.author_name + " (" + report.week_name + ")";
+                        var mRev = document.getElementById("companyWideModalReviewer");
+                        if (mRev) mRev.textContent = report.reviewer_name || "";
+                        var mCc = document.getElementById("companyWideModalCC");
+                        if (mCc) mCc.textContent = report.cc_names || "";
+                        var mDept = document.getElementById("companyWideModalDepartment");
+                        if (mDept) mDept.textContent = report.department_name || "";
+                        var mCreated = document.getElementById("companyWideModalCreated");
+                        if (mCreated) mCreated.textContent = report.created_on || "";
+                        var mBody = document.getElementById("companyWideModalBody");
+                        if (mBody) mBody.innerHTML = report.report_content || "";
+                        var bsModal = new bootstrap.Modal(modal);
+                        bsModal.show();
+                    }
                 });
             }
+
+            // When switching to a tab, re-show the selected report detail if one was already selected (so it doesn't disappear)
+        document.addEventListener('shown.bs.tab', function (e) {
+            if (!e.target || !e.target.getAttribute || e.target.getAttribute('data-bs-toggle') !== 'tab') return;
+            var href = e.target.getAttribute('href') || '';
+            var reportId, report, placeholder, content, sharedCommentSection;
+
+            if (href === '#Pending') {
+                var activeItem = document.querySelector('#pendingReportList .report-list-item.active');
+                if (!activeItem) return;
+                reportId = parseInt(activeItem.getAttribute('data-report-id'), 10);
+                report = reportsData.find(function (r) { return r.report_id === reportId; });
+                if (!report) return;
+                placeholder = document.getElementById("reportDetailPlaceholder");
+                content = document.getElementById("reportDetailContent");
+                if (placeholder) placeholder.style.display = "none";
+                if (content) content.style.display = "block";
+                sharedCommentSection = document.getElementById("sharedCommentSection");
+                var pendingDetailCol = document.querySelector("#reportDetailContent").closest(".col-md-8");
+                if (sharedCommentSection && pendingDetailCol) pendingDetailCol.appendChild(sharedCommentSection);
+                var commentReportIdEl = document.getElementById("commentReportId");
+                if (commentReportIdEl) commentReportIdEl.value = report.report_id;
+                var reportIdField = document.getElementById("currentActiveReportId");
+                if (reportIdField) reportIdField.value = report.report_id;
+                renderReportComments(report);
+            } else if (href === '#Reviewed') {
+                var activeItemRev = document.querySelector('#reviewedReportList .reviewed-report-list-item.active');
+                if (!activeItemRev) return;
+                reportId = parseInt(activeItemRev.getAttribute('data-report-id'), 10);
+                report = reportsData.find(function (r) { return r.report_id === reportId; });
+                if (!report) return;
+                placeholder = document.getElementById("reviewedDetailPlaceholder");
+                content = document.getElementById("reviewedDetailContent");
+                if (placeholder) placeholder.style.display = "none";
+                if (content) content.style.display = "block";
+                sharedCommentSection = document.getElementById("sharedCommentSection");
+                var reviewedDetailCol = document.querySelector("#reviewedDetailContent").closest(".col-md-8");
+                if (sharedCommentSection && reviewedDetailCol) reviewedDetailCol.appendChild(sharedCommentSection);
+                var commentReportIdEl = document.getElementById("commentReportId");
+                if (commentReportIdEl) commentReportIdEl.value = report.report_id;
+                renderReportComments(report);
+            } else if (href === '#cc') {
+                var activeItemCc = document.querySelector('#ccReportList .cc-report-list-item.active');
+                if (!activeItemCc) return;
+                reportId = parseInt(activeItemCc.getAttribute('data-report-id'), 10);
+                placeholder = document.getElementById("ccDetailPlaceholder");
+                content = document.getElementById("ccDetailContent");
+                if (placeholder) placeholder.style.display = "none";
+                if (content) content.style.display = "block";
+            }
+        });
       }
   });
   
-  // function getCurrentReportWeek() {
-  //     const today = new Date();
-  //     const daysFromMonday = (today.getDay() + 6) % 7;
-  //     const monday = new Date(today);
-  //     monday.setDate(today.getDate() - daysFromMonday);
-  //     const saturday = new Date(monday);
-  //     saturday.setDate(monday.getDate() + 5);
-  //     return { start: monday, end: saturday };
-  // }
   
-  // document.addEventListener("DOMContentLoaded", function () {
-  //     const sel = document.getElementById("weekly-report-date");
-  //     if (!sel) return;
-  
-  //     function fmt(d) {
-  //         const m = String(d.getMonth() + 1).padStart(2, "0");
-  //         const day = String(d.getDate()).padStart(2, "0");
-  //         return m + "/" + day + "/" + d.getFullYear();
-  //     }
-  
-  //     const { start, end } = getCurrentReportWeek();
-  //     const currentLabel = fmt(start) + " - " + fmt(end);
-  
-  //     sel.innerHTML = "";
-  //     const currentOpt = document.createElement("option");
-  //     currentOpt.value = currentLabel;
-  //     currentOpt.textContent = currentLabel + " (This week)";
-  //     currentOpt.selected = true;
-  //     sel.appendChild(currentOpt);
-  
-  //     for (let i = 1; i <= 12; i++) {
-  //         const nextMon = new Date(start);
-  //         nextMon.setDate(start.getDate() + 7 * i);
-  //         const nextSat = new Date(nextMon);
-  //         nextSat.setDate(nextMon.getDate() + 5);
-  //         const opt = document.createElement("option");
-  //         opt.value = fmt(nextMon) + " - " + fmt(nextSat);
-  //         opt.textContent = opt.value;
-  //         sel.appendChild(opt);
-  //     }
-  // });
-  
-  
-  // report editor JS
+  // report editor JS CKEditor
   (function () {
       function initReportCK() {
           if (typeof ClassicEditor === 'undefined') return;
@@ -499,6 +551,7 @@
       }
   })();
   
+  //edit report modal
   (function () {
       var modal = document.getElementById("newReportModal");
       var modalTitle = document.getElementById("newReportModalLabel");
@@ -592,14 +645,41 @@
       function finalizeClose() {
           popover.style.display = "none";
           if (currentPlaceholder) {
-              currentPlaceholder.style.visibility = "visible"; // Show it again
+              currentPlaceholder.style.visibility = "visible"; 
               currentPlaceholder.style.display = ""; 
               currentPlaceholder = null;
           }
           var textarea = document.getElementById("commentCKEditor");
           if (textarea) textarea.value = "";
       }
-  
+
+    //   function showCommentSuccessToast() {
+    //     var container = document.getElementById("toastPlacement");
+    //     if (!container) return;
+    //     var toastEl = document.createElement("div");
+    //     toastEl.className = "toast align-items-center text-white bg-success border-0 shadow-lg";
+    //     toastEl.setAttribute("role", "alert");
+    //     toastEl.setAttribute("aria-live", "assertive");
+    //     toastEl.setAttribute("aria-atomic", "true");
+    //     toastEl.innerHTML =
+    //         "<div class=\"d-flex\">" +
+    //         "<div class=\"toast-body\"><i class=\"bx bx-check-circle me-2\"></i>Comment added.</div>" +
+    //         "<button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>" +
+    //         "</div>";
+    //     container.appendChild(toastEl);
+    //     var toast = new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 });
+    //     toast.show();
+    //     toastEl.addEventListener("hidden.bs.toast", function () { toastEl.remove(); });
+    // }
+
+    function showCommentSuccessToast() {
+        if (typeof alertify !== "undefined") {
+          alertify.success("Comment added.");
+        } else {
+          alert("Comment added.");
+        }
+      }
+
       function sendComment() {
         var commentReportIdEl = document.getElementById("commentReportId");
         var reportId = commentReportIdEl ? commentReportIdEl.value : null;
@@ -613,6 +693,7 @@
             alert("Please write a comment.");
             return;
         }
+        
         var formData = new FormData();
         formData.append("comment_body", body);
         var xhr = new XMLHttpRequest();
@@ -625,8 +706,26 @@
                     var res = JSON.parse(xhr.responseText);
                     if (res && res.success) {
                         closeCommentEditor();
-                        if (typeof Swal !== "undefined") {
-                            Swal.fire({ title: "Comment added", icon: "success", timer: 1500, showConfirmButton: false });
+                        var listEl = document.getElementById("reportDetailCommentsList");
+                        var emptyEl = document.getElementById("reportDetailCommentsEmpty");
+                        if (res.author_name !== undefined && listEl) {
+                            if (emptyEl) emptyEl.style.display = "none";
+                            var card = document.createElement("div");
+                            var imgSrc = "/static/profile_pics/" + (res.user_image || "default.jpg");
+                            card.className = "list-group-item list-group-item-action border-0 py-3 d-flex gap-3";
+                            card.innerHTML =
+                                "<img src=\"" + imgSrc + "\" alt=\"\" class=\"rounded-circle border flex-shrink-0\" style=\"width: 32px; height: 32px; object-fit: cover;\" onerror=\"this.src='/static/profile_pics/default.jpg'; this.onerror=null;\">" +
+                                "<div class=\"flex-grow-1 min-width-0\">" +
+                                "<div class=\"d-flex justify-content-between align-items-start mb-1\">" +
+                                "<span class=\"fw-bold small\">" + (res.author_name || "Unknown") + "</span>" +
+                                "<small class=\"text-muted\">" + (res.created_at || "") + "</small>" +
+                                "</div>" +
+                                "<div class=\"small text-secondary report-comment-body\">" + (res.comment_body || "") + "</div>" +
+                                "</div>";
+                            listEl.appendChild(card);
+                        }
+                        if (typeof bootstrap !== "undefined" && bootstrap.Toast) {
+                            showCommentSuccessToast();
                         } else {
                             alert("Comment added.");
                         }
@@ -743,7 +842,6 @@ function openEditModal() {
 }
 
 // --- 2. THE MODAL RESET ---
-// This ensures that when you click "+ New", the modal isn't still showing the old "Edit" data
 document.addEventListener("DOMContentLoaded", function() {
     var modalEl = document.getElementById('newReportModal');
     if (modalEl) {
@@ -767,15 +865,77 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    const toastElList = [].slice.call(document.querySelectorAll('.toast'));
-    const toastList = toastElList.map(function (toastEl) {
-        // Initialize and show immediately
-        const toast = new bootstrap.Toast(toastEl, {
-            autohide: true,
-            delay: 4000 // Lasts 5 seconds
-        });
-        toast.show();
-        return toast;
-    });
+// document.addEventListener('DOMContentLoaded', function () {
+//     const toastElList = [].slice.call(document.querySelectorAll('.toast'));
+//     const toastList = toastElList.map(function (toastEl) {
+      
+//         const toast = new bootstrap.Toast(toastEl, {
+//             autohide: true,
+//             delay: 5000 
+//         });
+//         toast.show();
+//         return toast;
+//     });
+// });
+
+
+// Comments Section//
+function toggleMaximizeComments() {
+    const list = document.getElementById('reportDetailCommentsList');
+    
+    // Check if it's currently at the fixed height
+    if (list.style.maxHeight === "350px") {
+        list.style.maxHeight = "800px"; // Maximize it
+    } else {
+        list.style.maxHeight = "350px"; // Back to normal
+    }
+}
+
+// Update the "Hide/Show" text when the collapse happens
+document.getElementById('commentSectionWrapper').addEventListener('hide.bs.collapse', function () {
+    document.getElementById('toggleText').innerText = 'Show';
 });
+document.getElementById('commentSectionWrapper').addEventListener('show.bs.collapse', function () {
+    document.getElementById('toggleText').innerText = 'Hide';
+});
+
+function toggleCommentHeight() {
+    const list = document.getElementById('reportDetailCommentsList');
+    const icon = document.getElementById('expandIcon');
+    
+    if (list.style.maxHeight === "280px") {
+        list.style.maxHeight = "600px";
+        icon.classList.replace('bi-arrows-angle-expand', 'bi-arrows-angle-contract');
+    } else {
+        list.style.maxHeight = "280px";
+        icon.classList.replace('bi-arrows-angle-contract', 'bi-arrows-angle-expand');
+    }
+}
+
+// Update text when Bootstrap collapse runs
+const wrapper = document.getElementById('commentSectionWrapper');
+wrapper.addEventListener('hide.bs.collapse', () => document.getElementById('toggleLink').innerText = 'Show');
+wrapper.addEventListener('show.bs.collapse', () => document.getElementById('toggleLink').innerText = 'Hide');
+
+function appendComment(comment) {
+    const list = document.getElementById('reportDetailCommentsList');
+    var imgFile = comment.user_image || comment.author_image || 'default.jpg';
+    var imgSrc = '/static/profile_pics/' + imgFile;
+    var name = comment.author_name || 'Unknown';
+    var time = comment.created_at || comment.timestamp || '';
+    var body = comment.comment_body || comment.content || '';
+    const commentHtml = `
+    <div class="list-group-item border-0 d-flex gap-3 py-2 px-3 bg-transparent">
+        <img src="${imgSrc}" alt="" class="rounded-circle border flex-shrink-0" style="width: 32px; height: 32px; object-fit: cover;" onerror="this.src='/static/profile_pics/default.jpg'; this.onerror=null;">
+        <div class="flex-grow-1 p-2 rounded-3" style="background-color: #f0f2f5;">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-bold text-dark" style="font-size: 0.85rem;">${name}</span>
+                <small class="text-muted" style="font-size: 0.7rem;">${time}</small>
+            </div>
+            <div class="text-secondary report-comment-body" style="font-size: 0.88rem; line-height: 1.4;">
+                ${body}
+            </div>
+        </div>
+    </div>`;
+    list.insertAdjacentHTML('beforeend', commentHtml);
+}

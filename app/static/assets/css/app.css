@@ -3476,7 +3476,7 @@ body[data-layout-mode="dark"] .swal2-file, body[data-layout-mode="dark"] .swal2-
 
 .alertify-notifier.ajs-right {
   right: 10px;
-  left: auto; }
+  top: 50px; }
   .alertify-notifier.ajs-right .ajs-message {
     right: -320px;
     left: auto; }

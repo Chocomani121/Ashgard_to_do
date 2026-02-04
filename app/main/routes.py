@@ -2,7 +2,7 @@ from flask import render_template, Blueprint, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask,  Report, ReportCC, Comment
 from app import db 
-from datetime import datetime
+from datetime import datetime, date, time
 from sqlalchemy import or_
 import json
 
@@ -185,16 +185,18 @@ def _report_to_dict(report):
     comments_list = []
     for c in (report.comments or []):
         comment_author = (c.author.name or c.author.username) if c.author else ''
+        author_img = getattr(c.author, 'image_file', None) or 'default.jpg'
         comments_list.append({
             'comment_id': c.comment_id,
             'comment_body': c.comment_body or '',
             'created_at': c.created_at.strftime('%m/%d/%Y %H:%M') if c.created_at else '',
             'author_name': comment_author,
+            'author_image': author_img,
         })
 
     author_name = (report.author.name or report.author.username) if report.author else ''
     reviewer_name = (report.reviewer_user.name or report.reviewer_user.username) if report.reviewer_user else ''
-    cc_names = ', '.join((e.user.name or e.user.username or '') for e in (report.cc_entries or []))
+    cc_names = ', '.join((e.user.name or e.user.username or '') if e.user else '' for e in (report.cc_entries or []))
     dept = getattr(report.author, 'dept_info', None) if report.author else None
     department_name = dept.department_name if dept else ''
     created_str = report.created_on.strftime('%m/%d/%Y %H:%M') if report.created_on else ''
@@ -365,7 +367,17 @@ def add_report_comment(report_id):
         db.session.add(comment)
         db.session.commit()
         if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({'success': True, 'comment_id': comment.comment_id})
+            author_name = (current_user.name or current_user.username) or ''
+            created_str = comment.created_at.strftime('%m/%d/%Y %H:%M') if comment.created_at else ''
+            user_img = getattr(current_user, 'image_file', None) or 'default.jpg'
+            return jsonify({
+                'success': True,
+                'comment_id': comment.comment_id,
+                'comment_body': comment.comment_body or '',
+                'author_name': author_name,
+                'created_at': created_str,
+                'user_image': user_img
+            })
         flash('Comment added.', 'success')
     except Exception as e:
         db.session.rollback()
