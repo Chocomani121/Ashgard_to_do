@@ -4,6 +4,7 @@ from app.models import Department, User, Project, Deadlines, ProjectMembers, Tas
 from app import db 
 from datetime import datetime, date, time
 from sqlalchemy import or_
+from sqlalchemy.exc import ProgrammingError, OperationalError
 import json
 import random
 
