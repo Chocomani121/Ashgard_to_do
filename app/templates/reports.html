@@ -355,7 +355,7 @@
                                                                         <th class="text-center fw-bold py-2" rowspan="2">Name</th>
                                                                         <th class="text-center fw-bold py-2" colspan="2">week range</th>
                                                                         <th class="text-center fw-bold py-2" rowspan="2">reviewer</th>
-                                                                        <!-- <th class="text-center fw-bold py-2" rowspan="2">actions</th> -->
+                                                                        <!-- <th class="text-center fw-bold py-2" rowspan="2">actions</t    h> -->
                                                                     </tr>
                                                                     <tr>
                                                                         <th class="text-center fw-bold py-2">start</th>
@@ -371,11 +371,6 @@
                                                                         <td class="py-2 text-center">{{ wp[0] if wp|length > 0 else wn }}</td>
                                                                         <td class="py-2 text-center">{{ wp[1] if wp|length > 1 else '' }}</td>
                                                                         <td class="py-2">{{ report.reviewer_user.name or report.reviewer_user.username if report.reviewer_user else '—' }}</td>
-                                                                        <!-- <td class="py-2 text-center">
-                                                                            <button type="button" class="btn btn-sm btn-outline-primary" title="View full report">
-                                                                                <i class="bx bx-show"></i>
-                                                                            </button>                                                        
-                                                                        </td> -->
                                                                     </tr>
                                                                     {% else %}
                                                                     <tr>
@@ -524,7 +519,7 @@
                     <div class="row g-3">
                         <div class="col-lg-7">
                             <div class="border rounded mb-3">
-                                <div class="p-2 text-muted bg-light border-bottom small fw-bold">Select date:</div>
+                                <div class="p-2 bg-light border-bottom small fw-bold">Select date:</div>
                                 <select id="weekly-report-date" name="report_date" class="form-select border-0 shadow-none py-2" required>
                                     <option value="">Select a week...</option>
                                     </select>
@@ -552,7 +547,7 @@
 
                         <div class="col-lg-5">
                             <div class="border rounded mb-3">
-                                <div class="p-2 text-muted bg-light border-bottom small fw-bold">Reviewer:</div>
+                                <div class="p-2 bg-light border-bottom small fw-bold">Reviewer:</div>
                                 <div class="position-relative">
                                     <input type="hidden" name="reviewer_id" id="selectedReviewerId">
                                     
@@ -575,7 +570,7 @@
                             </div>
 
                             <div class="border rounded" style="height: calc(100% - 85px);">
-                                <div class="p-2 text-muted bg-light border-bottom small fw-bold">List of members in CC:</div>
+                                <div class="p-2 bg-light border-bottom small fw-bold">List of members in CC:</div>
                                 <div class="p-3 flex-grow-1 d-flex flex-column" style="overflow: hidden;">
                                     
                                     <div id="ccIdsContainer"></div>
