@@ -81,12 +81,14 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <div class="table-responsive">
                         <table id="projectsTableCompany" class="table">
                             <thead>
                                 <tr>
                                     <th style="width: 190px;">Department Name</th>
                                     <th style="text-align: center;">Total Members</th>
                                     <th style="text-align: center;">Created Date</th>
+                                    <th>Updated On</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -95,7 +97,8 @@
                                 <tr>
                                     <td style="width: 190px;">{{ dept.department_name }}</td>
                                     <td style="text-align: center;">{{ dept.members|length }}</td>
-                                    <td style="text-align: center;">{{ dept.creation_date.strftime('%Y-%m-%d') if dept.creation_date else 'N/A' }}</td>
+                                    <td style="text-align: center;">{{ dept.creation_date.strftime('%B %Y') if dept.creation_date else 'N/A' }}</td>
+                                    <td>{{ dept.edited_on.strftime('%d / %m / %Y at %I:%M %p') if dept.edited_on else 'N/A' }}</td>
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>
@@ -120,6 +123,7 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -673,7 +677,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Edit Department Modal - Populate with department data
 document.addEventListener('DOMContentLoaded', function() {
-    // Wait for owners array to be initialized
+    // Store last-clicked edit button data so we can populate the modal even if relatedTarget is not set (e.g. dropdown)
+    let lastEditButtonData = null;
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.edit-department-btn');
+        if (btn) {
+            lastEditButtonData = {
+                deptId: btn.getAttribute('data-dept-id'),
+                deptName: btn.getAttribute('data-dept-name'),
+                deptMembersJson: btn.getAttribute('data-dept-members')
+            };
+        }
+    }, true);
+    
     function initEditModalOwners() {
         const editModal = document.getElementById('editDepartmentModal');
         const editDepartmentForm = document.getElementById('editDepartmentForm');
@@ -685,11 +701,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        if (typeof owners === 'undefined' || !owners || owners.length === 0) {
-            // Retry after a short delay if owners not ready
-            setTimeout(initEditModalOwners, 100);
-            return;
-        }
+        // Do not wait for owners – attach modal handler so department name is always populated when editing
+        const ownersList = (typeof owners !== 'undefined' && owners && owners.length) ? owners : [];
         
         let selectedOwnersEdit = [];
         
@@ -697,8 +710,8 @@ document.addEventListener('DOMContentLoaded', function() {
         function renderOwnersEdit(filter = "") {
             ownerListEdit.innerHTML = "";
             
-            owners
-                .filter(o => o.name.toLowerCase().includes(filter.toLowerCase()))
+            ownersList
+                .filter(o => o.name && o.name.toLowerCase().includes(filter.toLowerCase()))
                 .forEach(owner => {
                     const item = document.createElement("div");
                     item.className = "list-group-item owner-item";
@@ -797,12 +810,19 @@ document.addEventListener('DOMContentLoaded', function() {
         // When edit modal opens, populate it with department data
         if (editModal) {
             editModal.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget; // Button that triggered the modal
+                // Prefer data from the button that triggered the modal; fallback to last-clicked edit button (e.g. when opened from dropdown)
+                let deptId, deptName, deptMembersJson;
+                const button = event.relatedTarget;
                 if (button && button.classList.contains('edit-department-btn')) {
-                    const deptId = button.getAttribute('data-dept-id');
-                    const deptName = button.getAttribute('data-dept-name');
-                    const deptMembersJson = button.getAttribute('data-dept-members');
-                    
+                    deptId = button.getAttribute('data-dept-id');
+                    deptName = button.getAttribute('data-dept-name');
+                    deptMembersJson = button.getAttribute('data-dept-members');
+                } else if (lastEditButtonData) {
+                    deptId = lastEditButtonData.deptId;
+                    deptName = lastEditButtonData.deptName;
+                    deptMembersJson = lastEditButtonData.deptMembersJson;
+                }
+                if (deptId != null || deptName != null) {
                     // Populate department name
                     const nameInput = document.getElementById('formrow-departmentname-input-edit');
                     if (nameInput) {
