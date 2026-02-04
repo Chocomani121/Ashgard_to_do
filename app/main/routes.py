@@ -616,7 +616,48 @@ def task_details(id=None):
             if u:
                 task_assignees.append(u)
     
-    return render_template('task_details.html', task=task, task_assignees=task_assignees)
+    # Project members (for Edit Task "Assigned member" dropdown: project members + project manager if not already a member)
+    task_project_members = []
+    if task.project_id:
+        project = Project.query.get(task.project_id)
+        pms = ProjectMembers.query.filter_by(project_id=task.project_id).all()
+        for pm in pms:
+            if pm.member_id:
+                u = User.query.get(pm.member_id)
+                if u:
+                    task_project_members.append({'p_members_id': pm.p_members_id, 'name': u.name or u.username})
+        # Ensure project manager is in the list (PM can assign tasks to themselves)
+        if project and project.project_manager:
+            pm_member_ids = [pm.member_id for pm in pms if pm.member_id]
+            if project.project_manager not in pm_member_ids:
+                manager_user = User.query.get(project.project_manager)
+                if manager_user:
+                    pm_row = ProjectMembers.query.filter_by(
+                        project_id=task.project_id,
+                        member_id=project.project_manager
+                    ).first()
+                    if not pm_row:
+                        pm_row = ProjectMembers(
+                            project_id=task.project_id,
+                            member_id=project.project_manager,
+                            role='Project Manager'
+                        )
+                        db.session.add(pm_row)
+                        try:
+                            db.session.commit()
+                        except Exception:
+                            db.session.rollback()
+                            pm_row = ProjectMembers.query.filter_by(
+                                project_id=task.project_id,
+                                member_id=project.project_manager
+                            ).first()
+                    if pm_row:
+                        task_project_members.append({
+                            'p_members_id': pm_row.p_members_id,
+                            'name': manager_user.name or manager_user.username
+                        })
+    
+    return render_template('task_details.html', task=task, task_assignees=task_assignees, task_project_members=task_project_members)
 
 @main.route("/task_details/<int:id>/update", methods=['POST'])
 @login_required
@@ -630,6 +671,24 @@ def update_task(id):
     task.priority = request.form.get('priority') or task.priority
     task.task_status = request.form.get('task_status') or 'Ongoing'
     task.task_description = request.form.get('task_description', '').strip() or None
+
+    # Update assigned member (must be a project member)
+    owner_p_members_id = request.form.get('owner_id') or request.form.get('p_members_id')
+    if owner_p_members_id:
+        try:
+            pid = int(owner_p_members_id)
+            pm = ProjectMembers.query.filter_by(p_members_id=pid, project_id=task.project_id).first()
+            if pm:
+                task.p_members_id = pid
+                try:
+                    TaskAssignee.query.filter_by(task_id=task.task_id).delete()
+                    db.session.flush()
+                    ta = TaskAssignee(task_id=task.task_id, p_members_id=pid)
+                    db.session.add(ta)
+                except (ProgrammingError, OperationalError):
+                    pass
+        except (ValueError, TypeError):
+            pass
 
     start_date_str = request.form.get('start_date', '').strip()
     end_date_str = request.form.get('end_date', '').strip()
@@ -846,28 +905,38 @@ def create_project():
         db.session.add(project)
         db.session.flush()  # Get the project_id
         
-        # Create ProjectMembers entries for assigned members using project_id
-        if member_ids:
-            for member_id in member_ids:
-                try:
-                    member_id_int = int(member_id)
-                    # Check if ProjectMembers entry already exists for this member and project
-                    existing = ProjectMembers.query.filter_by(
+        # Create ProjectMembers entries: always add project manager, then selected members
+        member_ids_set = {int(m) for m in member_ids if m and str(m).isdigit()}
+        # Ensure project manager is a project member (so they can be assigned tasks)
+        if project_manager not in member_ids_set:
+            existing_pm = ProjectMembers.query.filter_by(
+                project_id=project.project_id,
+                member_id=int(project_manager)
+            ).first()
+            if not existing_pm:
+                db.session.add(ProjectMembers(
+                    project_id=project.project_id,
+                    member_id=int(project_manager),
+                    role='Project Manager',
+                    generated_code=str(project.project_id)
+                ))
+                db.session.flush()
+        for member_id in member_ids:
+            try:
+                member_id_int = int(member_id)
+                existing = ProjectMembers.query.filter_by(
+                    member_id=member_id_int,
+                    project_id=project.project_id
+                ).first()
+                if not existing:
+                    db.session.add(ProjectMembers(
+                        project_id=project.project_id,
                         member_id=member_id_int,
-                        project_id=project.project_id
-                    ).first()
-                    
-                    # Only create if it doesn't exist
-                    if not existing:
-                        project_member = ProjectMembers(
-                            project_id=project.project_id,
-                            member_id=member_id_int,
-                            role='Team Member',  # Default role, can be updated later
-                            generated_code=str(project.project_id)  # Keep for backward compatibility if needed
-                        )
-                        db.session.add(project_member)
-                except (ValueError, TypeError):
-                    continue
+                        role='Team Member',
+                        generated_code=str(project.project_id)
+                    ))
+            except (ValueError, TypeError):
+                continue
         
         db.session.commit()
         
