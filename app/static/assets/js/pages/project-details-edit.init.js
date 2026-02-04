@@ -1,6 +1,6 @@
 /*
-Page: project_details.html
-Purpose: Edit Project modal – Edit Project Manager + Edit Members (chip UI, pre-filled)
+Page: Project Details
+Purpose: Edit Members modal – show all users, prefill selected members, submit project_members
 */
 
 (function () {
@@ -14,110 +14,104 @@ Purpose: Edit Project modal – Edit Project Manager + Edit Members (chip UI, pr
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    const usersEl = document.getElementById("edit-project-users-data");
-    const initialEl = document.getElementById("edit-project-initial-members");
-    if (!usersEl) return;
+    const usersDataEl = document.getElementById("edit-project-users-data");
+    const initialMembersEl = document.getElementById("edit-project-initial-members");
+    const ownerListEdit = document.querySelector(".owner-list-edit-project");
+    const ownerInputEdit = document.getElementById("ownerInputEditProject");
+    const ownerSearchEdit = document.getElementById("ownerSearchEditProject");
+    const editMembersModal = document.getElementById("editMembersModal");
+    const editProjectMembersForm = document.getElementById("editProjectMembersForm");
 
-    let allUsersData = [];
-    let initialMembers = [];
+    if (!ownerListEdit || !ownerInputEdit || !editProjectMembersForm) return;
+
+    let allUsers = [];
     try {
-      allUsersData = JSON.parse(usersEl.textContent || "[]");
+      if (usersDataEl) allUsers = JSON.parse(usersDataEl.textContent || "[]");
     } catch (e) {
       return;
     }
-    try {
-      if (initialEl) initialMembers = JSON.parse(initialEl.textContent || "[]");
-    } catch (e) {}
-
-    const ownerInputEdit = document.getElementById("ownerInputEditProject");
-    const ownerListEdit = document.querySelector(".owner-list-edit-project");
-    const ownerSearchEdit = document.getElementById("ownerSearchEditProject");
-    const clearBtnEdit = document.getElementById("clearOwnersEditProject");
-    const confirmBtnEdit = document.getElementById("confirmOwnersEditProject");
-    const editForm = document.getElementById("editProjectMembersForm");
-
-    if (!ownerInputEdit || !ownerListEdit) return;
 
     const colors = ["#6f42c1", "#0d6efd", "#198754", "#dc3545", "#fd7e14", "#20c997", "#ffc107", "#6610f2"];
-    const allUsers = allUsersData.map((user, index) => ({
-      id: user.member_id,
-      name: user.name || user.username,
-      initials: getInitials(user.name || user.username),
-      color: colors[index % colors.length],
-    }));
+    const allUsersFormatted = allUsers.map(function (u, i) {
+      return {
+        id: u.member_id,
+        name: u.name || u.username,
+        initials: getInitials(u.name || u.username),
+        color: colors[i % colors.length]
+      };
+    });
 
-    let selectedEditMembers = [];
+    let selectedEdit = [];
 
     function renderListEdit(filter) {
       ownerListEdit.innerHTML = "";
-      let list = allUsers;
+      let list = allUsersFormatted;
       if (filter) {
         const f = String(filter).toLowerCase();
-        list = list.filter((m) => (m.name || "").toLowerCase().includes(f));
+        list = list.filter(function (m) { return (m.name || "").toLowerCase().indexOf(f) !== -1; });
       }
       if (list.length === 0) {
-        const empty = document.createElement("div");
-        empty.className = "list-group-item text-muted text-center";
-        empty.textContent = "No members found";
-        ownerListEdit.appendChild(empty);
+        const msg = document.createElement("div");
+        msg.className = "list-group-item text-muted text-center";
+        msg.textContent = "No members match your search";
+        ownerListEdit.appendChild(msg);
         return;
       }
-      list.forEach((owner) => {
+      list.forEach(function (owner) {
         const item = document.createElement("div");
         item.className = "list-group-item owner-item";
-        if (selectedEditMembers.some((o) => o.id === owner.id)) item.classList.add("active");
-        item.innerHTML =
-          `<div class="owner-avatar" style="background:${owner.color}">${owner.initials}</div><span>${owner.name}</span>`;
-        item.onclick = function () {
-          const i = selectedEditMembers.findIndex((o) => o.id === owner.id);
-          if (i >= 0) selectedEditMembers.splice(i, 1);
-          else selectedEditMembers.push(owner);
-          renderChipsEdit();
-          renderListEdit(ownerSearchEdit ? ownerSearchEdit.value : "");
-        };
+        if (selectedEdit.some(function (o) { return o.id === owner.id; })) item.classList.add("active");
+        item.innerHTML = "<div class=\"owner-avatar\" style=\"background:" + owner.color + "\">" + owner.initials + "</div><span>" + owner.name + "</span>";
+        item.onclick = function () { toggleEdit(owner); };
         ownerListEdit.appendChild(item);
       });
     }
 
-    function renderChipsEdit() {
+    function renderSelectedEdit() {
       ownerInputEdit.innerHTML = "";
-      if (selectedEditMembers.length === 0) {
-        ownerInputEdit.innerHTML = '<span class="text-muted small">Select member(s)</span>';
+      if (selectedEdit.length === 0) {
+        ownerInputEdit.innerHTML = "<span class=\"text-muted small\">Select member(s)</span>";
         return;
       }
-      selectedEditMembers.forEach((owner) => {
+      selectedEdit.forEach(function (owner) {
         const chip = document.createElement("div");
         chip.className = "owner-chip";
-        chip.innerHTML = `${owner.name} <span data-owner-remove="${owner.id}">&times;</span>`;
+        chip.innerHTML = owner.name + " <span data-owner-remove=\"" + owner.id + "\">&times;</span>";
         ownerInputEdit.appendChild(chip);
       });
-      ownerInputEdit.querySelectorAll("[data-owner-remove]").forEach((el) => {
+      ownerInputEdit.querySelectorAll("[data-owner-remove]").forEach(function (el) {
         el.addEventListener("click", function (e) {
-          e.stopPropagation();
-          const id = parseInt(e.currentTarget.getAttribute("data-owner-remove"), 10);
+          e.preventDefault();
+          const id = parseInt(el.getAttribute("data-owner-remove"), 10);
           if (!Number.isFinite(id)) return;
-          selectedEditMembers = selectedEditMembers.filter((o) => o.id !== id);
-          renderChipsEdit();
+          selectedEdit = selectedEdit.filter(function (o) { return o.id !== id; });
+          renderSelectedEdit();
           renderListEdit(ownerSearchEdit ? ownerSearchEdit.value : "");
         });
       });
     }
 
-    function prefillFromInitial() {
-      selectedEditMembers = initialMembers
-        .map((m) => {
-          const u = allUsers.find((x) => x.id === m.member_id);
-          return u ? { id: u.id, name: u.name, initials: u.initials, color: u.color } : null;
-        })
-        .filter(Boolean);
-      renderChipsEdit();
-      renderListEdit("");
+    function toggleEdit(owner) {
+      const idx = selectedEdit.findIndex(function (o) { return o.id === owner.id; });
+      if (idx !== -1) selectedEdit.splice(idx, 1);
+      else selectedEdit.push(owner);
+      renderSelectedEdit();
+      renderListEdit(ownerSearchEdit ? ownerSearchEdit.value : "");
     }
 
-    const editMembersModal = document.getElementById("editMembersModal");
     if (editMembersModal) {
       editMembersModal.addEventListener("show.bs.modal", function () {
-        prefillFromInitial();
+        selectedEdit = [];
+        try {
+          if (initialMembersEl) {
+            const initial = JSON.parse(initialMembersEl.textContent || "[]");
+            initial.forEach(function (m) {
+              selectedEdit.push({ id: m.member_id, name: m.name || "" });
+            });
+          }
+        } catch (e) {}
+        renderSelectedEdit();
+        renderListEdit("");
         if (ownerSearchEdit) ownerSearchEdit.value = "";
       });
     }
@@ -128,97 +122,44 @@ Purpose: Edit Project modal – Edit Project Manager + Edit Members (chip UI, pr
       });
     }
 
-    if (clearBtnEdit) {
-      clearBtnEdit.addEventListener("click", function (e) {
+    var clearBtn = document.getElementById("clearOwnersEditProject");
+    if (clearBtn) {
+      clearBtn.onclick = function (e) {
         e.preventDefault();
-        selectedEditMembers = [];
-        renderChipsEdit();
-        renderListEdit(ownerSearchEdit ? ownerSearchEdit.value : "");
-      });
+        selectedEdit = [];
+        renderSelectedEdit();
+        renderListEdit("");
+      };
     }
 
-    if (confirmBtnEdit) {
-      confirmBtnEdit.addEventListener("click", function () {
-        const bs = window.bootstrap && window.bootstrap.Dropdown;
-        if (bs && ownerInputEdit) {
-          const d = bs.getInstance(ownerInputEdit);
-          if (d) d.hide();
-        }
-      });
+    var confirmBtn = document.getElementById("confirmOwnersEditProject");
+    if (confirmBtn && typeof window.bootstrap !== "undefined") {
+      confirmBtn.onclick = function () {
+        var dd = window.bootstrap.Dropdown.getInstance(ownerInputEdit);
+        if (dd) dd.hide();
+      };
     }
 
-    if (editForm) {
-      editForm.addEventListener("submit", function (e) {
-        if (selectedEditMembers.length === 0) {
-          e.preventDefault();
-          if (typeof Swal !== "undefined") {
-            Swal.fire({ icon: "warning", text: "Please select at least one member." });
-          } else {
-            alert("Please select at least one member.");
-          }
-          return false;
-        }
-        const container = document.getElementById("editMemberIdsContainer");
-        if (container) {
-          container.innerHTML = "";
-          // Add all selected members (from any department) to form
-          selectedEditMembers.forEach(function (member) {
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = "project_members";
-            input.value = member.id;
-            container.appendChild(input);
-          });
-        }
+    editProjectMembersForm.addEventListener("submit", function (e) {
+      if (selectedEdit.length === 0) {
+        e.preventDefault();
+        if (typeof Swal !== "undefined") Swal.fire({ icon: "warning", text: "Please select at least one member." });
+        else alert("Please select at least one member.");
+        return false;
+      }
+      var container = document.getElementById("editMemberIdsContainer");
+      if (!container) return;
+      container.innerHTML = "";
+      selectedEdit.forEach(function (m) {
+        var input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "project_members";
+        input.value = m.id;
+        container.appendChild(input);
       });
-    }
+    });
 
-    // Edit Project form: deadline cannot be earlier than start date
-    const editProjectStartDate = document.getElementById("editProjectStartDate");
-    const editProjectEndDate = document.getElementById("editProjectEndDate");
-    const editProjectForm = document.getElementById("editProjectForm");
-    if (editProjectStartDate && editProjectEndDate) {
-      editProjectStartDate.addEventListener("change", function () {
-        editProjectEndDate.min = this.value || "";
-      });
-      if (editProjectStartDate.value) editProjectEndDate.min = editProjectStartDate.value;
-    }
-    if (editProjectForm && editProjectStartDate && editProjectEndDate) {
-      editProjectForm.addEventListener("submit", function (e) {
-        const start = editProjectStartDate.value;
-        const end = editProjectEndDate.value;
-        if (start && end && end < start) {
-          e.preventDefault();
-          if (typeof Swal !== "undefined") {
-            Swal.fire({ icon: "warning", title: "Invalid dates", text: "Deadline cannot be earlier than the start date." });
-          } else {
-            alert("Deadline cannot be earlier than the start date.");
-          }
-          return false;
-        }
-      });
-    }
-
-    renderChipsEdit();
     renderListEdit("");
-
-    // Create Task form: set owner_id from Assign Members selection before submit
-    const createTaskForm = document.getElementById("createTaskForm");
-    const createTaskOwnerId = document.getElementById("createTaskOwnerId");
-    if (createTaskForm && createTaskOwnerId) {
-      createTaskForm.addEventListener("submit", function (e) {
-        const so = window.selectedOwners;
-        if (!so || so.length === 0) {
-          e.preventDefault();
-          if (typeof Swal !== "undefined") {
-            Swal.fire({ icon: "warning", text: "Please select at least one member to assign." });
-          } else {
-            alert("Please select at least one member to assign.");
-          }
-          return false;
-        }
-        createTaskOwnerId.value = so[0].id;
-      });
-    }
+    renderSelectedEdit();
   });
 })();

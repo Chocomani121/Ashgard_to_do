@@ -26,48 +26,51 @@ Purpose: Chip-based member selection for Create Project modal
       return;
     }
 
-    // Elements
-    const departmentSelect = document.getElementById("department_id");
+    // Elements (department removed: Add Members shows all members)
     const ownerInputProject = document.getElementById("ownerInputProject");
     const ownerListProject = document.querySelector(".owner-list-project");
     const ownerSearchProject = document.getElementById("ownerSearchProject");
 
-    if (!departmentSelect || !ownerInputProject || !ownerListProject) return;
+    if (!ownerInputProject || !ownerListProject) return;
+
+    // Current user (project creator) is the default PM – exclude from Add Members list
+    let currentUserId = null;
+    try {
+      const cuEl = document.getElementById("current-user-id");
+      if (cuEl) currentUserId = JSON.parse(cuEl.textContent || "null");
+    } catch (e) {}
 
     // Generate colors array
     const colors = ["#6f42c1", "#0d6efd", "#198754", "#dc3545", "#fd7e14", "#20c997", "#ffc107", "#6610f2"];
 
-    // Map users to owner format with colors and initials
-    const allUsers = allUsersData.map((user, index) => ({
-      id: user.member_id,
-      name: user.name || user.username,
-      initials: getInitials(user.name || user.username),
-      color: colors[index % colors.length],
-      department_id: user.department_id || null,
-    }));
+    // Map users to owner format with colors and initials (exclude current user = default PM)
+    const allUsers = allUsersData
+      .filter((user) => user.member_id !== currentUserId)
+      .map((user, index) => ({
+        id: user.member_id,
+        name: user.name || user.username,
+        initials: getInitials(user.name || user.username),
+        color: colors[index % colors.length],
+        department_id: user.department_id || null,
+      }));
 
     // Chip-based member selection for projects
     let selectedOwnersProject = [];
 
-    function renderOwnersProject(filter = "", availableMembers = null) {
+    function renderOwnersProject(filter = "") {
       ownerListProject.innerHTML = "";
 
-      let membersToShow = availableMembers || allUsers;
+      let membersToShow = allUsers;
 
       if (filter) {
         const f = filter.toLowerCase();
         membersToShow = membersToShow.filter((m) => (m.name || "").toLowerCase().includes(f));
       }
 
-      const selectedDeptId = departmentSelect.value ? parseInt(departmentSelect.value, 10) : null;
-      if (selectedDeptId && availableMembers === null) {
-        membersToShow = membersToShow.filter((m) => m.department_id && parseInt(m.department_id, 10) === selectedDeptId);
-      }
-
       if (membersToShow.length === 0) {
         const emptyMsg = document.createElement("div");
         emptyMsg.className = "list-group-item text-muted text-center";
-        emptyMsg.textContent = selectedDeptId ? "No members found in this department" : "Select Department first to see members";
+        emptyMsg.textContent = "No members match your search";
         ownerListProject.appendChild(emptyMsg);
         return;
       }
@@ -91,20 +94,14 @@ Purpose: Chip-based member selection for Create Project modal
     }
 
     function populateAvailableMembers() {
-      const selectedDeptId = departmentSelect.value ? parseInt(departmentSelect.value, 10) : null;
-      let availableMembers = [];
-      if (selectedDeptId) {
-        availableMembers = allUsers.filter((user) => user.department_id && parseInt(user.department_id, 10) === selectedDeptId);
-      }
-      renderOwnersProject(ownerSearchProject ? ownerSearchProject.value : "", availableMembers);
+      renderOwnersProject(ownerSearchProject ? ownerSearchProject.value : "");
     }
 
     function renderSelectedProject() {
       ownerInputProject.innerHTML = "";
 
       if (selectedOwnersProject.length === 0) {
-        const selectedDeptId = departmentSelect.value || null;
-        ownerInputProject.innerHTML = `<span class="text-muted small">${selectedDeptId ? "Select member(s)" : "Select Department first to see members"}</span>`;
+        ownerInputProject.innerHTML = `<span class="text-muted small">Select member(s)</span>`;
         return;
       }
 
@@ -141,19 +138,10 @@ Purpose: Chip-based member selection for Create Project modal
       createProjectModal.addEventListener("show.bs.modal", function () {
         selectedOwnersProject = [];
         renderSelectedProject();
-
-        departmentSelect.value = "";
         populateAvailableMembers();
-
         if (ownerSearchProject) ownerSearchProject.value = "";
       });
     }
-
-    departmentSelect.addEventListener("change", function () {
-      selectedOwnersProject = [];
-      renderSelectedProject();
-      populateAvailableMembers();
-    });
 
     if (ownerSearchProject) {
       ownerSearchProject.addEventListener("input", function (e) {

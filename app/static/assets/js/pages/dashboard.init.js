@@ -294,15 +294,23 @@ chart.render();
 }
 
 // Saleing Categories donut chart in project details page (only when container exists)
+// Series reflect task counts: completed vs ongoing; percentages = completed/total, ongoing/total
 var saleingCategoriesEl = document.querySelector("#saleing-categories");
 if (saleingCategoriesEl && typeof ApexCharts !== "undefined") {
   var barchartColors = getChartColorsArray("saleing-categories");
+  var taskCompleted = parseInt(saleingCategoriesEl.getAttribute("data-task-completed"), 10);
+  var taskOngoing = parseInt(saleingCategoriesEl.getAttribute("data-task-ongoing"), 10);
+  var progressPct = saleingCategoriesEl.getAttribute("data-progress-pct");
+  var isTaskData = !isNaN(taskCompleted) && !isNaN(taskOngoing);
+  var series = isTaskData ? [taskCompleted, taskOngoing] : [60, 40];
+  var progressNum = progressPct !== null && progressPct !== "" ? parseFloat(progressPct) : NaN;
+  var centerLabel = !isNaN(progressNum) ? progressNum + "%" : (isTaskData ? (series[0] + series[1]) : "60");
   var options = {
     chart: {
       height: 340,
       type: 'donut',
     },
-    series: [60, 40],
+    series: series,
     labels: ["Completed", "Ongoing"],
     colors: barchartColors || ["#28b765", "#f4c238c2"],
     plotOptions: {
@@ -315,6 +323,7 @@ if (saleingCategoriesEl && typeof ApexCharts !== "undefined") {
             total: {
               show: true,
               label: 'Progress',
+              formatter: function(w) { return centerLabel; },
               fontSize: '22px',
               fontFamily: 'Montserrat,sans-serif',
               fontWeight: 600,

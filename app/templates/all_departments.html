@@ -81,12 +81,14 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <div class="table-responsive">
                         <table id="projectsTableCompany" class="table">
                             <thead>
                                 <tr>
                                     <th style="width: 190px;">Department Name</th>
                                     <th style="text-align: center;">Total Members</th>
                                     <th style="text-align: center;">Created Date</th>
+                                    <th>Updated On</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -95,7 +97,8 @@
                                 <tr>
                                     <td style="width: 190px;">{{ dept.department_name }}</td>
                                     <td style="text-align: center;">{{ dept.members|length }}</td>
-                                    <td style="text-align: center;">{{ dept.creation_date.strftime('%Y-%m-%d') if dept.creation_date else 'N/A' }}</td>
+                                    <td style="text-align: center;">{{ dept.creation_date.strftime('%B %Y') if dept.creation_date else 'N/A' }}</td>
+                                    <td>{{ dept.edited_on.strftime('%d / %m / %Y at %I:%M %p') if dept.edited_on else 'N/A' }}</td>
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>
@@ -120,6 +123,7 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>
