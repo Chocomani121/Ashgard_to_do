@@ -930,9 +930,9 @@
     </div>
 </div>
 
-<!-- Edit Task Modal: Task name, Priority, Task status, Description only -->
+<!-- Edit Task Modal: Task name | Priority; Task status | Assigned member; Start | End; Description -->
 <div class="modal fade" data-bs-backdrop="static" id="editTaskModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Edit Task</h5>
@@ -940,29 +940,46 @@
             </div>
             <form method="POST" action="{{ url_for('main.update_task', id=task.task_id) }}" id="editTaskForm">
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Task Name <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="task_name" id="editTaskName" value="{{ task.task_name or '' }}" required>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Task Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="task_name" id="editTaskName" value="{{ task.task_name or '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Priority</label>
+                                <select class="form-select" name="priority" id="editTaskPriority">
+                                    <option value="Low" {% if task.priority == 'Low' %}selected{% endif %}>Low</option>
+                                    <option value="Medium" {% if task.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                                    <option value="High" {% if task.priority == 'High' %}selected{% endif %}>High</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Priority</label>
-                        <select class="form-select" name="priority" id="editTaskPriority">
-                            <option value="Low" {% if task.priority == 'Low' %}selected{% endif %}>Low</option>
-                            <option value="Medium" {% if task.priority == 'Medium' %}selected{% endif %}>Medium</option>
-                            <option value="High" {% if task.priority == 'High' %}selected{% endif %}>High</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Task Status</label>
-                        <select class="form-select" name="task_status" id="editTaskStatus">
-                            <option value="Ongoing" {% if (task.task_status or 'Ongoing') == 'Ongoing' %}selected{% endif %}>Ongoing</option>
-                            <option value="Completed" {% if task.task_status == 'Completed' %}selected{% endif %}>Completed</option>
-                            <option value="On Hold" {% if task.task_status == 'On Hold' %}selected{% endif %}>On Hold</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-control" name="task_description" id="editTaskDescription" rows="3" placeholder="Task description">{{ task.task_description or '' }}</textarea>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Task Status</label>
+                                <select class="form-select" name="task_status" id="editTaskStatus">
+                                    <option value="Ongoing" {% if (task.task_status or 'Ongoing') == 'Ongoing' %}selected{% endif %}>Ongoing</option>
+                                    <option value="Completed" {% if task.task_status == 'Completed' %}selected{% endif %}>Completed</option>
+                                    <option value="On Hold" {% if task.task_status == 'On Hold' %}selected{% endif %}>On Hold</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Assigned member</label>
+                                <select class="form-select" name="owner_id" id="editTaskOwnerId">
+                                    <option value="">Select member</option>
+                                    {% for pm in task_project_members|default([]) %}
+                                    <option value="{{ pm.p_members_id }}" {% if task.p_members_id == pm.p_members_id %}selected{% endif %}>{{ pm.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
@@ -977,6 +994,10 @@
                                 <input type="date" class="form-control" name="end_date" id="editTaskEndDate" value="{% if task.deadline_ref %}{{ task.deadline_ref.end_date.strftime('%Y-%m-%d') }}{% endif %}">
                             </div>
                         </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="task_description" id="editTaskDescription" rows="3" placeholder="Task description">{{ task.task_description or '' }}</textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
