@@ -657,7 +657,21 @@ def task_details(id=None):
                             'name': manager_user.name or manager_user.username
                         })
     
-    return render_template('task_details.html', task=task, task_assignees=task_assignees, task_project_members=task_project_members)
+    # Role flags for subtask views: PM sees "Subtask (Project Manager)", other project members see "Subtask"
+    project = Project.query.get(task.project_id) if task.project_id else None
+    is_project_manager = (project and current_user.member_id == project.project_manager)
+    is_project_member = False
+    if project:
+        if is_project_manager:
+            is_project_member = True
+        else:
+            pm_entry = ProjectMembers.query.filter_by(
+                project_id=task.project_id,
+                member_id=current_user.member_id
+            ).first()
+            is_project_member = pm_entry is not None
+    
+    return render_template('task_details.html', task=task, task_assignees=task_assignees, task_project_members=task_project_members, is_project_manager=is_project_manager, is_project_member=is_project_member)
 
 @main.route("/task_details/<int:id>/update", methods=['POST'])
 @login_required
