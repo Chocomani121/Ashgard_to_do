@@ -103,7 +103,7 @@
                                     <td style="width: 190px;">{{ dept.department_name }}</td>
                                     <td style="text-align: center;">{{ dept.members|length }}</td>
                                     <td style="text-align: center;">{{ dept.creation_date.strftime('%B %Y') if dept.creation_date else 'N/A' }}</td>
-                                    <td>{{ dept.edited_on.strftime('%d / %m / %Y at %I:%M %p') if dept.edited_on else 'N/A' }}</td>
+                                    <td>{{ dept.edited_on.strftime('%d / %m / %Y at %H:%M') if dept.edited_on else 'N/A' }}</td>
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>

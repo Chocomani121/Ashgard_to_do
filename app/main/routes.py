@@ -163,6 +163,8 @@ def edit_department(id):
                 except (ValueError, TypeError):
                     continue
         
+        # Update edited_on when name or members change (onupdate only fires on Dept row changes)
+        department.edited_on = datetime.now()
         db.session.commit()
         flash('Department updated!', 'success')
         return redirect(url_for('main.all_departments'))
