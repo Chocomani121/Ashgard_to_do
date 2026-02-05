@@ -1,9 +1,9 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask,  Report, ReportCC, Comment
+from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, TaskAssignee, SubTask,  Report, ReportCC, Comment
 from app import db 
 from datetime import datetime, date, time
-from sqlalchemy import or_
+from sqlalchemy import or_, text
 from sqlalchemy.exc import ProgrammingError, OperationalError
 import json
 import random
