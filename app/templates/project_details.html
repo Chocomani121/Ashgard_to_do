@@ -12,12 +12,7 @@
                         </nav>
                         {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
-                            {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                            {% endfor %}
+                            <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
                         {% endif %}
                         {% endwith %}
                  <div class="row">
@@ -193,7 +188,7 @@
                                         <div class="assigned-members overflow-auto pe-4 ps-4" style="max-height: 260px;"> 
                                             <ul class="list-unstyled mb-0">
                                                 {% if manager %}
-                                                <li class="d-flex align-items-center mb-4">
+                                                <li class="d-flex align-items-center mb-3">
                                                     <img src="{{ url_for('static', filename='profile_pics/' + manager.image_file) }}" class="rounded-circle avatar-sm me-3" alt="{{ manager.name or manager.username }}">
                                                     <div>
                                                         <h6 class="mb-0 font-size-16 fw-bold">{{ manager.name if manager.name else manager.username }}</h6>
@@ -204,11 +199,11 @@
                                                 {% if assigned_members %}
                                                     {% for member_info in assigned_members %}
                                                     {% if not project.project_manager or member_info.user.member_id != project.project_manager %}
-                                                    <li class="d-flex align-items-center mb-4">
+                                                    <li class="d-flex align-items-center mb-2">
                                                         <img src="{{ url_for('static', filename='profile_pics/' + member_info.user.image_file) }}" class="rounded-circle avatar-sm me-3" alt="{{ member_info.user.name or member_info.user.username }}">
                                                         <div>
                                                             <h6 class="mb-0 font-size-16 fw-bold">{{ member_info.user.name if member_info.user.name else member_info.user.username }}</h6>
-                                                            <small class="text-muted font-size-13">{{ member_info.role }}</small>
+                                                            <!-- <small class="text-muted font-size-13">{{ member_info.role }}</small> -->
                                                         </div>
                                                     </li>
                                                     {% endif %}

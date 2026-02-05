@@ -6,6 +6,11 @@
 <div class="main-content all_departments">
     <div class="page-content">
         <div class="container-fluid">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
+            {% endif %}
+            {% endwith %}
 
         <div class="row">
             <div class="col-xl-12">
