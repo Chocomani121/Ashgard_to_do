@@ -179,6 +179,24 @@ def delete_member(member_id):
 
     return redirect(url_for('users.members'))
 
+#  // Old delete membr
+# @users.route("/delete_member/<int:member_id>", methods=['GET','POST'])
+# @login_required
+# def delete_member(member_id):
+#     if current_user.account_type != 'admin':
+#         flash('Unauthorized.', 'danger_error')
+#         return redirect(url_for('users.members'))
+    
+#     member = User.query.get_or_404(member_id)
+
+#     db.session.delete(member)
+#     db.session.commit()
+
+#     cache.clear()
+
+#     flash('Member deleted.', 'delete_success')
+#     return redirect(url_for('users.members'))
+
 # -------------------- PASSWORD RESET --------------------
 
 def send_reset_email(user):
