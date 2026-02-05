@@ -1,9 +1,9 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, TaskAssignee, SubTask, Report, ReportCC
+from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask,  Report, ReportCC, Comment
 from app import db 
-from datetime import datetime
-from sqlalchemy import or_, text
+from datetime import datetime, date, time
+from sqlalchemy import or_
 from sqlalchemy.exc import ProgrammingError, OperationalError
 import json
 import random
@@ -190,13 +190,27 @@ def approvals():
 
 # ---- Report routes ----
 def _report_to_dict(report):
+
     """Build a dict for one report (list + detail panel)."""
+    comments_list = []
+    for c in (report.comments or []):
+        comment_author = (c.author.name or c.author.username) if c.author else ''
+        author_img = getattr(c.author, 'image_file', None) or 'default.jpg'
+        comments_list.append({
+            'comment_id': c.comment_id,
+            'comment_body': c.comment_body or '',
+            'created_at': c.created_at.strftime('%m/%d/%Y %H:%M') if c.created_at else '',
+            'author_name': comment_author,
+            'author_image': author_img,
+        })
+
     author_name = (report.author.name or report.author.username) if report.author else ''
     reviewer_name = (report.reviewer_user.name or report.reviewer_user.username) if report.reviewer_user else ''
-    cc_names = ', '.join((e.user.name or e.user.username or '') for e in (report.cc_entries or []))
+    cc_names = ', '.join((e.user.name or e.user.username or '') if e.user else '' for e in (report.cc_entries or []))
     dept = getattr(report.author, 'dept_info', None) if report.author else None
     department_name = dept.department_name if dept else ''
     created_str = report.created_on.strftime('%m/%d/%Y %H:%M') if report.created_on else ''
+
     return {
         'report_id': report.report_id,
         'author_name': author_name,
@@ -209,6 +223,7 @@ def _report_to_dict(report):
         'report_content': report.report_content or '',
         'is_author': report.member_id == current_user.member_id,
         'is_reviewer': report.reviewer_id == current_user.member_id if report.reviewer_id else False,
+        'comments': comments_list,
     }
 
 @main.route("/reports")
@@ -219,19 +234,41 @@ def reports():
         {'member_id': u.member_id, 'name': u.name or u.username, 'username': u.username, 'image': u.image_file}
         for u in users
     ]
-    reports_q = Report.query.filter(
-        or_(
-            Report.member_id == current_user.member_id,
-            Report.reviewer_id == current_user.member_id,
-            Report.report_id.in_(
-                db.session.query(ReportCC.report_id).filter(ReportCC.member_id == current_user.member_id)
+    
+    # Admin sees all reports; non-admin sees only reports they're author, reviewer, or CC on
+    if getattr(current_user, 'account_type', None) == 'admin':
+        reports_q = Report.query.order_by(Report.created_on.desc()).all()
+    else:
+        reports_q = Report.query.filter(
+            or_(
+                Report.member_id == current_user.member_id,
+                Report.reviewer_id == current_user.member_id,
+                Report.report_id.in_(
+                    db.session.query(ReportCC.report_id).filter(ReportCC.member_id == current_user.member_id)
+                )
             )
-        )
-    ).order_by(Report.created_on.desc()).all()
+        ).order_by(Report.created_on.desc()).all()
 
     pending_reports = [r for r in reports_q if not r.is_checked]
     reviewed_reports = [r for r in reports_q if r.is_checked]
-    reports_json = [_report_to_dict(r) for r in reports_q]
+    
+       # CC tab: admin sees all reports; non-admin sees only reports where they're reviewer or in CC
+    if getattr(current_user, 'account_type', None) == 'admin':
+        cc_reports = reports_q  # Admin sees all
+    else:
+        cc_reports = Report.query.filter(
+            or_(
+                Report.reviewer_id == current_user.member_id,
+                Report.report_id.in_(
+                    db.session.query(ReportCC.report_id).filter(ReportCC.member_id == current_user.member_id)
+                )
+            )
+        ).order_by(Report.created_on.desc()).all()
+    
+    # Company-wide: all reports from all users, no restriction
+    company_wide_reports = Report.query.order_by(Report.created_on.desc()).all()
+    # reports_json must include all reports for Company-wide detail lookup to work
+    reports_json = [_report_to_dict(r) for r in company_wide_reports]
 
     return render_template(
         'reports.html',
@@ -240,6 +277,8 @@ def reports():
         users_json=users_json,
         pending_reports=pending_reports,
         reviewed_reports=reviewed_reports,
+        cc_reports=cc_reports,
+        company_wide_reports=company_wide_reports,
         reports_json=reports_json,
     )
 
@@ -312,6 +351,48 @@ def approve_report(report_id):
         flash('Report approved successfully.', 'success')
     except Exception as e:
         db.session.rollback()
+        flash(f'Error: {str(e)}', 'danger')
+    return redirect(url_for('main.reports'))
+
+
+# ---- Add comment to report ----
+@main.route("/reports/<int:report_id>/comment", methods=['POST'])
+@login_required
+def add_report_comment(report_id):
+    report = Report.query.get_or_404(report_id)
+    # Optional: restrict to users who can see the report (author, reviewer, or CC)
+    comment_body = request.form.get('comment_body') or (request.get_json() or {}).get('comment_body', '')
+    comment_body = (comment_body or '').strip()
+    if not comment_body:
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'error': 'Comment is empty'}), 400
+        flash('Comment cannot be empty.', 'warning')
+        return redirect(url_for('main.reports'))
+    try:
+        comment = Comment(
+            report_id=report_id,
+            member_id=current_user.member_id,
+            comment_body=comment_body
+        )
+        db.session.add(comment)
+        db.session.commit()
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            author_name = (current_user.name or current_user.username) or ''
+            created_str = comment.created_at.strftime('%m/%d/%Y %H:%M') if comment.created_at else ''
+            user_img = getattr(current_user, 'image_file', None) or 'default.jpg'
+            return jsonify({
+                'success': True,
+                'comment_id': comment.comment_id,
+                'comment_body': comment.comment_body or '',
+                'author_name': author_name,
+                'created_at': created_str,
+                'user_image': user_img
+            })
+        flash('Comment added.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'error': str(e)}), 500
         flash(f'Error: {str(e)}', 'danger')
     return redirect(url_for('main.reports'))
 
@@ -657,7 +738,21 @@ def task_details(id=None):
                             'name': manager_user.name or manager_user.username
                         })
     
-    return render_template('task_details.html', task=task, task_assignees=task_assignees, task_project_members=task_project_members)
+    # Role flags for subtask views: PM sees "Subtask (Project Manager)", other project members see "Subtask"
+    project = Project.query.get(task.project_id) if task.project_id else None
+    is_project_manager = (project and current_user.member_id == project.project_manager)
+    is_project_member = False
+    if project:
+        if is_project_manager:
+            is_project_member = True
+        else:
+            pm_entry = ProjectMembers.query.filter_by(
+                project_id=task.project_id,
+                member_id=current_user.member_id
+            ).first()
+            is_project_member = pm_entry is not None
+    
+    return render_template('task_details.html', task=task, task_assignees=task_assignees, task_project_members=task_project_members, is_project_manager=is_project_manager, is_project_member=is_project_member)
 
 @main.route("/task_details/<int:id>/update", methods=['POST'])
 @login_required

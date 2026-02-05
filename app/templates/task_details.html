@@ -345,7 +345,8 @@
                     </div>
                 </div>
                     </div>
-            <!-- SUBTASK TABLE -->
+            <!-- SUBTASK TABLE (for project members – not shown to project manager) -->
+            {% if is_project_member and not is_project_manager %}
             <div class="row mt-4">
                 <div class="col-12">
                     <div class="card">
@@ -582,8 +583,10 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
 
-            <!-- PM SUBTASK TABLE -->
+            <!-- SUBTASK TABLE (Project Manager only) -->
+            {% if is_project_manager %}
              <div class="row mt-4">
                 <div class="col-12">
                     <div class="card">
@@ -817,6 +820,7 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
