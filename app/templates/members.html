@@ -16,16 +16,7 @@
                             </div>
 
                         </div>
-                        <!-- end row -->
-                        <!-- {% with messages = get_flashed_messages(category_filter=["update_success", "delete_success", "danger_error"]) %}
-                            {% if messages %}
-                                {% for message in messages %}
-                                    <div class="alert alert-success flash-message">{{ message }}</div>
-                                {% endfor %}
-                            {% endif %}
-                            
-                        {% endwith %} -->
-                             {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
                             <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
                         {% endif %}
@@ -405,23 +396,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-        const messages = document.querySelectorAll('.flash-message');
-        
-        if (messages.length > 0) {
-            setTimeout(function() {
-                messages.forEach(function(msg) {
-                    msg.style.transition = "opacity 0.5s ease";
-                    msg.style.opacity = "0";
-                    
-                    setTimeout(() => {
-                        msg.style.display = "none";
-                    }, 500); 
-                });
-            }, 3000);
-        }
-    });
-    
 </script>
 
    {% endblock content %}
