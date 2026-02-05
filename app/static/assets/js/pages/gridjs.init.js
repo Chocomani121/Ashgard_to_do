@@ -6,6 +6,16 @@ Contact: Themesdesign@gmail.com
 File: grid Js File
 */
 
+// Helper: apply progress bar widths from data-width-pct (for Grid.js-rendered tables)
+function applyProgressBarWidths(container) {
+    var root = container && container.querySelector ? container : document;
+    var els = root.querySelectorAll ? root.querySelectorAll('.progress-bar-dynamic') : [];
+    for (var i = 0; i < els.length; i++) {
+        var pct = els[i].getAttribute('data-width-pct');
+        if (pct != null) els[i].style.width = pct + '%';
+    }
+}
+
 // 1. Department-Wide Projects Table (with filters)
 document.addEventListener('DOMContentLoaded', function() {
     let grid1 = null;
@@ -113,12 +123,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 search: false, // Disable built-in search, handle manually
                 className: { table: "table table-centered align-middle" }
             }).render(gridContainer);
+            setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
             
             // Update grid function
             const updateGrid = () => {
                 if (grid1) {
                     const filteredData = getFilteredData().map(row => row.cells);
                     grid1.updateConfig({ data: filteredData }).forceRender();
+                    setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
                 }
             };
             
@@ -231,6 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
         search: false,
         className: { table: "table table-centered align-middle" }
     }).render(container);
+    setTimeout(function() { applyProgressBarWidths(container); }, 100);
 
     const searchEl = document.getElementById('searchCompanyProjects');
     if (searchEl) {
@@ -240,6 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
             t = setTimeout(() => {
                 search2 = this.value.trim();
                 grid2.updateConfig({ data: filtered().map(row => row.cells) }).forceRender();
+                setTimeout(function() { applyProgressBarWidths(container); }, 0);
             }, 300);
         });
     }
@@ -473,12 +487,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     table: 'table table-bordered'
                 }
             }).render(gridContainer);
+            setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
             
             // Update grid function
             const updateGrid = () => {
                 if (grid) {
                     const filteredData = getFilteredData().map(row => row.cells);
                     grid.updateConfig({ data: filteredData }).forceRender();
+                    setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
                 }
             };
             

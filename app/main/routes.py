@@ -29,7 +29,7 @@ def projects():
     departments = Department.query.all()
     users = User.query.all()
     
-    # Prepare projects data for template
+    # Prepare projects data for template (progress = task-based, same as project details)
     projects_data = []
     for project in projects:
         dept = Department.query.get(project.department_id) if project.department_id else None
@@ -43,12 +43,23 @@ def projects():
         except (AttributeError, KeyError):
             priority = 'High'  # Fallback if column doesn't exist
         
+        # Progress from tasks (completed / total), same logic as project details
+        project_tasks = Task.query.filter_by(project_id=project.project_id).all()
+        task_total = len(project_tasks)
+        task_completed = sum(1 for t in project_tasks if t.task_status == 'Completed')
+        progress_pct = round(task_completed / task_total * 100, 1) if task_total else 0
+        # Latest task (newest by task_id) for "Last Tasks" column
+        latest_task = Task.query.filter_by(project_id=project.project_id).order_by(Task.task_id.desc()).first()
+        latest_task_title = latest_task.task_name if latest_task else None
+        
         projects_data.append({
             'project': project,
             'department': dept,
             'manager': manager,
             'deadline': deadline,
-            'priority': priority
+            'priority': priority,
+            'progress_pct': progress_pct,
+            'latest_task_title': latest_task_title,
         })
     
     # Calculate statistics from projects
@@ -96,18 +107,26 @@ def all_departments():
     # Get all users (we'll filter unassigned ones in JavaScript for dropdown, but need all for Edit modal)
     users = User.query.all()
     # Build department projects data for the Department Projects table (newest first)
+    # Progress = task-based (completed / total), same as projects index
     projects = Project.query.order_by(Project.project_id.desc()).all()
     dept_projects_data = []
     for project in projects:
         dept = Department.query.get(project.department_id) if project.department_id else None
         manager = User.query.get(project.project_manager) if project.project_manager else None
         deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
-        
+        project_tasks = Task.query.filter_by(project_id=project.project_id).all()
+        task_total = len(project_tasks)
+        task_completed = sum(1 for t in project_tasks if t.task_status == 'Completed')
+        progress_pct = round(task_completed / task_total * 100, 1) if task_total else 0
+        latest_task = Task.query.filter_by(project_id=project.project_id).order_by(Task.task_id.desc()).first()
+        latest_task_title = latest_task.task_name if latest_task else None
         dept_projects_data.append({
             'project': project,
             'department': dept,
             'manager': manager,
             'deadline': deadline,
+            'progress_pct': progress_pct,
+            'latest_task_title': latest_task_title,
         })
     # Stats for cards: total, completed, ongoing
     stats = {
