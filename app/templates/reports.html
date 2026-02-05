@@ -29,7 +29,7 @@
               {% endif %}
               {% endwith %}
             <div class="row">
-                <div class="col-12">
+                <div class="col-20">
                     <div class="card">
                         <!-- end card header -->
                         <!-- <ul class="nav nav-tabs nav-tabs-custom mt-1 mb-2 ecommerce-sortby-list d-flex align-items-center">
@@ -110,7 +110,8 @@
                                                 <i class="bx bx-plus me-1"></i>New
                                             </a>
                                         </li>
-                                   
+                                
+                                    
                                         <!-- <li class="nav-item ms-auto">
                                             <a class="nav-link py-1" href="javascript:void(0);" onclick="location.reload();" title="Refresh Page">
                                                 <i class="bx bx-rotate-right fs-4 text-muted"></i>
@@ -127,9 +128,9 @@
                                     <!-- Tab Content for Report sub-tabs -->
                                     <div class="tab-content">
                                         <div class="tab-pane fade show active" id="Pending" role="tabpanel">
-                                            <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden; ">
+                                            <div class="row g-0 border-top" style="min-height: 700px;">
                                         
-                                                <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto; ">
+                                                <div class="col-md-4 col-lg-3 border-end bg-white" style="min-height: 700px; overflow-y: auto;">
                                                     <div class="list-group list-group-flush" id="pendingReportList">
                                                         {% for report in pending_reports|default([]) %}
                                                         <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 border-bottom border-light report-list-item" data-report-id="{{ report.report_id }}">
@@ -147,10 +148,10 @@
                                                     </div>
                                                 </div>
                                                 
-                                             <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
+                                                <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="min-height: 700px;">
                                                     
-                                                <div id="reportDetailPlaceholder" class="text-muted text-center py-5"  style="height: 100%;">Select a report from the list.</div>
-                                                   <div id="reportDetailContent" class="p-4 flex-grow-1" style="display: none; overflow-y: auto; min-height: 0;">
+                                            <div id="reportDetailPlaceholder" class="text-muted text-center py-5">Select a report from the list.</div>
+                                                <div id="reportDetailContent" class="p-4 flex-grow-1" style="display: none; grid-template-rows: auto auto auto auto; align-content: start;">
                                                     <input type="hidden" id="currentActiveReportId" value="">
                                                         <div class="d-flex align-items-center mb-3">
                                                             <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
@@ -158,50 +159,53 @@
                                                         </div>
                                                         <div class="table-responsive mb-4">
                                                             <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
-                                                                <tr>
+                                                                <tr class="report-detail-meta">
                                                                     <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
                                                                     <td class="p-2 text-dark" id="reportDetailReviewer"></td>
                                                                     <td class="p-2 bg-light" style="width: 10%;">CC</td>
                                                                     <td class="p-2 text-dark" id="reportDetailCC"></td>
                                                                 </tr>
-                                                                <tr>
+                                                                <tr class="report-detail-meta">
                                                                     <td class="p-2 bg-light">Department</td>
                                                                     <td class="p-2 text-dark" id="reportDetailDepartment"></td>
                                                                     <td class="p-2 bg-light">Created</td>
                                                                     <td class="p-2 text-dark" id="reportDetailCreated"></td>
                                                                 </tr>
+                                                                <tr>
+                                                                    <td colspan="4" class="p-2 report-body-cell text-dark" style="vertical-align: top; font-size: 0.80rem; line-height: 1.6;">
+                                                                        <div id="reportDetailBody" class="report-body"></div>
+                                                                    </td>
+                                                                </tr>
                                                             </table>
+                                                            <div id="reportDetailActions" style="display: none;">
+                                                                <div id="reportDetailActionsAuthor" class="d-flex py-2 gap-2 justify-content-center" style="display: none;">
+                                                                    <button type="button" 
+                                                                            id="deleteReportBtn"
+                                                                            class="btn btn-outline-danger btn-sm px-4" 
+                                                                            onclick="confirmReportDelete()">
+                                                                        Delete
+                                                                    </button>
+                                                                    <button type="button" 
+                                                                            class="btn btn-outline-warning btn-sm px-4" 
+                                                                            onclick="openEditModal()">
+                                                                        Edit
+                                                                    </button>
+                                                                </div>
+                                                                <div id="reportDetailActionsReviewer" class="d-flex gap-2 py-2 justify-content-center" style="display: none;">
+                                                                    <button type="button" class="btn btn-success btn-sm px-4" id="reportApprovedBtn">Approved</button>
+                                                                </div>
+                                                            </div>           
                                                         </div>
-                                                        <div id="reportDetailBody" class="report-body text-dark" style="font-size: 0.95rem; line-height: 1.6;"></div>
-
-                                                        <div id="reportDetailActions" class="p-3 border-top bg-white" style="display: none;">
-                                                            <div id="reportDetailActionsAuthor" class="d-flex gap-2 justify-content-end" style="display: none;">
-                                                                <button type="button" 
-                                                                        id="deleteReportBtn"
-                                                                        class="btn btn-outline-danger btn-sm px-4" 
-                                                                        onclick="confirmReportDelete()">
-                                                                    Delete
-                                                                </button>
-                                                                <button type="button" 
-                                                                        class="btn btn-outline-warning btn-sm px-4" 
-                                                                        onclick="openEditModal()">
-                                                                    Edit
-                                                                </button>
-                                                            </div>
-                                                            <div id="reportDetailActionsReviewer" class="d-flex gap-2 justify-content-end" style="display: none;">
-                                                                <button type="button" class="btn btn-success btn-sm px-4" id="reportApprovedBtn">Approved</button>
-                                                            </div>
-                                                        </div>
-                                                     
+                                                  
                                                     </div>
-                                                    <div id="sharedCommentSection">
+                                                    <div id="sharedCommentSection" style="display: none;">
                                                     <div id="reportDetailComments" class="mt-4 mb-3">
                                                         
                                                         <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
                                                             <h6 class="text-muted small fw-bold text-uppercase mb-0">
                                                                 <i class="bi bi-chat-left-text me-1"></i> Comments
                                                             </h6>
-                                                            <div class="d-flex gap-3">
+                                                            <!-- <div class="d-flex gap-3">
                                                                 <a href="javascript:void(0)" class="text-muted" onclick="toggleCommentHeight()" title="Expand View">
                                                                     <i class="bi bi-arrows-angle-expand" id="expandIcon" style="font-size: 0.8rem;"></i>
                                                                 </a>
@@ -209,13 +213,11 @@
                                                                    data-bs-toggle="collapse" data-bs-target="#commentSectionWrapper" id="toggleLink">
                                                                    Hide
                                                                 </a>
-                                                            </div>
+                                                            </div> -->
                                                         </div>
                                                         
                                                         <div class="collapse show" id="commentSectionWrapper">
-                                                            <div id="reportDetailCommentsList" 
-                                                                 class="list-group list-group-flush bg-white" 
-                                                                 style="max-height: 250px; overflow-y: auto; transition: max-height 0.3s ease;">
+                                                            <div id="reportDetailCommentsList" class="list-group list-group-flush bg-white">
                                                             </div>
                                                         </div>
                                                     
@@ -245,8 +247,8 @@
                                         </div>  
 
                                         <div class="tab-pane fade" id="Reviewed" role="tabpanel">
-                                            <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
-                                                <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
+                                            <div class="row g-0 border-top" style="min-height: 700px;">
+                                                <div class="col-md-4 col-lg-3 border-end bg-white" style="min-height: 700px; overflow-y: auto;">
                                                     <div class="list-group list-group-flush" id="reviewedReportList">
                                                         {% for report in reviewed_reports|default([]) %}
                                                         <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 border-bottom border-light reviewed-report-list-item" data-report-id="{{ report.report_id }}">
@@ -264,30 +266,36 @@
                                                     </div>
                                                 </div>
                                                 
-                                                <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
-                                                    <div id="reviewedDetailPlaceholder" class="text-muted text-center py-5" style="height: 100%;">Select a report from the list.</div>
-                                                    <div id="reviewedDetailContent" class="p-4 flex-grow-1" style="display: none; overflow-y: auto; min-height: 0;">
+                                                <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="min-height: 700px;">
+                                                    <div id="reviewedDetailPlaceholder" class="text-muted text-center py-5">Select a report from the list.</div>
+                                                    <div id="reviewedDetailContent" class="p-4 flex-grow-1" style="display: none;">
                                                         <div class="d-flex align-items-center mb-3">
                                                             <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
                                                             <h5 class="mb-0 fw-bold" id="reviewedDetailTitle"></h5>
                                                         </div>
                                                         <div class="table-responsive mb-4">
                                                             <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
-                                                                <tr>
+                                                                <tr class="report-detail-meta">
                                                                     <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
                                                                     <td class="p-2 text-dark" id="reviewedDetailReviewer"></td>
                                                                     <td class="p-2 bg-light" style="width: 10%;">CC</td>
                                                                     <td class="p-2 text-dark" id="reviewedDetailCC"></td>
                                                                 </tr>
-                                                                <tr>
+                                                                <tr class="report-detail-meta">
                                                                     <td class="p-2 bg-light">Department</td>
                                                                     <td class="p-2 text-dark" id="reviewedDetailDepartment"></td>
                                                                     <td class="p-2 bg-light">Created</td>
                                                                     <td class="p-2 text-dark" id="reviewedDetailCreated"></td>
                                                                 </tr>
+                                                                <tr>
+                                                                    <td colspan="4" class="p-2 report-body-cell text-dark" style="vertical-align: top; font-size: 0.80rem; line-height: 1.6;">
+                                                                        <div id="reviewedDetailBody" class="report-body"></div>
+                                                                    </td>
+                                                                </tr>
                                                             </table>
+
                                                         </div>
-                                                        <div id="reviewedDetailBody" class="report-body text-dark" style="font-size: 0.95rem; line-height: 1.6;"></div>
+                                                     
                                                     </div>
                                                 </div>
                                 
@@ -296,9 +304,8 @@
                                         
         
                                             <div class="tab-pane fade" id="cc" role="tabpanel">
-                                                <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
-                                                    
-                                                    <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
+                                                <div class="row g-0 border-top" style="min-height: 700px;">
+                                                    <div class="col-md-4 col-lg-3 border-end bg-white" style="min-height: 700px; overflow-y: auto;">
                                                         <div class="list-group list-group-flush" id="ccReportList">
                                                             {% for report in cc_reports|default([]) %}
                                                             <a href="javascript:void(0)" class="list-group-item list-group-item-action py-3 border-bottom border-light cc-report-list-item" data-report-id="{{ report.report_id }}">
@@ -320,82 +327,43 @@
                                                         </div>
                                                     </div>
                                                     
-                                                    <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="height: 100%;">
-                                                        <div id="ccDetailPlaceholder" class="text-muted text-center py-5" style="height: 100%;">Select a report from the list.</div>
-                                                        <div id="ccDetailContent" class="p-4 flex-grow-1" style="display: none; overflow-y: auto; min-height: 0;">
+                                                    <div class="col-md-8 col-lg-9 bg-white d-flex flex-column" style="min-height: 700px;">
+                                                        <div id="ccDetailPlaceholder" class="text-muted text-center py-5">Select a report from the list.</div>
+                                                        <div id="ccDetailContent" class="p-4 flex-grow-1" style="display: none;">
                                                             <div class="d-flex align-items-center mb-3">
                                                                 <div style="width: 4px; height: 20px; background-color: #0d6efd; margin-right: 10px;"></div>
                                                                 <h5 class="mb-0 fw-bold" id="ccDetailTitle"></h5>
                                                             </div>
                                                             <div class="table-responsive mb-4">
+    
                                                                 <table class="table table-bordered table-sm text-muted mb-0" style="font-size: 0.9rem;">
-                                                                    <tr>
+                                                                    <tr class="report-detail-meta">
                                                                         <td class="p-2 bg-light" style="width: 15%;">Reviewer</td>
                                                                         <td class="p-2 text-dark" id="ccDetailReviewer"></td>
                                                                         <td class="p-2 bg-light" style="width: 10%;">CC</td>
                                                                         <td class="p-2 text-dark" id="ccDetailCC"></td>
                                                                     </tr>
-                                                                    <tr>
+                                                                    <tr class="report-detail-meta">
                                                                         <td class="p-2 bg-light">Department</td>
                                                                         <td class="p-2 text-dark" id="ccDetailDepartment"></td>
                                                                         <td class="p-2 bg-light">Created</td>
                                                                         <td class="p-2 text-dark" id="ccDetailCreated"></td>
                                                                     </tr>
+                                                                    <tr>
+                                                                        <td colspan="4" class="p-2 report-body-cell text-dark" style="vertical-align: top; font-size: 0.80rem; line-height: 1.6;">
+                                                                            <div id="ccDetailBody" class="report-body"></div>
+                                                                        </td>
+                                                                    </tr>
                                                                 </table>
                                                             </div>
-                                                            <div id="ccDetailBody" class="report-body text-dark" style="font-size: 0.95rem; line-height: 1.6;"></div>
                                                         </div>
                                                     </div>
-                                                    <div id="sharedCommentSection">
-                                                        <div id="reportDetailComments" class="mt-4 mb-3">
-                                                            
-                                                            <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
-                                                                <h6 class="text-muted small fw-bold text-uppercase mb-0">
-                                                                    <i class="bi bi-chat-left-text me-1"></i> Comments
-                                                                </h6>
-                                                                <div class="d-flex gap-3">
-                                                                    <a href="javascript:void(0)" class="text-muted" onclick="toggleCommentHeight()" title="Expand View">
-                                                                        <i class="bi bi-arrows-angle-expand" id="expandIcon" style="font-size: 0.8rem;"></i>
-                                                                    </a>
-                                                                    <a href="javascript:void(0)" class="text-decoration-none small fw-bold" 
-                                                                       data-bs-toggle="collapse" data-bs-target="#commentSectionWrapper" id="toggleLink">
-                                                                       Hide
-                                                                    </a>
-                                                                </div>
-                                                            </div>
-                                                            
-                                                            <div class="collapse show" id="commentSectionWrapper">
-                                                                <div id="reportDetailCommentsList" 
-                                                                     class="list-group list-group-flush bg-white" 
-                                                                     style="max-height: 250px; overflow-y: auto; transition: max-height 0.3s ease;">
-                                                                </div>
-                                                            </div>
-                                                        
-                                                            <div id="reportDetailCommentsEmpty" class="text-muted small py-2 text-center italic" style="display: none;">
-                                                                No comments yet.
-                                                            </div>
-                                                        </div>
-                                                        <div class="p-3 bg-light border-top">
-                                                            <div class="comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Comment content (Ctrl+Enter to send)</div>
-                                                        </div>
-                                                        
-                                                        <div id="commentEditorPopover" class="border rounded shadow-sm bg-white p-0" style="display: none; position: fixed; z-index: 1050; min-width: 450px; max-width: 650px; width: 90vw; overflow-y: auto; overflow-x: hidden;">
-                                                            <div class="p-2 bg-light border-bottom small fw-bold">Comment</div>
-                                                            <div class="p-2 bg-white">
-                                                                <textarea id="commentreportCKEditor" class="form-control border-0" style="min-height: 150px;" placeholder="Write your comment..."></textarea>
-                                                            </div>
-                                                            <div class="p-2 bg-light border-top d-flex justify-content-end gap-2">
-                                                                <button type="button" id="commentEditorCancel" class="btn btn-outline-secondary btn-sm">Cancel</button>
-                                                                <button type="button" id="commentEditorSend" class="btn btn-primary btn-sm">Send</button>
-                                                            </div>
-                                                        </div>
-                                                        <input type="hidden" id="commentReportId" value="">
-                                                        </div>
+                                            
                                                 </div>
                                             </div>
           
                                             <div class="tab-pane fade" id="Company-wide" role="tabpanel">
-                                                <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
+                                                <div class="row g-0 border-top" style="height: calc(100vh - 120px); min-height: 700px; overflow: hidden;">
                                                     <div class="col-12 bg-white d-flex flex-column" style="height: 100%; overflow-y: auto;">
                                                         <div id="companyWideReportList" class="table-responsive d-flex flex-column" style="max-height: 100%; overflow-y: auto;">
                                                             <div class="d-flex align-items-center gap-2 flex-nowrap mb-2 justify-content-between">
@@ -438,7 +406,7 @@
 
                                             <!--                                         
                                             <div class="tab-pane fade" id="Draft" role="tabpanel">
-                                                <div class="row g-0 border-top" style="height: calc(100vh - 200px); min-height: 600px; overflow: hidden;">
+                                                <div class="row g-0 border-top" style="height: calc(100vh - 120px); min-height: 700px; overflow: hidden;">
                                                     <div class="col-md-4 col-lg-3 border-end bg-white" style="height: 100%; overflow-y: auto;">
                                                         <div class="list-group list-group-flush">
                                                             
