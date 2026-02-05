@@ -201,7 +201,10 @@
                                                                     {% endif %}
                                                                 </td>
                                                                 <td>
-                                                                    {{ item.project.progress or '0%' }}
+                                                                    <!-- {{ item.project.progress or '0%' }} -->
+                                                                    <div class="progress">
+                                                                        <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                                                    </div>
                                                                 </td>
                                                                 <td>
                                                                     {{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}
