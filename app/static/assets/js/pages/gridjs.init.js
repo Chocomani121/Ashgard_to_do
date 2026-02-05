@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
             grid1 = new gridjs.Grid({
                 columns: ["Project Name", "Priority", "Start Date", "Deadline", "Status", "Progress", "Project Manager", "Client", "Last Tasks"],
                 data: getFilteredData().map(row => row.cells),
-                pagination: { limit: 5 },
+                pagination: { limit: 10 },
                 sort: true,
                 search: false, // Disable built-in search, handle manually
                 className: { table: "table table-centered align-middle" }
@@ -140,6 +140,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             
+            // Handle search input
+            const searchInput1 = document.getElementById('searchDeptProjects');
+            if (searchInput1) {
+                let searchTimeout1;
+                searchInput1.addEventListener('input', function() {
+                    clearTimeout(searchTimeout1);
+                    searchTimeout1 = setTimeout(() => {
+                        currentFilters1.search = this.value.trim();
+                        updateGrid();
+                    }, 300);
+                });
+            }
+            
             // Initialize Flatpickr date range picker
             const dateRangeInput = document.getElementById('datepicker-range');
             if (dateRangeInput) {
@@ -156,13 +169,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                         selectedDates[1].toISOString().split('T')[0]
                                     ];
                                     updateGrid();
-                                } else if (selectedDates.length === 0) {
-                                    currentFilters1.dateRange = null;
+                                } else if (selectedDates.length === 1) {
+                                    // Single date: filter to projects active on that day (same start and end)
+                                    const d = selectedDates[0].toISOString().split('T')[0];
+                                    currentFilters1.dateRange = [d, d];
                                     updateGrid();
-                                }
-                            },
-                            onClose: function(selectedDates, dateStr, instance) {
-                                if (selectedDates.length === 1) {
+                                } else if (selectedDates.length === 0) {
                                     currentFilters1.dateRange = null;
                                     updateGrid();
                                 }
@@ -197,18 +209,41 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// 2. Company Table
-const table2Req = document.getElementById("projectsTableCompany");
-const table2Res = document.getElementById("table2-gridjs");
-if (table2Req && table2Res) {
-    new gridjs.Grid({
-        from: table2Req,
+// 2. Company-Wide Projects (search filter)
+document.addEventListener('DOMContentLoaded', function() {
+    const tbl = document.getElementById("projectsTableCompany");
+    const container = document.getElementById("table2-gridjs");
+    if (!tbl || !container || typeof gridjs === 'undefined') return;
+
+    const rows = Array.from(tbl.querySelectorAll('tbody tr'));
+    const allData2 = rows.map(tr => ({
+        cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML)),
+        searchText: Array.from(tr.querySelectorAll('td')).map(td => td.textContent || '').join(' ').toLowerCase()
+    }));
+
+    let search2 = '';
+    const filtered = () => allData2.filter(row => !search2 || row.searchText.includes(search2.toLowerCase()));
+    const grid2 = new gridjs.Grid({
+        columns: ["Project Name", "Start Date", "Deadline", "Status", "Progress", "Project Manager", "Client", "Department", "Last Tasks"],
+        data: filtered().map(row => row.cells),
         pagination: { limit: 10 },
         sort: true,
-        search: true,
+        search: false,
         className: { table: "table table-centered align-middle" }
-    }).render(table2Res);
-}
+    }).render(container);
+
+    const searchEl = document.getElementById('searchCompanyProjects');
+    if (searchEl) {
+        let t;
+        searchEl.addEventListener('input', function() {
+            clearTimeout(t);
+            t = setTimeout(() => {
+                search2 = this.value.trim();
+                grid2.updateConfig({ data: filtered().map(row => row.cells) }).forceRender();
+            }, 300);
+        });
+    }
+});
 
 // 3. Task Table
 const table3Req = document.getElementById("projectsTableTask");
@@ -216,7 +251,7 @@ const table3Res = document.getElementById("table3-gridjs");
 if (table3Req && table3Res) {
     new gridjs.Grid({
         from: table3Req,
-        pagination: { limit: 5 },
+        pagination: { limit: 10 },
         sort: true,
         search: true,
         className: { table: "table table-centered align-middle" }
@@ -229,7 +264,7 @@ const table4Res = document.getElementById("table4-gridjs");
 if (table4Req && table4Res) {
     new gridjs.Grid({
         from: table4Req,
-        pagination: { limit: 5 },
+        pagination: { limit: 10 },
         sort: true,
         search: true,
         className: { table: "table table-centered align-middle" }
@@ -242,7 +277,7 @@ const table5Res = document.getElementById("table5-gridjs");
 if (table5Req && table5Res) {
     new gridjs.Grid({
         from: table5Req,
-        pagination: { limit: 5 },
+        pagination: { limit: 10 },
         sort: true,
         search: true,
         className: { table: "table table-centered align-middle" }
@@ -255,13 +290,43 @@ const table6Res = document.getElementById("table6-gridjs");
 if (table6Req && table6Res) {
     new gridjs.Grid({
         from: table6Req,
-        pagination: { limit: 5 },
+        pagination: { limit: 10 },
         sort: true,
         search: true,
         className: { table: "table table-centered align-middle" }
     }).render(table6Res);
 }
 
+
+// 11. company wide Table in reports
+const table11Req = document.getElementById("companyWideReport");
+const table11Res = document.getElementById("table11-gridjs");
+if (table11Req && table11Res) {
+    const grid11 = new gridjs.Grid({
+        from: table11Req,
+        pagination: { limit: 15 },
+        sort: false,
+        search: true,
+        className: { table: "table table-centered align-middle" }
+    });
+    grid11.render(table11Res);
+
+    function moveDatePickerBesideSearch() {
+        var datePickerEl = document.getElementById("datepicker-range");
+        if (!datePickerEl) return;
+        var datePickerParent = datePickerEl.closest(".input-group");
+        if (!datePickerParent) return;
+        var head = table11Res.querySelector(".gridjs-head");
+        if (!head) return;
+        head.style.display = "flex";
+        head.style.alignItems = "center";
+        head.style.gap = "0.75rem";
+        head.style.flexWrap = "wrap";
+        head.appendChild(datePickerParent);
+    }
+
+    setTimeout(moveDatePickerBesideSearch, 200);
+}
 
 //Members table
 const table7Req = document.getElementById("projectsTableMembers");
@@ -282,7 +347,7 @@ const table10Res = document.getElementById("table10-gridjs");
 if (table10Req && table10Res) {
     new gridjs.Grid({
         from: table10Req,
-        pagination: { limit: 5 },
+        pagination: { limit: 10 },
         sort: true,
         search: true,
         className: { table: "table table-centered align-middle" }
@@ -476,13 +541,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                         selectedDates[1].toISOString().split('T')[0]
                                     ];
                                     updateGrid();
-                                } else if (selectedDates.length === 0) {
-                                    currentFilters.dateRange = null;
+                                } else if (selectedDates.length === 1) {
+                                    // Single date: filter to projects active on that day (same start and end)
+                                    const d = selectedDates[0].toISOString().split('T')[0];
+                                    currentFilters.dateRange = [d, d];
                                     updateGrid();
-                                }
-                            },
-                            onClose: function(selectedDates, dateStr, instance) {
-                                if (selectedDates.length === 1) {
+                                } else if (selectedDates.length === 0) {
                                     currentFilters.dateRange = null;
                                     updateGrid();
                                 }

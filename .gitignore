@@ -3,6 +3,8 @@
 /instance
 /migrations
 .cursor/
+/flask_cache
+
 
 
 *.pyc
