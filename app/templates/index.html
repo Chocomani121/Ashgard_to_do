@@ -201,9 +201,9 @@
                                                                     {% endif %}
                                                                 </td>
                                                                 <td>
-                                                                    <!-- {{ item.project.progress or '0%' }} -->
+                                                                    {% set pct = item.progress_pct|default(0) %}
                                                                     <div class="progress">
-                                                                        <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                                                        <div class="progress-bar progress-bar-striped progress-bar-dynamic" role="progressbar" data-width-pct="{{ pct }}" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100">{{ pct }}%</div>
                                                                     </div>
                                                                 </td>
                                                                 <td>
@@ -213,7 +213,7 @@
                                                                     {{ item.project.client_name or 'N/A' }}
                                                                 </td>
                                                                 <td>
-                                                                    N/A
+                                                                    {% if item.latest_task_title %}{% if item.latest_task_title|length > 40 %}<span title="{{ item.latest_task_title }}">{{ item.latest_task_title[:37] }}...</span>{% else %}{{ item.latest_task_title }}{% endif %}{% else %}<span class="text-muted" title="This project has no tasks yet">No tasks yet</span>{% endif %}
                                                                 </td>
                                                             </tr>
                                                             {% endfor %}
@@ -301,7 +301,10 @@
                                                                     {% endif %}
                                                                 </td>
                                                                 <td>
-                                                                    {{ item.project.progress or '0%' }}
+                                                                    {% set pct = item.progress_pct|default(0) %}
+                                                                    <div class="progress">
+                                                                        <div class="progress-bar progress-bar-striped progress-bar-dynamic" role="progressbar" data-width-pct="{{ pct }}" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100">{{ pct }}%</div>
+                                                                    </div>
                                                                 </td>
                                                                 <td>
                                                                     {{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}
@@ -313,7 +316,7 @@
                                                                     {{ item.department.department_name if item.department else 'N/A' }}
                                                                 </td>
                                                                 <td>
-                                                                    N/A
+                                                                    {% if item.latest_task_title %}{% if item.latest_task_title|length > 40 %}<span title="{{ item.latest_task_title }}">{{ item.latest_task_title[:37] }}...</span>{% else %}{{ item.latest_task_title }}{% endif %}{% else %}<span class="text-muted" title="This project has no tasks yet">No tasks yet</span>{% endif %}
                                                                 </td>
                                                             </tr>
                                                             {% endfor %}
@@ -454,5 +457,11 @@
 <script type="application/json" id="current-user-id">{% if current_user %}{{ current_user.member_id|tojson }}{% else %}null{% endif %}</script>
 <script type="application/json" id="users-data">{{ users_json|tojson }}</script>
 <script src="{{ url_for('static', filename='assets/js/pages/projects.init.js') }}"></script>
+<script>
+document.querySelectorAll('.progress-bar-dynamic').forEach(function (el) {
+  var pct = el.getAttribute('data-width-pct');
+  if (pct != null) el.style.width = pct + '%';
+});
+</script>
 
    {% endblock content %}

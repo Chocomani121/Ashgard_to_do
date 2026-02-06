@@ -160,9 +160,7 @@
                                             <select class="form-select" id="statusFilterDept">
                                                 <option value="all">Status: All</option>
                                                 <option value="Ongoing">Ongoing</option>
-                                                <option value="On Hold">O   
-                                                    
-                                                    n Hold</option>
+                                                <option value="On Hold">On Hold</option>
                                                 <option value="Completed">Completed</option>
                                             </select>
                                         </div>
@@ -262,7 +260,10 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                {{ item.project.progress or '0%' }}
+                                                {% set pct = item.progress_pct|default(0) %}
+                                                <div class="progress">
+                                                    <div class="progress-bar progress-bar-striped progress-bar-dynamic" role="progressbar" data-width-pct="{{ pct }}" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100">{{ pct }}%</div>
+                                                </div>
                                             </td>
                                             <td>
                                                 {{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}
@@ -271,7 +272,7 @@
                                                 {{ item.project.client_name or 'N/A' }}
                                             </td>
                                             <td>
-                                                N/A
+                                                {% if item.latest_task_title %}{% if item.latest_task_title|length > 40 %}<span title="{{ item.latest_task_title }}">{{ item.latest_task_title[:37] }}...</span>{% else %}{{ item.latest_task_title }}{% endif %}{% else %}<span class="text-muted" title="This project has no tasks yet">No tasks yet</span>{% endif %}
                                             </td>
                                         </tr>
                                         {% endfor %}
