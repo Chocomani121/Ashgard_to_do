@@ -5,6 +5,10 @@ from app import db
 from datetime import datetime, date, time
 from sqlalchemy import or_, text
 from sqlalchemy.exc import ProgrammingError, OperationalError
+<<<<<<< HEAD
+=======
+from sqlalchemy.orm import joinedload, selectinload
+>>>>>>> origin/feature_reports
 import json
 import random
 

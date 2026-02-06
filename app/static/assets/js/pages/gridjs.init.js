@@ -10,7 +10,6 @@ File: grid Js File
 /*
 Template Name: webadmin - Admin & Dashboard Template
 */
-
 document.addEventListener('DOMContentLoaded', function() {
     const tableEl = document.getElementById("companyWideReport");
     const containerEl = document.getElementById("table11-gridjs");
