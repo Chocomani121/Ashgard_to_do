@@ -18,27 +18,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!tableEl || !containerEl) return;
 
-    // 1. Extract clean data
+    // 1. Extract clean data (include reportId and nameText for clickable Name)
     const rows = Array.from(tableEl.querySelectorAll('tbody tr.company-wide-report-list-item'));
-    const allData = rows.map(tr => ({
-        start: tr.getAttribute('data-start'),
-        // Store text version for searching
-        text: tr.innerText.toLowerCase(),
-        cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML))
-    }));
+    const allData = rows.map(tr => {
+        const tds = tr.querySelectorAll('td');
+        const cells = Array.from(tds).map(td => gridjs.html(td.innerHTML));
+        return {
+            reportId: tr.getAttribute('data-report-id'),
+            start: tr.getAttribute('data-start'),
+            text: tr.innerText.toLowerCase(),
+            nameText: tds[0] ? tds[0].innerText.trim() : '',
+            cells: cells
+        };
+    });
 
-    // 2. Initialize Grid.js (Search set to FALSE to prevent focus bug)
+    // One cell per column: [Name payload, Start, End, Reviewer] so columns align
+    function rowToGridData(r) {
+        return [[r.reportId, r.nameText], r.cells[1], r.cells[2], r.cells[3]];
+    }
+
+    // 2. Initialize Grid.js with clickable Name column
     const grid = new gridjs.Grid({
-        columns: ["Name", "Start", "End", "Reviewer"],
-        data: allData.map(r => r.cells),
+        columns: [
+            {
+                name: 'Name',
+                formatter: (cell) => {
+                    var id = '';
+                    var name = '';
+                    if (Array.isArray(cell) && cell.length >= 2) {
+                        id = cell[0] != null ? String(cell[0]) : '';
+                        name = cell[1] != null ? String(cell[1]) : '';
+                    }
+                    return gridjs.html(
+                        '<a href="javascript:void(0)" class="company-wide-report-name-link text-dark text-decoration-none" data-report-id="' + escapeHtml(id) + '">' + escapeHtml(name) + '</a>'
+                    );
+                }
+            },
+            'Start',
+            'End',
+            'Reviewer'
+        ],
+        data: allData.map(rowToGridData),
         sort: true,
         pagination: { limit: 12 },
-        search: false, // We handle search manually now
+        search: false,
         style: {
             table: { 'font-size': '0.9rem' },
             th: { 'background-color': '#f8f9fa', 'color': '#495057', 'text-align': 'center' }
         }
     }).render(containerEl);
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
 
     // 3. COMBINED FILTER LOGIC (Search + Date)
     function applyFilters() {
@@ -64,7 +98,29 @@ document.addEventListener('DOMContentLoaded', function() {
             return matchesSearch && matchesDate;
         });
 
-        grid.updateConfig({ data: filtered.map(r => r.cells) }).forceRender();
+        grid.updateConfig({ data: filtered.map(rowToGridData) }).forceRender();
+    }
+
+    // 4. Delegate click on name link -> open report modal
+    const reportsDataEl = document.getElementById('reports-data');
+    if (reportsDataEl && typeof bootstrap !== 'undefined') {
+        const reportsData = JSON.parse(reportsDataEl.textContent);
+        const modalEl = document.getElementById('companyWideReportModal');
+        const bsModal = modalEl ? new bootstrap.Modal(modalEl) : null;
+        containerEl.addEventListener('click', function(e) {
+            const link = e.target.closest('.company-wide-report-name-link');
+            if (!link || !bsModal) return;
+            const reportId = link.getAttribute('data-report-id');
+            const report = reportsData.find(function(r) { return r.report_id == reportId; });
+            if (!report) return;
+            document.getElementById('companyWideModalTitle').textContent = 'Weekly-' + (report.author_name || '') + ' (' + (report.week_name || '') + ')';
+            document.getElementById('companyWideModalReviewer').textContent = report.reviewer_name || '—';
+            document.getElementById('companyWideModalCC').textContent = report.cc_names || '—';
+            document.getElementById('companyWideModalDepartment').textContent = report.department_name || '—';
+            document.getElementById('companyWideModalCreated').textContent = report.created_on || '—';
+            document.getElementById('companyWideModalBody').innerHTML = report.report_content || '';
+            bsModal.show();
+        });
     }
 
     // Listen for typing (Search)

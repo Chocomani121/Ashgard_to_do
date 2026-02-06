@@ -993,34 +993,5 @@ function appendComment(comment) {
     list.insertAdjacentHTML('beforeend', commentHtml);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Grab the JSON you already have in your <script> tag
-    const reportsData = JSON.parse(document.getElementById('reports-data').textContent);
-    const reportModalElement = document.getElementById('companyWideReportModal');
-    const bsModal = new bootstrap.Modal(reportModalElement);
-
-    // Listen for clicks on the table rows
-    document.querySelectorAll('.clickable-row').forEach(row => {
-        row.addEventListener('click', function() {
-            const reportId = this.getAttribute('data-report-id');
-            
-            // Find the report in your JSON array by ID
-            const report = reportsData.find(r => r.report_id == reportId);
-
-            if (report) {
-                // Populate metadata
-                document.getElementById('companyWideModalTitle').innerText = `Weekly-${report.author_name} (${report.week_name})`;
-                document.getElementById('companyWideModalReviewer').innerText = report.reviewer_name || '—';
-                document.getElementById('companyWideModalCC').innerText = report.cc_list || 'None';
-                document.getElementById('companyWideModalDepartment').innerText = report.department_name || 'N/A';
-                document.getElementById('companyWideModalCreated').innerText = report.created_at;
-
-                // POPULATE CONTENT: Injects the <strong>, <ol>, and <li> tags from your DB
-                document.getElementById('companyWideModalBody').innerHTML = report.report_content;
-
-                bsModal.show();
-            }
-        });
-    });
-});
+// Company-wide report modal is opened from gridjs.init.js when clicking the Name link in the grid
 
