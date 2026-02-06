@@ -27,6 +27,13 @@
         <link href="{{ url_for('static', filename='assets/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
         <!-- choices css -->
         <link href="{{ url_for('static', filename='assets/libs/choices.js/public/assets/styles/choices.min.css') }}" rel="stylesheet" type="text/css" />
+        
+        <!-- alertifyjs Css -->
+        <link href="{{ url_for('static', filename='assets/libs/alertifyjs/build/css/alertify.min.css') }}" rel="stylesheet" type="text/css" />
+
+        <!-- alertifyjs default themes  Css -->
+        <link href="{{ url_for('static', filename='assets/libs/alertifyjs/build/css/themes/default.min.css') }}" rel="stylesheet" type="text/css" />
+        
 
         <!-- color picker css -->
         <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/@simonwep/pickr/themes/classic.min.css') }}"/> <!-- 'classic' theme -->
@@ -91,7 +98,7 @@
                         <div id="sidebar-menu">
                             <!-- Left Menu Start -->
                             <ul class="metismenu list-unstyled" id="side-menu">
-                                <li class="menu-title" data-key="t-menu">Dashboard</li>
+                                <li class="menu-title" data-key="t-menu">Workload</li>
 
                             <li>
                                 <a href="{{ url_for('main.projects') }}">
@@ -99,15 +106,20 @@
                                     <span class="menu-item" href="{{ url_for('main.projects') }}" data-key="t-dashboard">Projects</span>
                                 </a>
                             </li>
-
-                            <li class="menu-title" data-key="t-applications">Tasks</li>
-
                             <li>
                                 <a href="{{ url_for('main.tasks') }}">
                                     <i class="bx bx-task icon nav-icon"></i>
                                     <span class="menu-item" data-key="t-calendar">Tasks</span>
                                 </a>
-                            </li>   
+                            </li> 
+                            <li>
+                                <a href="{{ url_for('main.approvals') }}">
+                                   <i class="bx bx-list-check icon nav-icon"></i>
+                                   <span class="menu-item ms-1" data-key="t-todo" >Approvals</span><span class="badge bg-danger ms-1 ms-auto">2</span></span>
+                               </a> 
+                            </li> 
+
+                            <li class="menu-title" data-key="t-applications">General</li>
 
                             <li>
                                 <a href="{{ url_for('main.all_departments') }}" >
@@ -117,6 +129,12 @@
 
                             </li>
 
+                            <li>
+                                <a href="{{ url_for('main.members') }}" >
+                                    <i class="bx bx-group icon nav-icon"></i>
+                                    <span class="menu-item" data-key="t-todo">Members</span>
+                                </a>
+                            </li>
                             
                             <li>
                                 <a href="{{ url_for('main.reports') }}" >
@@ -124,18 +142,6 @@
                                     <span class="menu-item" data-key="t-todo">Reports</span>
                                 </a>
                             </li>
-
-                            <li>
-                                <a href="{{ url_for('main.members') }}" >
-                                    <i class="bx bx-group icon nav-icon"></i>
-                                    <span class="menu-item" data-key="t-todo">Members</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ url_for('main.approvals') }}" class="border border-success">
-                                   <i class="bx bx-list-check icon nav-icon text-success"></i>
-                                   <span class="menu-item text-success" data-key="t-todo">Approvals</span><span class="position-absolute top-0 start-100 translate-middle badge border border-light rounded-circle bg-danger p-1"><span class="visually-hidden">unread messages</span></span>
-                               </a>    
                         </ul>
                     </div>
                     <!-- Sidebar -->
@@ -305,6 +311,7 @@
         <script src="{{ url_for('static', filename='assets/js/app.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/jsvectormap/js/jsvectormap.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/jsvectormap/maps/world-merc.js') }}"></script>
+
         <!-- ApexCharts must load before dashboard.init (donut chart on project_details) -->
         <script src="{{ url_for('static', filename='assets/libs/apexcharts/apexcharts.min.js') }}"></script>
 
@@ -317,7 +324,7 @@
         <!-- Sweet alert init js-->
         <script src="{{ url_for('static', filename='assets/js/pages/sweet-alerts.init.js') }}"></script>
         <!-- Select2 JS -->
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
+        <!-- <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script> -->
         <!-- Custom Js -->
          <script src="{{ url_for('static', filename='assets/custom/script.js') }}"></script>
 
@@ -334,7 +341,7 @@
         <!-- Charts and Apex JS -->
         <script src="{{ url_for('static', filename='assets/libs/apexcharts/apexcharts.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/chart.js/chart.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='assets/js/pages/chartjs.init.js') }}"></script> 
+        <script src="{{ url_for('static', filename='assets/js/pages/chartjs.init.js') }}"></script>
 
         <!-- ckeditor -->
         <script src="{{ url_for('static', filename='assets/libs/@ckeditor/ckeditor5-build-classic/build/ckeditor.js') }}"></script>
@@ -354,15 +361,16 @@
 
         <!-- swiper js -->
         <script src="{{ url_for('static', filename='assets/libs/swiper/swiper-bundle.min.js')}}"></script>
+
+        <!-- alertifyjs js -->
+        <script src="{{ url_for('static', filename='assets/libs/alertifyjs/build/alertify.min.js') }}"></script>
+        <!-- notification init -->
+        <script src="{{ url_for('static', filename='assets/js/pages/notification.init.js') }}"></script>
         
         <!-- nouisliderribute js -->
         <script src="{{ url_for('static', filename='assets/libs/nouislider/nouislider.min.js')}}"></script>
         <script src="{{url_for('static', filename='assets/libs/wnumb/wNumb.min.js')}}"></script>
 
-       <!-- alertifyjs js -->
-       <script src="{{ url_for('static', filename='assets/libs/alertifyjs/build/alertify.min.js') }}"></script>
-       <!-- notification init -->
-       <script src="{{ url_for('static', filename='assets/js/pages/notification.init.js') }}"></script>
     </body>
 
 </html>

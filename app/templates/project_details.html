@@ -10,7 +10,16 @@
                                 <li class="breadcrumb-item active" aria-current="page">Project Details</li>
                             </ol>
                         </nav>
-
+                        <!-- {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
+                        {% endif %}
+                        {% endwith %} -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
+                        {% endif %}
+                        {% endwith %}
                  <div class="row">
                 <div class="col-xl-7">
                     <!-- PROJECT OVERVIEW (Sticky Card) -->
@@ -96,21 +105,24 @@
                                     <div class="col-xl-6 col-md-5">
 
                                         <div class="text-center">
-                                            <!-- DONUT CHART -->
+                                            <!-- DONUT CHART (series from task counts: completed, ongoing) -->
                                             <div
                                                 id="saleing-categories"
                                                 class="apex-charts mb-3"
                                                 data-colors='["#28b765", "#f4c238c2"]'
+                                                data-task-completed="{{ task_completed_count|default(0) }}"
+                                                data-task-ongoing="{{ task_ongoing_count|default(0) }}"
+                                                data-progress-pct="{{ progress_pct|default(0) }}"
                                                 dir="ltr">
                                             </div>
 
-                                            <!-- LEGEND -->
+                                            <!-- LEGEND (percentages from task counts) -->
                                             <div class="row pt-1">
                                                 <div class="col-6">
                                                     <div class="d-flex align-items-center">
                                                         <i class="mdi mdi-circle font-size-10 text-success"></i>
                                                         <p class="mb-0 ms-2">Completed</p>
-                                                        <span class="ms-2 fw-bold">60%</span>
+                                                        <span class="ms-2 fw-bold">{{ task_completed_pct|default(0) }}%</span>
                                                     </div>
                                                 </div>
 
@@ -118,7 +130,7 @@
                                                     <div class="d-flex align-items-center">
                                                         <i class="mdi mdi-circle font-size-10 text-warning"></i>
                                                         <p class="mb-0 ms-2">Ongoing</p>
-                                                        <span class="ms-2 fw-bold">40%</span>
+                                                        <span class="ms-2 fw-bold">{{ task_ongoing_pct|default(0) }}%</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -136,7 +148,7 @@
                                                 Approved
                                             </span>
                                             <span class="fw-bold fs-3">
-                                                4
+                                                {{ task_completed_count|default(0) }}
                                             </span>
                                         </div>
 
@@ -145,7 +157,7 @@
                                                 Ongoing
                                             </span>
                                             <span class="fw-bold fs-3 ">
-                                                1
+                                                {{ task_ongoing_count|default(0) }}
                                             </span>
                                         </div>
 
@@ -181,7 +193,7 @@
                                         <div class="assigned-members overflow-auto pe-4 ps-4" style="max-height: 260px;"> 
                                             <ul class="list-unstyled mb-0">
                                                 {% if manager %}
-                                                <li class="d-flex align-items-center mb-4">
+                                                <li class="d-flex align-items-center mb-3">
                                                     <img src="{{ url_for('static', filename='profile_pics/' + manager.image_file) }}" class="rounded-circle avatar-sm me-3" alt="{{ manager.name or manager.username }}">
                                                     <div>
                                                         <h6 class="mb-0 font-size-16 fw-bold">{{ manager.name if manager.name else manager.username }}</h6>
@@ -192,11 +204,11 @@
                                                 {% if assigned_members %}
                                                     {% for member_info in assigned_members %}
                                                     {% if not project.project_manager or member_info.user.member_id != project.project_manager %}
-                                                    <li class="d-flex align-items-center mb-4">
+                                                    <li class="d-flex align-items-center mb-2">
                                                         <img src="{{ url_for('static', filename='profile_pics/' + member_info.user.image_file) }}" class="rounded-circle avatar-sm me-3" alt="{{ member_info.user.name or member_info.user.username }}">
                                                         <div>
                                                             <h6 class="mb-0 font-size-16 fw-bold">{{ member_info.user.name if member_info.user.name else member_info.user.username }}</h6>
-                                                            <small class="text-muted font-size-13">{{ member_info.role }}</small>
+                                                            <!-- <small class="text-muted font-size-13">{{ member_info.role }}</small> -->
                                                         </div>
                                                     </li>
                                                     {% endif %}
@@ -248,8 +260,7 @@
        
 
                         </div>
-                            <div class="row mt-2">
-                                <div class="col-12">
+                                <div class="container-fluid">
                                     <div class="card">
                                         <div class="card-header d-flex align-items-center justify-content-between">
                                             <h4 class="card-title mb-0">Tasks</h4>
@@ -346,7 +357,6 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
                         </div>
                         <!-- end row -->
@@ -431,6 +441,18 @@
                                         <div class="mb-3">
                                             <label class="form-label" for="CreateTask-Description">Description</label>
                                             <textarea class="form-control" name="task_description" id="CreateTask-Description" rows="3" placeholder="Enter task description"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="CreateTask-StartDate">Start date</label>
+                                            <input type="date" class="form-control" name="start_date" id="CreateTask-StartDate">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="CreateTask-EndDate">End date</label>
+                                            <input type="date" class="form-control" name="end_date" id="CreateTask-EndDate">
                                         </div>
                                     </div>
                                </div>

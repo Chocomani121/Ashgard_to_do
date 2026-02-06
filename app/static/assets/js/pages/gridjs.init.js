@@ -6,6 +6,7 @@ Contact: Themesdesign@gmail.com
 File: grid Js File
 */
 
+
 // 1. Department-Wide Projects Table (with filters)
 document.addEventListener('DOMContentLoaded', function() {
     let grid1 = null;
@@ -108,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
             grid1 = new gridjs.Grid({
                 columns: ["Project Name", "Priority", "Start Date", "Deadline", "Status", "Progress", "Project Manager", "Client", "Last Tasks"],
                 data: getFilteredData().map(row => row.cells),
-                pagination: { limit: 5 },
+                pagination: { limit: 10 },
                 sort: true,
                 search: false, // Disable built-in search, handle manually
                 className: { table: "table table-centered align-middle" }
@@ -140,6 +141,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             
+            // Handle search input
+            const searchInput1 = document.getElementById('searchDeptProjects');
+            if (searchInput1) {
+                let searchTimeout1;
+                searchInput1.addEventListener('input', function() {
+                    clearTimeout(searchTimeout1);
+                    searchTimeout1 = setTimeout(() => {
+                        currentFilters1.search = this.value.trim();
+                        updateGrid();
+                    }, 300);
+                });
+            }
+            
             // Initialize Flatpickr date range picker
             const dateRangeInput = document.getElementById('datepicker-range');
             if (dateRangeInput) {
@@ -156,13 +170,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                         selectedDates[1].toISOString().split('T')[0]
                                     ];
                                     updateGrid();
-                                } else if (selectedDates.length === 0) {
-                                    currentFilters1.dateRange = null;
+                                } else if (selectedDates.length === 1) {
+                                    // Single date: filter to projects active on that day (same start and end)
+                                    const d = selectedDates[0].toISOString().split('T')[0];
+                                    currentFilters1.dateRange = [d, d];
                                     updateGrid();
-                                }
-                            },
-                            onClose: function(selectedDates, dateStr, instance) {
-                                if (selectedDates.length === 1) {
+                                } else if (selectedDates.length === 0) {
                                     currentFilters1.dateRange = null;
                                     updateGrid();
                                 }
@@ -197,126 +210,41 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// 2. Company Table
-const table2Req = document.getElementById("projectsTableCompany");
-const table2Res = document.getElementById("table2-gridjs");
-if (table2Req && table2Res) {
-    new gridjs.Grid({
-        from: table2Req,
+document.addEventListener('DOMContentLoaded', function() {
+    const tbl = document.getElementById("projectsTableCompany");
+    const container = document.getElementById("table2-gridjs");
+    if (!tbl || !container || typeof gridjs === 'undefined') return;
+
+    const rows = Array.from(tbl.querySelectorAll('tbody tr'));
+    const allData2 = rows.map(tr => ({
+        cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML)),
+        searchText: Array.from(tr.querySelectorAll('td')).map(td => td.textContent || '').join(' ').toLowerCase()
+    }));
+
+    let search2 = '';
+    const filtered = () => allData2.filter(row => !search2 || row.searchText.includes(search2.toLowerCase()));
+    const grid2 = new gridjs.Grid({
+        columns: ["Project Name", "Start Date", "Deadline", "Status", "Progress", "Project Manager", "Client", "Department", "Last Tasks"],
+        data: filtered().map(row => row.cells),
         pagination: { limit: 10 },
         sort: true,
-        search: true,
+        search: false,
         className: { table: "table table-centered align-middle" }
-    }).render(table2Res);
-}
+    }).render(container);
 
-// 3. Task Table
-const table3Req = document.getElementById("projectsTableTask");
-const table3Res = document.getElementById("table3-gridjs");
-if (table3Req && table3Res) {
-    new gridjs.Grid({
-        from: table3Req,
-        pagination: { limit: 5 },
-        sort: true,
-        search: true,
-        className: { table: "table table-centered align-middle" }
-    }).render(table3Res);
-}
-
-// 4. Profile Table
-const table4Req = document.getElementById("projectsTableProfile");
-const table4Res = document.getElementById("table4-gridjs");
-if (table4Req && table4Res) {
-    new gridjs.Grid({
-        from: table4Req,
-        pagination: { limit: 5 },
-        sort: true,
-        search: true,
-        className: { table: "table table-centered align-middle" }
-    }).render(table4Res);
-}
-
-// 5. Task Details Table
-const table5Req = document.getElementById("projectsTableTaskDetails");
-const table5Res = document.getElementById("table5-gridjs");
-if (table5Req && table5Res) {
-    new gridjs.Grid({
-        from: table5Req,
-        pagination: { limit: 5 },
-        sort: true,
-        search: true,
-        className: { table: "table table-centered align-middle" }
-    }).render(table5Res);
-}
-
-// 5. Task Details Table PM
-const table6Req = document.getElementById("projectsTableTaskDetailsPM");
-const table6Res = document.getElementById("table6-gridjs");
-if (table6Req && table6Res) {
-    new gridjs.Grid({
-        from: table6Req,
-        pagination: { limit: 5 },
-        sort: true,
-        search: true,
-        className: { table: "table table-centered align-middle" }
-    }).render(table6Res);
-}
-
-// 10. Approval Table
-const table10Req = document.getElementById("projectsApproval");
-const table10Res = document.getElementById("table10-gridjs");
-if (table10Req && table10Res) {
-    new gridjs.Grid({
-        from: table10Req,
-        pagination: { limit: 5 },
-        sort: true,
-        search: true,
-        className: { table: "table table-centered align-middle" }
-    }).render(table10Res);
-}
-
-// 11. company wide Table in reports
-const table11Req = document.getElementById("companyWideReport");
-const table11Res = document.getElementById("table11-gridjs");
-if (table11Req && table11Res) {
-    const grid11 = new gridjs.Grid({
-        from: table11Req,
-        pagination: { limit: 15 },
-        sort: false,
-        search: true,
-        className: { table: "table table-centered align-middle" }
-    });
-    grid11.render(table11Res);
-
-    function moveDatePickerBesideSearch() {
-        var datePickerEl = document.getElementById("datepicker-range");
-        if (!datePickerEl) return;
-        var datePickerParent = datePickerEl.closest(".input-group");
-        if (!datePickerParent) return;
-        var head = table11Res.querySelector(".gridjs-head");
-        if (!head) return;
-        head.style.display = "flex";
-        head.style.alignItems = "center";
-        head.style.gap = "0.75rem";
-        head.style.flexWrap = "wrap";
-        head.appendChild(datePickerParent);
+    const searchEl = document.getElementById('searchCompanyProjects');
+    if (searchEl) {
+        let t;
+        searchEl.addEventListener('input', function() {
+            clearTimeout(t);
+            t = setTimeout(() => {
+                search2 = this.value.trim();
+                grid2.updateConfig({ data: filtered().map(row => row.cells) }).forceRender();
+            }, 300);
+        });
     }
+});
 
-    setTimeout(moveDatePickerBesideSearch, 200);
-}
-
-//Members table
-const table7Req = document.getElementById("projectsTableMembers");
-const table7Res = document.getElementById("table7-gridjs");
-if (table7Req && table7Res) {
-    new gridjs.Grid({
-        from: table7Req,
-        pagination: { limit: 10 },
-        sort: true,
-        search: true,
-        className: { table: "table table-centered align-middle" }
-    }).render(table7Res);
-}
 // 6. Department Projects Table (from all_departments.html)
 document.addEventListener('DOMContentLoaded', function() {
     let grid = null;
@@ -504,13 +432,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                         selectedDates[1].toISOString().split('T')[0]
                                     ];
                                     updateGrid();
-                                } else if (selectedDates.length === 0) {
-                                    currentFilters.dateRange = null;
+                                } else if (selectedDates.length === 1) {
+                                    // Single date: filter to projects active on that day (same start and end)
+                                    const d = selectedDates[0].toISOString().split('T')[0];
+                                    currentFilters.dateRange = [d, d];
                                     updateGrid();
-                                }
-                            },
-                            onClose: function(selectedDates, dateStr, instance) {
-                                if (selectedDates.length === 1) {
+                                } else if (selectedDates.length === 0) {
                                     currentFilters.dateRange = null;
                                     updateGrid();
                                 }
@@ -544,3 +471,145 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
 });
+
+// ------Company-wide Reports Table-------
+document.addEventListener('DOMContentLoaded', function() {
+    const tableEl = document.getElementById("companyWideReport");
+    const containerEl = document.getElementById("table11-gridjs");
+    const dateInput = document.getElementById('datepicker-range');
+    const searchInput = document.getElementById('custom-grid-search'); // Our new input
+
+    if (!tableEl || !containerEl) return;
+
+    // 1. Extract clean data (include reportId and nameText for clickable Name)
+    const rows = Array.from(tableEl.querySelectorAll('tbody tr.company-wide-report-list-item'));
+    const allData = rows.map(tr => {
+        const tds = tr.querySelectorAll('td');
+        const cells = Array.from(tds).map(td => gridjs.html(td.innerHTML));
+        return {
+            reportId: tr.getAttribute('data-report-id'),
+            start: tr.getAttribute('data-start'),
+            text: tr.innerText.toLowerCase(),
+            nameText: tds[0] ? tds[0].innerText.trim() : '',
+            cells: cells
+        };
+    });
+
+    // One cell per column: [Name payload, Start, End, Reviewer] so columns align
+    function rowToGridData(r) {
+        return [[r.reportId, r.nameText], r.cells[1], r.cells[2], r.cells[3]];
+    }
+
+    // 2. Initialize Grid.js with clickable Name column
+    const grid = new gridjs.Grid({
+        columns: [
+            {
+                name: 'Name',
+                formatter: (cell) => {
+                    var id = '';
+                    var name = '';
+                    if (Array.isArray(cell) && cell.length >= 2) {
+                        id = cell[0] != null ? String(cell[0]) : '';
+                        name = cell[1] != null ? String(cell[1]) : '';
+                    }
+                    return gridjs.html(
+                        '<a href="javascript:void(0)" class="company-wide-report-name-link text-dark text-decoration-none" data-report-id="' + escapeHtml(id) + '">' + escapeHtml(name) + '</a>'
+                    );
+                }
+            },
+            'Start',
+            'End',
+            'Reviewer'
+        ],
+        data: allData.map(rowToGridData),
+        sort: true,
+        pagination: { limit: 12 },
+        search: false,
+        style: {
+            table: { 'font-size': '0.9rem' },
+            th: { 'background-color': '#f8f9fa', 'color': '#495057', 'text-align': 'center' }
+        }
+    }).render(containerEl);
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // 3. COMBINED FILTER LOGIC (Search + Date)
+    function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase();
+        let startRange = null;
+        let endRange = null;
+
+        // Get dates if flatpickr is active
+        if (dateInput._flatpickr && dateInput._flatpickr.selectedDates.length === 2) {
+            startRange = dateInput._flatpickr.selectedDates[0].setHours(0,0,0,0);
+            endRange = dateInput._flatpickr.selectedDates[1].setHours(23,59,59,999);
+        }
+
+        const filtered = allData.filter(row => {
+            const matchesSearch = row.text.includes(searchTerm);
+            let matchesDate = true;
+
+            if (startRange && endRange) {
+                const itemDate = new Date(row.start).getTime();
+                matchesDate = itemDate >= startRange && itemDate <= endRange;
+            }
+
+            return matchesSearch && matchesDate;
+        });
+
+        grid.updateConfig({ data: filtered.map(rowToGridData) }).forceRender();
+    }
+
+    // 4. Delegate click on name link -> open report modal
+    const reportsDataEl = document.getElementById('reports-data');
+    if (reportsDataEl && typeof bootstrap !== 'undefined') {
+        const reportsData = JSON.parse(reportsDataEl.textContent);
+        const modalEl = document.getElementById('companyWideReportModal');
+        const bsModal = modalEl ? new bootstrap.Modal(modalEl) : null;
+        containerEl.addEventListener('click', function(e) {
+            const link = e.target.closest('.company-wide-report-name-link');
+            if (!link || !bsModal) return;
+            const reportId = link.getAttribute('data-report-id');
+            const report = reportsData.find(function(r) { return r.report_id == reportId; });
+            if (!report) return;
+            document.getElementById('companyWideModalTitle').textContent = 'Weekly-' + (report.author_name || '') + ' (' + (report.week_name || '') + ')';
+            document.getElementById('companyWideModalReviewer').textContent = report.reviewer_name || '—';
+            document.getElementById('companyWideModalCC').textContent = report.cc_names || '—';
+            document.getElementById('companyWideModalDepartment').textContent = report.department_name || '—';
+            document.getElementById('companyWideModalCreated').textContent = report.created_on || '—';
+            document.getElementById('companyWideModalBody').innerHTML = report.report_content || '';
+            bsModal.show();
+        });
+    }
+
+    // Listen for typing (Search)
+    searchInput.addEventListener('input', applyFilters);
+
+    // Listen for Date changes
+    if (dateInput && typeof flatpickr !== 'undefined') {
+        flatpickr(dateInput, {
+            mode: "range",
+            dateFormat: "Y-m-d",
+            onChange: applyFilters,
+            onClear: applyFilters
+        });
+    }
+});
+
+// 10. Approval Table
+const table10Req = document.getElementById("projectsApproval");
+const table10Res = document.getElementById("table10-gridjs");
+if (table10Req && table10Res) {
+    new gridjs.Grid({
+        from: table10Req,
+        pagination: { limit: 10 },
+        sort: true,
+        search: true,
+        className: { table: "table table-centered align-middle" }
+    }).render(table10Res);
+}
+

@@ -126,6 +126,90 @@ if (ownerList && ownerInput) {
     renderSelected();
 }
 
+// Create Task form (project_details): set owner_id from Assign Members; validate start/end date
+document.addEventListener("DOMContentLoaded", function() {
+    var createTaskForm = document.getElementById("createTaskForm");
+    var createTaskOwnerId = document.getElementById("createTaskOwnerId");
+    var startDateInput = document.getElementById("CreateTask-StartDate");
+    var endDateInput = document.getElementById("CreateTask-EndDate");
+
+    // End date cannot be before start date: set min/max on date inputs
+    if (startDateInput && endDateInput) {
+        startDateInput.addEventListener("change", function() {
+            endDateInput.min = startDateInput.value || "";
+            if (endDateInput.value && endDateInput.value < startDateInput.value) {
+                endDateInput.value = startDateInput.value;
+            }
+        });
+        endDateInput.addEventListener("change", function() {
+            startDateInput.max = endDateInput.value || "";
+            if (startDateInput.value && startDateInput.value > endDateInput.value) {
+                startDateInput.value = endDateInput.value;
+            }
+        });
+    }
+
+    if (createTaskForm && createTaskOwnerId) {
+        createTaskForm.addEventListener("submit", function(e) {
+            var so = window.selectedOwners;
+            if (!so || so.length === 0) {
+                e.preventDefault();
+                if (typeof Swal !== "undefined") {
+                    Swal.fire({ icon: "warning", text: "Please select at least one member to assign." });
+                } else {
+                    alert("Please select at least one member to assign.");
+                }
+                return false;
+            }
+            // End date cannot be before start date
+            if (startDateInput && endDateInput && startDateInput.value && endDateInput.value) {
+                if (endDateInput.value < startDateInput.value) {
+                    e.preventDefault();
+                    if (typeof Swal !== "undefined") {
+                        Swal.fire({ icon: "warning", text: "End date cannot be before start date." });
+                    } else {
+                        alert("End date cannot be before start date.");
+                    }
+                    return false;
+                }
+            }
+            createTaskOwnerId.value = so[0].id;
+        });
+    }
+
+    // Edit Task form (task_details): end date cannot be before start date
+    var editTaskForm = document.getElementById("editTaskForm");
+    var editStartDateInput = document.getElementById("editTaskStartDate");
+    var editEndDateInput = document.getElementById("editTaskEndDate");
+    if (editStartDateInput && editEndDateInput) {
+        editStartDateInput.addEventListener("change", function() {
+            editEndDateInput.min = editStartDateInput.value || "";
+            if (editEndDateInput.value && editEndDateInput.value < editStartDateInput.value) {
+                editEndDateInput.value = editStartDateInput.value;
+            }
+        });
+        editEndDateInput.addEventListener("change", function() {
+            editStartDateInput.max = editEndDateInput.value || "";
+            if (editStartDateInput.value && editStartDateInput.value > editEndDateInput.value) {
+                editStartDateInput.value = editEndDateInput.value;
+            }
+        });
+    }
+    if (editTaskForm && editStartDateInput && editEndDateInput) {
+        editTaskForm.addEventListener("submit", function(e) {
+            if (editStartDateInput.value && editEndDateInput.value && editEndDateInput.value < editStartDateInput.value) {
+                e.preventDefault();
+                if (typeof Swal !== "undefined") {
+                    Swal.fire({ icon: "warning", text: "End date cannot be before start date." });
+                } else {
+                    alert("End date cannot be before start date.");
+                }
+                return false;
+            }
+        });
+    }
+});
+
 function toggleInput(btn, className) {
 
     const parent = btn.closest('.flex-grow-1');
@@ -202,6 +286,31 @@ function confirmDelete(memberName, memberId) {
         if (result.isConfirmed) {
             // Redirect to the Flask route you created
             window.location.href = "/delete_member/" + memberId;
+        }
+    });
+}
+
+// Delete SweetAlert for Task (submits hidden form to delete_task route)
+function confirmDeleteTask(taskName) {
+    var form = document.getElementById("deleteTaskForm");
+    if (!form) return;
+    if (typeof Swal === "undefined") {
+        if (window.confirm("Are you sure you want to delete " + (taskName || "this task") + "? You won't be able to revert this!")) {
+            form.submit();
+        }
+        return;
+    }
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You are about to delete " + (taskName || "this task") + ". You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#51d28c",
+        cancelButtonColor: "#f34e4e",
+        confirmButtonText: "Yes, delete it!"
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            form.submit();
         }
     });
 }
@@ -341,3 +450,5 @@ document.addEventListener("DOMContentLoaded", function () {
         sel.appendChild(opt);
     }
 });
+
+

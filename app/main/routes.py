@@ -1,21 +1,32 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, SubTask,  Report, ReportCC, Comment
+from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, TaskAssignee, SubTask,  Report, ReportCC, Comment
 from app import db 
 from datetime import datetime, date, time
-from sqlalchemy import or_
+from sqlalchemy import or_, text
+from sqlalchemy.exc import ProgrammingError, OperationalError
+from sqlalchemy.orm import joinedload, selectinload
 import json
+import random
 
 main = Blueprint('main', __name__)
+
+
+def _generate_task_code():
+    """Return a unique task code in the form TK#### (e.g. TK0001, TK4721)."""
+    for _ in range(100):
+        code = 'TK{:04d}'.format(random.randint(0, 9999))
+        if not Task.query.filter_by(generated_code=code).first():
+            return code
+    raise ValueError('Could not generate unique task code')
 
 @main.route("/")
 @main.route("/projects") 
 # @cache.cached(timeout=60)
 @login_required
 def projects():
-    # Fetch all projects with related data
-    
-    projects = Project.query.all()
+    # Fetch all projects with related data (newest first)
+    projects = Project.query.order_by(Project.project_id.desc()).all()
     departments = Department.query.all()
     users = User.query.all()
     
@@ -85,8 +96,8 @@ def all_departments():
     departments = Department.query.all()
     # Get all users (we'll filter unassigned ones in JavaScript for dropdown, but need all for Edit modal)
     users = User.query.all()
-    projects = Project.query.all()
-    # Build department projects data for the Department Projects table
+    # Build department projects data for the Department Projects table (newest first)
+    projects = Project.query.order_by(Project.project_id.desc()).all()
     dept_projects_data = []
     for project in projects:
         dept = Department.query.get(project.department_id) if project.department_id else None
@@ -225,39 +236,58 @@ def reports():
         for u in users
     ]
     
-    # Admin sees all reports; non-admin sees only reports they're author, reviewer, or CC on
+    report_options = [
+        joinedload(Report.author).joinedload(User.dept_info),
+        joinedload(Report.reviewer_user),
+        selectinload(Report.cc_entries).joinedload(ReportCC.user),
+        selectinload(Report.comments).joinedload(Comment.author),
+    ]
+
     if getattr(current_user, 'account_type', None) == 'admin':
-        reports_q = Report.query.order_by(Report.created_on.desc()).all()
+        reports_q = (
+            Report.query
+            .options(*report_options)
+            .order_by(Report.created_on.desc())
+            .all()
+        )
     else:
-        reports_q = Report.query.filter(
-            or_(
-                Report.member_id == current_user.member_id,
-                Report.reviewer_id == current_user.member_id,
-                Report.report_id.in_(
-                    db.session.query(ReportCC.report_id).filter(ReportCC.member_id == current_user.member_id)
+        reports_q = (
+            Report.query
+            .options(*report_options)
+            .filter(
+                or_(
+                    Report.member_id == current_user.member_id,
+                    Report.reviewer_id == current_user.member_id,
+                    Report.report_id.in_(
+                        db.session.query(ReportCC.report_id).filter(
+                            ReportCC.member_id == current_user.member_id
+                        )
+                    ),
                 )
             )
-        ).order_by(Report.created_on.desc()).all()
+            .order_by(Report.created_on.desc())
+            .all()
+        )
 
     pending_reports = [r for r in reports_q if not r.is_checked]
     reviewed_reports = [r for r in reports_q if r.is_checked]
-    
-       # CC tab: admin sees all reports; non-admin sees only reports where they're reviewer or in CC
+
     if getattr(current_user, 'account_type', None) == 'admin':
-        cc_reports = reports_q  # Admin sees all
+        cc_reports = reports_q
+        company_wide_reports = reports_q
     else:
-        cc_reports = Report.query.filter(
-            or_(
-                Report.reviewer_id == current_user.member_id,
-                Report.report_id.in_(
-                    db.session.query(ReportCC.report_id).filter(ReportCC.member_id == current_user.member_id)
-                )
-            )
-        ).order_by(Report.created_on.desc()).all()
-    
-    # Company-wide: all reports from all users, no restriction
-    company_wide_reports = Report.query.order_by(Report.created_on.desc()).all()
-    # reports_json must include all reports for Company-wide detail lookup to work
+        cc_reports = [
+            r for r in reports_q
+            if r.reviewer_id == current_user.member_id
+            or any(cc.member_id == current_user.member_id for cc in (r.cc_entries or []))
+        ]
+        company_wide_reports = (
+            Report.query
+            .options(*report_options)
+            .order_by(Report.created_on.desc())
+            .all()
+        )
+
     reports_json = [_report_to_dict(r) for r in company_wide_reports]
 
     return render_template(
@@ -430,10 +460,10 @@ def project_details(id=None):
                         'role': project_member.role or 'Team Member'
                     })
     
-    # Get tasks for this project
+    # Get tasks for this project (newest first)
     tasks = []
     if project:
-        project_tasks = Task.query.filter_by(project_id=project.project_id).all()
+        project_tasks = Task.query.filter_by(project_id=project.project_id).order_by(Task.task_id.desc()).all()
         for task in project_tasks:
             # Get task owner
             owner = None
@@ -482,6 +512,14 @@ def project_details(id=None):
     ]
     is_project_manager = (current_user.member_id == project.project_manager) if project.project_manager else False
 
+    # Task progress for donut chart: count completed vs ongoing, compute percentages
+    task_completed_count = sum(1 for t in tasks if t.get('status') == 'Completed')
+    task_ongoing_count = sum(1 for t in tasks if t.get('status') == 'Ongoing')
+    task_total = len(tasks)
+    task_completed_pct = round(task_completed_count / task_total * 100, 1) if task_total else 0
+    task_ongoing_pct = round(task_ongoing_count / task_total * 100, 1) if task_total else 0
+    progress_pct = task_completed_pct  # center label: progress = completed %
+
     return render_template('project_details.html',
                          project=project,
                          manager=manager,
@@ -494,7 +532,13 @@ def project_details(id=None):
                          users_json=users_json,
                          edit_initial_members_json=edit_initial_members_json,
                          task_assignable_members=task_assignable_members,
-                         is_project_manager=is_project_manager)
+                         is_project_manager=is_project_manager,
+                         task_completed_count=task_completed_count,
+                         task_ongoing_count=task_ongoing_count,
+                         task_total=task_total,
+                         task_completed_pct=task_completed_pct,
+                         task_ongoing_pct=task_ongoing_pct,
+                         progress_pct=progress_pct)
 
 @main.route("/project_details/<int:id>/update_manager", methods=['POST'])
 @login_required
@@ -655,7 +699,183 @@ def task_details(id=None):
         flash('Task not found', 'error')
         return redirect(url_for('main.projects'))
     
-    return render_template('task_details.html', task=task)
+    # Assignees for this task (from TaskAssignee or fallback to single owner from p_members_id)
+    task_assignees = []
+    try:
+        if task.assignees:
+            for ta in task.assignees:
+                if ta.project_member and ta.project_member.member_id:
+                    u = User.query.get(ta.project_member.member_id)
+                    if u:
+                        task_assignees.append(u)
+    except (ProgrammingError, OperationalError):
+        pass  # task_assignees table may not exist yet
+    if not task_assignees and task.p_members_id:
+        pm = ProjectMembers.query.get(task.p_members_id)
+        if pm and pm.member_id:
+            u = User.query.get(pm.member_id)
+            if u:
+                task_assignees.append(u)
+    
+    # Project members (for Edit Task "Assigned member" dropdown: project members + project manager if not already a member)
+    task_project_members = []
+    if task.project_id:
+        project = Project.query.get(task.project_id)
+        pms = ProjectMembers.query.filter_by(project_id=task.project_id).all()
+        for pm in pms:
+            if pm.member_id:
+                u = User.query.get(pm.member_id)
+                if u:
+                    task_project_members.append({'p_members_id': pm.p_members_id, 'name': u.name or u.username})
+        # Ensure project manager is in the list (PM can assign tasks to themselves)
+        if project and project.project_manager:
+            pm_member_ids = [pm.member_id for pm in pms if pm.member_id]
+            if project.project_manager not in pm_member_ids:
+                manager_user = User.query.get(project.project_manager)
+                if manager_user:
+                    pm_row = ProjectMembers.query.filter_by(
+                        project_id=task.project_id,
+                        member_id=project.project_manager
+                    ).first()
+                    if not pm_row:
+                        pm_row = ProjectMembers(
+                            project_id=task.project_id,
+                            member_id=project.project_manager,
+                            role='Project Manager'
+                        )
+                        db.session.add(pm_row)
+                        try:
+                            db.session.commit()
+                        except Exception:
+                            db.session.rollback()
+                            pm_row = ProjectMembers.query.filter_by(
+                                project_id=task.project_id,
+                                member_id=project.project_manager
+                            ).first()
+                    if pm_row:
+                        task_project_members.append({
+                            'p_members_id': pm_row.p_members_id,
+                            'name': manager_user.name or manager_user.username
+                        })
+    
+    # Role flags for subtask views: PM sees "Subtask (Project Manager)", other project members see "Subtask"
+    project = Project.query.get(task.project_id) if task.project_id else None
+    is_project_manager = (project and current_user.member_id == project.project_manager)
+    is_project_member = False
+    if project:
+        if is_project_manager:
+            is_project_member = True
+        else:
+            pm_entry = ProjectMembers.query.filter_by(
+                project_id=task.project_id,
+                member_id=current_user.member_id
+            ).first()
+            is_project_member = pm_entry is not None
+    
+    return render_template('task_details.html', task=task, task_assignees=task_assignees, task_project_members=task_project_members, is_project_manager=is_project_manager, is_project_member=is_project_member)
+
+@main.route("/task_details/<int:id>/update", methods=['POST'])
+@login_required
+def update_task(id):
+    task = Task.query.get_or_404(id)
+    task_name = request.form.get('task_name', '').strip()
+    if not task_name:
+        flash('Task name is required.', 'danger')
+        return redirect(url_for('main.task_details', id=id))
+    task.task_name = task_name
+    task.priority = request.form.get('priority') or task.priority
+    task.task_status = request.form.get('task_status') or 'Ongoing'
+    task.task_description = request.form.get('task_description', '').strip() or None
+
+    # Update assigned member (must be a project member)
+    owner_p_members_id = request.form.get('owner_id') or request.form.get('p_members_id')
+    if owner_p_members_id:
+        try:
+            pid = int(owner_p_members_id)
+            pm = ProjectMembers.query.filter_by(p_members_id=pid, project_id=task.project_id).first()
+            if pm:
+                task.p_members_id = pid
+                try:
+                    TaskAssignee.query.filter_by(task_id=task.task_id).delete()
+                    db.session.flush()
+                    ta = TaskAssignee(task_id=task.task_id, p_members_id=pid)
+                    db.session.add(ta)
+                except (ProgrammingError, OperationalError):
+                    pass
+        except (ValueError, TypeError):
+            pass
+
+    start_date_str = request.form.get('start_date', '').strip()
+    end_date_str = request.form.get('end_date', '').strip()
+    if start_date_str and end_date_str:
+        try:
+            start_dt = datetime.strptime(start_date_str, '%Y-%m-%d')
+            end_dt = datetime.strptime(end_date_str, '%Y-%m-%d')
+            if end_dt < start_dt:
+                flash('End date cannot be before start date.', 'danger')
+                return redirect(url_for('main.task_details', id=id))
+            if task.deadline_id:
+                deadline = Deadlines.query.get(task.deadline_id)
+                if deadline:
+                    deadline.start_date = start_dt
+                    deadline.end_date = end_dt
+                else:
+                    deadline = Deadlines(start_date=start_dt, end_date=end_dt, flag='active')
+                    db.session.add(deadline)
+                    db.session.flush()
+                    task.deadline_id = deadline.deadlines_id
+            else:
+                deadline = Deadlines(start_date=start_dt, end_date=end_dt, flag='active')
+                db.session.add(deadline)
+                db.session.flush()
+                task.deadline_id = deadline.deadlines_id
+        except ValueError:
+            pass
+    elif not start_date_str and not end_date_str:
+        task.deadline_id = None
+
+    try:
+        db.session.commit()
+        flash('Task updated successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to update task: {}'.format(str(e)), 'danger')
+    return redirect(url_for('main.task_details', id=id))
+
+@main.route("/task_details/<int:id>/delete", methods=['POST'])
+@login_required
+def delete_task(id):
+    task = Task.query.get_or_404(id)
+    project_id = task.project_id
+    task_id = task.task_id
+    try:
+        try:
+            TaskAssignee.query.filter_by(task_id=task_id).delete()
+        except Exception:
+            pass  # task_assignees table may not exist
+        SubTask.query.filter_by(parent_task_id=task_id).delete()
+        db.session.delete(task)
+        db.session.commit()
+        flash('Task deleted successfully.', 'success')
+    except (ProgrammingError, OperationalError) as e:
+        # task_assignees table may not exist; db.session.delete(task) loads assignees and fails
+        if 'task_assignees' in str(e) or '1146' in str(e):
+            db.session.rollback()
+            try:
+                SubTask.query.filter_by(parent_task_id=task_id).delete()
+                db.session.execute(text('DELETE FROM task_tbl WHERE task_id = :id'), {'id': task_id})
+                db.session.commit()
+                flash('Task deleted successfully.', 'success')
+            except Exception as e2:
+                db.session.rollback()
+                flash('Failed to delete task: {}'.format(str(e2)), 'danger')
+        else:
+            db.session.rollback()
+            flash('Failed to delete task: {}'.format(str(e)), 'danger')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to delete task: {}'.format(str(e)), 'danger')
+    return redirect(url_for('main.project_details', id=project_id))
 
 @main.route("/project_details/<int:id>/task/create", methods=['POST'])
 @login_required
@@ -669,6 +889,8 @@ def create_task(id):
         task_name = request.form.get('task_name')
         owner_id = request.form.get('owner_id')
         task_description = request.form.get('task_description', '')
+        start_date_str = request.form.get('start_date')
+        end_date_str = request.form.get('end_date')
         
         # Validate required fields
         if not task_name or not owner_id:
@@ -685,14 +907,32 @@ def create_task(id):
             flash('Selected owner must be assigned to this project', 'danger')
             return redirect(url_for('main.project_details', id=id))
         
-        # Create the task
+        # Optional: create a deadline in deadlines_tbl and get FK for task
+        deadline_id = None
+        if start_date_str and end_date_str:
+            try:
+                start_dt = datetime.strptime(start_date_str, '%Y-%m-%d')
+                end_dt = datetime.strptime(end_date_str, '%Y-%m-%d')
+                if end_dt < start_dt:
+                    flash('End date cannot be before start date.', 'danger')
+                    return redirect(url_for('main.project_details', id=id))
+                deadline = Deadlines(start_date=start_dt, end_date=end_dt, flag='active')
+                db.session.add(deadline)
+                db.session.flush()
+                deadline_id = deadline.deadlines_id
+            except ValueError:
+                pass
+        
+        # Create the task (with unique generated code TK####; deadline_id links to deadlines_tbl)
         task = Task(
             project_id=project.project_id,
             p_members_id=project_member.p_members_id,
             task_name=task_name,
             task_description=task_description.strip() if task_description else None,
             task_status='Ongoing',
-            priority='Medium'
+            priority='Medium',
+            generated_code=_generate_task_code(),
+            deadline_id=deadline_id
         )
         
         db.session.add(task)
@@ -714,7 +954,6 @@ def create_project():
         project_name = request.form.get('project_name')
         priority = request.form.get('priority', 'High')
         client_name = request.form.get('client_name')
-        department_id = request.form.get('department_id')
         # Project manager is automatically set to the current user
         project_manager = current_user.member_id
         start_date_str = request.form.get('start_date')
@@ -723,10 +962,14 @@ def create_project():
         project_status = 'Ongoing'
         progress = request.form.get('progress', '0%')
         project_description = request.form.get('topicDescription', '')
+        member_ids = request.form.getlist('project_members')
         
-        # Validate required fields
-        if not all([project_name, priority, client_name, department_id, start_date_str, end_date_str]):
+        # Validate required fields (department removed; at least one member required)
+        if not all([project_name, priority, client_name, start_date_str, end_date_str]):
             flash('Please fill in all required fields', 'danger')
+            return redirect(url_for('main.projects'))
+        if not member_ids:
+            flash('Please select at least one member for the project', 'danger')
             return redirect(url_for('main.projects'))
         
         # Parse dates
@@ -740,6 +983,18 @@ def create_project():
             flash('Deadline cannot be earlier than the start date.', 'danger')
             return redirect(url_for('main.projects'))
 
+        # Derive department from first selected member, else current user's department
+        department_id = None
+        try:
+            first_member_id = int(member_ids[0])
+            first_user = User.query.get(first_member_id)
+            if first_user and first_user.department_id:
+                department_id = first_user.department_id
+        except (ValueError, TypeError, IndexError):
+            pass
+        if department_id is None and current_user.department_id:
+            department_id = current_user.department_id
+
         # Create deadline entry first
         deadline = Deadlines(
             start_date=start_date,
@@ -751,7 +1006,7 @@ def create_project():
         
         # Create project entry
         project = Project(
-            department_id=int(department_id),
+            department_id=department_id,
             project_manager=int(project_manager),
             deadlines_id=deadline.deadlines_id,
             priority=priority,
@@ -765,31 +1020,38 @@ def create_project():
         db.session.add(project)
         db.session.flush()  # Get the project_id
         
-        # Get assigned members from form
-        member_ids = request.form.getlist('project_members')
-        
-        # Create ProjectMembers entries for assigned members using project_id
-        if member_ids:
-            for member_id in member_ids:
-                try:
-                    member_id_int = int(member_id)
-                    # Check if ProjectMembers entry already exists for this member and project
-                    existing = ProjectMembers.query.filter_by(
+        # Create ProjectMembers entries: always add project manager, then selected members
+        member_ids_set = {int(m) for m in member_ids if m and str(m).isdigit()}
+        # Ensure project manager is a project member (so they can be assigned tasks)
+        if project_manager not in member_ids_set:
+            existing_pm = ProjectMembers.query.filter_by(
+                project_id=project.project_id,
+                member_id=int(project_manager)
+            ).first()
+            if not existing_pm:
+                db.session.add(ProjectMembers(
+                    project_id=project.project_id,
+                    member_id=int(project_manager),
+                    role='Project Manager',
+                    generated_code=str(project.project_id)
+                ))
+                db.session.flush()
+        for member_id in member_ids:
+            try:
+                member_id_int = int(member_id)
+                existing = ProjectMembers.query.filter_by(
+                    member_id=member_id_int,
+                    project_id=project.project_id
+                ).first()
+                if not existing:
+                    db.session.add(ProjectMembers(
+                        project_id=project.project_id,
                         member_id=member_id_int,
-                        project_id=project.project_id
-                    ).first()
-                    
-                    # Only create if it doesn't exist
-                    if not existing:
-                        project_member = ProjectMembers(
-                            project_id=project.project_id,
-                            member_id=member_id_int,
-                            role='Team Member',  # Default role, can be updated later
-                            generated_code=str(project.project_id)  # Keep for backward compatibility if needed
-                        )
-                        db.session.add(project_member)
-                except (ValueError, TypeError):
-                    continue
+                        role='Team Member',
+                        generated_code=str(project.project_id)
+                    ))
+            except (ValueError, TypeError):
+                continue
         
         db.session.commit()
         

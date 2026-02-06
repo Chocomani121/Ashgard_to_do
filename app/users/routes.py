@@ -126,7 +126,6 @@ def profile():
 
 @users.route("/members")
 @login_required
-@cache.cached(timeout=60)
 def members():
     members = User.query.order_by(User.name.asc()).all()
     departments = Department.query.order_by(Department.department_name.asc()).all()
@@ -145,16 +144,58 @@ def delete_member(member_id):
     if current_user.account_type != 'admin':
         flash('Unauthorized.', 'danger_error')
         return redirect(url_for('users.members'))
-    
+
     member = User.query.get_or_404(member_id)
 
-    db.session.delete(member)
-    db.session.commit()
+    # Do not delete when there is data linked to this member
+    reasons = []
+    if member.managed_projects:
+        reasons.append("managed projects")
+    if member.project_assignments:
+        reasons.append("project assignments")
+    if member.my_reports:
+        reasons.append("reports authored")
+    if member.reports_to_review:
+        reasons.append("reports they review")
+    if member.cc_reports:
+        reasons.append("report CC entries")
+    if member.my_comments:
+        reasons.append("comments")
+    if member.notes_written:
+        reasons.append("notes")
 
-    cache.clear()
+    if reasons:
+        flash(f"Cannot delete member: they have {', '.join(reasons)}.", "danger")
+        return redirect(url_for('users.members'))
 
-    flash('Member deleted.', 'delete_success')
+    try:
+        db.session.delete(member)
+        db.session.commit()
+        cache.clear()
+        flash('Member deleted.', 'delete_success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting member: {str(e)}", "danger")
+
     return redirect(url_for('users.members'))
+
+#  // Old delete membr
+# @users.route("/delete_member/<int:member_id>", methods=['GET','POST'])
+# @login_required
+# def delete_member(member_id):
+#     if current_user.account_type != 'admin':
+#         flash('Unauthorized.', 'danger_error')
+#         return redirect(url_for('users.members'))
+    
+#     member = User.query.get_or_404(member_id)
+
+#     db.session.delete(member)
+#     db.session.commit()
+
+#     cache.clear()
+
+#     flash('Member deleted.', 'delete_success')
+#     return redirect(url_for('users.members'))
 
 # -------------------- PASSWORD RESET --------------------
 
@@ -208,13 +249,12 @@ def reset_token(token):
 
     return render_template('reset_token.html', title='Reset Password', form=form)
 
-
 # 3. ADMIN UPDATING A MEMBER'S DETAILS
 @users.route("/admin/update/member/<int:member_id>", methods=['POST'])
 @login_required
 def update_member(member_id):
     if current_user.account_type != 'admin':
-        flash('Unauthorized!', 'danger_error')
+        flash('Unauthorized!', 'error')
         return redirect(url_for('users.members'))
         
     member = User.query.get_or_404(member_id)
@@ -224,12 +264,12 @@ def update_member(member_id):
 
     existing_user = User.query.filter(User.username == new_username, User.member_id != member_id).first()
     if existing_user:
-        flash('The username is already taken!', 'modal_error')
+        flash('The username is already taken!', 'error')
         return redirect(url_for('users.members'))
 
     existing_email = User.query.filter(User.email == new_email, User.member_id != member_id).first()
     if existing_email:
-        flash('The email is already in use!', 'modal_error')
+        flash('The email is already in use!', 'error')
         return redirect(url_for('users.members'))
 
     member.name = request.form.get('name')
@@ -241,27 +281,24 @@ def update_member(member_id):
         member.department_id = int(dept_id)
 
     db.session.commit()
-    flash(f'Updated {member.name}!', 'update_success')
+    flash(f'Updated {member.name}!', 'success')
     return redirect(url_for('users.members'))
 
 
 @users.route("/reports/delete/<int:report_id>")
 @login_required
 def delete_report(report_id):
-    # Import inside to prevent circular dependency
     from app.models import Report, ReportCC 
     
     report = Report.query.get_or_404(report_id)
     
-    # Check if the current user is the author
-    # Note: current_user works because it's an instance of the User class
+
     if report.member_id != current_user.member_id:
         flash("You do not have permission to delete this report.", "danger")
         return redirect(url_for('main.reports'))
     
     try:
-        # Since you added cascade="all, delete-orphan" in models.py, 
-        # SQLAlchemy will automatically delete CC entries and Comments!
+
         db.session.delete(report)
         db.session.commit()
         flash("Report deleted successfully!", "success")
