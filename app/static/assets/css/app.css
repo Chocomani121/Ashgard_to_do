@@ -3479,10 +3479,10 @@ body[data-layout-mode="dark"] .swal2-file, body[data-layout-mode="dark"] .swal2-
   top: 50px; }
   .alertify-notifier.ajs-right .ajs-message {
     right: -320px;
-    left: auto; }
+    top: 0; }
     .alertify-notifier.ajs-right .ajs-message.ajs-visible {
       right: 290px;
-      left: auto; }
+      top: 0; }
 
 .alertify-notifier.ajs-left {
   left: 10px;
