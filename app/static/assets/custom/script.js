@@ -450,3 +450,22 @@ document.addEventListener("DOMContentLoaded", function () {
         sel.appendChild(opt);
     }
 });
+
+// Mark Complete Button
+(function() {
+    var btn = document.getElementById('markCompleteBtn');
+    if (btn) {
+    btn.addEventListener('click', function() {
+        var isCompleted = btn.querySelector('.btn-text').textContent.trim() === 'Completed';
+        if (isCompleted) {
+        btn.innerHTML = '<i class="mdi mdi-check"></i> <span class="btn-text">Mark Complete</span>';
+        btn.classList.remove('btn-outline-success', 'bg-soft-success');
+        btn.classList.add('btn-outline-primary');
+        } else {
+        btn.innerHTML = '<i class="mdi mdi-check"></i> <span class="btn-text">Completed</span>';
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-outline-success', 'bg-soft-success');
+        }
+    });
+    }
+})();
