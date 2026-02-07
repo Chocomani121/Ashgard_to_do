@@ -469,3 +469,25 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     }
 })();
+
+// Apply overdue (red) styling to all deadline end dates in one place
+(function () {
+    function applyDeadlineOverdueStyles() {
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        document.querySelectorAll('.deadline-end[data-end-date]').forEach(function (el) {
+            var raw = el.getAttribute('data-end-date');
+            if (!raw || !raw.trim()) return;
+            var end = new Date(raw.trim());
+            if (isNaN(end.getTime())) return;
+            end.setHours(0, 0, 0, 0);
+            if (end < today) el.classList.add('text-danger');
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyDeadlineOverdueStyles);
+    } else {
+        applyDeadlineOverdueStyles();
+    }
+})();
+

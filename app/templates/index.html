@@ -180,7 +180,7 @@
                                                                     </div>
                                                                 </td>
                                                                 <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center {% if item.deadline and item.deadline.end_date and item.deadline.end_date.date() < today %}text-danger fw-medium{% endif %}">
+                                                                    <div class="d-flex align-items-center deadline-end {% if item.deadline and item.deadline.end_date and item.deadline.end_date.date() < today %}text-danger{% endif %}">
                                                                         {% if item.deadline and item.deadline.end_date %}
                                                                         {{ item.deadline.end_date.strftime('%m / %d / %Y') }}
                                                                         {% else %}
@@ -280,7 +280,7 @@
                                                                     </div>
                                                                 </td>
                                                                 <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center {% if item.deadline and item.deadline.end_date and item.deadline.end_date.date() < today %}text-danger fw-medium{% endif %}">
+                                                                    <div class="d-flex align-items-center deadline-end {% if item.deadline and item.deadline.end_date and item.deadline.end_date.date() < today %}text-danger{% endif %}">
                                                                         {% if item.deadline and item.deadline.end_date %}
                                                                         {{ item.deadline.end_date.strftime('%m / %d / %Y') }}
                                                                         {% else %}

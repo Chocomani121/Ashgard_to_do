@@ -176,13 +176,13 @@ tr:has(a[href]):hover {
     background: transparent;
 }
 
-/* Width of columns in Approvals table */
-.gridjs-table {
+/* Approvals table only: full width, equal column widths */
+#table10-gridjs .gridjs-table {
     table-layout: fixed;
     width: 100%;
 }
-.gridjs-th,
-.gridjs-td {
+#table10-gridjs .gridjs-th,
+#table10-gridjs .gridjs-td {
     width: 25%;
     max-width: 25%;
     min-width: 0;

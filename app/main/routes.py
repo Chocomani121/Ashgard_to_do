@@ -134,7 +134,7 @@ def all_departments():
         'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
         'ongoing': len([p for p in projects if p.project_status and p.project_status.lower() == 'ongoing']),
     }
-    return render_template('all_departments.html', departments=departments, users=users, stats=stats, dept_projects_data=dept_projects_data)
+    return render_template('all_departments.html', departments=departments, users=users, stats=stats, dept_projects_data=dept_projects_data, today=date.today())
 
 @main.route("/department/add", methods=['POST'])
 @login_required
@@ -539,7 +539,8 @@ def project_details(id=None):
                          task_total=task_total,
                          task_completed_pct=task_completed_pct,
                          task_ongoing_pct=task_ongoing_pct,
-                         progress_pct=progress_pct)
+                         progress_pct=progress_pct,
+                         today=date.today())
 
 @main.route("/project_details/<int:id>/update_manager", methods=['POST'])
 @login_required
@@ -773,7 +774,7 @@ def task_details(id=None):
             ).first()
             is_project_member = pm_entry is not None
     
-    return render_template('task_details.html', task=task, task_assignees=task_assignees, task_project_members=task_project_members, is_project_manager=is_project_manager, is_project_member=is_project_member)
+    return render_template('task_details.html', task=task, task_assignees=task_assignees, task_project_members=task_project_members, is_project_manager=is_project_manager, is_project_member=is_project_member, today=date.today())
 
 @main.route("/task_details/<int:id>/update", methods=['POST'])
 @login_required
