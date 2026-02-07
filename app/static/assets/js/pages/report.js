@@ -9,7 +9,7 @@
       if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
       return name.substring(0, 2).toUpperCase();
     }
-  
+
     
     function getAvatarHtml(user, size = "24px", fontSize = "10px") {
       // Check if user exists and has initials
@@ -104,8 +104,8 @@
           reviewerList.innerHTML = "";
   
           // Ensure allUsers exists before filtering
-          const filtered = (allUsers || []).filter(u => 
-              u.name && u.name.toLowerCase().includes(filter.toLowerCase())
+          const filtered = (allUsers || []).filter(u =>
+              (u.name || u.username || "").toLowerCase().includes((filter || "").toLowerCase())
           );
   
           filtered.forEach(user => {
@@ -126,15 +126,14 @@
                   // 1. Update the visible display
                   reviewerDisplay.innerHTML = `
                       <div class="d-flex align-items-center gap-2">
-                          ${getAvatarHtml(user)} 
-                          <span class="fw-bold text-primary">${user.name}</span>
+                          ${getAvatarHtml(user)}
+                          <span class="fw-bold text-primary">${user.name || user.username || ""}</span>
                       </div>`;
                   
                   // 2. THIS IS THE MOST IMPORTANT PART FOR SAVING
                   // It puts the member's ID into the hidden input you just placed
                   if (reviewerIdInput) {
                       reviewerIdInput.value = user.member_id;
-                      console.log("ID successfully assigned to form:", reviewerIdInput.value);
                   }
                   
                   reviewerDropdown.classList.add("d-none");
@@ -145,11 +144,12 @@
       // E. CC Functions
       function renderCC(filter = "") {
         ccList.innerHTML = "";
-        allUsers.filter(u => u.name.toLowerCase().includes(filter.toLowerCase())).forEach(user => {
+        allUsers.filter(u => (u.name || u.username || "").toLowerCase().includes((filter || "").toLowerCase())).forEach(user => {
           const isSelected = selectedCCMembers.find(m => m.member_id === user.member_id);
           const item = document.createElement("a");
           item.className = `list-group-item list-group-item-action border-0 d-flex align-items-center gap-2 small ${isSelected ? 'bg-light text-primary' : ''}`;
-          item.innerHTML = `${getAvatarHtml(user)} <span>${user.name}</span>`;
+          item.setAttribute("data-member-id", user.member_id);
+          item.innerHTML = `${getAvatarHtml(user)} <span>${user.name || user.username || ""}</span>`;
           item.onclick = () => {
             const index = selectedCCMembers.findIndex(m => m.member_id === user.member_id);
             if (index > -1) selectedCCMembers.splice(index, 1);
@@ -167,7 +167,7 @@
           const chip = document.createElement("div");
           chip.className = "badge bg-white text-dark border p-2 d-flex align-items-center gap-2 shadow-sm";
           chip.style.borderRadius = "50px";
-          chip.innerHTML = `${getAvatarHtml(user, "20px", "9px")} ${user.name} <i class="bx bx-x ms-1" style="cursor:pointer"></i>`;
+          chip.innerHTML = `${getAvatarHtml(user, "20px", "9px")} ${user.name || user.username || ""} <i class="bx bx-x ms-1" style="cursor:pointer"></i>`;
           chip.onclick = () => {
             selectedCCMembers = selectedCCMembers.filter(m => m.member_id !== user.member_id);
             renderCCChips();
@@ -663,7 +663,7 @@ document.addEventListener("DOMContentLoaded", function () {
               placeholder: "Write your report..."
           }).then(function (editor) {
               window.reportCKInstance = editor;
-          }).catch(function (err) { console.error(err); });
+          }).catch(function () { /* CKEditor init failed */ });
       }
       if (document.readyState === "loading") {
           document.addEventListener("DOMContentLoaded", initReportCK);
@@ -679,11 +679,16 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!modal || !modalTitle) return;
   
       modal.addEventListener("show.bs.modal", function (e) {
+          var form = modal.querySelector("form");
+          if (form && form.action && form.action.indexOf("/reports/edit/") !== -1) {
+              modalTitle.textContent = "Update Weekly Report";
+              return;
+          }
           var link = e.relatedTarget;
           if (link && link.classList && link.classList.contains("list-group-item-action")) {
               var name = link.getAttribute("data-report-name") || "";
               var title = link.getAttribute("data-report-title") || "";
-              modalTitle.textContent = title ? "Edit: " + title : "Edit report";
+              modalTitle.textContent = title ? "Edit: " + title : "Update Weekly Report";
           } else {
               modalTitle.textContent = "Weekly report";
           }
@@ -754,7 +759,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   setTimeout(function () { positionPopover(placeholder); }, 400);
                   editor.keystrokes.set("Ctrl+Enter", function () { sendComment(); });
               })
-              .catch(function (err) { console.error(err); });
+              .catch(function () { /* Comment editor init failed */ });
           } else if (commentEditorInstance) {
               commentEditorInstance.setData(initialBody);
               positionPopover(placeholder);
@@ -990,53 +995,59 @@ document.addEventListener("DOMContentLoaded", function () {
 function openEditModal() {
     var reportIdField = document.getElementById("currentActiveReportId");
     if (!reportIdField || !reportIdField.value) return;
-    
+
     var reportId = parseInt(reportIdField.value, 10);
     var reportsDataEl = document.getElementById("reports-data");
     var reportsData = JSON.parse(reportsDataEl.textContent || "[]");
-    
-    // Find the report data
+
     var report = reportsData.find(function (r) { return r.report_id === reportId; });
-    
+
     if (report) {
-        // Change Modal UI to Edit Mode
-        document.getElementById("newReportModalLabel").textContent = "Edit Weekly Report";
+        document.getElementById("newReportModalLabel").textContent = "Update Weekly Report";
         var form = document.querySelector("#newReportModal form");
         form.action = "/reports/edit/" + reportId;
-        
+
         var submitBtn = document.querySelector("#newReportModal button[type='submit']");
         if (submitBtn) submitBtn.textContent = "Update Report";
 
-        // Fill Basic Fields (Ensure these 'name' attributes match your form)
-        var dateSelect = document.querySelector("select[name='report_date']");
-        if (dateSelect) dateSelect.value = report.week_name;
-        
-        var revSelect = document.querySelector("select[name='reviewer_id']");
-        if (revSelect) revSelect.value = report.reviewer_id;
+        var dateSelect = document.getElementById("weekly-report-date");
+        if (dateSelect) dateSelect.value = report.week_name || "";
 
-        // Fill Rich Text (TinyMCE)
-        if (window.tinymce && tinymce.get('reportBody')) {
-            tinymce.get('reportBody').setContent(report.report_content || "");
-        } else {
-            var bodyField = document.getElementById("reportBody");
-            if (bodyField) bodyField.value = report.report_content || "";
+        var reviewerIdInput = document.getElementById("selectedReviewerId");
+        var reviewerDisplay = document.getElementById("reportReviewerDisplay");
+        if (reviewerIdInput) reviewerIdInput.value = report.reviewer_id || "";
+        var usersData = [];
+        try {
+            var usersEl = document.getElementById("users-data");
+            if (usersEl) usersData = JSON.parse(usersEl.textContent || "[]");
+        } catch (e) {}
+        var reviewerUser = usersData.find(function(u) { return u.member_id === report.reviewer_id; });
+        if (reviewerDisplay && reviewerUser) {
+            var name = reviewerUser.name || reviewerUser.username || "Unknown";
+            reviewerDisplay.innerHTML = "<div class=\"d-flex align-items-center gap-2\"><span class=\"fw-bold text-primary\">" + name + "</span></div>";
+        } else if (reviewerDisplay && report.reviewer_name) {
+            reviewerDisplay.innerHTML = "<div class=\"d-flex align-items-center gap-2\"><span class=\"fw-bold text-primary\">" + report.reviewer_name + "</span></div>";
         }
 
-        // Re-populate CC Chips
-        // We trigger the 'Clear all' button first to avoid duplicates
+        if (window.reportCKInstance && typeof window.reportCKInstance.setData === "function") {
+            window.reportCKInstance.setData(report.report_content || "");
+        }
+
         var clearBtn = document.getElementById("reportCCClear");
+        var ccSearch = document.getElementById("reportCCSearch");
+        if (ccSearch) ccSearch.value = "";
         if (clearBtn) clearBtn.click();
 
-        // If your Python sends 'cc_member_ids', we 'click' them in the list to recreate chips
         if (report.cc_member_ids && report.cc_member_ids.length > 0) {
-            report.cc_member_ids.forEach(function(id) {
-                var contactItem = document.querySelector('#reportCCList [data-member-id="' + id + '"]');
-                if (contactItem) contactItem.click();
-            });
+            setTimeout(function() {
+                report.cc_member_ids.forEach(function(id) {
+                    var contactItem = document.querySelector("#reportCCList [data-member-id=\"" + id + "\"]");
+                    if (contactItem) contactItem.click();
+                });
+            }, 100);
         }
 
-        // Open the Modal
-        var modalEl = document.getElementById('newReportModal');
+        var modalEl = document.getElementById("newReportModal");
         var modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
         modalInstance.show();
     }
@@ -1058,9 +1069,9 @@ document.addEventListener("DOMContentLoaded", function() {
             
             var clearBtn = document.getElementById("reportCCClear");
             if (clearBtn) clearBtn.click();
-            
-            if (window.tinymce && tinymce.get('reportBody')) {
-                tinymce.get('reportBody').setContent('');
+
+            if (window.reportCKInstance && typeof window.reportCKInstance.setData === "function") {
+                window.reportCKInstance.setData("");
             }
         });
     }
