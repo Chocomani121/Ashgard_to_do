@@ -227,6 +227,8 @@ def _report_to_dict(report):
         'is_author': report.member_id == current_user.member_id,
         'is_reviewer': report.reviewer_id == current_user.member_id if report.reviewer_id else False,
         'comments': comments_list,
+        'reviewer_id': report.reviewer_id,
+        'cc_member_ids': [cc.member_id for cc in (report.cc_entries or [])],
     }
 
 @main.route("/reports")

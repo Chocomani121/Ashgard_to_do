@@ -149,6 +149,7 @@
           const isSelected = selectedCCMembers.find(m => m.member_id === user.member_id);
           const item = document.createElement("a");
           item.className = `list-group-item list-group-item-action border-0 d-flex align-items-center gap-2 small ${isSelected ? 'bg-light text-primary' : ''}`;
+          item.setAttribute("data-member-id", user.member_id);
           item.innerHTML = `${getAvatarHtml(user)} <span>${user.name}</span>`;
           item.onclick = () => {
             const index = selectedCCMembers.findIndex(m => m.member_id === user.member_id);
@@ -679,11 +680,16 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!modal || !modalTitle) return;
   
       modal.addEventListener("show.bs.modal", function (e) {
+          var form = modal.querySelector("form");
+          if (form && form.action && form.action.indexOf("/reports/edit/") !== -1) {
+              modalTitle.textContent = "Update Weekly Report";
+              return;
+          }
           var link = e.relatedTarget;
           if (link && link.classList && link.classList.contains("list-group-item-action")) {
               var name = link.getAttribute("data-report-name") || "";
               var title = link.getAttribute("data-report-title") || "";
-              modalTitle.textContent = title ? "Edit: " + title : "Edit report";
+              modalTitle.textContent = title ? "Edit: " + title : "Update Weekly Report";
           } else {
               modalTitle.textContent = "Weekly report";
           }
@@ -990,53 +996,59 @@ document.addEventListener("DOMContentLoaded", function () {
 function openEditModal() {
     var reportIdField = document.getElementById("currentActiveReportId");
     if (!reportIdField || !reportIdField.value) return;
-    
+
     var reportId = parseInt(reportIdField.value, 10);
     var reportsDataEl = document.getElementById("reports-data");
     var reportsData = JSON.parse(reportsDataEl.textContent || "[]");
-    
-    // Find the report data
+
     var report = reportsData.find(function (r) { return r.report_id === reportId; });
-    
+
     if (report) {
-        // Change Modal UI to Edit Mode
-        document.getElementById("newReportModalLabel").textContent = "Edit Weekly Report";
+        document.getElementById("newReportModalLabel").textContent = "Update Weekly Report";
         var form = document.querySelector("#newReportModal form");
         form.action = "/reports/edit/" + reportId;
-        
+
         var submitBtn = document.querySelector("#newReportModal button[type='submit']");
         if (submitBtn) submitBtn.textContent = "Update Report";
 
-        // Fill Basic Fields (Ensure these 'name' attributes match your form)
-        var dateSelect = document.querySelector("select[name='report_date']");
-        if (dateSelect) dateSelect.value = report.week_name;
-        
-        var revSelect = document.querySelector("select[name='reviewer_id']");
-        if (revSelect) revSelect.value = report.reviewer_id;
+        var dateSelect = document.getElementById("weekly-report-date");
+        if (dateSelect) dateSelect.value = report.week_name || "";
 
-        // Fill Rich Text (TinyMCE)
-        if (window.tinymce && tinymce.get('reportBody')) {
-            tinymce.get('reportBody').setContent(report.report_content || "");
-        } else {
-            var bodyField = document.getElementById("reportBody");
-            if (bodyField) bodyField.value = report.report_content || "";
+        var reviewerIdInput = document.getElementById("selectedReviewerId");
+        var reviewerDisplay = document.getElementById("reportReviewerDisplay");
+        if (reviewerIdInput) reviewerIdInput.value = report.reviewer_id || "";
+        var usersData = [];
+        try {
+            var usersEl = document.getElementById("users-data");
+            if (usersEl) usersData = JSON.parse(usersEl.textContent || "[]");
+        } catch (e) {}
+        var reviewerUser = usersData.find(function(u) { return u.member_id === report.reviewer_id; });
+        if (reviewerDisplay && reviewerUser) {
+            var name = reviewerUser.name || reviewerUser.username || "Unknown";
+            reviewerDisplay.innerHTML = "<div class=\"d-flex align-items-center gap-2\"><span class=\"fw-bold text-primary\">" + name + "</span></div>";
+        } else if (reviewerDisplay && report.reviewer_name) {
+            reviewerDisplay.innerHTML = "<div class=\"d-flex align-items-center gap-2\"><span class=\"fw-bold text-primary\">" + report.reviewer_name + "</span></div>";
         }
 
-        // Re-populate CC Chips
-        // We trigger the 'Clear all' button first to avoid duplicates
+        if (window.reportCKInstance && typeof window.reportCKInstance.setData === "function") {
+            window.reportCKInstance.setData(report.report_content || "");
+        }
+
         var clearBtn = document.getElementById("reportCCClear");
+        var ccSearch = document.getElementById("reportCCSearch");
+        if (ccSearch) ccSearch.value = "";
         if (clearBtn) clearBtn.click();
 
-        // If your Python sends 'cc_member_ids', we 'click' them in the list to recreate chips
         if (report.cc_member_ids && report.cc_member_ids.length > 0) {
-            report.cc_member_ids.forEach(function(id) {
-                var contactItem = document.querySelector('#reportCCList [data-member-id="' + id + '"]');
-                if (contactItem) contactItem.click();
-            });
+            setTimeout(function() {
+                report.cc_member_ids.forEach(function(id) {
+                    var contactItem = document.querySelector("#reportCCList [data-member-id=\"" + id + "\"]");
+                    if (contactItem) contactItem.click();
+                });
+            }, 100);
         }
 
-        // Open the Modal
-        var modalEl = document.getElementById('newReportModal');
+        var modalEl = document.getElementById("newReportModal");
         var modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
         modalInstance.show();
     }
@@ -1058,9 +1070,9 @@ document.addEventListener("DOMContentLoaded", function() {
             
             var clearBtn = document.getElementById("reportCCClear");
             if (clearBtn) clearBtn.click();
-            
-            if (window.tinymce && tinymce.get('reportBody')) {
-                tinymce.get('reportBody').setContent('');
+
+            if (window.reportCKInstance && typeof window.reportCKInstance.setData === "function") {
+                window.reportCKInstance.setData("");
             }
         });
     }
