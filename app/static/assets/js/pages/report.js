@@ -9,7 +9,7 @@
       if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
       return name.substring(0, 2).toUpperCase();
     }
-  
+
     
     function getAvatarHtml(user, size = "24px", fontSize = "10px") {
       // Check if user exists and has initials
@@ -104,8 +104,8 @@
           reviewerList.innerHTML = "";
   
           // Ensure allUsers exists before filtering
-          const filtered = (allUsers || []).filter(u => 
-              u.name && u.name.toLowerCase().includes(filter.toLowerCase())
+          const filtered = (allUsers || []).filter(u =>
+              (u.name || u.username || "").toLowerCase().includes((filter || "").toLowerCase())
           );
   
           filtered.forEach(user => {
@@ -126,15 +126,14 @@
                   // 1. Update the visible display
                   reviewerDisplay.innerHTML = `
                       <div class="d-flex align-items-center gap-2">
-                          ${getAvatarHtml(user)} 
-                          <span class="fw-bold text-primary">${user.name}</span>
+                          ${getAvatarHtml(user)}
+                          <span class="fw-bold text-primary">${user.name || user.username || ""}</span>
                       </div>`;
                   
                   // 2. THIS IS THE MOST IMPORTANT PART FOR SAVING
                   // It puts the member's ID into the hidden input you just placed
                   if (reviewerIdInput) {
                       reviewerIdInput.value = user.member_id;
-                      console.log("ID successfully assigned to form:", reviewerIdInput.value);
                   }
                   
                   reviewerDropdown.classList.add("d-none");
@@ -145,11 +144,12 @@
       // E. CC Functions
       function renderCC(filter = "") {
         ccList.innerHTML = "";
-        allUsers.filter(u => u.name.toLowerCase().includes(filter.toLowerCase())).forEach(user => {
+        allUsers.filter(u => (u.name || u.username || "").toLowerCase().includes((filter || "").toLowerCase())).forEach(user => {
           const isSelected = selectedCCMembers.find(m => m.member_id === user.member_id);
           const item = document.createElement("a");
           item.className = `list-group-item list-group-item-action border-0 d-flex align-items-center gap-2 small ${isSelected ? 'bg-light text-primary' : ''}`;
-          item.innerHTML = `${getAvatarHtml(user)} <span>${user.name}</span>`;
+          item.setAttribute("data-member-id", user.member_id);
+          item.innerHTML = `${getAvatarHtml(user)} <span>${user.name || user.username || ""}</span>`;
           item.onclick = () => {
             const index = selectedCCMembers.findIndex(m => m.member_id === user.member_id);
             if (index > -1) selectedCCMembers.splice(index, 1);
@@ -167,7 +167,7 @@
           const chip = document.createElement("div");
           chip.className = "badge bg-white text-dark border p-2 d-flex align-items-center gap-2 shadow-sm";
           chip.style.borderRadius = "50px";
-          chip.innerHTML = `${getAvatarHtml(user, "20px", "9px")} ${user.name} <i class="bx bx-x ms-1" style="cursor:pointer"></i>`;
+          chip.innerHTML = `${getAvatarHtml(user, "20px", "9px")} ${user.name || user.username || ""} <i class="bx bx-x ms-1" style="cursor:pointer"></i>`;
           chip.onclick = () => {
             selectedCCMembers = selectedCCMembers.filter(m => m.member_id !== user.member_id);
             renderCCChips();
@@ -248,6 +248,38 @@ document.addEventListener("DOMContentLoaded", function () {
     if (reportsDataEl) {
       var reportsData = JSON.parse(reportsDataEl.textContent || "[]");
       
+      var currentUserMemberId = null;
+      try {
+        var cuEl = document.getElementById("current-user-member-id");
+        if (cuEl && cuEl.textContent) currentUserMemberId = parseInt(cuEl.textContent, 10);
+      } catch (e) {}
+
+      function buildCommentCard(c, isReply) {
+        var imgSrc = "/static/profile_pics/" + (c.author_image || "default.jpg");
+        var isOwnComment = (currentUserMemberId != null && c.member_id === currentUserMemberId);
+        var bodyEscaped = (c.comment_body || "").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        var authorEscaped = (c.author_name || "Unknown").replace(/"/g, "&quot;");
+        var card = document.createElement("div");
+        card.className = "list-group-item list-group-item-action border-0 py-2 d-flex gap-2 report-comment-card" + (isReply ? " report-comment-reply" : "");
+        card.setAttribute("data-comment-id", c.comment_id);
+        card.innerHTML =
+          "<img src=\"" + imgSrc + "\" alt=\"\" class=\"rounded-circle border flex-shrink-0\" style=\"width: " + (isReply ? "28" : "32") + "px; height: " + (isReply ? "28" : "32") + "px; object-fit: cover;\" onerror=\"this.src='/static/profile_pics/default.jpg'; this.onerror=null;\">" +
+          "<div class=\"flex-grow-1 min-width-0\">" +
+            "<div class=\"d-flex justify-content-between align-items-start mb-1\">" +
+              "<span class=\"fw-bold small\">" + (c.author_name || "Unknown") + "</span>" +
+              "<small class=\"text-muted\">" + (c.created_at || "") + "</small>" +
+            "</div>" +
+            "<div class=\"d-flex justify-content-between align-items-start gap-2\">" +
+              "<div class=\"small report-comment-body flex-grow-1 min-width-0" + (isReply ? " text-muted" : " text-secondary") + "\">" + (c.comment_body || "") + "</div>" +
+              "<div class=\"d-flex gap-2 flex-shrink-0\">" +
+                "<a href=\"javascript:void(0)\" class=\"comment-reply-link small text-primary text-decoration-none\" data-comment-id=\"" + (c.comment_id || "") + "\" data-author-name=\"" + authorEscaped + "\">Reply</a>" +
+                (isOwnComment ? "<a href=\"javascript:void(0)\" class=\"comment-edit-link small text-primary text-decoration-none\" data-comment-id=\"" + (c.comment_id || "") + "\" data-comment-body=\"" + bodyEscaped + "\">Edit</a>" : "") +
+              "</div>" +
+            "</div>" +
+          "</div>";
+        return card;
+      }
+
       function renderReportComments(report) {
         var listEl = document.getElementById("reportDetailCommentsList");
         var emptyEl = document.getElementById("reportDetailCommentsEmpty");
@@ -262,22 +294,58 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (emptyEl) emptyEl.style.display = "none";
+
+        var topLevel = [];
+        var repliesByParent = {};
         comments.forEach(function (c) {
-          var card = document.createElement("div");
-          var imgSrc = "/static/profile_pics/" + (c.author_image || "default.jpg");
-          card.className = "list-group-item list-group-item-action border-0 py-3 d-flex gap-3";
-          card.innerHTML =
-            "<img src=\"" + imgSrc + "\" alt=\"\" class=\"rounded-circle border flex-shrink-0\" style=\"width: 32px; height: 32px; object-fit: cover;\" onerror=\"this.src='/static/profile_pics/default.jpg'; this.onerror=null;\">" +
-            "<div class=\"flex-grow-1 min-width-0\">" +
-              "<div class=\"d-flex justify-content-between align-items-start mb-1\">" +
-                "<span class=\"fw-bold small\">" + (c.author_name || "Unknown") + "</span>" +
-                "<small class=\"text-muted\">" + (c.created_at || "") + "</small>" +
-              "</div>" +
-              "<div class=\"small text-secondary report-comment-body\">" + (c.comment_body || "") + "</div>" +
-            "</div>";
-          listEl.appendChild(card);
+          var pid = c.parent_comment_id;
+          if (pid == null || pid === "") {
+            topLevel.push(c);
+          } else {
+            if (!repliesByParent[pid]) repliesByParent[pid] = [];
+            repliesByParent[pid].push(c);
+          }
+        });
+
+        function appendReplies(container, parentId, depth) {
+          var replies = repliesByParent[parentId] || [];
+          replies.forEach(function (r) {
+            var replyWrapper = document.createElement("div");
+            replyWrapper.className = "report-comment-reply-wrapper";
+            replyWrapper.style.marginLeft = depth > 0 ? "24px" : "40px";
+            replyWrapper.style.paddingLeft = "12px";
+            replyWrapper.style.borderLeft = "2px solid #dee2e6";
+            replyWrapper.style.marginTop = "4px";
+            replyWrapper.appendChild(buildCommentCard(r, true));
+            container.appendChild(replyWrapper);
+            appendReplies(replyWrapper, r.comment_id, depth + 1);
+          });
+        }
+
+        topLevel.forEach(function (c) {
+          listEl.appendChild(buildCommentCard(c, false));
+          appendReplies(listEl, c.comment_id, 0);
         });
       }
+
+      document.addEventListener("click", function (e) {
+        var replyLink = e.target.closest(".comment-reply-link");
+        var editLink = e.target.closest(".comment-edit-link");
+        if (replyLink) {
+          e.preventDefault();
+          var parentId = replyLink.getAttribute("data-comment-id") || "";
+          var authorName = replyLink.getAttribute("data-author-name") || "";
+          document.dispatchEvent(new CustomEvent("openReportCommentEditor", { detail: { mode: "reply", parentCommentId: parentId, replyToAuthor: authorName } }));
+          return;
+        }
+        if (editLink) {
+          e.preventDefault();
+          var commentId = editLink.getAttribute("data-comment-id") || "";
+          var body = (editLink.getAttribute("data-comment-body") || "").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+          document.dispatchEvent(new CustomEvent("openReportCommentEditor", { detail: { mode: "edit", commentId: commentId, commentBody: body } }));
+          return;
+        }
+      });
     
       var listEl = document.getElementById("pendingReportList");
       if (listEl) {
@@ -292,10 +360,13 @@ document.addEventListener("DOMContentLoaded", function () {
           var placeholder = document.getElementById("reportDetailPlaceholder");
           var content = document.getElementById("reportDetailContent");
           if (placeholder) placeholder.style.display = "none";
-          if (content) content.style.display = "block";
+          if (content) content.style.display = "grid";
           var sharedCommentSection = document.getElementById("sharedCommentSection");
           var pendingDetailCol = document.querySelector("#reportDetailContent").closest(".col-md-8");
-          if (sharedCommentSection && pendingDetailCol) pendingDetailCol.appendChild(sharedCommentSection);
+          if (sharedCommentSection && pendingDetailCol) {
+            pendingDetailCol.appendChild(sharedCommentSection);
+            sharedCommentSection.style.display = "";
+          }
           var titleEl = document.getElementById("reportDetailTitle");
           var reportIdField = document.getElementById("currentActiveReportId");
           if (reportIdField) reportIdField.value = report.report_id;
@@ -336,6 +407,18 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           }
           });
+          }
+          var reportDetailCloseBtn = document.getElementById("reportDetailCloseBtn");
+          if (reportDetailCloseBtn) {
+            reportDetailCloseBtn.addEventListener("click", function () {
+              var placeholder = document.getElementById("reportDetailPlaceholder");
+              var content = document.getElementById("reportDetailContent");
+              if (placeholder) placeholder.style.display = "block";
+              if (content) content.style.display = "none";
+              var sharedCommentSection = document.getElementById("sharedCommentSection");
+              if (sharedCommentSection) sharedCommentSection.style.display = "none";
+              document.querySelectorAll(".report-list-item.active").forEach(function (el) { el.classList.remove("active"); });
+            });
           }
           var approvedBtn = document.getElementById("reportApprovedBtn");
           if (approvedBtn) {
@@ -383,50 +466,59 @@ document.addEventListener("DOMContentLoaded", function () {
               if (bodyEl) bodyEl.innerHTML = report.report_content || "";
               var sharedCommentSection = document.getElementById("sharedCommentSection");
               var reviewedDetailCol = document.querySelector("#reviewedDetailContent").closest(".col-md-8");
-              if (sharedCommentSection && reviewedDetailCol) reviewedDetailCol.appendChild(sharedCommentSection);
+              if (sharedCommentSection && reviewedDetailCol) {
+                reviewedDetailCol.appendChild(sharedCommentSection);
+                sharedCommentSection.style.display = "";
+              }
               var commentReportIdEl = document.getElementById("commentReportId");
               if (commentReportIdEl) commentReportIdEl.value = report.report_id;
               renderReportComments(report);
           });
           }
-        // CC tab click handler
-        var ccListEl = document.getElementById("ccReportList");
-        if (ccListEl) {
-            ccListEl.addEventListener("click", function (e) {
-                var commentReportIdEl = document.getElementById("commentReportId");
-                if (commentReportIdEl) commentReportIdEl.value = reportId;
-                var item = e.target.closest(".cc-report-list-item");
-                if (!item) return;
-                var reportId = parseInt(item.getAttribute("data-report-id"), 10);
-                var report = reportsData.find(function (r) { return r.report_id === reportId; });
-                if (!report) return;
-                
-                // Set active state only on CC list items
-                document.querySelectorAll("#ccReportList .cc-report-list-item").forEach(function (el) { el.classList.remove("active"); });
-                item.classList.add("active");
-                
-                // Show detail, hide placeholder
-                var placeholder = document.getElementById("ccDetailPlaceholder");
-                var content = document.getElementById("ccDetailContent");
-                if (placeholder) placeholder.style.display = "none";
-                if (content) content.style.display = "block";
-                
-                // Populate detail fields
-                var titleEl = document.getElementById("ccDetailTitle");
-                if (titleEl) titleEl.textContent = "Weekly-" + report.author_name + "(" + report.week_name + ")";
-                var revEl = document.getElementById("ccDetailReviewer");
-                if (revEl) revEl.textContent = report.reviewer_name || "";
-                var ccEl = document.getElementById("ccDetailCC");
-                if (ccEl) ccEl.textContent = report.cc_names || "";
-                var deptEl = document.getElementById("ccDetailDepartment");
-                if (deptEl) deptEl.textContent = report.department_name || "";
-                var createdEl = document.getElementById("ccDetailCreated");
-                if (createdEl) createdEl.textContent = report.created_on || "";
-                var bodyEl = document.getElementById("ccDetailBody");
-                if (bodyEl) bodyEl.innerHTML = report.report_content || "";
-            });
-        }
+             // CC tab click handler
+            var ccListEl = document.getElementById("ccReportList");
+            if (ccListEl) {
+                ccListEl.addEventListener("click", function (e) {
+                    var item = e.target.closest(".cc-report-list-item");
+                    if (!item) return;
+                    var reportId = parseInt(item.getAttribute("data-report-id"), 10);
+                    var report = reportsData.find(function (r) { return r.report_id === reportId; });
+                    if (!report) return;
 
+                    var commentReportIdEl = document.getElementById("commentReportId");
+                    if (commentReportIdEl) commentReportIdEl.value = report.report_id;
+
+                    document.querySelectorAll("#ccReportList .cc-report-list-item").forEach(function (el) { el.classList.remove("active"); });
+                    item.classList.add("active");
+
+                    var placeholder = document.getElementById("ccDetailPlaceholder");
+                    var content = document.getElementById("ccDetailContent");
+                    if (placeholder) placeholder.style.display = "none";
+                    if (content) content.style.display = "block";
+
+                    // Move shared comment section into CC detail column so it shows in this tab
+                    var sharedCommentSection = document.getElementById("sharedCommentSection");
+                    var ccDetailCol = document.getElementById("ccDetailContent") && document.getElementById("ccDetailContent").closest(".col-md-8");
+                    if (sharedCommentSection && ccDetailCol) {
+                      ccDetailCol.appendChild(sharedCommentSection);
+                      sharedCommentSection.style.display = "";
+                    }
+
+                    var titleEl = document.getElementById("ccDetailTitle");
+                    if (titleEl) titleEl.textContent = "Weekly-" + report.author_name + "(" + report.week_name + ")";
+                    var revEl = document.getElementById("ccDetailReviewer");
+                    if (revEl) revEl.textContent = report.reviewer_name || "";
+                    var ccEl = document.getElementById("ccDetailCC");
+                    if (ccEl) ccEl.textContent = report.cc_names || "";
+                    var deptEl = document.getElementById("ccDetailDepartment");
+                    if (deptEl) deptEl.textContent = report.department_name || "";
+                    var createdEl = document.getElementById("ccDetailCreated");
+                    if (createdEl) createdEl.textContent = report.created_on || "";
+                    var bodyEl = document.getElementById("ccDetailBody");
+                    if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+                    renderReportComments(report);
+                });
+            }
             // Company-wide tab click handler
             var companyWideListEl = document.getElementById("companyWideReportList");
             if (companyWideListEl) {
@@ -477,7 +569,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             }
 
-            // When switching to a tab, re-show the selected report detail if one was already selected (so it doesn't disappear)
+        // When switching to a tab, re-show the selected report detail if one was already selected (so it doesn't disappear)
         document.addEventListener('shown.bs.tab', function (e) {
             if (!e.target || !e.target.getAttribute || e.target.getAttribute('data-bs-toggle') !== 'tab') return;
             var href = e.target.getAttribute('href') || '';
@@ -485,17 +577,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (href === '#Pending') {
                 var activeItem = document.querySelector('#pendingReportList .report-list-item.active');
-                if (!activeItem) return;
+                if (!activeItem) {
+                  sharedCommentSection = document.getElementById("sharedCommentSection");
+                  if (sharedCommentSection) sharedCommentSection.style.display = "none";
+                  return;
+                }
                 reportId = parseInt(activeItem.getAttribute('data-report-id'), 10);
                 report = reportsData.find(function (r) { return r.report_id === reportId; });
                 if (!report) return;
                 placeholder = document.getElementById("reportDetailPlaceholder");
                 content = document.getElementById("reportDetailContent");
                 if (placeholder) placeholder.style.display = "none";
-                if (content) content.style.display = "block";
+                if (content) content.style.display = "grid";
                 sharedCommentSection = document.getElementById("sharedCommentSection");
                 var pendingDetailCol = document.querySelector("#reportDetailContent").closest(".col-md-8");
-                if (sharedCommentSection && pendingDetailCol) pendingDetailCol.appendChild(sharedCommentSection);
+                if (sharedCommentSection && pendingDetailCol) {
+                  pendingDetailCol.appendChild(sharedCommentSection);
+                  sharedCommentSection.style.display = "";
+                }
                 var commentReportIdEl = document.getElementById("commentReportId");
                 if (commentReportIdEl) commentReportIdEl.value = report.report_id;
                 var reportIdField = document.getElementById("currentActiveReportId");
@@ -503,7 +602,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 renderReportComments(report);
             } else if (href === '#Reviewed') {
                 var activeItemRev = document.querySelector('#reviewedReportList .reviewed-report-list-item.active');
-                if (!activeItemRev) return;
+                if (!activeItemRev) {
+                  sharedCommentSection = document.getElementById("sharedCommentSection");
+                  if (sharedCommentSection) sharedCommentSection.style.display = "none";
+                  return;
+                }
                 reportId = parseInt(activeItemRev.getAttribute('data-report-id'), 10);
                 report = reportsData.find(function (r) { return r.report_id === reportId; });
                 if (!report) return;
@@ -513,18 +616,36 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (content) content.style.display = "block";
                 sharedCommentSection = document.getElementById("sharedCommentSection");
                 var reviewedDetailCol = document.querySelector("#reviewedDetailContent").closest(".col-md-8");
-                if (sharedCommentSection && reviewedDetailCol) reviewedDetailCol.appendChild(sharedCommentSection);
+                if (sharedCommentSection && reviewedDetailCol) {
+                  reviewedDetailCol.appendChild(sharedCommentSection);
+                  sharedCommentSection.style.display = "";
+                }
                 var commentReportIdEl = document.getElementById("commentReportId");
                 if (commentReportIdEl) commentReportIdEl.value = report.report_id;
                 renderReportComments(report);
             } else if (href === '#cc') {
                 var activeItemCc = document.querySelector('#ccReportList .cc-report-list-item.active');
-                if (!activeItemCc) return;
+                if (!activeItemCc) {
+                  sharedCommentSection = document.getElementById("sharedCommentSection");
+                  if (sharedCommentSection) sharedCommentSection.style.display = "none";
+                  return;
+                }
                 reportId = parseInt(activeItemCc.getAttribute('data-report-id'), 10);
+                report = reportsData.find(function (r) { return r.report_id === reportId; });
+                if (!report) return;
                 placeholder = document.getElementById("ccDetailPlaceholder");
                 content = document.getElementById("ccDetailContent");
                 if (placeholder) placeholder.style.display = "none";
                 if (content) content.style.display = "block";
+                sharedCommentSection = document.getElementById("sharedCommentSection");
+                var ccDetailCol = document.querySelector("#ccDetailContent") && document.querySelector("#ccDetailContent").closest(".col-md-8");
+                if (sharedCommentSection && ccDetailCol) {
+                  ccDetailCol.appendChild(sharedCommentSection);
+                  sharedCommentSection.style.display = "";
+                }
+                var commentReportIdEl = document.getElementById("commentReportId");
+                if (commentReportIdEl) commentReportIdEl.value = report.report_id;
+                renderReportComments(report);
             }
         });
       }
@@ -542,7 +663,7 @@ document.addEventListener("DOMContentLoaded", function () {
               placeholder: "Write your report..."
           }).then(function (editor) {
               window.reportCKInstance = editor;
-          }).catch(function (err) { console.error(err); });
+          }).catch(function () { /* CKEditor init failed */ });
       }
       if (document.readyState === "loading") {
           document.addEventListener("DOMContentLoaded", initReportCK);
@@ -558,11 +679,16 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!modal || !modalTitle) return;
   
       modal.addEventListener("show.bs.modal", function (e) {
+          var form = modal.querySelector("form");
+          if (form && form.action && form.action.indexOf("/reports/edit/") !== -1) {
+              modalTitle.textContent = "Update Weekly Report";
+              return;
+          }
           var link = e.relatedTarget;
           if (link && link.classList && link.classList.contains("list-group-item-action")) {
               var name = link.getAttribute("data-report-name") || "";
               var title = link.getAttribute("data-report-title") || "";
-              modalTitle.textContent = title ? "Edit: " + title : "Edit report";
+              modalTitle.textContent = title ? "Edit: " + title : "Update Weekly Report";
           } else {
               modalTitle.textContent = "Weekly report";
           }
@@ -576,56 +702,69 @@ document.addEventListener("DOMContentLoaded", function () {
       var sendBtn = document.getElementById("commentEditorSend");
       var commentEditorInstance = null;
       var currentPlaceholder = null;
+      var commentEditId = null;
+      var commentParentId = null;
+  
+      document.addEventListener("openReportCommentEditor", function (e) {
+          var d = e.detail || {};
+          var ph = document.querySelector(".comment-placeholder");
+          if (!ph || !popover) return;
+          showCommentEditor(ph, d);
+      });
   
       function positionPopover(placeholder) {
-      if (!popover || !placeholder) return;
-      
-      var rect = placeholder.getBoundingClientRect();
-      var gap = 10;
-      var viewportWidth = window.innerWidth;
-      
-      // Calculate Top
-      var topPosition = rect.top - popover.offsetHeight - gap;
-      
-      // Calculate Left (Center it to the placeholder, but keep it on screen)
-      var leftPosition = rect.left;
-      
-      // Check if the increased width goes off-screen to the right
-      if (leftPosition + popover.offsetWidth > viewportWidth) {
-          leftPosition = viewportWidth - popover.offsetWidth - 20; // 20px padding from edge
+          if (!popover || !placeholder) return;
+          var rect = placeholder.getBoundingClientRect();
+          var gap = 12;
+          var viewportWidth = window.innerWidth;
+          var viewportHeight = window.innerHeight;
+          var popoverHeight = popover.offsetHeight;
+          var popoverWidth = popover.offsetWidth;
+          var topPosition;
+          if (rect.top - popoverHeight - gap >= gap) {
+              topPosition = rect.top - popoverHeight - gap;
+          } else {
+              topPosition = rect.bottom + gap;
+          }
+          topPosition = Math.max(gap, Math.min(topPosition, viewportHeight - popoverHeight - gap));
+          var leftPosition = rect.left;
+          if (leftPosition + popoverWidth > viewportWidth - gap) leftPosition = viewportWidth - popoverWidth - gap;
+          if (leftPosition < gap) leftPosition = gap;
+          popover.style.top = topPosition + "px";
+          popover.style.left = leftPosition + "px";
       }
   
-      popover.style.top = topPosition + "px";
-      popover.style.left = Math.max(10, leftPosition) + "px";
-  }
-  
-      function showCommentEditor(placeholder) {
+      function showCommentEditor(placeholder, opts) {
           if (!popover || !placeholder) return;
-          
-          // 1. Hide the placeholder immediately
+          opts = opts || {};
+          commentEditId = (opts.mode === "edit" && opts.commentId) ? opts.commentId : null;
+          commentParentId = (opts.mode === "reply" && opts.parentCommentId) ? opts.parentCommentId : null;
+          placeholder.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
           currentPlaceholder = placeholder;
           currentPlaceholder.style.visibility = "hidden"; 
-  
-          // 2. Show the popover container
           popover.style.display = "block";
   
           var textarea = document.getElementById("commentreportCKEditor");
           if (!textarea) return;
+          var initialBody = (opts.mode === "edit" && opts.commentBody) ? opts.commentBody : "";
   
           if (typeof ClassicEditor !== "undefined" && !commentEditorInstance) {
+              textarea.value = initialBody;
               ClassicEditor.create(textarea, { 
-                  placeholder: "Write your comment..."
+                  placeholder: opts.mode === "reply" && opts.replyToAuthor ? "Reply to " + opts.replyToAuthor + "..." : "Write your comment..."
               })
               .then(function (editor) {
                   commentEditorInstance = editor;
-                  
-                  // Reposition once the editor is actually rendered and has height
-                  setTimeout(() => positionPopover(placeholder), 50);
-  
+                  if (initialBody) editor.setData(initialBody);
+                  setTimeout(function () { positionPopover(placeholder); }, 400);
                   editor.keystrokes.set("Ctrl+Enter", function () { sendComment(); });
               })
-              .catch(function (err) { console.error(err); });
+              .catch(function () { /* Comment editor init failed */ });
+          } else if (commentEditorInstance) {
+              commentEditorInstance.setData(initialBody);
+              positionPopover(placeholder);
           } else {
+              textarea.value = initialBody;
               positionPopover(placeholder);
           }
       }
@@ -644,12 +783,14 @@ document.addEventListener("DOMContentLoaded", function () {
   
       function finalizeClose() {
           popover.style.display = "none";
+          commentEditId = null;
+          commentParentId = null;
           if (currentPlaceholder) {
               currentPlaceholder.style.visibility = "visible"; 
               currentPlaceholder.style.display = ""; 
               currentPlaceholder = null;
           }
-          var textarea = document.getElementById("commentCKEditor");
+          var textarea = document.getElementById("commentreportCKEditor");
           if (textarea) textarea.value = "";
       }
 
@@ -687,17 +828,36 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Please select a report first.");
             return;
         }
-        var body = commentEditorInstance ? commentEditorInstance.getData() : "";
+        var body = "";
+        if (commentEditorInstance) {
+            try { body = commentEditorInstance.getData() || ""; } catch (e) {}
+        }
+        if (!body) {
+            var ta = document.getElementById("commentreportCKEditor");
+            if (ta) body = ta.value || "";
+        }
         body = (body || "").trim();
         if (!body) {
             alert("Please write a comment.");
             return;
         }
         
-        var formData = new FormData();
-        formData.append("comment_body", body);
+        var isEdit = !!commentEditId;
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/reports/" + reportId + "/comment");
+        var url, method;
+        if (isEdit) {
+            url = "/reports/" + reportId + "/comments/" + commentEditId;
+            method = "PATCH";
+        } else {
+            url = "/reports/" + reportId + "/comment";
+            method = "POST";
+        }
+        var payload = { comment_body: body };
+        if (!isEdit && commentParentId) payload.parent_comment_id = commentParentId;
+        var bodyJson = JSON.stringify(payload);
+        
+        xhr.open(method, url);
+        xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
         xhr.setRequestHeader("Cache-Control", "no-cache");
         xhr.onload = function () {
@@ -708,26 +868,70 @@ document.addEventListener("DOMContentLoaded", function () {
                         closeCommentEditor();
                         var listEl = document.getElementById("reportDetailCommentsList");
                         var emptyEl = document.getElementById("reportDetailCommentsEmpty");
-                        if (res.author_name !== undefined && listEl) {
+                        if (isEdit) {
+                            var card = listEl ? listEl.querySelector(".report-comment-card[data-comment-id=\"" + commentEditId + "\"]") : null;
+                            var bodyEl = card ? card.querySelector(".report-comment-body") : null;
+                            if (bodyEl && res.comment_body !== undefined) bodyEl.innerHTML = res.comment_body;
+                            if (typeof alertify !== "undefined") alertify.success("Comment updated.");
+                            else alert("Comment updated.");
+                        } else if (res.author_name !== undefined && listEl) {
                             if (emptyEl) emptyEl.style.display = "none";
-                            var card = document.createElement("div");
+                            var cuEl = document.getElementById("current-user-member-id");
+                            var curMemberId = (cuEl && cuEl.textContent) ? parseInt(cuEl.textContent, 10) : null;
                             var imgSrc = "/static/profile_pics/" + (res.user_image || "default.jpg");
-                            card.className = "list-group-item list-group-item-action border-0 py-3 d-flex gap-3";
+                            var bodyEsc = (res.comment_body || "").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                            var authorEsc = (res.author_name || "").replace(/"/g, "&quot;");
+                            var isReply = !!commentParentId;
+                            var card = document.createElement("div");
+                            card.className = "list-group-item list-group-item-action border-0 py-2 d-flex gap-2 report-comment-card" + (isReply ? " report-comment-reply" : "");
+                            card.setAttribute("data-comment-id", res.comment_id || "");
                             card.innerHTML =
-                                "<img src=\"" + imgSrc + "\" alt=\"\" class=\"rounded-circle border flex-shrink-0\" style=\"width: 32px; height: 32px; object-fit: cover;\" onerror=\"this.src='/static/profile_pics/default.jpg'; this.onerror=null;\">" +
+                                "<img src=\"" + imgSrc + "\" alt=\"\" class=\"rounded-circle border flex-shrink-0\" style=\"width: " + (isReply ? "28" : "32") + "px; height: " + (isReply ? "28" : "32") + "px; object-fit: cover;\" onerror=\"this.src='/static/profile_pics/default.jpg'; this.onerror=null;\">" +
                                 "<div class=\"flex-grow-1 min-width-0\">" +
                                 "<div class=\"d-flex justify-content-between align-items-start mb-1\">" +
                                 "<span class=\"fw-bold small\">" + (res.author_name || "Unknown") + "</span>" +
                                 "<small class=\"text-muted\">" + (res.created_at || "") + "</small>" +
                                 "</div>" +
-                                "<div class=\"small text-secondary report-comment-body\">" + (res.comment_body || "") + "</div>" +
+                                "<div class=\"d-flex justify-content-between align-items-start gap-2\">" +
+                                "<div class=\"small report-comment-body flex-grow-1 min-width-0" + (isReply ? " text-muted" : " text-secondary") + "\">" + (res.comment_body || "") + "</div>" +
+                                "<div class=\"d-flex gap-2 flex-shrink-0\">" +
+                                "<a href=\"javascript:void(0)\" class=\"comment-reply-link small text-primary text-decoration-none\" data-comment-id=\"" + (res.comment_id || "") + "\" data-author-name=\"" + authorEsc + "\">Reply</a>" +
+                                (curMemberId ? "<a href=\"javascript:void(0)\" class=\"comment-edit-link small text-primary text-decoration-none\" data-comment-id=\"" + (res.comment_id || "") + "\" data-comment-body=\"" + bodyEsc + "\">Edit</a>" : "") +
+                                "</div>" +
+                                "</div>" +
                                 "</div>";
-                            listEl.appendChild(card);
-                        }
-                        if (typeof bootstrap !== "undefined" && bootstrap.Toast) {
-                            showCommentSuccessToast();
-                        } else {
-                            alert("Comment added.");
+                            if (isReply) {
+                                var parentCard = listEl.querySelector(".report-comment-card[data-comment-id=\"" + commentParentId + "\"]");
+                                var wrapper = document.createElement("div");
+                                wrapper.className = "report-comment-reply-wrapper";
+                                wrapper.style.paddingLeft = "12px";
+                                wrapper.style.borderLeft = "2px solid #dee2e6";
+                                wrapper.style.marginTop = "4px";
+                                wrapper.appendChild(card);
+                                if (parentCard) {
+                                    var parentWrapper = parentCard.closest(".report-comment-reply-wrapper");
+                                    wrapper.style.marginLeft = parentWrapper ? "24px" : "40px";
+                                    if (parentWrapper) {
+                                        parentWrapper.appendChild(wrapper);
+                                    } else {
+                                        wrapper.style.marginLeft = "40px";
+                                        var sib = parentCard.nextElementSibling;
+                                        var insertAfter = parentCard;
+                                        while (sib && sib.classList && sib.classList.contains("report-comment-reply-wrapper")) {
+                                            insertAfter = sib;
+                                            sib = sib.nextElementSibling;
+                                        }
+                                        listEl.insertBefore(wrapper, insertAfter.nextSibling);
+                                    }
+                                } else {
+                                    wrapper.style.marginLeft = "40px";
+                                    listEl.appendChild(wrapper);
+                                }
+                            } else {
+                                listEl.appendChild(card);
+                            }
+                            if (typeof alertify !== "undefined") alertify.success("Comment added.");
+                            else alert("Comment added.");
                         }
                         return;
                     }
@@ -736,7 +940,7 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Failed to save comment.");
         };
         xhr.onerror = function () { alert("Failed to save comment."); };
-        xhr.send(formData);
+        xhr.send(bodyJson);
     }
   
       // Event Listeners
@@ -744,7 +948,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (sendBtn) sendBtn.addEventListener("click", sendComment);
   
       document.addEventListener("click", function (e) {
-          var ph = e.target.closest(".comment-placeholder");
+          var el = e.target;
+          if (el && el.nodeType !== 1) el = el.parentElement; // text node -> parent element
+          var ph = el && el.closest ? el.closest(".comment-placeholder") : null;
           
           // If clicking the placeholder
           if (ph) {
@@ -789,53 +995,59 @@ document.addEventListener("DOMContentLoaded", function () {
 function openEditModal() {
     var reportIdField = document.getElementById("currentActiveReportId");
     if (!reportIdField || !reportIdField.value) return;
-    
+
     var reportId = parseInt(reportIdField.value, 10);
     var reportsDataEl = document.getElementById("reports-data");
     var reportsData = JSON.parse(reportsDataEl.textContent || "[]");
-    
-    // Find the report data
+
     var report = reportsData.find(function (r) { return r.report_id === reportId; });
-    
+
     if (report) {
-        // Change Modal UI to Edit Mode
-        document.getElementById("newReportModalLabel").textContent = "Edit Weekly Report";
+        document.getElementById("newReportModalLabel").textContent = "Update Weekly Report";
         var form = document.querySelector("#newReportModal form");
         form.action = "/reports/edit/" + reportId;
-        
+
         var submitBtn = document.querySelector("#newReportModal button[type='submit']");
         if (submitBtn) submitBtn.textContent = "Update Report";
 
-        // Fill Basic Fields (Ensure these 'name' attributes match your form)
-        var dateSelect = document.querySelector("select[name='report_date']");
-        if (dateSelect) dateSelect.value = report.week_name;
-        
-        var revSelect = document.querySelector("select[name='reviewer_id']");
-        if (revSelect) revSelect.value = report.reviewer_id;
+        var dateSelect = document.getElementById("weekly-report-date");
+        if (dateSelect) dateSelect.value = report.week_name || "";
 
-        // Fill Rich Text (TinyMCE)
-        if (window.tinymce && tinymce.get('reportBody')) {
-            tinymce.get('reportBody').setContent(report.report_content || "");
-        } else {
-            var bodyField = document.getElementById("reportBody");
-            if (bodyField) bodyField.value = report.report_content || "";
+        var reviewerIdInput = document.getElementById("selectedReviewerId");
+        var reviewerDisplay = document.getElementById("reportReviewerDisplay");
+        if (reviewerIdInput) reviewerIdInput.value = report.reviewer_id || "";
+        var usersData = [];
+        try {
+            var usersEl = document.getElementById("users-data");
+            if (usersEl) usersData = JSON.parse(usersEl.textContent || "[]");
+        } catch (e) {}
+        var reviewerUser = usersData.find(function(u) { return u.member_id === report.reviewer_id; });
+        if (reviewerDisplay && reviewerUser) {
+            var name = reviewerUser.name || reviewerUser.username || "Unknown";
+            reviewerDisplay.innerHTML = "<div class=\"d-flex align-items-center gap-2\"><span class=\"fw-bold text-primary\">" + name + "</span></div>";
+        } else if (reviewerDisplay && report.reviewer_name) {
+            reviewerDisplay.innerHTML = "<div class=\"d-flex align-items-center gap-2\"><span class=\"fw-bold text-primary\">" + report.reviewer_name + "</span></div>";
         }
 
-        // Re-populate CC Chips
-        // We trigger the 'Clear all' button first to avoid duplicates
+        if (window.reportCKInstance && typeof window.reportCKInstance.setData === "function") {
+            window.reportCKInstance.setData(report.report_content || "");
+        }
+
         var clearBtn = document.getElementById("reportCCClear");
+        var ccSearch = document.getElementById("reportCCSearch");
+        if (ccSearch) ccSearch.value = "";
         if (clearBtn) clearBtn.click();
 
-        // If your Python sends 'cc_member_ids', we 'click' them in the list to recreate chips
         if (report.cc_member_ids && report.cc_member_ids.length > 0) {
-            report.cc_member_ids.forEach(function(id) {
-                var contactItem = document.querySelector('#reportCCList [data-member-id="' + id + '"]');
-                if (contactItem) contactItem.click();
-            });
+            setTimeout(function() {
+                report.cc_member_ids.forEach(function(id) {
+                    var contactItem = document.querySelector("#reportCCList [data-member-id=\"" + id + "\"]");
+                    if (contactItem) contactItem.click();
+                });
+            }, 100);
         }
 
-        // Open the Modal
-        var modalEl = document.getElementById('newReportModal');
+        var modalEl = document.getElementById("newReportModal");
         var modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
         modalInstance.show();
     }
@@ -857,9 +1069,9 @@ document.addEventListener("DOMContentLoaded", function() {
             
             var clearBtn = document.getElementById("reportCCClear");
             if (clearBtn) clearBtn.click();
-            
-            if (window.tinymce && tinymce.get('reportBody')) {
-                tinymce.get('reportBody').setContent('');
+
+            if (window.reportCKInstance && typeof window.reportCKInstance.setData === "function") {
+                window.reportCKInstance.setData("");
             }
         });
     }
@@ -892,30 +1104,30 @@ function toggleMaximizeComments() {
 }
 
 // Update the "Hide/Show" text when the collapse happens
-document.getElementById('commentSectionWrapper').addEventListener('hide.bs.collapse', function () {
-    document.getElementById('toggleText').innerText = 'Show';
-});
-document.getElementById('commentSectionWrapper').addEventListener('show.bs.collapse', function () {
-    document.getElementById('toggleText').innerText = 'Hide';
-});
+// document.getElementById('commentSectionWrapper').addEventListener('hide.bs.collapse', function () {
+//     document.getElementById('toggleText').innerText = 'Show';
+// });
+// document.getElementById('commentSectionWrapper').addEventListener('show.bs.collapse', function () {
+//     document.getElementById('toggleText').innerText = 'Hide';
+// });
 
-function toggleCommentHeight() {
-    const list = document.getElementById('reportDetailCommentsList');
-    const icon = document.getElementById('expandIcon');
+// function toggleCommentHeight() {
+//     const list = document.getElementById('reportDetailCommentsList');
+//     const icon = document.getElementById('expandIcon');
     
-    if (list.style.maxHeight === "280px") {
-        list.style.maxHeight = "600px";
-        icon.classList.replace('bi-arrows-angle-expand', 'bi-arrows-angle-contract');
-    } else {
-        list.style.maxHeight = "280px";
-        icon.classList.replace('bi-arrows-angle-contract', 'bi-arrows-angle-expand');
-    }
-}
+//     if (list.style.maxHeight === "280px") {
+//         list.style.maxHeight = "600px";
+//         icon.classList.replace('bi-arrows-angle-expand', 'bi-arrows-angle-contract');
+//     } else {
+//         list.style.maxHeight = "280px";
+//         icon.classList.replace('bi-arrows-angle-contract', 'bi-arrows-angle-expand');
+//     }
+// }
 
 // Update text when Bootstrap collapse runs
-const wrapper = document.getElementById('commentSectionWrapper');
-wrapper.addEventListener('hide.bs.collapse', () => document.getElementById('toggleLink').innerText = 'Show');
-wrapper.addEventListener('show.bs.collapse', () => document.getElementById('toggleLink').innerText = 'Hide');
+// const wrapper = document.getElementById('commentSectionWrapper');
+// wrapper.addEventListener('hide.bs.collapse', () => document.getElementById('toggleLink').innerText = 'Show');
+// wrapper.addEventListener('show.bs.collapse', () => document.getElementById('toggleLink').innerText = 'Hide');
 
 function appendComment(comment) {
     const list = document.getElementById('reportDetailCommentsList');
@@ -940,33 +1152,5 @@ function appendComment(comment) {
     list.insertAdjacentHTML('beforeend', commentHtml);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Grab the JSON you already have in your <script> tag
-    const reportsData = JSON.parse(document.getElementById('reports-data').textContent);
-    const reportModalElement = document.getElementById('companyWideReportModal');
-    const bsModal = new bootstrap.Modal(reportModalElement);
+// Company-wide report modal is opened from gridjs.init.js when clicking the Name link in the grid
 
-    // Listen for clicks on the table rows
-    document.querySelectorAll('.clickable-row').forEach(row => {
-        row.addEventListener('click', function() {
-            const reportId = this.getAttribute('data-report-id');
-            
-            // Find the report in your JSON array by ID
-            const report = reportsData.find(r => r.report_id == reportId);
-
-            if (report) {
-                // Populate metadata
-                document.getElementById('companyWideModalTitle').innerText = `Weekly-${report.author_name} (${report.week_name})`;
-                document.getElementById('companyWideModalReviewer').innerText = report.reviewer_name || '—';
-                document.getElementById('companyWideModalCC').innerText = report.cc_list || 'None';
-                document.getElementById('companyWideModalDepartment').innerText = report.department_name || 'N/A';
-                document.getElementById('companyWideModalCreated').innerText = report.created_at;
-
-                // POPULATE CONTENT: Injects the <strong>, <ol>, and <li> tags from your DB
-                document.getElementById('companyWideModalBody').innerHTML = report.report_content;
-
-                bsModal.show();
-            }
-        });
-    });
-});
