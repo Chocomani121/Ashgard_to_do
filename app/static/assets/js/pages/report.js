@@ -9,7 +9,7 @@
       if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
       return name.substring(0, 2).toUpperCase();
     }
-  
+
     
     function getAvatarHtml(user, size = "24px", fontSize = "10px") {
       // Check if user exists and has initials
@@ -104,8 +104,8 @@
           reviewerList.innerHTML = "";
   
           // Ensure allUsers exists before filtering
-          const filtered = (allUsers || []).filter(u => 
-              u.name && u.name.toLowerCase().includes(filter.toLowerCase())
+          const filtered = (allUsers || []).filter(u =>
+              (u.name || u.username || "").toLowerCase().includes((filter || "").toLowerCase())
           );
   
           filtered.forEach(user => {
@@ -126,15 +126,14 @@
                   // 1. Update the visible display
                   reviewerDisplay.innerHTML = `
                       <div class="d-flex align-items-center gap-2">
-                          ${getAvatarHtml(user)} 
-                          <span class="fw-bold text-primary">${user.name}</span>
+                          ${getAvatarHtml(user)}
+                          <span class="fw-bold text-primary">${user.name || user.username || ""}</span>
                       </div>`;
                   
                   // 2. THIS IS THE MOST IMPORTANT PART FOR SAVING
                   // It puts the member's ID into the hidden input you just placed
                   if (reviewerIdInput) {
                       reviewerIdInput.value = user.member_id;
-                      console.log("ID successfully assigned to form:", reviewerIdInput.value);
                   }
                   
                   reviewerDropdown.classList.add("d-none");
@@ -145,12 +144,12 @@
       // E. CC Functions
       function renderCC(filter = "") {
         ccList.innerHTML = "";
-        allUsers.filter(u => u.name.toLowerCase().includes(filter.toLowerCase())).forEach(user => {
+        allUsers.filter(u => (u.name || u.username || "").toLowerCase().includes((filter || "").toLowerCase())).forEach(user => {
           const isSelected = selectedCCMembers.find(m => m.member_id === user.member_id);
           const item = document.createElement("a");
           item.className = `list-group-item list-group-item-action border-0 d-flex align-items-center gap-2 small ${isSelected ? 'bg-light text-primary' : ''}`;
           item.setAttribute("data-member-id", user.member_id);
-          item.innerHTML = `${getAvatarHtml(user)} <span>${user.name}</span>`;
+          item.innerHTML = `${getAvatarHtml(user)} <span>${user.name || user.username || ""}</span>`;
           item.onclick = () => {
             const index = selectedCCMembers.findIndex(m => m.member_id === user.member_id);
             if (index > -1) selectedCCMembers.splice(index, 1);
@@ -168,7 +167,7 @@
           const chip = document.createElement("div");
           chip.className = "badge bg-white text-dark border p-2 d-flex align-items-center gap-2 shadow-sm";
           chip.style.borderRadius = "50px";
-          chip.innerHTML = `${getAvatarHtml(user, "20px", "9px")} ${user.name} <i class="bx bx-x ms-1" style="cursor:pointer"></i>`;
+          chip.innerHTML = `${getAvatarHtml(user, "20px", "9px")} ${user.name || user.username || ""} <i class="bx bx-x ms-1" style="cursor:pointer"></i>`;
           chip.onclick = () => {
             selectedCCMembers = selectedCCMembers.filter(m => m.member_id !== user.member_id);
             renderCCChips();
@@ -664,7 +663,7 @@ document.addEventListener("DOMContentLoaded", function () {
               placeholder: "Write your report..."
           }).then(function (editor) {
               window.reportCKInstance = editor;
-          }).catch(function (err) { console.error(err); });
+          }).catch(function () { /* CKEditor init failed */ });
       }
       if (document.readyState === "loading") {
           document.addEventListener("DOMContentLoaded", initReportCK);
@@ -760,7 +759,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   setTimeout(function () { positionPopover(placeholder); }, 400);
                   editor.keystrokes.set("Ctrl+Enter", function () { sendComment(); });
               })
-              .catch(function (err) { console.error(err); });
+              .catch(function () { /* Comment editor init failed */ });
           } else if (commentEditorInstance) {
               commentEditorInstance.setData(initialBody);
               positionPopover(placeholder);

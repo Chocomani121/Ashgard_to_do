@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const tableEl = document.getElementById("companyWideReport");
     const containerEl = document.getElementById("table11-gridjs");
     const dateInput = document.getElementById('datepicker-range');
-    const searchInput = document.getElementById('custom-grid-search'); // Our new input
+    const searchInput = document.getElementById('custom-grid-search');
 
     if (!tableEl || !containerEl) return;
 
