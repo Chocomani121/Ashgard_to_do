@@ -554,10 +554,7 @@
                                         <p>1.</p><p>2.</p></textarea>
                                     </textarea>
                                 </div>
-                                <!-- <div class="p-2 bg-light border-top d-flex gap-3 text-muted" style="font-size: 0.8rem;">
-                                    <span><i class="bx bx-paperclip"></i> Attachment</span>
-                                    <span><i class="bx bx-font-color"></i> Content style</span>
-                                </div> -->
+                     
                             </div>
                         </div>
 
@@ -655,6 +652,7 @@
     </div>
 </div>
 
+<span id="current-user-member-id" class="d-none">{% if current_user %}{{ current_user.member_id }}{% endif %}</span>
 <script type="application/json" id="users-data">{{ users_json|tojson }}</script>
 <script type="application/json" id="reports-data">{{ reports_json|tojson }}</script>
 <script src="{{ url_for('static', filename='assets/js/pages/report.js') }}"></script>
