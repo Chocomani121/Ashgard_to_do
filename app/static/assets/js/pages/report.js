@@ -248,6 +248,38 @@ document.addEventListener("DOMContentLoaded", function () {
     if (reportsDataEl) {
       var reportsData = JSON.parse(reportsDataEl.textContent || "[]");
       
+      var currentUserMemberId = null;
+      try {
+        var cuEl = document.getElementById("current-user-member-id");
+        if (cuEl && cuEl.textContent) currentUserMemberId = parseInt(cuEl.textContent, 10);
+      } catch (e) {}
+
+      function buildCommentCard(c, isReply) {
+        var imgSrc = "/static/profile_pics/" + (c.author_image || "default.jpg");
+        var isOwnComment = (currentUserMemberId != null && c.member_id === currentUserMemberId);
+        var bodyEscaped = (c.comment_body || "").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        var authorEscaped = (c.author_name || "Unknown").replace(/"/g, "&quot;");
+        var card = document.createElement("div");
+        card.className = "list-group-item list-group-item-action border-0 py-2 d-flex gap-2 report-comment-card" + (isReply ? " report-comment-reply" : "");
+        card.setAttribute("data-comment-id", c.comment_id);
+        card.innerHTML =
+          "<img src=\"" + imgSrc + "\" alt=\"\" class=\"rounded-circle border flex-shrink-0\" style=\"width: " + (isReply ? "28" : "32") + "px; height: " + (isReply ? "28" : "32") + "px; object-fit: cover;\" onerror=\"this.src='/static/profile_pics/default.jpg'; this.onerror=null;\">" +
+          "<div class=\"flex-grow-1 min-width-0\">" +
+            "<div class=\"d-flex justify-content-between align-items-start mb-1\">" +
+              "<span class=\"fw-bold small\">" + (c.author_name || "Unknown") + "</span>" +
+              "<small class=\"text-muted\">" + (c.created_at || "") + "</small>" +
+            "</div>" +
+            "<div class=\"d-flex justify-content-between align-items-start gap-2\">" +
+              "<div class=\"small report-comment-body flex-grow-1 min-width-0" + (isReply ? " text-muted" : " text-secondary") + "\">" + (c.comment_body || "") + "</div>" +
+              "<div class=\"d-flex gap-2 flex-shrink-0\">" +
+                "<a href=\"javascript:void(0)\" class=\"comment-reply-link small text-primary text-decoration-none\" data-comment-id=\"" + (c.comment_id || "") + "\" data-author-name=\"" + authorEscaped + "\">Reply</a>" +
+                (isOwnComment ? "<a href=\"javascript:void(0)\" class=\"comment-edit-link small text-primary text-decoration-none\" data-comment-id=\"" + (c.comment_id || "") + "\" data-comment-body=\"" + bodyEscaped + "\">Edit</a>" : "") +
+              "</div>" +
+            "</div>" +
+          "</div>";
+        return card;
+      }
+
       function renderReportComments(report) {
         var listEl = document.getElementById("reportDetailCommentsList");
         var emptyEl = document.getElementById("reportDetailCommentsEmpty");
@@ -262,22 +294,58 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (emptyEl) emptyEl.style.display = "none";
+
+        var topLevel = [];
+        var repliesByParent = {};
         comments.forEach(function (c) {
-          var card = document.createElement("div");
-          var imgSrc = "/static/profile_pics/" + (c.author_image || "default.jpg");
-          card.className = "list-group-item list-group-item-action border-0 py-2 d-flex gap-2";
-          card.innerHTML =
-            "<img src=\"" + imgSrc + "\" alt=\"\" class=\"rounded-circle border flex-shrink-0\" style=\"width: 32px; height: 32px; object-fit: cover;\" onerror=\"this.src='/static/profile_pics/default.jpg'; this.onerror=null;\">" +
-            "<div class=\"flex-grow-1 min-width-0\">" +
-              "<div class=\"d-flex justify-content-between align-items-start mb-1\">" +
-                "<span class=\"fw-bold small\">" + (c.author_name || "Unknown") + "</span>" +
-                "<small class=\"text-muted\">" + (c.created_at || "") + "</small>" +
-              "</div>" +
-              "<div class=\"small text-secondary report-comment-body\">" + (c.comment_body || "") + "</div>" +
-            "</div>";
-          listEl.appendChild(card);
+          var pid = c.parent_comment_id;
+          if (pid == null || pid === "") {
+            topLevel.push(c);
+          } else {
+            if (!repliesByParent[pid]) repliesByParent[pid] = [];
+            repliesByParent[pid].push(c);
+          }
+        });
+
+        function appendReplies(container, parentId, depth) {
+          var replies = repliesByParent[parentId] || [];
+          replies.forEach(function (r) {
+            var replyWrapper = document.createElement("div");
+            replyWrapper.className = "report-comment-reply-wrapper";
+            replyWrapper.style.marginLeft = depth > 0 ? "24px" : "40px";
+            replyWrapper.style.paddingLeft = "12px";
+            replyWrapper.style.borderLeft = "2px solid #dee2e6";
+            replyWrapper.style.marginTop = "4px";
+            replyWrapper.appendChild(buildCommentCard(r, true));
+            container.appendChild(replyWrapper);
+            appendReplies(replyWrapper, r.comment_id, depth + 1);
+          });
+        }
+
+        topLevel.forEach(function (c) {
+          listEl.appendChild(buildCommentCard(c, false));
+          appendReplies(listEl, c.comment_id, 0);
         });
       }
+
+      document.addEventListener("click", function (e) {
+        var replyLink = e.target.closest(".comment-reply-link");
+        var editLink = e.target.closest(".comment-edit-link");
+        if (replyLink) {
+          e.preventDefault();
+          var parentId = replyLink.getAttribute("data-comment-id") || "";
+          var authorName = replyLink.getAttribute("data-author-name") || "";
+          document.dispatchEvent(new CustomEvent("openReportCommentEditor", { detail: { mode: "reply", parentCommentId: parentId, replyToAuthor: authorName } }));
+          return;
+        }
+        if (editLink) {
+          e.preventDefault();
+          var commentId = editLink.getAttribute("data-comment-id") || "";
+          var body = (editLink.getAttribute("data-comment-body") || "").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+          document.dispatchEvent(new CustomEvent("openReportCommentEditor", { detail: { mode: "edit", commentId: commentId, commentBody: body } }));
+          return;
+        }
+      });
     
       var listEl = document.getElementById("pendingReportList");
       if (listEl) {
@@ -629,56 +697,69 @@ document.addEventListener("DOMContentLoaded", function () {
       var sendBtn = document.getElementById("commentEditorSend");
       var commentEditorInstance = null;
       var currentPlaceholder = null;
+      var commentEditId = null;
+      var commentParentId = null;
+  
+      document.addEventListener("openReportCommentEditor", function (e) {
+          var d = e.detail || {};
+          var ph = document.querySelector(".comment-placeholder");
+          if (!ph || !popover) return;
+          showCommentEditor(ph, d);
+      });
   
       function positionPopover(placeholder) {
-      if (!popover || !placeholder) return;
-      
-      var rect = placeholder.getBoundingClientRect();
-      var gap = 10;
-      var viewportWidth = window.innerWidth;
-      
-      // Calculate Top
-      var topPosition = rect.top - popover.offsetHeight - gap;
-      
-      // Calculate Left (Center it to the placeholder, but keep it on screen)
-      var leftPosition = rect.left;
-      
-      // Check if the increased width goes off-screen to the right
-      if (leftPosition + popover.offsetWidth > viewportWidth) {
-          leftPosition = viewportWidth - popover.offsetWidth - 20; // 20px padding from edge
+          if (!popover || !placeholder) return;
+          var rect = placeholder.getBoundingClientRect();
+          var gap = 12;
+          var viewportWidth = window.innerWidth;
+          var viewportHeight = window.innerHeight;
+          var popoverHeight = popover.offsetHeight;
+          var popoverWidth = popover.offsetWidth;
+          var topPosition;
+          if (rect.top - popoverHeight - gap >= gap) {
+              topPosition = rect.top - popoverHeight - gap;
+          } else {
+              topPosition = rect.bottom + gap;
+          }
+          topPosition = Math.max(gap, Math.min(topPosition, viewportHeight - popoverHeight - gap));
+          var leftPosition = rect.left;
+          if (leftPosition + popoverWidth > viewportWidth - gap) leftPosition = viewportWidth - popoverWidth - gap;
+          if (leftPosition < gap) leftPosition = gap;
+          popover.style.top = topPosition + "px";
+          popover.style.left = leftPosition + "px";
       }
   
-      popover.style.top = topPosition + "px";
-      popover.style.left = Math.max(10, leftPosition) + "px";
-  }
-  
-      function showCommentEditor(placeholder) {
+      function showCommentEditor(placeholder, opts) {
           if (!popover || !placeholder) return;
-          
-          // 1. Hide the placeholder immediately
+          opts = opts || {};
+          commentEditId = (opts.mode === "edit" && opts.commentId) ? opts.commentId : null;
+          commentParentId = (opts.mode === "reply" && opts.parentCommentId) ? opts.parentCommentId : null;
+          placeholder.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
           currentPlaceholder = placeholder;
           currentPlaceholder.style.visibility = "hidden"; 
-  
-          // 2. Show the popover container
           popover.style.display = "block";
   
           var textarea = document.getElementById("commentreportCKEditor");
           if (!textarea) return;
+          var initialBody = (opts.mode === "edit" && opts.commentBody) ? opts.commentBody : "";
   
           if (typeof ClassicEditor !== "undefined" && !commentEditorInstance) {
+              textarea.value = initialBody;
               ClassicEditor.create(textarea, { 
-                  placeholder: "Write your comment..."
+                  placeholder: opts.mode === "reply" && opts.replyToAuthor ? "Reply to " + opts.replyToAuthor + "..." : "Write your comment..."
               })
               .then(function (editor) {
                   commentEditorInstance = editor;
-                  
-                  // Reposition once the editor is actually rendered and has height
-                  setTimeout(() => positionPopover(placeholder), 50);
-  
+                  if (initialBody) editor.setData(initialBody);
+                  setTimeout(function () { positionPopover(placeholder); }, 400);
                   editor.keystrokes.set("Ctrl+Enter", function () { sendComment(); });
               })
               .catch(function (err) { console.error(err); });
+          } else if (commentEditorInstance) {
+              commentEditorInstance.setData(initialBody);
+              positionPopover(placeholder);
           } else {
+              textarea.value = initialBody;
               positionPopover(placeholder);
           }
       }
@@ -697,12 +778,14 @@ document.addEventListener("DOMContentLoaded", function () {
   
       function finalizeClose() {
           popover.style.display = "none";
+          commentEditId = null;
+          commentParentId = null;
           if (currentPlaceholder) {
               currentPlaceholder.style.visibility = "visible"; 
               currentPlaceholder.style.display = ""; 
               currentPlaceholder = null;
           }
-          var textarea = document.getElementById("commentCKEditor");
+          var textarea = document.getElementById("commentreportCKEditor");
           if (textarea) textarea.value = "";
       }
 
@@ -740,17 +823,36 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Please select a report first.");
             return;
         }
-        var body = commentEditorInstance ? commentEditorInstance.getData() : "";
+        var body = "";
+        if (commentEditorInstance) {
+            try { body = commentEditorInstance.getData() || ""; } catch (e) {}
+        }
+        if (!body) {
+            var ta = document.getElementById("commentreportCKEditor");
+            if (ta) body = ta.value || "";
+        }
         body = (body || "").trim();
         if (!body) {
             alert("Please write a comment.");
             return;
         }
         
-        var formData = new FormData();
-        formData.append("comment_body", body);
+        var isEdit = !!commentEditId;
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/reports/" + reportId + "/comment");
+        var url, method;
+        if (isEdit) {
+            url = "/reports/" + reportId + "/comments/" + commentEditId;
+            method = "PATCH";
+        } else {
+            url = "/reports/" + reportId + "/comment";
+            method = "POST";
+        }
+        var payload = { comment_body: body };
+        if (!isEdit && commentParentId) payload.parent_comment_id = commentParentId;
+        var bodyJson = JSON.stringify(payload);
+        
+        xhr.open(method, url);
+        xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
         xhr.setRequestHeader("Cache-Control", "no-cache");
         xhr.onload = function () {
@@ -761,26 +863,70 @@ document.addEventListener("DOMContentLoaded", function () {
                         closeCommentEditor();
                         var listEl = document.getElementById("reportDetailCommentsList");
                         var emptyEl = document.getElementById("reportDetailCommentsEmpty");
-                        if (res.author_name !== undefined && listEl) {
+                        if (isEdit) {
+                            var card = listEl ? listEl.querySelector(".report-comment-card[data-comment-id=\"" + commentEditId + "\"]") : null;
+                            var bodyEl = card ? card.querySelector(".report-comment-body") : null;
+                            if (bodyEl && res.comment_body !== undefined) bodyEl.innerHTML = res.comment_body;
+                            if (typeof alertify !== "undefined") alertify.success("Comment updated.");
+                            else alert("Comment updated.");
+                        } else if (res.author_name !== undefined && listEl) {
                             if (emptyEl) emptyEl.style.display = "none";
-                            var card = document.createElement("div");
+                            var cuEl = document.getElementById("current-user-member-id");
+                            var curMemberId = (cuEl && cuEl.textContent) ? parseInt(cuEl.textContent, 10) : null;
                             var imgSrc = "/static/profile_pics/" + (res.user_image || "default.jpg");
-                            card.className = "list-group-item list-group-item-action border-0 py-3 d-flex gap-3";
+                            var bodyEsc = (res.comment_body || "").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                            var authorEsc = (res.author_name || "").replace(/"/g, "&quot;");
+                            var isReply = !!commentParentId;
+                            var card = document.createElement("div");
+                            card.className = "list-group-item list-group-item-action border-0 py-2 d-flex gap-2 report-comment-card" + (isReply ? " report-comment-reply" : "");
+                            card.setAttribute("data-comment-id", res.comment_id || "");
                             card.innerHTML =
-                                "<img src=\"" + imgSrc + "\" alt=\"\" class=\"rounded-circle border flex-shrink-0\" style=\"width: 32px; height: 32px; object-fit: cover;\" onerror=\"this.src='/static/profile_pics/default.jpg'; this.onerror=null;\">" +
+                                "<img src=\"" + imgSrc + "\" alt=\"\" class=\"rounded-circle border flex-shrink-0\" style=\"width: " + (isReply ? "28" : "32") + "px; height: " + (isReply ? "28" : "32") + "px; object-fit: cover;\" onerror=\"this.src='/static/profile_pics/default.jpg'; this.onerror=null;\">" +
                                 "<div class=\"flex-grow-1 min-width-0\">" +
                                 "<div class=\"d-flex justify-content-between align-items-start mb-1\">" +
                                 "<span class=\"fw-bold small\">" + (res.author_name || "Unknown") + "</span>" +
                                 "<small class=\"text-muted\">" + (res.created_at || "") + "</small>" +
                                 "</div>" +
-                                "<div class=\"small text-secondary report-comment-body\">" + (res.comment_body || "") + "</div>" +
+                                "<div class=\"d-flex justify-content-between align-items-start gap-2\">" +
+                                "<div class=\"small report-comment-body flex-grow-1 min-width-0" + (isReply ? " text-muted" : " text-secondary") + "\">" + (res.comment_body || "") + "</div>" +
+                                "<div class=\"d-flex gap-2 flex-shrink-0\">" +
+                                "<a href=\"javascript:void(0)\" class=\"comment-reply-link small text-primary text-decoration-none\" data-comment-id=\"" + (res.comment_id || "") + "\" data-author-name=\"" + authorEsc + "\">Reply</a>" +
+                                (curMemberId ? "<a href=\"javascript:void(0)\" class=\"comment-edit-link small text-primary text-decoration-none\" data-comment-id=\"" + (res.comment_id || "") + "\" data-comment-body=\"" + bodyEsc + "\">Edit</a>" : "") +
+                                "</div>" +
+                                "</div>" +
                                 "</div>";
-                            listEl.appendChild(card);
-                        }
-                        if (typeof bootstrap !== "undefined" && bootstrap.Toast) {
-                            showCommentSuccessToast();
-                        } else {
-                            alert("Comment added.");
+                            if (isReply) {
+                                var parentCard = listEl.querySelector(".report-comment-card[data-comment-id=\"" + commentParentId + "\"]");
+                                var wrapper = document.createElement("div");
+                                wrapper.className = "report-comment-reply-wrapper";
+                                wrapper.style.paddingLeft = "12px";
+                                wrapper.style.borderLeft = "2px solid #dee2e6";
+                                wrapper.style.marginTop = "4px";
+                                wrapper.appendChild(card);
+                                if (parentCard) {
+                                    var parentWrapper = parentCard.closest(".report-comment-reply-wrapper");
+                                    wrapper.style.marginLeft = parentWrapper ? "24px" : "40px";
+                                    if (parentWrapper) {
+                                        parentWrapper.appendChild(wrapper);
+                                    } else {
+                                        wrapper.style.marginLeft = "40px";
+                                        var sib = parentCard.nextElementSibling;
+                                        var insertAfter = parentCard;
+                                        while (sib && sib.classList && sib.classList.contains("report-comment-reply-wrapper")) {
+                                            insertAfter = sib;
+                                            sib = sib.nextElementSibling;
+                                        }
+                                        listEl.insertBefore(wrapper, insertAfter.nextSibling);
+                                    }
+                                } else {
+                                    wrapper.style.marginLeft = "40px";
+                                    listEl.appendChild(wrapper);
+                                }
+                            } else {
+                                listEl.appendChild(card);
+                            }
+                            if (typeof alertify !== "undefined") alertify.success("Comment added.");
+                            else alert("Comment added.");
                         }
                         return;
                     }
@@ -789,7 +935,7 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Failed to save comment.");
         };
         xhr.onerror = function () { alert("Failed to save comment."); };
-        xhr.send(formData);
+        xhr.send(bodyJson);
     }
   
       // Event Listeners
@@ -797,7 +943,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (sendBtn) sendBtn.addEventListener("click", sendComment);
   
       document.addEventListener("click", function (e) {
-          var ph = e.target.closest(".comment-placeholder");
+          var el = e.target;
+          if (el && el.nodeType !== 1) el = el.parentElement; // text node -> parent element
+          var ph = el && el.closest ? el.closest(".comment-placeholder") : null;
           
           // If clicking the placeholder
           if (ph) {
