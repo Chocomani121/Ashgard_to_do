@@ -203,6 +203,8 @@ def _report_to_dict(report):
             'created_at': c.created_at.strftime('%m/%d/%Y %H:%M') if c.created_at else '',
             'author_name': comment_author,
             'author_image': author_img,
+            'member_id': c.member_id,
+            'parent_comment_id': c.parent_comment_id,
         })
 
     author_name = (report.author.name or report.author.username) if report.author else ''
@@ -383,6 +385,12 @@ def add_report_comment(report_id):
     # Optional: restrict to users who can see the report (author, reviewer, or CC)
     comment_body = request.form.get('comment_body') or (request.get_json() or {}).get('comment_body', '')
     comment_body = (comment_body or '').strip()
+    parent_comment_id = request.form.get('parent_comment_id') or (request.get_json() or {}).get('parent_comment_id')
+    if parent_comment_id is not None:
+        try:
+            parent_comment_id = int(parent_comment_id)
+        except (TypeError, ValueError):
+            parent_comment_id = None
     if not comment_body:
         if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'success': False, 'error': 'Comment is empty'}), 400
@@ -392,7 +400,8 @@ def add_report_comment(report_id):
         comment = Comment(
             report_id=report_id,
             member_id=current_user.member_id,
-            comment_body=comment_body
+            comment_body=comment_body,
+            parent_comment_id=parent_comment_id
         )
         db.session.add(comment)
         db.session.commit()
@@ -409,6 +418,43 @@ def add_report_comment(report_id):
                 'user_image': user_img
             })
         flash('Comment added.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'error': str(e)}), 500
+        flash(f'Error: {str(e)}', 'danger')
+    return redirect(url_for('main.reports'))
+
+
+@main.route("/reports/<int:report_id>/comments/<int:comment_id>", methods=['PATCH', 'PUT'])
+@login_required
+def update_report_comment(report_id, comment_id):
+    comment = Comment.query.filter_by(comment_id=comment_id, report_id=report_id).first_or_404()
+    if comment.member_id != current_user.member_id:
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'error': 'Forbidden'}), 403
+        flash('You can only edit your own comments.', 'warning')
+        return redirect(url_for('main.reports'))
+    comment_body = request.form.get('comment_body') or (request.get_json() or {}).get('comment_body', '')
+    comment_body = (comment_body or '').strip()
+    if not comment_body:
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'error': 'Comment is empty'}), 400
+        flash('Comment cannot be empty.', 'warning')
+        return redirect(url_for('main.reports'))
+    try:
+        comment.comment_body = comment_body
+        comment.updated_on = datetime.utcnow()
+        db.session.commit()
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            updated_str = comment.updated_on.strftime('%m/%d/%Y %H:%M') if comment.updated_on else (comment.created_at.strftime('%m/%d/%Y %H:%M') if comment.created_at else '')
+            return jsonify({
+                'success': True,
+                'comment_id': comment.comment_id,
+                'comment_body': comment.comment_body or '',
+                'updated_at': updated_str,
+            })
+        flash('Comment updated.', 'success')
     except Exception as e:
         db.session.rollback()
         if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':

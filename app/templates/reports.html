@@ -655,6 +655,7 @@
     </div>
 </div>
 
+<span id="current-user-member-id" class="d-none">{% if current_user %}{{ current_user.member_id }}{% endif %}</span>
 <script type="application/json" id="users-data">{{ users_json|tojson }}</script>
 <script type="application/json" id="reports-data">{{ reports_json|tojson }}</script>
 <script src="{{ url_for('static', filename='assets/js/pages/report.js') }}"></script>
