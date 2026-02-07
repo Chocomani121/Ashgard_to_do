@@ -5,6 +5,7 @@ from app import db
 from datetime import datetime, date, time
 from sqlalchemy import or_, text
 from sqlalchemy.exc import ProgrammingError, OperationalError
+from sqlalchemy.orm import joinedload, selectinload
 import json
 import random
 
@@ -235,39 +236,58 @@ def reports():
         for u in users
     ]
     
-    # Admin sees all reports; non-admin sees only reports they're author, reviewer, or CC on
+    report_options = [
+        joinedload(Report.author).joinedload(User.dept_info),
+        joinedload(Report.reviewer_user),
+        selectinload(Report.cc_entries).joinedload(ReportCC.user),
+        selectinload(Report.comments).joinedload(Comment.author),
+    ]
+
     if getattr(current_user, 'account_type', None) == 'admin':
-        reports_q = Report.query.order_by(Report.created_on.desc()).all()
+        reports_q = (
+            Report.query
+            .options(*report_options)
+            .order_by(Report.created_on.desc())
+            .all()
+        )
     else:
-        reports_q = Report.query.filter(
-            or_(
-                Report.member_id == current_user.member_id,
-                Report.reviewer_id == current_user.member_id,
-                Report.report_id.in_(
-                    db.session.query(ReportCC.report_id).filter(ReportCC.member_id == current_user.member_id)
+        reports_q = (
+            Report.query
+            .options(*report_options)
+            .filter(
+                or_(
+                    Report.member_id == current_user.member_id,
+                    Report.reviewer_id == current_user.member_id,
+                    Report.report_id.in_(
+                        db.session.query(ReportCC.report_id).filter(
+                            ReportCC.member_id == current_user.member_id
+                        )
+                    ),
                 )
             )
-        ).order_by(Report.created_on.desc()).all()
+            .order_by(Report.created_on.desc())
+            .all()
+        )
 
     pending_reports = [r for r in reports_q if not r.is_checked]
     reviewed_reports = [r for r in reports_q if r.is_checked]
-    
-       # CC tab: admin sees all reports; non-admin sees only reports where they're reviewer or in CC
+
     if getattr(current_user, 'account_type', None) == 'admin':
-        cc_reports = reports_q  # Admin sees all
+        cc_reports = reports_q
+        company_wide_reports = reports_q
     else:
-        cc_reports = Report.query.filter(
-            or_(
-                Report.reviewer_id == current_user.member_id,
-                Report.report_id.in_(
-                    db.session.query(ReportCC.report_id).filter(ReportCC.member_id == current_user.member_id)
-                )
-            )
-        ).order_by(Report.created_on.desc()).all()
-    
-    # Company-wide: all reports from all users, no restriction
-    company_wide_reports = Report.query.order_by(Report.created_on.desc()).all()
-    # reports_json must include all reports for Company-wide detail lookup to work
+        cc_reports = [
+            r for r in reports_q
+            if r.reviewer_id == current_user.member_id
+            or any(cc.member_id == current_user.member_id for cc in (r.cc_entries or []))
+        ]
+        company_wide_reports = (
+            Report.query
+            .options(*report_options)
+            .order_by(Report.created_on.desc())
+            .all()
+        )
+
     reports_json = [_report_to_dict(r) for r in company_wide_reports]
 
     return render_template(
