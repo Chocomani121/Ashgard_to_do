@@ -93,7 +93,7 @@ def projects():
         for user in users
     ]
     
-    return render_template('index.html', projects_data=projects_data, departments=departments, users=users, users_json=users_json, stats=stats)
+    return render_template('index.html', projects_data=projects_data, departments=departments, users=users, users_json=users_json, stats=stats, today=date.today())
 
 @main.route("/tasks")
 @login_required 
