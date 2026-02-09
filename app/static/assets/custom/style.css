@@ -47,6 +47,30 @@ tr:has(a[href]):hover {
     overflow-y: auto;
 }
 
+/* Edit Members: scroll only in the contacts list, not in dropdown or modal */
+.owner-dropdown-edit-project {
+    max-height: none;
+    overflow: visible;
+}
+.owner-list-edit-project {
+    max-height: 280px;
+    overflow-y: auto;
+}
+/* Edit Members: style the owner item in the modal */
+.owner-list-edit-project .owner-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+.owner-list-edit-project .owner-avatar {
+    flex-shrink: 0;
+}
+.owner-list-edit-project .owner-name {
+    flex: 1;
+    min-width: 0;
+}
+
 .owner-item {
     display: flex;
     align-items: center;

@@ -19,7 +19,7 @@
                 <div class="col-xl-7">
                     <!-- PROJECT OVERVIEW (Sticky Card) -->
                     <div style="top: 90px;">
-                        <div class="card mb-4"  style="height: 75vh;">
+                        <div class="card mb-4">
 
                             <!-- Card Header with Button -->
                             <div class="card-header d-flex align-items-center justify-content-between">
@@ -91,8 +91,7 @@
 
                                 </div>
 
-                                <div class="row mt-4">
-                                    <small class="text-muted d-block mb-2">Status Breakdown</small>
+                                <div class="row mt-4 d-flex flex-column-reverse flex-md-row">
                                     <br>
                                     <br>
                                     <br>
@@ -136,7 +135,7 @@
 
                                     <!-- RIGHT: APPROVED / REJECTED -->
                                      <div class="col-xl-6 col-md-5 d-flex align-items-center justify-content-center">
-                                        <div class="d-flex flex-column gap-2 text-start">
+                                        <div class="d-flex flex-row flex-md-column gap-5 text-start">
 
                                         <div class="mb-2 text-success ">
                                             <span class="text-uppercase fw-semibold d-block fs-5">
@@ -568,7 +567,7 @@
 
             <!-- Edit Members modal -->
             <div class="modal fade" data-bs-backdrop="static" id="editMembersModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">Edit Members</h5>
@@ -579,18 +578,18 @@
                                 <div class="mb-4">
                                     <label class="form-label">Members <span class="text-danger">*</span></label>
                                     <div id="editMemberIdsContainer"></div>
-                                    <div class="dropdown">
+                                    <div class="dropdown" data-bs-auto-close="outside">
                                         <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input-edit-project"
                                             id="ownerInputEditProject"
                                             data-bs-toggle="dropdown"
                                             aria-expanded="false"
-                                            style="min-height: 52px;">
+                                            style="min-height: 70px;">
                                             <span class="text-muted small">Select member(s)</span>
                                         </div>
                                         <div class="dropdown-menu p-3 shadow owner-dropdown-edit-project" style="width: 100%;">
                                             <input type="text" class="form-control mb-2" id="ownerSearchEditProject" placeholder="Search member">
                                             <small class="text-muted">Contacts</small>
-                                            <div class="list-group mt-2 owner-list-edit-project" style="max-height: 280px; overflow-y: auto;"></div>
+                                            <div class="list-group mt-2 owner-list-edit-project"></div>
                                             <div class="d-flex justify-content-between align-items-center mt-3">
                                                 <a href="#" id="clearOwnersEditProject" class="text-muted small">Clear</a>
                                                 <button type="button" class="btn btn-sm btn-primary" id="confirmOwnersEditProject">Confirm</button>

@@ -61,8 +61,12 @@ Purpose: Edit Members modal – show all users, prefill selected members, submit
         const item = document.createElement("div");
         item.className = "list-group-item owner-item";
         if (selectedEdit.some(function (o) { return o.id === owner.id; })) item.classList.add("active");
-        item.innerHTML = "<div class=\"owner-avatar\" style=\"background:" + owner.color + "\">" + owner.initials + "</div><span>" + owner.name + "</span>";
-        item.onclick = function () { toggleEdit(owner); };
+        item.innerHTML = "<div class=\"owner-avatar\" style=\"background:" + owner.color + "\">" + owner.initials + "</div><span class=\"owner-name\">" + owner.name + "</span>";
+        item.onclick = function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleEdit(owner);
+        };
         ownerListEdit.appendChild(item);
       });
     }
@@ -114,6 +118,26 @@ Purpose: Edit Members modal – show all users, prefill selected members, submit
         renderListEdit("");
         if (ownerSearchEdit) ownerSearchEdit.value = "";
       });
+// Adjust modal body height based on dropdown height 
+      var editMembersDropdown = ownerInputEdit ? ownerInputEdit.closest(".dropdown") : null;
+      var editMembersModalBody = editMembersModal ? editMembersModal.querySelector(".modal-body") : null;
+      if (editMembersDropdown && editMembersModalBody) {
+        editMembersDropdown.addEventListener("show.bs.dropdown", function () {
+          var menu = editMembersDropdown.querySelector(".dropdown-menu");
+          var minH = 320;
+          if (menu) {
+            menu.style.visibility = "hidden";
+            menu.classList.add("show");
+            minH = Math.min(600, Math.max(320, menu.offsetHeight + 120));
+            menu.classList.remove("show");
+            menu.style.visibility = "";
+          }
+          editMembersModalBody.style.minHeight = minH + "px";
+        });
+        editMembersDropdown.addEventListener("hide.bs.dropdown", function () {
+          editMembersModalBody.style.minHeight = "";
+        });
+      }
     }
 
     if (ownerSearchEdit) {
