@@ -30,7 +30,7 @@ def projects():
     departments = Department.query.all()
     users = User.query.all()
     
-    # Prepare projects data for template
+    # Prepare projects data for template (progress = task-based, same as project details)
     projects_data = []
     for project in projects:
         dept = Department.query.get(project.department_id) if project.department_id else None
@@ -44,12 +44,23 @@ def projects():
         except (AttributeError, KeyError):
             priority = 'High'  # Fallback if column doesn't exist
         
+        # Progress from tasks (completed / total), same logic as project details
+        project_tasks = Task.query.filter_by(project_id=project.project_id).all()
+        task_total = len(project_tasks)
+        task_completed = sum(1 for t in project_tasks if t.task_status == 'Completed')
+        progress_pct = round(task_completed / task_total * 100, 1) if task_total else 0
+        # Latest task (newest by task_id) for "Last Tasks" column
+        latest_task = Task.query.filter_by(project_id=project.project_id).order_by(Task.task_id.desc()).first()
+        latest_task_title = latest_task.task_name if latest_task else None
+        
         projects_data.append({
             'project': project,
             'department': dept,
             'manager': manager,
             'deadline': deadline,
-            'priority': priority
+            'priority': priority,
+            'progress_pct': progress_pct,
+            'latest_task_title': latest_task_title,
         })
     
     # Calculate statistics from projects
@@ -83,7 +94,7 @@ def projects():
         for user in users
     ]
     
-    return render_template('index.html', projects_data=projects_data, departments=departments, users=users, users_json=users_json, stats=stats)
+    return render_template('index.html', projects_data=projects_data, departments=departments, users=users, users_json=users_json, stats=stats, today=date.today())
 
 @main.route("/tasks")
 @login_required 
@@ -97,18 +108,26 @@ def all_departments():
     # Get all users (we'll filter unassigned ones in JavaScript for dropdown, but need all for Edit modal)
     users = User.query.all()
     # Build department projects data for the Department Projects table (newest first)
+    # Progress = task-based (completed / total), same as projects index
     projects = Project.query.order_by(Project.project_id.desc()).all()
     dept_projects_data = []
     for project in projects:
         dept = Department.query.get(project.department_id) if project.department_id else None
         manager = User.query.get(project.project_manager) if project.project_manager else None
         deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
-        
+        project_tasks = Task.query.filter_by(project_id=project.project_id).all()
+        task_total = len(project_tasks)
+        task_completed = sum(1 for t in project_tasks if t.task_status == 'Completed')
+        progress_pct = round(task_completed / task_total * 100, 1) if task_total else 0
+        latest_task = Task.query.filter_by(project_id=project.project_id).order_by(Task.task_id.desc()).first()
+        latest_task_title = latest_task.task_name if latest_task else None
         dept_projects_data.append({
             'project': project,
             'department': dept,
             'manager': manager,
             'deadline': deadline,
+            'progress_pct': progress_pct,
+            'latest_task_title': latest_task_title,
         })
     # Stats for cards: total, completed, ongoing
     stats = {
@@ -116,7 +135,7 @@ def all_departments():
         'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
         'ongoing': len([p for p in projects if p.project_status and p.project_status.lower() == 'ongoing']),
     }
-    return render_template('all_departments.html', departments=departments, users=users, stats=stats, dept_projects_data=dept_projects_data)
+    return render_template('all_departments.html', departments=departments, users=users, stats=stats, dept_projects_data=dept_projects_data, today=date.today())
 
 @main.route("/department/add", methods=['POST'])
 @login_required
@@ -164,6 +183,8 @@ def edit_department(id):
                 except (ValueError, TypeError):
                     continue
         
+        # Update edited_on when name or members change (onupdate only fires on Dept row changes)
+        department.edited_on = datetime.now()
         db.session.commit()
         flash('Department updated!', 'success')
         return redirect(url_for('main.all_departments'))
@@ -586,7 +607,8 @@ def project_details(id=None):
                          task_total=task_total,
                          task_completed_pct=task_completed_pct,
                          task_ongoing_pct=task_ongoing_pct,
-                         progress_pct=progress_pct)
+                         progress_pct=progress_pct,
+                         today=date.today())
 
 @main.route("/project_details/<int:id>/update_manager", methods=['POST'])
 @login_required
@@ -820,7 +842,7 @@ def task_details(id=None):
             ).first()
             is_project_member = pm_entry is not None
     
-    return render_template('task_details.html', task=task, task_assignees=task_assignees, task_project_members=task_project_members, is_project_manager=is_project_manager, is_project_member=is_project_member)
+    return render_template('task_details.html', task=task, task_assignees=task_assignees, task_project_members=task_project_members, is_project_manager=is_project_manager, is_project_member=is_project_member, today=date.today())
 
 @main.route("/task_details/<int:id>/update", methods=['POST'])
 @login_required

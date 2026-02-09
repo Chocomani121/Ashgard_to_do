@@ -14,6 +14,10 @@
                      <div class="ms-auto d-flex gap-2">
 
                         <div class="d-flex flex-wrap gap-2">
+                           <!-- Search Bar -->
+                           <div style="width: 200px;">
+                              <input type="text" id="searchDeptProjects" class="form-control" placeholder="Type a keyword...">
+                          </div>
                            <div style="width: 180px;">
                               <select class="form-select" id="statusFilter">
                                  <option value="all">Status: All</option>
@@ -41,14 +45,14 @@
                      <table id="projectsApproval" class="table d-none">
                         <thead>
                            <tr>
-                              <th style="width: 190px;">Task Name</th>
+                              <th>Task Name</th>
                               <th>Project Name</th>
-                              <th>Status</th>
-                              <th width="200px">Action</th>
+                              <th width="200px">Status</th>
+                              <th>Action</th>
                            </tr>
                         </thead>
                         <tbody>
-                           <tr>
+                           <tr data-status="To be reviewed" data-priority="">
                               <td>
                                  <a href="{{ url_for('main.task_details') }}" class="text-dark fw-medium">
                                  Task 5
@@ -71,7 +75,7 @@
                                 </button>
                             </td>
                            </tr>
-                           <tr>
+                           <tr data-status="Ongoing" data-priority="">
                               <td>
                                  <a href="{{ url_for('main.task_details') }}" class="text-dark fw-medium">
                                  Task 4
@@ -85,7 +89,7 @@
                               <td>
                                  <div class="badge bg-soft-primary text-primary font-size-12">Ongoing</div>
                               </td>
-                              <td class="text-nowrap">
+                              <td style="width: 200px;">
                                  <div class="dropdown">
                                     <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
                                     <div class="dropdown-menu dropdown-menu-end shadow">
@@ -106,7 +110,7 @@
                                  </div>
                               </td>
                            </tr>
-                           <tr>
+                           <tr data-status="Rejected" data-priority="">
                               <td>
                                  <a href="{{ url_for('main.task_details') }}" class="text-dark fw-medium">
                                  Task 3
@@ -128,7 +132,7 @@
                                 </button>
                              </td>
                            </tr>
-                           <tr>
+                           <tr data-status="On Hold" data-priority="">
                               <td>
                                  <a href="{{ url_for('main.task_details') }}" class="text-dark fw-medium">
                                  task 2
@@ -151,7 +155,7 @@
                                 </button>
                              </td>
                            </tr>
-                           <tr>
+                           <tr data-status="Approved" data-priority="">
                               <td>
                                  <a href="{{ url_for('main.task_details') }}" class="text-dark fw-medium">
                                  Task 1
