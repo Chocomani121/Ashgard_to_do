@@ -1011,7 +1011,16 @@ function openEditModal() {
         if (submitBtn) submitBtn.textContent = "Update Report";
 
         var dateSelect = document.getElementById("weekly-report-date");
-        if (dateSelect) dateSelect.value = report.week_name || "";
+        if (dateSelect && report.week_name) {
+            var hasOption = [].some.call(dateSelect.options, function (opt) { return opt.value === report.week_name; });
+            if (!hasOption) {
+                var opt = document.createElement("option");
+                opt.value = report.week_name;
+                opt.textContent = report.week_name;
+                dateSelect.insertBefore(opt, dateSelect.options[0]);
+            }
+            dateSelect.value = report.week_name;
+        }
 
         var reviewerIdInput = document.getElementById("selectedReviewerId");
         var reviewerDisplay = document.getElementById("reportReviewerDisplay");
