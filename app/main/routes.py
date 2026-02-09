@@ -20,6 +20,35 @@ def _generate_task_code():
             return code
     raise ValueError('Could not generate unique task code')
 
+def _can_edit_task(task, user):
+    """Check if user can edit or mark complete a task.
+    Returns True if user is project manager OR assigned to the task."""
+    if not task or not user:
+        return False
+    
+    # Check if user is project manager
+    project = Project.query.get(task.project_id) if task.project_id else None
+    if project and user.member_id == project.project_manager:
+        return True
+    
+    # Check if user is assigned to the task
+    # First check TaskAssignee table
+    try:
+        if task.assignees:
+            for ta in task.assignees:
+                if ta.project_member and ta.project_member.member_id == user.member_id:
+                    return True
+    except (ProgrammingError, OperationalError):
+        pass
+    
+    # Fallback to p_members_id
+    if task.p_members_id:
+        pm = ProjectMembers.query.get(task.p_members_id)
+        if pm and pm.member_id == user.member_id:
+            return True
+    
+    return False
+
 @main.route("/")
 @main.route("/projects") 
 # @cache.cached(timeout=60)
@@ -534,12 +563,24 @@ def project_details(id=None):
     if project:
         project_tasks = Task.query.filter_by(project_id=project.project_id).order_by(Task.task_id.desc()).all()
         for task in project_tasks:
-            # Get task owner
-            owner = None
-            if task.p_members_id:
-                project_member = ProjectMembers.query.get(task.p_members_id)
-                if project_member and project_member.member_id:
-                    owner = User.query.get(project_member.member_id)
+            # Get task assignees (multiple): from TaskAssignee first, then fallback to p_members_id
+            assignees = []
+            try:
+                if task.assignees:
+                    for ta in task.assignees:
+                        if ta.project_member and ta.project_member.member_id:
+                            u = User.query.get(ta.project_member.member_id)
+                            if u:
+                                assignees.append(u)
+            except (ProgrammingError, OperationalError):
+                pass
+            if not assignees and task.p_members_id:
+                pm = ProjectMembers.query.get(task.p_members_id)
+                if pm and pm.member_id:
+                    u = User.query.get(pm.member_id)
+                    if u:
+                        assignees.append(u)
+            owner = assignees[0] if assignees else None  # legacy single owner for compatibility
             
             # Calculate task progress (completed subtasks / total subtasks)
             subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).all()
@@ -552,11 +593,16 @@ def project_details(id=None):
             if task_status == 'Pending' or task_status == 'Cancelled':
                 task_status = 'Ongoing'
             
+            # Check if current user can edit/mark complete this task
+            can_edit = _can_edit_task(task, current_user)
+            
             tasks.append({
                 'task': task,
                 'owner': owner,
+                'assignees': assignees,
                 'progress': progress,
-                'status': task_status
+                'status': task_status,
+                'can_edit': can_edit
             })
     
     users = User.query.all()
@@ -644,7 +690,7 @@ def update_project_members(id):
     try:
         # Delete all existing project members
         ProjectMembers.query.filter_by(project_id=project.project_id).delete()
-        db.session.flush()  # Ensure delete is processed before adding new ones
+        db.session.flush()
         
         # Add all selected members (from any department)
         for mid in member_ids:
@@ -842,12 +888,36 @@ def task_details(id=None):
             ).first()
             is_project_member = pm_entry is not None
     
-    return render_template('task_details.html', task=task, task_assignees=task_assignees, task_project_members=task_project_members, is_project_manager=is_project_manager, is_project_member=is_project_member, today=date.today())
+    # Check if user can edit/mark complete this task
+    can_edit_task = _can_edit_task(task, current_user)
+    
+    # Get project for delete permission check
+    project = Project.query.get(task.project_id) if task.project_id else None
+    
+    # p_members_id of current assignees (for edit task multi-select)
+    assignee_p_members_ids = []
+    try:
+        if task.assignees:
+            for ta in task.assignees:
+                if ta.project_member:
+                    assignee_p_members_ids.append(ta.project_member.p_members_id)
+    except (ProgrammingError, OperationalError):
+        pass
+    if not assignee_p_members_ids and task.p_members_id:
+        assignee_p_members_ids.append(task.p_members_id)
+    
+    return render_template('task_details.html', task=task, project=project, task_assignees=task_assignees, task_project_members=task_project_members, assignee_p_members_ids=assignee_p_members_ids, is_project_manager=is_project_manager, is_project_member=is_project_member, can_edit_task=can_edit_task)
 
 @main.route("/task_details/<int:id>/update", methods=['POST'])
 @login_required
 def update_task(id):
     task = Task.query.get_or_404(id)
+    
+    # Check permissions - only project manager or assigned member can edit
+    if not _can_edit_task(task, current_user):
+        flash('You do not have permission to edit this task. Only the project manager or assigned member can edit it.', 'danger')
+        return redirect(url_for('main.task_details', id=id))
+    
     task_name = request.form.get('task_name', '').strip()
     if not task_name:
         flash('Task name is required.', 'danger')
@@ -857,19 +927,30 @@ def update_task(id):
     task.task_status = request.form.get('task_status') or 'Ongoing'
     task.task_description = request.form.get('task_description', '').strip() or None
 
-    # Update assigned member (must be a project member)
-    owner_p_members_id = request.form.get('owner_id') or request.form.get('p_members_id')
-    if owner_p_members_id:
+    # Update assigned members (multiple allowed)
+    owner_ids = request.form.getlist('owner_id')  # p_members_id or member_id
+    if owner_ids:
         try:
-            pid = int(owner_p_members_id)
-            pm = ProjectMembers.query.filter_by(p_members_id=pid, project_id=task.project_id).first()
-            if pm:
-                task.p_members_id = pid
+            # Resolve to p_members_id list (form may send p_members_id or member_id)
+            p_members_ids = []
+            for oid in owner_ids:
+                try:
+                    oid_int = int(oid)
+                    pm = ProjectMembers.query.filter_by(project_id=task.project_id).filter(
+                        (ProjectMembers.p_members_id == oid_int) | (ProjectMembers.member_id == oid_int)
+                    ).first()
+                    if pm and pm.p_members_id not in p_members_ids:
+                        p_members_ids.append(pm.p_members_id)
+                except (ValueError, TypeError):
+                    continue
+            if p_members_ids:
+                task.p_members_id = p_members_ids[0]
                 try:
                     TaskAssignee.query.filter_by(task_id=task.task_id).delete()
                     db.session.flush()
-                    ta = TaskAssignee(task_id=task.task_id, p_members_id=pid)
-                    db.session.add(ta)
+                    for pid in p_members_ids:
+                        ta = TaskAssignee(task_id=task.task_id, p_members_id=pid)
+                        db.session.add(ta)
                 except (ProgrammingError, OperationalError):
                     pass
         except (ValueError, TypeError):
@@ -916,6 +997,13 @@ def update_task(id):
 @login_required
 def delete_task(id):
     task = Task.query.get_or_404(id)
+    
+    # Only project manager can delete tasks
+    project = Project.query.get(task.project_id) if task.project_id else None
+    if not project or current_user.member_id != project.project_manager:
+        flash('Only the project manager can delete tasks.', 'danger')
+        return redirect(url_for('main.task_details', id=id))
+    
     project_id = task.project_id
     task_id = task.task_id
     try:
@@ -947,6 +1035,41 @@ def delete_task(id):
         flash('Failed to delete task: {}'.format(str(e)), 'danger')
     return redirect(url_for('main.project_details', id=project_id))
 
+@main.route("/task/<int:task_id>/mark_complete", methods=['POST'])
+@login_required
+def mark_task_complete(task_id):
+    """Mark a task as completed - only project manager or assigned member can do this"""
+    try:
+        task = Task.query.get_or_404(task_id)
+        
+        # Check permissions
+        if not _can_edit_task(task, current_user):
+            if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'error': 'You do not have permission to mark this task as complete. Only the project manager or assigned member can do this.'}), 403
+            flash('You do not have permission to mark this task as complete. Only the project manager or assigned member can do this.', 'danger')
+            return redirect(url_for('main.task_details', id=task_id))
+        
+        # Update task status to Completed
+        task.task_status = 'Completed'
+        db.session.commit()
+        
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'success': True,
+                'message': 'Task marked as completed',
+                'task_id': task.task_id,
+                'task_status': task.task_status
+            })
+        
+        flash('Task marked as completed', 'success')
+        return redirect(url_for('main.task_details', id=task_id))
+    except Exception as e:
+        db.session.rollback()
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'error': str(e)}), 500
+        flash(f'Error: {str(e)}', 'danger')
+        return redirect(url_for('main.task_details', id=task_id))
+
 @main.route("/project_details/<int:id>/task/create", methods=['POST'])
 @login_required
 def create_task(id):
@@ -955,27 +1078,36 @@ def create_task(id):
         flash('Only the project manager can create tasks.', 'danger')
         return redirect(url_for('main.projects'))
     try:
-        # Get form data
+        # Get form data - support multiple assignees (owner_id can be multiple)
         task_name = request.form.get('task_name')
-        owner_id = request.form.get('owner_id')
+        owner_ids = request.form.getlist('owner_id')  # list of member_ids
         task_description = request.form.get('task_description', '')
         start_date_str = request.form.get('start_date')
         end_date_str = request.form.get('end_date')
         
-        # Validate required fields
-        if not task_name or not owner_id:
-            flash('Please fill in all required fields', 'danger')
+        # Validate required fields - at least one assignee
+        if not task_name or not owner_ids:
+            flash('Please fill in task name and assign at least one member.', 'danger')
             return redirect(url_for('main.project_details', id=id))
         
-        # Verify that the owner is assigned to this project
-        project_member = ProjectMembers.query.filter_by(
-            project_id=project.project_id,
-            member_id=int(owner_id)
-        ).first()
-        
-        if not project_member:
-            flash('Selected owner must be assigned to this project', 'danger')
+        # Resolve each owner (member_id) to project_member; collect valid p_members_id
+        project_member_ids = []
+        for mid in owner_ids:
+            try:
+                pm = ProjectMembers.query.filter_by(
+                    project_id=project.project_id,
+                    member_id=int(mid)
+                ).first()
+                if pm and pm.p_members_id not in project_member_ids:
+                    project_member_ids.append(pm.p_members_id)
+            except (ValueError, TypeError):
+                continue
+        if not project_member_ids:
+            flash('Selected members must be assigned to this project.', 'danger')
             return redirect(url_for('main.project_details', id=id))
+        
+        # First assignee for legacy single-owner field
+        project_member = ProjectMembers.query.get(project_member_ids[0])
         
         # Optional: create a deadline in deadlines_tbl and get FK for task
         deadline_id = None
@@ -1006,6 +1138,16 @@ def create_task(id):
         )
         
         db.session.add(task)
+        db.session.flush()  # get task.task_id
+        
+        # Add all assignees to task_assignees
+        try:
+            for p_members_id in project_member_ids:
+                ta = TaskAssignee(task_id=task.task_id, p_members_id=p_members_id)
+                db.session.add(ta)
+        except (ProgrammingError, OperationalError):
+            pass
+        
         db.session.commit()
         
         flash('Task created successfully!', 'success')

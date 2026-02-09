@@ -280,23 +280,26 @@
                                             <table id="projectsTable" class="table table-hover table-nowrap align-middle mb-0" style="table-layout: fixed; width: 100%;">
                                                 <thead>
                                                     <tr>
-                                                        <th style="width: 25%;">Task Name <i class="mdi mdi-sort ms-1"></i></th>
-                                                        <th style="width: 25%;">Owner <i class="mdi mdi-sort ms-1"></i></th>
-                                                        <th style="width: 25%;">Status <i class="mdi mdi-sort ms-1"></i></th>
-                                                        <th style="width: 25%;">Sub Task <i class="mdi mdi-sort ms-1"></i></th>
+                                                        <th style="width: 20%;">Task Name <i class="mdi mdi-sort ms-1"></i></th>
+                                                        <th style="width: 20%;">Owner <i class="mdi mdi-sort ms-1"></i></th>
+                                                        <th style="width: 15%;">Status <i class="mdi mdi-sort ms-1"></i></th>
+                                                        <th style="width: 15%;">Sub Task <i class="mdi mdi-sort ms-1"></i></th>
+                                                        <th style="width: 30%;">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                         {% for task_info in tasks %}
-                                                        <tr>
+                                                        <tr data-task-id="{{ task_info.task.task_id }}" data-task-status="{{ task_info.status }}">
                                                             <td class="fw-semibold"><a href="{{ url_for('main.task_details', id=task_info.task.task_id) }}" class="text-dark">{{ task_info.task.task_name }}</a></td>
                                                             <td style="width: 190px;">
-                                                                {% if task_info.owner %}
-                                                                <div class="d-flex align-items-center">
-                                                                    <img class="rounded-circle avatar-sm" src="{{ url_for('static', filename='profile_pics/' + task_info.owner.image_file) }}" alt="">
-                                                                    <div class="flex-grow-1 ms-3">
-                                                                        {{ task_info.owner.name if task_info.owner.name else task_info.owner.username }}
+                                                                {% if task_info.assignees %}
+                                                                <div class="d-flex flex-wrap align-items-center gap-1">
+                                                                    {% for assignee in task_info.assignees %}
+                                                                    <div class="d-flex align-items-center">
+                                                                        <img class="rounded-circle avatar-xs me-1" src="{{ url_for('static', filename='profile_pics/' + assignee.image_file) }}" alt="" title="{{ assignee.name or assignee.username }}">
+                                                                        <span class="small">{{ assignee.name or assignee.username }}{% if not loop.last %},{% endif %}</span>
                                                                     </div>
+                                                                    {% endfor %}
                                                                 </div>
                                                                 {% else %}
                                                                 <span class="text-muted">Unassigned</span>
@@ -304,20 +307,37 @@
                                                             </td>
                                                             <td>
                                                                 {% if task_info.status == 'Completed' %}
-                                                                <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                <div class="badge badge-soft-success font-size-12 task-status-badge">Completed</div>
                                                                 {% elif task_info.status == 'Ongoing' %}
-                                                                <div class="badge bg-soft-warning text-warning font-size-12">Ongoing</div>
+                                                                <div class="badge bg-soft-warning text-warning font-size-12 task-status-badge">Ongoing</div>
                                                                 {% else %}
-                                                                <div class="badge bg-soft-secondary text-secondary font-size-12">{{ task_info.status }}</div>
+                                                                <div class="badge bg-soft-secondary text-secondary font-size-12 task-status-badge">{{ task_info.status }}</div>
                                                                 {% endif %}
                                                             </td>
                                                             <td>
                                                                 {{ task_info.progress }}
                                                             </td>
+                                                            <td>
+                                                                {% if task_info.can_edit %}
+                                                                    {% if task_info.status != 'Completed' %}
+                                                                    <button type="button" class="btn btn-sm btn-outline-primary mark-complete-btn" data-task-id="{{ task_info.task.task_id }}">
+                                                                        <i class="mdi mdi-check"></i> Mark Complete
+                                                                    </button>
+                                                                    {% else %}
+                                                                    <span class="text-muted small">Task Completed</span>
+                                                                    {% endif %}
+                                                                {% else %}
+                                                                    {% if task_info.status == 'Completed' %}
+                                                                    <span class="text-muted small">Task Completed</span>
+                                                                    {% else %}
+                                                                    <span class="text-muted small">View only</span>
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            </td>
                                                         </tr>
                                                         {% else %}
                                                         <tr>
-                                                            <td colspan="4" class="text-muted text-center py-4">No tasks yet.</td>
+                                                            <td colspan="5" class="text-muted text-center py-4">No tasks yet.</td>
                                                         </tr>
                                                         {% endfor %}
                                                     </tbody>
@@ -398,7 +418,7 @@
   {% if is_project_manager %}
   <!--  Create Task modal -->
             <form method="POST" action="{{ url_for('main.create_task', id=project.project_id) }}" id="createTaskForm">
-                <input type="hidden" name="owner_id" id="createTaskOwnerId" value="">
+                <div id="createTaskOwnerIdsContainer"></div>
                 <div class="modal fade create-task" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-md modal-dialog-centered">
                         <div class="modal-content">
@@ -622,4 +642,86 @@
 <script type="application/json" id="edit-project-users-data">{{ users_json|tojson }}</script>
 <script type="application/json" id="edit-project-initial-members">{{ edit_initial_members_json|tojson }}</script>
 <script src="{{ url_for('static', filename='assets/js/pages/project-details-edit.init.js') }}"></script>
+
+<script>
+// Mark Complete Button Handler for Project Details Page
+document.addEventListener('DOMContentLoaded', function() {
+    var markCompleteButtons = document.querySelectorAll('.mark-complete-btn');
+    
+    markCompleteButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var taskId = btn.getAttribute('data-task-id');
+            if (!taskId) return;
+            
+            var row = btn.closest('tr');
+            var originalBtnHtml = btn.innerHTML;
+            
+            // Disable button during request
+            btn.disabled = true;
+            btn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Processing...';
+            
+            // Send AJAX request to mark task as complete
+            fetch(`/task/${taskId}/mark_complete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update status badge
+                    var statusBadge = row.querySelector('.task-status-badge');
+                    if (statusBadge) {
+                        statusBadge.textContent = 'Completed';
+                        statusBadge.className = 'badge badge-soft-success font-size-12 task-status-badge';
+                    }
+                    
+                    // Update row data attribute
+                    row.setAttribute('data-task-status', 'Completed');
+                    
+                    // Replace button with completed text
+                    var actionsCell = btn.parentElement;
+                    actionsCell.innerHTML = '<span class="text-muted small">Task Completed</span>';
+                    
+                    // Show success message
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: 'Task marked as completed',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                    
+                    // Reload page after a short delay to update progress charts and counts
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    throw new Error(data.error || 'Failed to mark task as complete');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+                
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message || 'Failed to mark task as complete'
+                    });
+                } else {
+                    alert('Error: ' + error.message);
+                }
+            });
+        });
+    });
+});
+</script>
    {% endblock content %}

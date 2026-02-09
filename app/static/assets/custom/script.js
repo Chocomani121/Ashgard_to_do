@@ -149,7 +149,8 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    if (createTaskForm && createTaskOwnerId) {
+    var createTaskOwnerIdsContainer = document.getElementById("createTaskOwnerIdsContainer");
+    if (createTaskForm && createTaskOwnerIdsContainer) {
         createTaskForm.addEventListener("submit", function(e) {
             var so = window.selectedOwners;
             if (!so || so.length === 0) {
@@ -173,7 +174,15 @@ document.addEventListener("DOMContentLoaded", function() {
                     return false;
                 }
             }
-            createTaskOwnerId.value = so[0].id;
+            // Submit multiple owner_id (member_id) for multi-assignee support
+            createTaskOwnerIdsContainer.innerHTML = "";
+            so.forEach(function(o) {
+                var inp = document.createElement("input");
+                inp.type = "hidden";
+                inp.name = "owner_id";
+                inp.value = o.id;
+                createTaskOwnerIdsContainer.appendChild(inp);
+            });
         });
     }
 
@@ -195,9 +204,19 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     }
-    if (editTaskForm && editStartDateInput && editEndDateInput) {
+    if (editTaskForm) {
         editTaskForm.addEventListener("submit", function(e) {
-            if (editStartDateInput.value && editEndDateInput.value && editEndDateInput.value < editStartDateInput.value) {
+            var checkedOwners = editTaskForm.querySelectorAll('input[name="owner_id"]:checked');
+            if (!checkedOwners.length) {
+                e.preventDefault();
+                if (typeof Swal !== "undefined") {
+                    Swal.fire({ icon: "warning", text: "Please select at least one assigned member." });
+                } else {
+                    alert("Please select at least one assigned member.");
+                }
+                return false;
+            }
+            if (editStartDateInput && editEndDateInput && editStartDateInput.value && editEndDateInput.value && editEndDateInput.value < editStartDateInput.value) {
                 e.preventDefault();
                 if (typeof Swal !== "undefined") {
                     Swal.fire({ icon: "warning", text: "End date cannot be before start date." });
@@ -455,17 +474,73 @@ document.addEventListener("DOMContentLoaded", function () {
 (function() {
     var btn = document.getElementById('markCompleteBtn');
     if (btn) {
-    btn.addEventListener('click', function() {
-        var isCompleted = btn.querySelector('.btn-text').textContent.trim() === 'Completed';
-        if (isCompleted) {
-        btn.innerHTML = '<i class="mdi mdi-check"></i> <span class="btn-text">Mark Complete</span>';
-        btn.classList.remove('btn-outline-success', 'bg-soft-success');
-        btn.classList.add('btn-outline-primary');
-        } else {
-        btn.innerHTML = '<i class="mdi mdi-check"></i> <span class="btn-text">Completed</span>';
-        btn.classList.remove('btn-outline-primary');
-        btn.classList.add('btn-outline-success', 'bg-soft-success');
-        }
-    });
+        var taskId = btn.getAttribute('data-task-id');
+        btn.addEventListener('click', function() {
+            if (!taskId) return;
+            
+            // Disable button during request
+            btn.disabled = true;
+            btn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> <span class="btn-text">Processing...</span>';
+            
+            // Send AJAX request to mark task as complete
+            fetch(`/task/${taskId}/mark_complete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update button to show completed state
+                    btn.innerHTML = '<i class="mdi mdi-check"></i> <span class="btn-text">Completed</span>';
+                    btn.classList.remove('btn-outline-primary');
+                    btn.classList.add('btn-outline-success', 'bg-soft-success');
+                    btn.disabled = true;
+                    
+                    // Update task status badge if it exists on the page
+                    var statusBadge = document.querySelector('[data-task-status]');
+                    if (statusBadge) {
+                        statusBadge.textContent = 'Completed';
+                        statusBadge.className = 'badge badge-soft-success font-size-12';
+                    }
+                    
+                    // Show success message
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: 'Task marked as completed',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                    
+                    // Reload page after a short delay to reflect changes
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    throw new Error(data.error || 'Failed to mark task as complete');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="mdi mdi-check"></i> <span class="btn-text">Mark Complete</span>';
+                
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message || 'Failed to mark task as complete'
+                    });
+                } else {
+                    alert('Error: ' + error.message);
+                }
+            });
+        });
     }
 })();
