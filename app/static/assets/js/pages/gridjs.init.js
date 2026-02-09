@@ -6,6 +6,15 @@ Contact: Themesdesign@gmail.com
 File: grid Js File
 */
 
+// Helper: apply progress bar widths from data-width-pct (for Grid.js-rendered tables)
+function applyProgressBarWidths(container) {
+    var root = container && container.querySelector ? container : document;
+    var els = root.querySelectorAll ? root.querySelectorAll('.progress-bar-dynamic') : [];
+    for (var i = 0; i < els.length; i++) {
+        var pct = els[i].getAttribute('data-width-pct');
+        if (pct != null) els[i].style.width = pct + '%';
+    }
+}
 
 // 1. Department-Wide Projects Table (with filters)
 document.addEventListener('DOMContentLoaded', function() {
@@ -114,12 +123,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 search: false, // Disable built-in search, handle manually
                 className: { table: "table table-centered align-middle" }
             }).render(gridContainer);
+            setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
             
             // Update grid function
             const updateGrid = () => {
                 if (grid1) {
                     const filteredData = getFilteredData().map(row => row.cells);
                     grid1.updateConfig({ data: filteredData }).forceRender();
+                    setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
                 }
             };
             
@@ -231,6 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
         search: false,
         className: { table: "table table-centered align-middle" }
     }).render(container);
+    setTimeout(function() { applyProgressBarWidths(container); }, 100);
 
     const searchEl = document.getElementById('searchCompanyProjects');
     if (searchEl) {
@@ -240,7 +252,175 @@ document.addEventListener('DOMContentLoaded', function() {
             t = setTimeout(() => {
                 search2 = this.value.trim();
                 grid2.updateConfig({ data: filtered().map(row => row.cells) }).forceRender();
+                setTimeout(function() { applyProgressBarWidths(container); }, 0);
             }, 300);
+        });
+    }
+});
+
+// 3. Task Table
+const table3Req = document.getElementById("projectsTableTask");
+const table3Res = document.getElementById("table3-gridjs");
+if (table3Req && table3Res) {
+    new gridjs.Grid({
+        from: table3Req,
+        pagination: { limit: 10 },
+        sort: true,
+        search: true,
+        className: { table: "table table-centered align-middle" }
+    }).render(table3Res);
+}
+
+// 4. Profile Table
+const table4Req = document.getElementById("projectsTableProfile");
+const table4Res = document.getElementById("table4-gridjs");
+if (table4Req && table4Res) {
+    new gridjs.Grid({
+        from: table4Req,
+        pagination: { limit: 10 },
+        sort: true,
+        search: true,
+        className: { table: "table table-centered align-middle" }
+    }).render(table4Res);
+}
+
+// 5. Task Details Table
+const table5Req = document.getElementById("projectsTableTaskDetails");
+const table5Res = document.getElementById("table5-gridjs");
+if (table5Req && table5Res) {
+    new gridjs.Grid({
+        from: table5Req,
+        pagination: { limit: 10 },
+        sort: true,
+        search: true,
+        className: { table: "table table-centered align-middle" }
+    }).render(table5Res);
+}
+
+// 5. Task Details Table PM
+const table6Req = document.getElementById("projectsTableTaskDetailsPM");
+const table6Res = document.getElementById("table6-gridjs");
+if (table6Req && table6Res) {
+    new gridjs.Grid({
+        from: table6Req,
+        pagination: { limit: 10 },
+        sort: true,
+        search: true,
+        className: { table: "table table-centered align-middle" }
+    }).render(table6Res);
+}
+
+
+// 11. company wide Table in reports
+const table11Req = document.getElementById("companyWideReport");
+const table11Res = document.getElementById("table11-gridjs");
+if (table11Req && table11Res) {
+    const grid11 = new gridjs.Grid({
+        from: table11Req,
+        pagination: { limit: 15 },
+        sort: false,
+        search: true,
+        className: { table: "table table-centered align-middle" }
+    });
+    grid11.render(table11Res);
+
+    function moveDatePickerBesideSearch() {
+        var datePickerEl = document.getElementById("datepicker-range");
+        if (!datePickerEl) return;
+        var datePickerParent = datePickerEl.closest(".input-group");
+        if (!datePickerParent) return;
+        var head = table11Res.querySelector(".gridjs-head");
+        if (!head) return;
+        head.style.display = "flex";
+        head.style.alignItems = "center";
+        head.style.gap = "0.75rem";
+        head.style.flexWrap = "wrap";
+        head.appendChild(datePickerParent);
+    }
+
+    setTimeout(moveDatePickerBesideSearch, 200);
+}
+
+//Members table
+const table7Req = document.getElementById("projectsTableMembers");
+const table7Res = document.getElementById("table7-gridjs");
+if (table7Req && table7Res) {
+    new gridjs.Grid({
+        from: table7Req,
+        pagination: { limit: 10 },
+        sort: true,
+        search: true,
+        className: { table: "table table-centered align-middle" }
+    }).render(table7Res);
+}
+
+// 10. Approval Table (with search bar and status/priority filters)
+document.addEventListener('DOMContentLoaded', function() {
+    const table10Req = document.getElementById("projectsApproval");
+    const table10Res = document.getElementById("table10-gridjs");
+    if (!table10Req || !table10Res || typeof gridjs === 'undefined') return;
+
+    let grid10 = null;
+    let allData10 = [];
+    let currentFilters10 = { search: '', status: 'all', priority: 'all' };
+
+    const tableRows = Array.from(table10Req.querySelectorAll('tbody tr'));
+    allData10 = tableRows.map(tr => ({
+        status: (tr.getAttribute('data-status') || '').trim(),
+        priority: (tr.getAttribute('data-priority') || '').trim(),
+        cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML)),
+        searchText: Array.from(tr.querySelectorAll('td')).map(td => td.textContent || '').join(' ').toLowerCase()
+    }));
+
+    function getFilteredData10() {
+        return allData10.filter(row => {
+            if (currentFilters10.search && !row.searchText.includes(currentFilters10.search.toLowerCase())) return false;
+            if (currentFilters10.status !== 'all' && row.status !== currentFilters10.status) return false;
+            if (currentFilters10.priority !== 'all' && row.priority !== currentFilters10.priority) return false;
+            return true;
+        });
+    }
+
+    grid10 = new gridjs.Grid({
+        columns: ["Task Name", "Project Name", "Status", "Action"],
+        data: getFilteredData10().map(row => row.cells),
+        pagination: { limit: 10 },
+        sort: true,
+        search: false,
+        className: { table: "table table-centered align-middle" }
+    }).render(table10Res);
+
+    function updateGrid10() {
+        if (grid10) {
+            grid10.updateConfig({ data: getFilteredData10().map(row => row.cells) }).forceRender();
+        }
+    }
+
+    const searchInput10 = document.getElementById('searchDeptProjects');
+    if (searchInput10) {
+        let searchTimeout10;
+        searchInput10.addEventListener('input', function() {
+            clearTimeout(searchTimeout10);
+            searchTimeout10 = setTimeout(function() {
+                currentFilters10.search = this.value.trim();
+                updateGrid10();
+            }.bind(this), 300);
+        });
+    }
+
+    const statusFilter10 = document.getElementById('statusFilter');
+    if (statusFilter10) {
+        statusFilter10.addEventListener('change', function() {
+            currentFilters10.status = this.value;
+            updateGrid10();
+        });
+    }
+
+    const priorityFilter10 = document.getElementById('priorityFilter');
+    if (priorityFilter10) {
+        priorityFilter10.addEventListener('change', function() {
+            currentFilters10.priority = this.value;
+            updateGrid10();
         });
     }
 });
@@ -364,12 +544,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     table: 'table table-bordered'
                 }
             }).render(gridContainer);
+            setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
             
             // Update grid function
             const updateGrid = () => {
                 if (grid) {
                     const filteredData = getFilteredData().map(row => row.cells);
                     grid.updateConfig({ data: filteredData }).forceRender();
+                    setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
                 }
             };
             

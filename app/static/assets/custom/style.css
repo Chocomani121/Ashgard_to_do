@@ -175,3 +175,15 @@ tr:has(a[href]):hover {
 #reportDetailCommentsList::-webkit-scrollbar-track {
     background: transparent;
 }
+
+/* Approvals table only: full width, equal column widths */
+#table10-gridjs .gridjs-table {
+    table-layout: fixed;
+    width: 100%;
+}
+#table10-gridjs .gridjs-th,
+#table10-gridjs .gridjs-td {
+    width: 25%;
+    max-width: 25%;
+    min-width: 0;
+}

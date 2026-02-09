@@ -12,30 +12,35 @@
                     <li class="breadcrumb-item active" aria-current="page">Task Details</li>
                 </ol>
             </nav>
+            
              <div class="row">
                 <!-- LEFT CONTENT -->
                 <div class="col-xl-7">
                     <!-- PROJECT OVERVIEW (Sticky Card) -->
                     <div style="top: 90px;">
                         <div class="card mb-4"  style="height: 75vh;">
-
                             <!-- Card Header with Button -->
                             <div class="card-header d-flex align-items-center justify-content-between">
                                 <h4 class="card-title mb-0">{{ task.task_name or 'Task Details' }}</h4>
-                                <div class="dropdown">
-                                    <button class="btn btn-light" data-bs-toggle="dropdown">
-                                        <i class="mdi mdi-dots-vertical"></i>
+                                <div class="d-flex align-items-center gap-1">
+                                    <button type="button" class="btn btn-sm btn-outline-primary shadow-none" id="markCompleteBtn">
+                                            <i class="mdi mdi-check"></i> <span class="btn-text">Mark Complete</span>
                                     </button>
-                                    <div class="dropdown-menu dropdown-menu-end">
-                                        <a class="dropdown-item"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editTaskModal">
-                                            Edit Task
-                                        </a>                                    
-                                        <a class="dropdown-item text-danger" 
-                                            href="javascript:void(0);" 
-                                            data-task-name="{{ (task.task_name or 'this task')|e }}"
-                                            onclick="confirmDeleteTask(this.getAttribute('data-task-name'))">Delete</a>
+                                    <div class="dropdown">
+                                        <button class="btn btn-light" data-bs-toggle="dropdown">
+                                            <i class="mdi mdi-dots-vertical"></i>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end">
+                                            <a class="dropdown-item"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editTaskModal">
+                                                Edit Task
+                                            </a>                                    
+                                            <a class="dropdown-item text-danger" 
+                                                href="javascript:void(0);" 
+                                                data-task-name="{{ (task.task_name or 'this task')|e }}"
+                                                onclick="confirmDeleteTask(this.getAttribute('data-task-name'))">Delete</a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -103,7 +108,7 @@
                                     </div>
                                     <div class="col-6 col-md-3">
                                         <div class="text-muted small">End date</div>
-                                        <strong class="d-block mt-1">{% if task.deadline_ref %}{{ task.deadline_ref.end_date.strftime('%d %b %Y') }}{% else %}—{% endif %}</strong>
+                                        <strong class="d-block mt-1 deadline-end {% if task.deadline_ref and task.deadline_ref.end_date and task.deadline_ref.end_date.date() < today %}text-danger{% endif %}">{% if task.deadline_ref %}{{ task.deadline_ref.end_date.strftime('%d %b %Y') }}{% else %}—{% endif %}</strong>
                                     </div>
                                 </div>
                             
@@ -1166,6 +1171,5 @@
     </div>
   </div>
 </div>
-
 
 {% endblock content %}

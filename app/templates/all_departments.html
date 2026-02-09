@@ -102,7 +102,7 @@
                                     <td style="width: 190px;">{{ dept.department_name }}</td>
                                     <td style="text-align: center;">{{ dept.members|length }}</td>
                                     <td style="text-align: center;">{{ dept.creation_date.strftime('%B %Y') if dept.creation_date else 'N/A' }}</td>
-                                    <td>{{ dept.edited_on.strftime('%d / %m / %Y at %I:%M %p') if dept.edited_on else 'N/A' }}</td>
+                                    <td>{{ dept.edited_on.strftime('%d / %m / %Y at %H:%M') if dept.edited_on else 'N/A' }}</td>
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>
@@ -159,9 +159,7 @@
                                             <select class="form-select" id="statusFilterDept">
                                                 <option value="all">Status: All</option>
                                                 <option value="Ongoing">Ongoing</option>
-                                                <option value="On Hold">O   
-                                                    
-                                                    n Hold</option>
+                                                <option value="On Hold">On Hold</option>
                                                 <option value="Completed">Completed</option>
                                             </select>
                                         </div>
@@ -242,11 +240,13 @@
                                                 {% endif %}
                                             </td>
                                             <td style="width: 190px;">
+                                                <span class="deadline-end {% if item.deadline and item.deadline.end_date and item.deadline.end_date.date() < today %}text-danger{% endif %}">
                                                 {% if item.deadline and item.deadline.end_date %}
                                                 {{ item.deadline.end_date.strftime('%m/%d/%Y') }}
                                                 {% else %}
                                                 N/A
                                                 {% endif %}
+                                                </span>
                                             </td>
                                             <td>
                                                 {% set display_status = 'Ongoing' if (item.project.project_status == 'Pending' or not item.project.project_status or item.project.project_status == 'Cancelled') else item.project.project_status %}
@@ -261,7 +261,10 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                {{ item.project.progress or '0%' }}
+                                                {% set pct = item.progress_pct|default(0) %}
+                                                <div class="progress">
+                                                    <div class="progress-bar progress-bar-striped progress-bar-dynamic" role="progressbar" data-width-pct="{{ pct }}" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100">{{ pct }}%</div>
+                                                </div>
                                             </td>
                                             <td>
                                                 {{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}
@@ -270,7 +273,7 @@
                                                 {{ item.project.client_name or 'N/A' }}
                                             </td>
                                             <td>
-                                                N/A
+                                                {% if item.latest_task_title %}{% if item.latest_task_title|length > 40 %}<span title="{{ item.latest_task_title }}">{{ item.latest_task_title[:37] }}...</span>{% else %}{{ item.latest_task_title }}{% endif %}{% else %}<span class="text-muted" title="This project has no tasks yet">No tasks yet</span>{% endif %}
                                             </td>
                                         </tr>
                                         {% endfor %}
