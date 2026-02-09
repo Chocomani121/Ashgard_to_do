@@ -1012,6 +1012,7 @@ function openEditModal() {
 
         var dateSelect = document.getElementById("weekly-report-date");
         if (dateSelect && report.week_name) {
+            // Ensure the report's week exists in the dropdown (it may be a past week not in the default list)
             var hasOption = [].some.call(dateSelect.options, function (opt) { return opt.value === report.week_name; });
             if (!hasOption) {
                 var opt = document.createElement("option");

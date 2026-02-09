@@ -310,37 +310,6 @@ if (table6Req && table6Res) {
     }).render(table6Res);
 }
 
-
-// 11. company wide Table in reports
-const table11Req = document.getElementById("companyWideReport");
-const table11Res = document.getElementById("table11-gridjs");
-if (table11Req && table11Res) {
-    const grid11 = new gridjs.Grid({
-        from: table11Req,
-        pagination: { limit: 15 },
-        sort: false,
-        search: true,
-        className: { table: "table table-centered align-middle" }
-    });
-    grid11.render(table11Res);
-
-    function moveDatePickerBesideSearch() {
-        var datePickerEl = document.getElementById("datepicker-range");
-        if (!datePickerEl) return;
-        var datePickerParent = datePickerEl.closest(".input-group");
-        if (!datePickerParent) return;
-        var head = table11Res.querySelector(".gridjs-head");
-        if (!head) return;
-        head.style.display = "flex";
-        head.style.alignItems = "center";
-        head.style.gap = "0.75rem";
-        head.style.flexWrap = "wrap";
-        head.appendChild(datePickerParent);
-    }
-
-    setTimeout(moveDatePickerBesideSearch, 200);
-}
-
 //Members table
 const table7Req = document.getElementById("projectsTableMembers");
 const table7Res = document.getElementById("table7-gridjs");
@@ -654,6 +623,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// 10. Approval Table
+const table10Req = document.getElementById("projectsApproval");
+const table10Res = document.getElementById("table10-gridjs");
+if (table10Req && table10Res) {
+    new gridjs.Grid({
+        from: table10Req,
+        pagination: { limit: 10 },
+        sort: true,
+        search: true,
+        className: { table: "table table-centered align-middle" }
+    }).render(table10Res);
+}
+
+
 // ------Company-wide Reports Table-------
 document.addEventListener('DOMContentLoaded', function() {
     const tableEl = document.getElementById("companyWideReport");
@@ -782,16 +765,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// 10. Approval Table
-const table10Req = document.getElementById("projectsApproval");
-const table10Res = document.getElementById("table10-gridjs");
-if (table10Req && table10Res) {
-    new gridjs.Grid({
-        from: table10Req,
-        pagination: { limit: 10 },
-        sort: true,
-        search: true,
-        className: { table: "table table-centered align-middle" }
-    }).render(table10Res);
-}
 
