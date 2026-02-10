@@ -5,6 +5,7 @@ from app import db
 from datetime import datetime, date, time
 from sqlalchemy import or_, text
 from sqlalchemy.exc import ProgrammingError, OperationalError
+from sqlalchemy.orm import joinedload, selectinload
 import json
 import random
 
@@ -252,6 +253,8 @@ def _report_to_dict(report):
             'created_at': c.created_at.strftime('%m/%d/%Y %H:%M') if c.created_at else '',
             'author_name': comment_author,
             'author_image': author_img,
+            'member_id': c.member_id,
+            'parent_comment_id': c.parent_comment_id,
         })
 
     author_name = (report.author.name or report.author.username) if report.author else ''
@@ -274,6 +277,8 @@ def _report_to_dict(report):
         'is_author': report.member_id == current_user.member_id,
         'is_reviewer': report.reviewer_id == current_user.member_id if report.reviewer_id else False,
         'comments': comments_list,
+        'reviewer_id': report.reviewer_id,
+        'cc_member_ids': [cc.member_id for cc in (report.cc_entries or [])],
     }
 
 @main.route("/reports")
@@ -285,39 +290,58 @@ def reports():
         for u in users
     ]
     
-    # Admin sees all reports; non-admin sees only reports they're author, reviewer, or CC on
+    report_options = [
+        joinedload(Report.author).joinedload(User.dept_info),
+        joinedload(Report.reviewer_user),
+        selectinload(Report.cc_entries).joinedload(ReportCC.user),
+        selectinload(Report.comments).joinedload(Comment.author),
+    ]
+
     if getattr(current_user, 'account_type', None) == 'admin':
-        reports_q = Report.query.order_by(Report.created_on.desc()).all()
+        reports_q = (
+            Report.query
+            .options(*report_options)
+            .order_by(Report.created_on.desc())
+            .all()
+        )
     else:
-        reports_q = Report.query.filter(
-            or_(
-                Report.member_id == current_user.member_id,
-                Report.reviewer_id == current_user.member_id,
-                Report.report_id.in_(
-                    db.session.query(ReportCC.report_id).filter(ReportCC.member_id == current_user.member_id)
+        reports_q = (
+            Report.query
+            .options(*report_options)
+            .filter(
+                or_(
+                    Report.member_id == current_user.member_id,
+                    Report.reviewer_id == current_user.member_id,
+                    Report.report_id.in_(
+                        db.session.query(ReportCC.report_id).filter(
+                            ReportCC.member_id == current_user.member_id
+                        )
+                    ),
                 )
             )
-        ).order_by(Report.created_on.desc()).all()
+            .order_by(Report.created_on.desc())
+            .all()
+        )
 
     pending_reports = [r for r in reports_q if not r.is_checked]
     reviewed_reports = [r for r in reports_q if r.is_checked]
-    
-       # CC tab: admin sees all reports; non-admin sees only reports where they're reviewer or in CC
+
     if getattr(current_user, 'account_type', None) == 'admin':
-        cc_reports = reports_q  # Admin sees all
+        cc_reports = reports_q
+        company_wide_reports = reports_q
     else:
-        cc_reports = Report.query.filter(
-            or_(
-                Report.reviewer_id == current_user.member_id,
-                Report.report_id.in_(
-                    db.session.query(ReportCC.report_id).filter(ReportCC.member_id == current_user.member_id)
-                )
-            )
-        ).order_by(Report.created_on.desc()).all()
-    
-    # Company-wide: all reports from all users, no restriction
-    company_wide_reports = Report.query.order_by(Report.created_on.desc()).all()
-    # reports_json must include all reports for Company-wide detail lookup to work
+        cc_reports = [
+            r for r in reports_q
+            if r.reviewer_id == current_user.member_id
+            or any(cc.member_id == current_user.member_id for cc in (r.cc_entries or []))
+        ]
+        company_wide_reports = (
+            Report.query
+            .options(*report_options)
+            .order_by(Report.created_on.desc())
+            .all()
+        )
+
     reports_json = [_report_to_dict(r) for r in company_wide_reports]
 
     return render_template(
@@ -383,6 +407,34 @@ def create_report():
         flash(f'Error creating report: {str(e)}', 'danger')
         return redirect(url_for('main.reports'))
 
+# ---- Get single report (JSON, for real-time comments polling) ----
+@main.route("/reports/<int:report_id>", methods=['GET'])
+@login_required
+def get_report(report_id):
+    report_options = [
+        joinedload(Report.author).joinedload(User.dept_info),
+        joinedload(Report.reviewer_user),
+        selectinload(Report.cc_entries).joinedload(ReportCC.user),
+        selectinload(Report.comments).joinedload(Comment.author),
+    ]
+    report = Report.query.options(*report_options).filter(Report.report_id == report_id).first()
+    if not report:
+        return jsonify({'error': 'Report not found'}), 404
+    # Same visibility as reports list: author, reviewer, or CC
+    if getattr(current_user, 'account_type', None) == 'admin':
+        pass
+    else:
+        is_author = report.member_id == current_user.member_id
+        is_reviewer = report.reviewer_id == current_user.member_id
+        is_cc = db.session.query(ReportCC).filter(
+            ReportCC.report_id == report_id,
+            ReportCC.member_id == current_user.member_id
+        ).first() is not None
+        if not (is_author or is_reviewer or is_cc):
+            return jsonify({'error': 'Forbidden'}), 403
+    return jsonify(_report_to_dict(report))
+
+
 # ---- Approve report (reviewer marks as approved) ----
 @main.route("/reports/<int:report_id>/approve", methods=['POST'])
 @login_required
@@ -411,18 +463,30 @@ def approve_report(report_id):
 def add_report_comment(report_id):
     report = Report.query.get_or_404(report_id)
     # Optional: restrict to users who can see the report (author, reviewer, or CC)
-    comment_body = request.form.get('comment_body') or (request.get_json() or {}).get('comment_body', '')
+    data = request.get_json(silent=True) or request.form or {}
+    comment_body = data.get('comment_body', '')
     comment_body = (comment_body or '').strip()
     if not comment_body:
         if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'success': False, 'error': 'Comment is empty'}), 400
         flash('Comment cannot be empty.', 'warning')
         return redirect(url_for('main.reports'))
+    parent_comment_id = data.get('parent_comment_id')
+    if parent_comment_id is not None:
+        try:
+            parent_comment_id = int(parent_comment_id)
+        except (TypeError, ValueError):
+            parent_comment_id = None
+    if parent_comment_id is not None:
+        parent = Comment.query.filter_by(comment_id=parent_comment_id, report_id=report_id).first()
+        if not parent:
+            parent_comment_id = None
     try:
         comment = Comment(
             report_id=report_id,
             member_id=current_user.member_id,
-            comment_body=comment_body
+            comment_body=comment_body,
+            parent_comment_id=parent_comment_id
         )
         db.session.add(comment)
         db.session.commit()
@@ -445,6 +509,32 @@ def add_report_comment(report_id):
             return jsonify({'success': False, 'error': str(e)}), 500
         flash(f'Error: {str(e)}', 'danger')
     return redirect(url_for('main.reports'))
+
+
+# ---- Update (edit) report comment ----
+@main.route("/reports/<int:report_id>/comments/<int:comment_id>", methods=['PATCH'])
+@login_required
+def update_report_comment(report_id, comment_id):
+    comment = Comment.query.filter_by(comment_id=comment_id, report_id=report_id).first()
+    if not comment:
+        return jsonify({'success': False, 'error': 'Comment not found'}), 404
+    if comment.member_id != current_user.member_id:
+        return jsonify({'success': False, 'error': 'You can only edit your own comment'}), 403
+    data = request.get_json(silent=True) or {}
+    comment_body = (data.get('comment_body') or '').strip()
+    if not comment_body:
+        return jsonify({'success': False, 'error': 'Comment is empty'}), 400
+    try:
+        comment.comment_body = comment_body
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'comment_id': comment.comment_id,
+            'comment_body': comment.comment_body or ''
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @main.route("/members")
