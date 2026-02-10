@@ -10980,3 +10980,13 @@ body[data-layout-mode="dark"] .progress {
 .popover {
   -webkit-box-shadow: 0 5px 6px rgba(53, 65, 90, 0.1);
           box-shadow: 0 5px 6px rgba(53, 65, 90, 0.1); }
+          
+/* Force the modal to stay in the center of the screen, not the page height */
+.modal.fade.show {
+    display: block !important;
+    background: rgba(0, 0, 0, 0.5); /* Manual backdrop if CSS is conflicting */
+}
+
+.modal-dialog {
+    margin-top: 10% !important; /* Forces it away from the top/bottom edges */
+}

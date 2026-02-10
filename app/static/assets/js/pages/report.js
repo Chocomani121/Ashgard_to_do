@@ -993,5 +993,27 @@ function appendComment(comment) {
     list.insertAdjacentHTML('beforeend', commentHtml);
 }
 
+
+// Use a single, clean function for Reply/Edit toggling
+function toggleInput(btn, selector) {
+    // Prevent the default anchor behavior (jumping to #)
+    if (window.event) window.event.preventDefault();
+
+    const parent = btn.closest('.flex-grow-1');
+    if (!parent) return;
+
+    const target = parent.querySelector(selector);
+    
+    // Hide all other boxes in this note to keep it clean
+    parent.querySelectorAll('.reply-box, .edit-box').forEach(el => {
+        if (el !== target) el.classList.add('d-none');
+    });
+
+    // Toggle the targeted box
+    if (target) {
+        target.classList.toggle('d-none');
+    }
+}
+
 // Company-wide report modal is opened from gridjs.init.js when clicking the Name link in the grid
 
