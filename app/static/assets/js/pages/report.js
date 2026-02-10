@@ -681,6 +681,17 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       function sendComment() {
+
+        const btn = document.getElementById("commentEditorSend");
+        const spinner = document.getElementById("submitSpinner2");
+        const btnText = document.getElementById("submitText2");
+
+        if (btn && spinner) {
+            btn.disabled = true;         
+            spinner.classList.remove("d-none"); 
+            btnText.textContent = " Sending..."; 
+        }
+
         var commentReportIdEl = document.getElementById("commentReportId");
         var reportId = commentReportIdEl ? commentReportIdEl.value : null;
         if (!reportId) {
@@ -806,12 +817,34 @@ function openEditModal() {
         var submitBtn = document.querySelector("#newReportModal button[type='submit']");
         if (submitBtn) submitBtn.textContent = "Update Report";
 
-        // Fill Basic Fields (Ensure these 'name' attributes match your form)
-        var dateSelect = document.querySelector("select[name='report_date']");
-        if (dateSelect) dateSelect.value = report.week_name;
-        
-        var revSelect = document.querySelector("select[name='reviewer_id']");
-        if (revSelect) revSelect.value = report.reviewer_id;
+        var dateSelect = document.getElementById("weekly-report-date");
+        if (dateSelect && report.week_name) {
+            // Ensure the report's week exists in the dropdown (it may be a past week not in the default list)
+            var hasOption = [].some.call(dateSelect.options, function (opt) { return opt.value === report.week_name; });
+            if (!hasOption) {
+                var opt = document.createElement("option");
+                opt.value = report.week_name;
+                opt.textContent = report.week_name;
+                dateSelect.insertBefore(opt, dateSelect.options[0]);
+            }
+            dateSelect.value = report.week_name;
+        }
+
+        var reviewerIdInput = document.getElementById("selectedReviewerId");
+        var reviewerDisplay = document.getElementById("reportReviewerDisplay");
+        if (reviewerIdInput) reviewerIdInput.value = report.reviewer_id || "";
+        var usersData = [];
+        try {
+            var usersEl = document.getElementById("users-data");
+            if (usersEl) usersData = JSON.parse(usersEl.textContent || "[]");
+        } catch (e) {}
+        var reviewerUser = usersData.find(function(u) { return u.member_id === report.reviewer_id; });
+        if (reviewerDisplay && reviewerUser) {
+            var name = reviewerUser.name || reviewerUser.username || "Unknown";
+            reviewerDisplay.innerHTML = "<div class=\"d-flex align-items-center gap-2\"><span class=\"fw-bold text-primary\">" + name + "</span></div>";
+        } else if (reviewerDisplay && report.reviewer_name) {
+            reviewerDisplay.innerHTML = "<div class=\"d-flex align-items-center gap-2\"><span class=\"fw-bold text-primary\">" + report.reviewer_name + "</span></div>";
+        }
 
         // Fill Rich Text (TinyMCE)
         if (window.tinymce && tinymce.get('reportBody')) {
