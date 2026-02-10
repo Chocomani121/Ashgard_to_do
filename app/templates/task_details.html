@@ -23,25 +23,42 @@
                             <div class="card-header d-flex align-items-center justify-content-between">
                                 <h4 class="card-title mb-0">{{ task.task_name or 'Task Details' }}</h4>
                                 <div class="d-flex align-items-center gap-1">
-                                    <button type="button" class="btn btn-sm btn-outline-primary shadow-none" id="markCompleteBtn">
-                                            <i class="mdi mdi-check"></i> <span class="btn-text">Mark Complete</span>
-                                    </button>
-                                    <div class="dropdown">
-                                        <button class="btn btn-light" data-bs-toggle="dropdown">
-                                            <i class="mdi mdi-dots-vertical"></i>
+                                    {% set task_status_display = task.task_status or 'Ongoing' %}
+                                    {% if can_edit_task %}
+                                        {% if task_status_display != 'Completed' %}
+                                        <button type="button" class="btn btn-sm btn-outline-primary shadow-none" id="markCompleteBtn" data-task-id="{{ task.task_id }}">
+                                                <i class="mdi mdi-check"></i> <span class="btn-text">Mark Complete</span>
                                         </button>
-                                        <div class="dropdown-menu dropdown-menu-end">
-                                            <a class="dropdown-item"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#editTaskModal">
-                                                Edit Task
-                                            </a>                                    
-                                            <a class="dropdown-item text-danger" 
-                                                href="javascript:void(0);" 
-                                                data-task-name="{{ (task.task_name or 'this task')|e }}"
-                                                onclick="confirmDeleteTask(this.getAttribute('data-task-name'))">Delete</a>
+                                        {% else %}
+                                        <button type="button" class="btn btn-sm btn-outline-success bg-soft-success shadow-none" disabled>
+                                                <i class="mdi mdi-check"></i> <span class="btn-text">Completed</span>
+                                        </button>
+                                        {% endif %}
+                                        <div class="dropdown">
+                                            <button class="btn btn-light" data-bs-toggle="dropdown">
+                                                <i class="mdi mdi-dots-vertical"></i>
+                                            </button>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#editTaskModal">
+                                                    Edit Task
+                                                </a>
+                                                {% if project and current_user.member_id == project.project_manager %}
+                                                <a class="dropdown-item text-danger" 
+                                                    href="javascript:void(0);" 
+                                                    data-task-name="{{ (task.task_name or 'this task')|e }}"
+                                                    onclick="confirmDeleteTask(this.getAttribute('data-task-name'))">Delete</a>
+                                                {% endif %}
+                                            </div>
                                         </div>
-                                    </div>
+                                    {% else %}
+                                        {% if task_status_display == 'Completed' %}
+                                        <button type="button" class="btn btn-sm btn-outline-success bg-soft-success shadow-none" disabled>
+                                                <i class="mdi mdi-check"></i> <span class="btn-text">Completed</span>
+                                        </button>
+                                        {% endif %}
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -108,7 +125,7 @@
                                     </div>
                                     <div class="col-6 col-md-3">
                                         <div class="text-muted small">End date</div>
-                                        <strong class="d-block mt-1 deadline-end {% if task.deadline_ref and task.deadline_ref.end_date and task.deadline_ref.end_date.date() < today %}text-danger{% endif %}">{% if task.deadline_ref %}{{ task.deadline_ref.end_date.strftime('%d %b %Y') }}{% else %}—{% endif %}</strong>
+                                        <strong class="d-block mt-1">{% if task.deadline_ref %}{{ task.deadline_ref.end_date.strftime('%d %b %Y') }}{% else %}—{% endif %}</strong>
                                     </div>
                                 </div>
                             
@@ -980,13 +997,19 @@
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Assigned member</label>
-                                <select class="form-select" name="owner_id" id="editTaskOwnerId">
-                                    <option value="">Select member</option>
+                                <label class="form-label">Assigned members</label>
+                                <div class="border rounded p-2" style="max-height: 120px; overflow-y: auto;">
                                     {% for pm in task_project_members|default([]) %}
-                                    <option value="{{ pm.p_members_id }}" {% if task.p_members_id == pm.p_members_id %}selected{% endif %}>{{ pm.name }}</option>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="owner_id" value="{{ pm.p_members_id }}" id="editOwner{{ pm.p_members_id }}" {% if pm.p_members_id in assignee_p_members_ids %}checked{% endif %}>
+                                        <label class="form-check-label" for="editOwner{{ pm.p_members_id }}">{{ pm.name }}</label>
+                                    </div>
                                     {% endfor %}
-                                </select>
+                                    {% if not task_project_members %}
+                                    <span class="text-muted small">No project members available.</span>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">Select one or more members assigned to this task.</small>
                             </div>
                         </div>
                     </div>

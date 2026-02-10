@@ -221,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// 2. Company-Wide Projects (search filter)
 document.addEventListener('DOMContentLoaded', function() {
     const tbl = document.getElementById("projectsTableCompany");
     const container = document.getElementById("table2-gridjs");
@@ -323,76 +324,18 @@ if (table7Req && table7Res) {
     }).render(table7Res);
 }
 
-// 10. Approval Table (with search bar and status/priority filters)
-document.addEventListener('DOMContentLoaded', function() {
-    const table10Req = document.getElementById("projectsApproval");
-    const table10Res = document.getElementById("table10-gridjs");
-    if (!table10Req || !table10Res || typeof gridjs === 'undefined') return;
-
-    let grid10 = null;
-    let allData10 = [];
-    let currentFilters10 = { search: '', status: 'all', priority: 'all' };
-
-    const tableRows = Array.from(table10Req.querySelectorAll('tbody tr'));
-    allData10 = tableRows.map(tr => ({
-        status: (tr.getAttribute('data-status') || '').trim(),
-        priority: (tr.getAttribute('data-priority') || '').trim(),
-        cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML)),
-        searchText: Array.from(tr.querySelectorAll('td')).map(td => td.textContent || '').join(' ').toLowerCase()
-    }));
-
-    function getFilteredData10() {
-        return allData10.filter(row => {
-            if (currentFilters10.search && !row.searchText.includes(currentFilters10.search.toLowerCase())) return false;
-            if (currentFilters10.status !== 'all' && row.status !== currentFilters10.status) return false;
-            if (currentFilters10.priority !== 'all' && row.priority !== currentFilters10.priority) return false;
-            return true;
-        });
-    }
-
-    grid10 = new gridjs.Grid({
-        columns: ["Task Name", "Project Name", "Status", "Action"],
-        data: getFilteredData10().map(row => row.cells),
+// 10. Approval Table
+const table10Req = document.getElementById("projectsApproval");
+const table10Res = document.getElementById("table10-gridjs");
+if (table10Req && table10Res) {
+    new gridjs.Grid({
+        from: table10Req,
         pagination: { limit: 10 },
         sort: true,
-        search: false,
+        search: true,
         className: { table: "table table-centered align-middle" }
     }).render(table10Res);
-
-    function updateGrid10() {
-        if (grid10) {
-            grid10.updateConfig({ data: getFilteredData10().map(row => row.cells) }).forceRender();
-        }
-    }
-
-    const searchInput10 = document.getElementById('searchDeptProjects');
-    if (searchInput10) {
-        let searchTimeout10;
-        searchInput10.addEventListener('input', function() {
-            clearTimeout(searchTimeout10);
-            searchTimeout10 = setTimeout(function() {
-                currentFilters10.search = this.value.trim();
-                updateGrid10();
-            }.bind(this), 300);
-        });
-    }
-
-    const statusFilter10 = document.getElementById('statusFilter');
-    if (statusFilter10) {
-        statusFilter10.addEventListener('change', function() {
-            currentFilters10.status = this.value;
-            updateGrid10();
-        });
-    }
-
-    const priorityFilter10 = document.getElementById('priorityFilter');
-    if (priorityFilter10) {
-        priorityFilter10.addEventListener('change', function() {
-            currentFilters10.priority = this.value;
-            updateGrid10();
-        });
-    }
-});
+}
 
 // 6. Department Projects Table (from all_departments.html)
 document.addEventListener('DOMContentLoaded', function() {
