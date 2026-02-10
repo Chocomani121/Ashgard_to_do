@@ -823,4 +823,3 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
