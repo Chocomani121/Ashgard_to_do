@@ -973,33 +973,27 @@ function appendComment(comment) {
     list.insertAdjacentHTML('beforeend', commentHtml);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Grab the JSON you already have in your <script> tag
-    const reportsData = JSON.parse(document.getElementById('reports-data').textContent);
-    const reportModalElement = document.getElementById('companyWideReportModal');
-    const bsModal = new bootstrap.Modal(reportModalElement);
 
-    // Listen for clicks on the table rows
-    document.querySelectorAll('.clickable-row').forEach(row => {
-        row.addEventListener('click', function() {
-            const reportId = this.getAttribute('data-report-id');
-            
-            // Find the report in your JSON array by ID
-            const report = reportsData.find(r => r.report_id == reportId);
+// Use a single, clean function for Reply/Edit toggling
+function toggleInput(btn, selector) {
+    // Prevent the default anchor behavior (jumping to #)
+    if (window.event) window.event.preventDefault();
 
-            if (report) {
-                // Populate metadata
-                document.getElementById('companyWideModalTitle').innerText = `Weekly-${report.author_name} (${report.week_name})`;
-                document.getElementById('companyWideModalReviewer').innerText = report.reviewer_name || '—';
-                document.getElementById('companyWideModalCC').innerText = report.cc_list || 'None';
-                document.getElementById('companyWideModalDepartment').innerText = report.department_name || 'N/A';
-                document.getElementById('companyWideModalCreated').innerText = report.created_at;
+    const parent = btn.closest('.flex-grow-1');
+    if (!parent) return;
 
-                // POPULATE CONTENT: Injects the <strong>, <ol>, and <li> tags from your DB
-                document.getElementById('companyWideModalBody').innerHTML = report.report_content;
-
-                bsModal.show();
-            }
-        });
+    const target = parent.querySelector(selector);
+    
+    // Hide all other boxes in this note to keep it clean
+    parent.querySelectorAll('.reply-box, .edit-box').forEach(el => {
+        if (el !== target) el.classList.add('d-none');
     });
-});
+
+    // Toggle the targeted box
+    if (target) {
+        target.classList.toggle('d-none');
+    }
+}
+
+// Company-wide report modal is opened from gridjs.init.js when clicking the Name link in the grid
+
