@@ -688,25 +688,62 @@ def update_project_members(id):
         flash('Please select at least one member', 'danger')
         return redirect(url_for('main.project_details', id=id))
     try:
-        # Delete all existing project members
-        ProjectMembers.query.filter_by(project_id=project.project_id).delete()
-        db.session.flush()
-        
-        # Add all selected members (from any department)
+        selected_member_ids = set()
         for mid in member_ids:
             if mid and str(mid).isdigit():
-                member_id_int = int(mid)
-                user = User.query.get(member_id_int)
-                if user:
-                    pm = ProjectMembers(
-                        project_id=project.project_id,
-                        member_id=member_id_int,
-                        role='Team Member'
-                    )
-                    db.session.add(pm)
-        
+                selected_member_ids.add(int(mid))
+
+        current_pms = ProjectMembers.query.filter_by(project_id=project.project_id).all()
+        could_not_remove = []
+
+        for pm in current_pms:
+            if pm.member_id in selected_member_ids:
+                continue
+            # Member was deselected — only delete if not referenced by any task
+            used_in_task_tbl = Task.query.filter_by(
+                project_id=project.project_id, p_members_id=pm.p_members_id
+            ).count() > 0
+            used_in_assignees = (
+                TaskAssignee.query.join(Task)
+                .filter(
+                    Task.project_id == project.project_id,
+                    TaskAssignee.p_members_id == pm.p_members_id,
+                )
+                .count()
+                > 0
+            )
+            if used_in_task_tbl or used_in_assignees:
+                u = User.query.filter_by(member_id=pm.member_id).first()
+                could_not_remove.append(u.name or u.username if u else str(pm.member_id))
+            else:
+                db.session.delete(pm)
+
+        db.session.flush()
+
+        # Add new members (selected but not already in project)
+        existing_member_ids = {pm.member_id for pm in current_pms}
+        for member_id_int in selected_member_ids:
+            if member_id_int in existing_member_ids:
+                continue
+            user = User.query.get(member_id_int)
+            if user:
+                pm = ProjectMembers(
+                    project_id=project.project_id,
+                    member_id=member_id_int,
+                    role='Team Member'
+                )
+                db.session.add(pm)
+
         db.session.commit()
-        flash('Project members updated successfully', 'success')
+        if could_not_remove:
+            flash(
+                'Project members updated. Could not remove: {} (still assigned to tasks).'.format(
+                    ', '.join(could_not_remove)
+                ),
+                'warning',
+            )
+        else:
+            flash('Project members updated successfully', 'success')
     except Exception as e:
         db.session.rollback()
         flash('Failed to update: {}'.format(str(e)), 'danger')
