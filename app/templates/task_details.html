@@ -125,7 +125,7 @@
                                     </div>
                                     <div class="col-6 col-md-3">
                                         <div class="text-muted small">End date</div>
-                                        <strong class="d-block mt-1 deadline-end {% if task.deadline_ref and task.deadline_ref.end_date and task.deadline_ref.end_date.date() < today %}text-danger{% endif %}">{% if task.deadline_ref %}{{ task.deadline_ref.end_date.strftime('%d %b %Y') }}{% else %}—{% endif %}</strong>
+                                        <strong class="d-block mt-1">{% if task.deadline_ref %}{{ task.deadline_ref.end_date.strftime('%d %b %Y') }}{% else %}—{% endif %}</strong>
                                     </div>
                                 </div>
                             

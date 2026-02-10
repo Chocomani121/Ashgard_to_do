@@ -11,6 +11,7 @@
                 <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
             {% endif %}
             {% endwith %}
+
         <div class="row">
             <div class="col-xl-12">
                 <div class="row">
@@ -240,13 +241,11 @@
                                                 {% endif %}
                                             </td>
                                             <td style="width: 190px;">
-                                                <span class="deadline-end {% if item.deadline and item.deadline.end_date and item.deadline.end_date.date() < today %}text-danger{% endif %}">
                                                 {% if item.deadline and item.deadline.end_date %}
                                                 {{ item.deadline.end_date.strftime('%m/%d/%Y') }}
                                                 {% else %}
                                                 N/A
                                                 {% endif %}
-                                                </span>
                                             </td>
                                             <td>
                                                 {% set display_status = 'Ongoing' if (item.project.project_status == 'Pending' or not item.project.project_status or item.project.project_status == 'Cancelled') else item.project.project_status %}

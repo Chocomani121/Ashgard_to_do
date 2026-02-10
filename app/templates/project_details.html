@@ -10,11 +10,6 @@
                                 <li class="breadcrumb-item active" aria-current="page">Project Details</li>
                             </ol>
                         </nav>
-                        <!-- {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
-                        {% endif %}
-                        {% endwith %} -->
                         {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
                             <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
@@ -80,7 +75,7 @@
 
                                     <div class="col-md-3 col-sm-6">
                                         <span class="text-muted">End date:</span> 
-                                        <strong class="ms-1 deadline-end {% if deadline and deadline.end_date and deadline.end_date.date() < today %}text-danger{% endif %}">
+                                        <strong class="ms-1">
                                             {% if deadline and deadline.end_date %}
                                                 {{ deadline.end_date.strftime('%B %d, %Y') }}
                                             {% else %}
