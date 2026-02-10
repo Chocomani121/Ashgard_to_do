@@ -822,6 +822,17 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       function sendComment() {
+
+        const btn = document.getElementById("commentEditorSend");
+        const spinner = document.getElementById("submitSpinner2");
+        const btnText = document.getElementById("submitText2");
+
+        if (btn && spinner) {
+            btn.disabled = true;         
+            spinner.classList.remove("d-none"); 
+            btnText.textContent = " Sending..."; 
+        }
+
         var commentReportIdEl = document.getElementById("commentReportId");
         var reportId = commentReportIdEl ? commentReportIdEl.value : null;
         if (!reportId) {

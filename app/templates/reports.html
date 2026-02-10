@@ -227,7 +227,11 @@
                                                             </div>
                                                             <div class="p-2 bg-light border-top d-flex justify-content-end gap-2">
                                                                 <button type="button" id="commentEditorCancel" class="btn btn-outline-secondary btn-sm">Cancel</button>
-                                                                <button type="button" id="commentEditorSend" class="btn btn-primary btn-sm">Send</button>
+                                                                <!-- <button type="button" id="commentEditorSend" class="btn btn-primary btn-sm">Send</button> -->
+                                                                <button type="submit" id="commentEditorSend" class="btn btn-primary btn-sm">
+                                                                    <span id="submitSpinner2" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                                                    <span id="submitText2">Send</span>
+                                                                </button>
                                                             </div>
                                                         </div>
                                                         <input type="hidden" id="commentReportId" value="">
