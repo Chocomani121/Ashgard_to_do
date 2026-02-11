@@ -7,8 +7,8 @@
             <!-- Breadcrumb -->
             <nav aria-label="breadcrumb" class="mb-3">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('main.projects') }}">Projects</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('main.project_details', id=task.project_id) }}">Project Details</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('project.projects') }}">Projects</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('project.project_details', id=task.project_id) }}">Project Details</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Task Details</li>
                 </ol>
             </nav>
@@ -820,7 +820,7 @@
                 <h5 class="modal-title">Edit Task</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="{{ url_for('main.update_task', id=task.task_id) }}" id="editTaskForm">
+            <form method="POST" action="{{ url_for('project.update_task', id=task.task_id) }}" id="editTaskForm">
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6">
@@ -898,7 +898,7 @@
 </div>
 
 <!-- Hidden form for delete task (submitted by JS after confirm) -->
-<form id="deleteTaskForm" method="POST" action="{{ url_for('main.delete_task', id=task.task_id) }}" style="display: none;"></form>
+<form id="deleteTaskForm" method="POST" action="{{ url_for('project.delete_task', id=task.task_id) }}" style="display: none;"></form>
 
 <!-- Notes Modal -->
 <div class="modal fade notes-modal" data-bs-backdrop="static" id="note-modal" tabindex="-1" aria-hidden="true">
@@ -1081,25 +1081,6 @@
     </div>
 </div>
 
-<style>
-#taskNoteModal {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    z-index: 9999 !important; /* Ensures it stays above the sidebar */
-    width: 100% !important;
-    height: 100% !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    background-color: rgba(0,0,0,0.5) !important; /* Manual backdrop if yours is broken */
-}
-
-#taskNoteModal .modal-dialog {
-    margin: 1.75rem auto !important;
-    display: flex !important;
-    align-items: center !important;
-    min-height: calc(100% - 3.5rem) !important;
-}
-</style>
+<script src="{{ url_for('project.static', filename='task.js') }}"></script>
 
 {% endblock content %}

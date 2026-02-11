@@ -220,3 +220,8 @@ Purpose: Chip-based member selection for Create Project modal
     renderSelectedProject();
   });
 })();
+
+document.querySelectorAll('.progress-bar-dynamic').forEach(function (el) {
+  var pct = el.getAttribute('data-width-pct');
+  if (pct != null) el.style.width = pct + '%';
+});

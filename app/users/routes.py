@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint, current_app
 from app import db, bcrypt, mail, cache
 from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm, UpdateAccountForm
-from app.models import User, Department, Report, Notes, Task
+from app.models import User, Department, Notes, Task
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 from sqlalchemy.orm import joinedload
@@ -19,7 +19,7 @@ users = Blueprint('users', __name__)
 @users.route("/admin_register", methods=['GET', 'POST'])
 def admin_register():
     if current_user.is_authenticated:
-        return redirect(url_for('main.projects'))
+        return redirect(url_for('project.projects'))
 
     form = RegisterForm()
     if form.validate_on_submit():
@@ -43,7 +43,7 @@ def admin_register():
 @users.route("/register", methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('main.projects'))
+        return redirect(url_for('project.projects'))
 
     form = RegisterForm()
     if form.validate_on_submit():
@@ -67,7 +67,7 @@ def register():
 @users.route("/login", methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('main.projects'))
+        return redirect(url_for('project.projects'))
     
     form = LoginForm()
     if form.validate_on_submit():
@@ -75,7 +75,7 @@ def login():
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('main.projects'))
+            return redirect(next_page) if next_page else redirect(url_for('project.projects'))
         
         form.email.errors.append('Invalid email or password.')
         
@@ -176,7 +176,7 @@ If you did not make this request, simply ignore this email and no changes will b
 @users.route("/reset_password", methods=['GET', 'POST'])
 def reset_request():
     if current_user.is_authenticated:
-        return redirect(url_for('main.projects'))
+        return redirect(url_for('project.projects'))
 
     form = RequestResetForm()
     if form.validate_on_submit():
@@ -191,7 +191,7 @@ def reset_request():
 @users.route("/reset_password/<token>", methods=['GET', 'POST'])
 def reset_token(token):
     if current_user.is_authenticated:
-        return redirect(url_for('main.projects'))
+        return redirect(url_for('project.projects'))
 
     user = User.verify_reset_token(token)
     if user is None:
@@ -244,82 +244,6 @@ def update_member(member_id):
     flash(f'Updated {member.name}!', 'update_success')
     return redirect(url_for('users.members'))
 
-
-@users.route("/reports/delete/<int:report_id>")
-@login_required
-def delete_report(report_id):
-    # Import inside to prevent circular dependency
-    from app.models import Report, ReportCC 
-    
-    report = Report.query.get_or_404(report_id)
-    
-    # Check if the current user is the author
-    # Note: current_user works because it's an instance of the User class
-    if report.member_id != current_user.member_id:
-        flash("You do not have permission to delete this report.", "danger")
-        return redirect(url_for('main.reports'))
-    
-    try:
-        # Since you added cascade="all, delete-orphan" in models.py, 
-        # SQLAlchemy will automatically delete CC entries and Comments!
-        db.session.delete(report)
-        db.session.commit()
-        flash("Report deleted successfully!", "success")
-    except Exception as e:
-        db.session.rollback()
-        flash(f"Error deleting report: {str(e)}", "danger")
-        
-    return redirect(url_for('main.reports'))
-
-def _report_to_dict(report):
-    return {
-        'report_id': report.report_id,
-        'week_name': report.week_name,
-        'report_content': report.report_content,
-        'reviewer_id': report.reviewer_id,
-        'author_name': report.author.name,
-        # This is the crucial line for the CC list populate:
-        'cc_member_ids': [cc.member_id for cc in report.cc_entries]
-    }
-
-@users.route("/reports/edit/<int:report_id>", methods=['POST'])
-@login_required
-def edit_report(report_id):
-    from app.models import Report, ReportCC
-    
-    # 1. Fetch the existing report
-    report = Report.query.get_or_404(report_id)
-
-    # 2. Security: Ensure the user is actually the author
-    if report.member_id != current_user.member_id:
-        flash("You do not have permission to edit this report.", "danger")
-        return redirect(url_for('main.reports'))
-
-    try:
-        # 3. Update the main fields from the form
-        report.week_name = request.form.get('report_date')
-        report.report_content = request.form.get('reportBody')
-        report.reviewer_id = request.form.get('reviewer_id')
-        
-        # Optional: Reset "checked" status so it needs new approval after edit
-        report.is_checked = False 
-
-        # 4. Update CC Members (Delete old ones and add new ones)
-        ReportCC.query.filter_by(report_id=report_id).delete()
-        cc_ids = request.form.getlist('cc_members')
-        for m_id in cc_ids:
-            if m_id:
-                new_cc = ReportCC(report_id=report_id, member_id=int(m_id))
-                db.session.add(new_cc)
-
-        db.session.commit()
-        flash("Report updated successfully!", "success")
-        
-    except Exception as e:
-        db.session.rollback()
-        flash(f"Error updating report: {str(e)}", "danger")
-
-    return redirect(url_for('main.reports'))
 
 # Project Details Notes_tbl - Reply, Comment, Edit
 @users.route("/project/note/add", methods=['POST'])

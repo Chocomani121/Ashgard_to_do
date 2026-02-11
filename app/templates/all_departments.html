@@ -196,7 +196,7 @@
                                 <!-- ORIGINAL TABLE (hidden but used by Grid.js) -->
                                 <table id="projectsTableDept" class="table d-none">
                                     <thead>
-                                        <tr>
+                                        <tr>    
                                             <th style="width: 190px;">Project Name</th>
                                             <th>Priority</th>
                                             <th>Start Date</th>
@@ -218,7 +218,7 @@
                                             data-end-date="{{ item.deadline.end_date.strftime('%Y-%m-%d') if item.deadline and item.deadline.end_date else '' }}"
                                         >
                                             <td>
-                                                <a href="{{ url_for('main.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
+                                                <a href="{{ url_for('project.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
                                                     {{ item.project.project_name or item.project.client_name or 'Unnamed Project' }}
                                                 </a>
                                             </td>

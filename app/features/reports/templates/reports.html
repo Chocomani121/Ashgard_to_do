@@ -25,7 +25,7 @@
               </div> -->
               {% with messages = get_flashed_messages(with_categories=true) %}
               {% if messages %}
-                  <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
+                <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
               {% endif %}
               {% endwith %}
             <div class="row">
@@ -534,7 +534,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <form action="{{ url_for('main.create_report') }}" method="POST" id="reportForm">
+            <form action="{{ url_for('reports.create_report') }}" method="POST" id="reportForm">
                 <div class="modal-body pt-0">
                     <div class="row g-3">
                         <div class="col-lg-7">
@@ -659,7 +659,7 @@
 <span id="current-user-member-id" class="d-none">{% if current_user %}{{ current_user.member_id }}{% endif %}</span>
 <script type="application/json" id="users-data">{{ users_json|tojson }}</script>
 <script type="application/json" id="reports-data">{{ reports_json|tojson }}</script>
-<script src="{{ url_for('static', filename='assets/js/pages/report.js') }}"></script>
+<script src="{{ url_for('reports.static', filename='report.js') }}"></script>
 
 
 {% endblock content %}

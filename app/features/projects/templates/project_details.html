@@ -6,7 +6,7 @@
                     <div class="container-fluid">
                         <nav aria-label="breadcrumb" class="mb-3">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ url_for('main.projects') }}">Projects</a></li>
+                                <li class="breadcrumb-item"><a href="{{ url_for('project.projects') }}">Projects</a></li>
                                 <li class="breadcrumb-item active" aria-current="page">Project Details</li>
                             </ol>
                         </nav>
@@ -284,7 +284,7 @@
                                                 <tbody>
                                                         {% for task_info in tasks %}
                                                         <tr data-task-id="{{ task_info.task.task_id }}" data-task-status="{{ task_info.status }}">
-                                                            <td class="fw-semibold"><a href="{{ url_for('main.task_details', id=task_info.task.task_id) }}" class="text-dark">{{ task_info.task.task_name }}</a></td>
+                                                            <td class="fw-semibold"><a href="{{ url_for('project.task_details', id=task_info.task.task_id) }}" class="text-dark">{{ task_info.task.task_name }}</a></td>
                                                             <td style="width: 190px;">
                                                                 {% if task_info.assignees %}
                                                                 <div class="d-flex flex-wrap align-items-center gap-1">
@@ -411,7 +411,7 @@
         
   {% if is_project_manager %}
   <!--  Create Task modal -->
-            <form method="POST" action="{{ url_for('main.create_task', id=project.project_id) }}" id="createTaskForm">
+            <form method="POST" action="{{ url_for('project.create_task', id=project.project_id) }}" id="createTaskForm">
                 <div id="createTaskOwnerIdsContainer"></div>
                 <div class="modal fade create-task" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-md modal-dialog-centered">
@@ -491,7 +491,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <form method="POST" action="{{ url_for('main.update_project', id=project.project_id) }}" id="editProjectForm">
+                            <form method="POST" action="{{ url_for('project.update_project', id=project.project_id) }}" id="editProjectForm">
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="form-label">Project Name</label>
@@ -545,7 +545,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <form method="POST" action="{{ url_for('main.update_project_manager', id=project.project_id) }}">
+                            <form method="POST" action="{{ url_for('project.update_project_manager', id=project.project_id) }}">
                                 <div class="mb-3">
                                     <label class="form-label">Project Manager</label>
                                     <select class="form-select" name="project_manager" required>
@@ -574,7 +574,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body py-4" style="min-height: 320px;">
-                            <form id="editProjectMembersForm" method="POST" action="{{ url_for('main.update_project_members', id=project.project_id) }}">
+                            <form id="editProjectMembersForm" method="POST" action="{{ url_for('project.update_project_members', id=project.project_id) }}">
                                 <div class="mb-4">
                                     <label class="form-label">Members <span class="text-danger">*</span></label>
                                     <div id="editMemberIdsContainer"></div>
@@ -616,7 +616,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <form method="POST" action="{{ url_for('main.update_project_description', id=project.project_id) }}">
+                            <form method="POST" action="{{ url_for('project.update_project_description', id=project.project_id) }}">
                                 <div class="mb-3">
                                     <label class="form-label">Description</label>
                                     <textarea class="form-control" name="project_desc" rows="6" placeholder="Enter project description">{{ project.project_desc or '' }}</textarea>
@@ -635,87 +635,6 @@
 <script type="application/json" id="project-assigned-members-for-task">{{ task_assignable_members|tojson }}</script>
 <script type="application/json" id="edit-project-users-data">{{ users_json|tojson }}</script>
 <script type="application/json" id="edit-project-initial-members">{{ edit_initial_members_json|tojson }}</script>
-<script src="{{ url_for('static', filename='assets/js/pages/project-details-edit.init.js') }}"></script>
-
-<script>
-// Mark Complete Button Handler for Project Details Page
-document.addEventListener('DOMContentLoaded', function() {
-    var markCompleteButtons = document.querySelectorAll('.mark-complete-btn');
-    
-    markCompleteButtons.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var taskId = btn.getAttribute('data-task-id');
-            if (!taskId) return;
-            
-            var row = btn.closest('tr');
-            var originalBtnHtml = btn.innerHTML;
-            
-            // Disable button during request
-            btn.disabled = true;
-            btn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Processing...';
-            
-            // Send AJAX request to mark task as complete
-            fetch(`/task/${taskId}/mark_complete`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update status badge
-                    var statusBadge = row.querySelector('.task-status-badge');
-                    if (statusBadge) {
-                        statusBadge.textContent = 'Completed';
-                        statusBadge.className = 'badge badge-soft-success font-size-12 task-status-badge';
-                    }
-                    
-                    // Update row data attribute
-                    row.setAttribute('data-task-status', 'Completed');
-                    
-                    // Replace button with completed text
-                    var actionsCell = btn.parentElement;
-                    actionsCell.innerHTML = '<span class="text-muted small">Task Completed</span>';
-                    
-                    // Show success message
-                    if (typeof Swal !== 'undefined') {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: 'Task marked as completed',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                    }
-                    
-                    // Reload page after a short delay to update progress charts and counts
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1500);
-                } else {
-                    throw new Error(data.error || 'Failed to mark task as complete');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                btn.disabled = false;
-                btn.innerHTML = originalBtnHtml;
-                
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: error.message || 'Failed to mark task as complete'
-                    });
-                } else {
-                    alert('Error: ' + error.message);
-                }
-            });
-        });
-    });
-});
-</script>
+<script src="{{ url_for('project.static', filename='project-details-edit.init.js') }}"></script>
+<script src="{{ url_for('project.static', filename='task.js') }}"></script>
    {% endblock content %}

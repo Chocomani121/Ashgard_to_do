@@ -69,7 +69,7 @@
 
                 <!-- LOGO -->
                 <div class="navbar-brand-box">
-                    <a href="{{ url_for('main.projects') }}" class="logo">
+                    <a href="{{ url_for('project.projects') }}" class="logo">
                         <span class="logo-sm">
                             <img src="../static/assets/images/ashgard-logo.png" alt="" height="26">
                         </span>
@@ -101,13 +101,13 @@
                                 <li class="menu-title" data-key="t-menu">Workload</li>
 
                             <li>
-                                <a href="{{ url_for('main.projects') }}">
+                                <a href="{{ url_for('project.projects') }}">
                                     <i class="bx bx-folder-open icon nav-icon"></i>
-                                    <span class="menu-item" href="{{ url_for('main.projects') }}" data-key="t-dashboard">Projects</span>
+                                    <span class="menu-item" href="{{ url_for('project.projects') }}" data-key="t-dashboard">Projects</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ url_for('main.tasks') }}">
+                                <a href="{{ url_for('project.tasks') }}">
                                     <i class="bx bx-task icon nav-icon"></i>
                                     <span class="menu-item" data-key="t-calendar">Tasks</span>
                                 </a>
@@ -137,7 +137,7 @@
                             </li>
                             
                             <li>
-                                <a href="{{ url_for('main.reports') }}" >
+                                <a href="{{ url_for('reports.reports') }}" >
                                     <i class="bx bx-notepad icon nav-icon"></i>
                                     <span class="menu-item" data-key="t-todo">Reports</span>
                                 </a>
