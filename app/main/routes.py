@@ -125,7 +125,7 @@ def approvals():
 @login_required
 def members():
     users = User.query.all()
-    return render_template('members.html', title="Members", users=users)
+    return render_template('members.html', title="Members", members=users, total_users=len(users))
 
 @main.route("/profile")
 @login_required
