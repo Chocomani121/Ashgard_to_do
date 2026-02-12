@@ -99,7 +99,7 @@ def edit_department(id):
         department.edited_on = datetime.now()
         db.session.commit()
         flash('Department updated!', 'success')
-        return redirect(url_for('main.all_departments'))
+        return redirect(url_for('department.all_departments'))
     return render_template('edit_department.html', department=department)
 
 @department_bp.route("/department/delete/<int:id>", methods=['POST'])

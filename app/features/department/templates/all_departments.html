@@ -120,7 +120,7 @@
                                                     href="javascript:void(0);" 
                                                     data-dept-name="{{ dept.department_name }}"
                                                     data-dept-id="{{ dept.department_id }}"
-                                                    data-delete-url="{{ url_for('main.delete_department', id=dept.department_id) }}">Delete</a>
+                                                    data-delete-url="{{ url_for('department.delete_department', id=dept.department_id) }}">Delete</a>
                                             </div>
                                         </div>
                                     </td>
@@ -309,7 +309,7 @@
                     </div>
 
                     <div class="modal-body">
-                        <form action="{{ url_for('main.add_department') }}" method="POST" id="addDepartmentForm">
+                        <form action="{{ url_for('department.add_department') }}" method="POST" id="addDepartmentForm">
                             <!-- Hidden inputs for selected member IDs -->
                             <div id="memberIdsContainer"></div>
                             
@@ -415,7 +415,7 @@
                     </div>
 
                     <div class="modal-body">
-                        <form action="" method="POST" id="editDepartmentForm" data-base-url="{{ url_for('main.edit_department', id=0) }}">
+                        <form action="" method="POST" id="editDepartmentForm" data-base-url="{{ url_for('department.edit_department', id=0) }}">
                             <!-- Hidden inputs for selected member IDs -->
                             <div id="memberIdsContainerEdit"></div>
                             
