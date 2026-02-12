@@ -160,9 +160,7 @@
                                         {% for note in notes %}
                                         <div class="d-flex mb-4 border-bottom pb-3">
                                             <div class="flex-shrink-0 me-3">
-                                                <span class="avatar-sm rounded-circle bg-info text-white d-flex align-items-center justify-content-center">
-                                                    {{ note.author.name[0]|upper if note.author and note.author.name else '?' }}
-                                                </span>
+                                                <img src="{{ url_for('static', filename='profile_pics/' + (note.author.image_file if note.author and note.author.image_file else 'default.jpg')) }}" alt="" class="rounded-circle avatar-sm"style="width: 40px; height: 40px; object-fit: cover;">
                                             </div>
 
                                             <div class="flex-grow-1">
@@ -187,13 +185,19 @@
                                                 {% if replies_map.get(note.notes_id) %}
                                                     <div class="ms-4 mt-2 border-start ps-3" style="border-left: 2px solid #e9ecef !important;">
                                                         {% for reply in replies_map[note.notes_id] %}
-                                                            <div class="mb-2 p-2 rounded bg-soft-light border-bottom">
-                                                                <div class="d-flex justify-content-between">
+                                                        <div class="mb-2 p-2 rounded bg-soft-light border-bottom d-flex">
+                                                            <img src="{{ url_for('static', filename='profile_pics/' + (reply.author.image_file if reply.author and reply.author.image_file else 'default.jpg')) }}"
+                                                                 alt=""
+                                                                 class="rounded-circle flex-shrink-0"
+                                                                 style="width: 28px; height: 28px; object-fit: cover;">
+                                                            <div class="flex-grow-1 ms-2">
+                                                                <div class="d-flex justify-content-between align-items-center">
                                                                     <small class="text-dark"><strong>{{ reply.author.name if reply.author else 'Unknown' }}</strong></small>
                                                                     <small class="text-muted" style="font-size: 10px;">{{ reply.created_on.strftime('%H:%M') if reply.created_on else '' }}</small>
                                                                 </div>
                                                                 <p class="mb-0 small text-muted">{{ reply.note_body }}</p>
                                                             </div>
+                                                        </div>
                                                         {% endfor %}
                                                     </div>
                                                 {% endif %}
