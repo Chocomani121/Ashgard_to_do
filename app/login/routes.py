@@ -1,10 +1,15 @@
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, Blueprint, current_app
 from app import db, bcrypt, mail
-from app.login import auth 
-from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm
-from app.models import User
-from flask_login import login_user, current_user, logout_user
+from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm, UpdateAccountForm
+from app.models import User, Department, Notes, Task
+from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
+from sqlalchemy.orm import joinedload
+import os
+import secrets
+from PIL import Image
+
+auth_bp = Blueprint('auth', __name__, template_folder='templates', static_folder='static', static_url_path='/auth/static')
 
 
 def send_reset_email(user):
@@ -14,24 +19,24 @@ def send_reset_email(user):
     msg.body = f"To reset your password, visit: {reset_url}"
     mail.send(msg)
 
-@auth.route("/login", methods=['GET', 'POST'])
+@auth_bp.route("/login", methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('main.projects'))
+        return redirect(url_for('auth.projects'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('main.projects'))
+            return redirect(next_page) if next_page else redirect(url_for('auth.projects'))
         form.email.errors.append('Invalid email or password.')
     return render_template('auth/auth-login.html', title='Login', form=form)
 
-@auth.route("/register", methods=['GET', 'POST'])
+@auth_bp.route("/register", methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('main.projects'))
+        return redirect(url_for('auth.projects'))
     form = RegisterForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -43,15 +48,15 @@ def register():
         return redirect(url_for('auth.login'))
     return render_template('auth/auth-register.html', title='Register', form=form)
 
-@auth.route("/logout")
+@auth_bp.route("/logout")
 def logout():
     logout_user()
     return redirect(url_for('auth.login'))
 
-@auth.route("/reset_password", methods=['GET', 'POST'])
+@auth_bp.route("/reset_password", methods=['GET', 'POST'])
 def reset_request():
     if current_user.is_authenticated:
-        return redirect(url_for('main.projects'))
+        return redirect(url_for('auth.projects'))
     form = RequestResetForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
