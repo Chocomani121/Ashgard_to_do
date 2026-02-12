@@ -72,19 +72,19 @@
                     <ul class="metismenu list-unstyled" id="side-menu">
                         <li class="menu-title" data-key="t-menu">Workload</li>
                         <li>
-                            <a href="{{ url_for('main.projects') }}">
+                            <a href="{{ url_for('project.projects') }}">
                                 <i class="bx bx-folder-open icon nav-icon"></i>
                                 <span class="menu-item" data-key="t-dashboard">Projects</span>
                             </a>
                         </li>
                         <li>
-                            <a href="{{ url_for('main.tasks') }}">
+                            <a href="{{ url_for('project.tasks') }}">
                                 <i class="bx bx-task icon nav-icon"></i>
                                 <span class="menu-item" data-key="t-calendar">Tasks</span>
                             </a>
                         </li> 
                         <li>
-                            <a href="{{ url_for('main.approvals') }}">
+                            <a href="{{ url_for('project.approvals') }}">
                                 <i class="bx bx-list-check icon nav-icon"></i>
                                 <span class="menu-item ms-1" data-key="t-todo" >Approvals</span><span class="badge bg-danger ms-1 ms-auto">2</span>
                             </a> 
@@ -104,7 +104,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="{{ url_for('main.reports') }}" >
+                            <a href="{{ url_for('reports.reports') }}" >
                                 <i class="bx bx-notepad icon nav-icon"></i>
                                 <span class="menu-item" data-key="t-todo">Reports</span>
                             </a>
@@ -205,7 +205,7 @@
                             <div class="p-3 border-bottom"></div>
                             <a class="dropdown-item" href="{{ url_for('main.profile') }}"><i class="mdi mdi-account-circle text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Profile</span></a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="{{ url_for('users.logout') }}"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Logout</span></a>
+                            <a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Logout</span></a>
                         </div>
                     </div>
                 </div>

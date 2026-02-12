@@ -68,7 +68,7 @@ def create_app():
     # --- BLUEPRINT REGISTRATION ---
     
     # 1. Import the Blueprint objects first
-    from app.login import auth as auth_bp
+    from app.login.routes import auth_bp as auth_bp
     from .users.routes import users as users_blueprint
     from .main.routes import main as main_blueprint
     from app.features.reports.routes import reports_bp  as reports_blueprint
@@ -77,11 +77,14 @@ def create_app():
 
     # 2. IMPORTANT: Import routes BEFORE registering the blueprint 
     # This prevents the "AssertionError: The setup method 'route' can no longer be called"
-    import app.login.routes 
+    # import app.login.routes 
     
     # 3. Register them on the flask_app instance
     flask_app.register_blueprint(auth_bp)
     flask_app.register_blueprint(users_blueprint)
     flask_app.register_blueprint(main_blueprint)
+    flask_app.register_blueprint(reports_blueprint)
+    flask_app.register_blueprint(project_blueprint)
+    flask_app.register_blueprint(department_blueprint)
 
     return flask_app

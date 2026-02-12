@@ -1,3 +1,2 @@
-from flask import Blueprint
+# Re-export the auth blueprint from routes (no local blueprint here)
 
-auth = Blueprint('auth', __name__, template_folder='templates')
