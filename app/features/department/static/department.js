@@ -374,15 +374,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             Swal.fire({
                 title: "Are you sure?",
-                text: "You won't be able to revert this!",
+                text: "You are about to delete \"" + (departmentName || "this department") + "\". You won't be able to revert this!",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#51d28c",
                 cancelButtonColor: "#f34e4e",
                 confirmButtonText: "Yes, delete it!"
             }).then(function (result) {
-                if (result.value) {
-                    // Create and submit the delete form
+                if (result.isConfirmed) {
                     const form = document.getElementById('deleteDepartmentForm');
                     form.action = deleteUrl;
                     form.submit();
@@ -391,3 +390,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+

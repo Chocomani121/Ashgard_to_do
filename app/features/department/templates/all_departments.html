@@ -504,7 +504,7 @@
     </div> <!-- end page-content -->
 </div> <!-- end main-content -->
 
-<!-- Users data from database (JSON format to avoid JavaScript linter errors) -->
+<!-- Users data from database (must load before department.js) -->
 <script type="application/json" id="users-data">
 [
     {% for user in users %}
@@ -518,6 +518,6 @@
     {% endfor %}
 ]
 </script>
-
 <script src="{{ url_for('department.static', filename='department.js') }}"></script>
+
 {% endblock content %}

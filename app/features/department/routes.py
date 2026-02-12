@@ -109,7 +109,7 @@ def delete_department(id):
     try:
         db.session.delete(department)
         db.session.commit()
-        flash('Department deleted!', 'warning')
+        flash('Department deleted!', 'success')
     except Exception:
         db.session.rollback()
         flash('Cannot delete department. It may have users assigned to it.', 'danger')

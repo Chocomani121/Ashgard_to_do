@@ -457,8 +457,5 @@
 <script type="application/json" id="current-user-id">{% if current_user %}{{ current_user.member_id|tojson }}{% else %}null{% endif %}</script>
 <script type="application/json" id="users-data">{{ users_json|tojson }}</script>
 <script src="{{ url_for('project.static', filename='projects.init.js') }}"></script>
-<script>
-
-</script>
 
    {% endblock content %}
