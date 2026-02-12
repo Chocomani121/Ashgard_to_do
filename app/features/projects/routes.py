@@ -1,7 +1,7 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, TaskAssignee, SubTask,  Report, ReportCC, Comment
-from app import db
+from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, TaskAssignee, SubTask, Notes, Report, ReportCC, Comment
+from app import db 
 from datetime import datetime, date, time
 from sqlalchemy import or_, text
 from sqlalchemy.exc import ProgrammingError, OperationalError
@@ -494,6 +494,20 @@ def task_details(id=None):
         flash('Task not found', 'error')
         return redirect(url_for('project.projects'))
     
+    # Fetch all notes for this task (for notes + replies section)
+    all_notes = Notes.query.filter_by(task_id=task.task_id).order_by(Notes.created_on.asc()).all()
+    main_notes = [n for n in all_notes if not n.reply_code]
+    replies_map = {}
+    for n in all_notes:
+        if n.reply_code:
+            try:
+                parent_id = int(n.reply_code)
+                if parent_id not in replies_map:
+                    replies_map[parent_id] = []
+                replies_map[parent_id].append(n)
+            except (ValueError, TypeError):
+                pass
+    
     # Assignees for this task (from TaskAssignee or fallback to single owner from p_members_id)
     task_assignees = []
     try:
@@ -585,7 +599,7 @@ def task_details(id=None):
     if not assignee_p_members_ids and task.p_members_id:
         assignee_p_members_ids.append(task.p_members_id)
     
-    return render_template('task_details.html', task=task, project=project, task_assignees=task_assignees, task_project_members=task_project_members, assignee_p_members_ids=assignee_p_members_ids, is_project_manager=is_project_manager, is_project_member=is_project_member, can_edit_task=can_edit_task_flag)
+    return render_template('task_details.html', task=task, project=project, task_assignees=task_assignees, task_project_members=task_project_members, assignee_p_members_ids=assignee_p_members_ids, is_project_manager=is_project_manager, is_project_member=is_project_member, can_edit_task=can_edit_task, notes=main_notes, replies_map=replies_map)
 
 @project_bp.route("/task_details/<int:id>/update", methods=['POST'])
 @login_required
@@ -959,36 +973,57 @@ def approvals():
     return render_template('approvals.html', title="Approvals")
 
 
-# @project_bp.route("/task_details/<int:task_id>")
-# @login_required
-# def task_details(task_id):
-#     # 1. Fetch the task
-#     task = Task.query.get_or_404(task_id)
-    
-#     # 2. Fetch all notes (Now that parent_id is gone from models.py, this won't crash!)
-#     all_notes = Notes.query.filter_by(task_id=task_id).order_by(Notes.created_on.asc()).all()
-    
-#     # --- PASTE THE LOGIC HERE ---
-    
-#     # Separate main notes from replies
-#     main_notes = [n for n in all_notes if not n.reply_code]
 
-#     # Group replies by the ID stored in reply_code
-#     replies_map = {}
-#     for n in all_notes:
-#         if n.reply_code:
-#             try:
-#                 parent_id = int(n.reply_code)
-#                 if parent_id not in replies_map:
-#                     replies_map[parent_id] = []
-#                 replies_map[parent_id].append(n)
-#             except (ValueError, TypeError):
-#                 continue # Skip if reply_code isn't a valid number
-                
-#     # --- END OF LOGIC ---
+# Project Details Notes_tbl - Reply, Comment, Edit
+@project_bp.route("/project/note/add", methods=['POST'])
+@login_required
+def add_note():
+    from app.models import Notes 
+    
+    # 1. Get the data from the HTML form names
+    task_id = request.form.get('task_id')
+    body = request.form.get('note_body')
+    title = request.form.get('note_title')
+    
+    # 2. Basic validation
+    if not body or not task_id:
+        flash("Note body cannot be empty.", "danger")
+        return redirect(request.referrer)
 
-#     # 3. Pass everything to the template
-#     return render_template('task_details.html', 
-#                            task=task, 
-#                            notes=main_notes, 
-#                            replies_map=replies_map)
+    # 3. Create the database object
+    new_note = Notes(
+        task_id=int(task_id),
+        member_id=current_user.member_id,
+        note_body=body,
+        generated_code=title, # Saving 'Notes Title' here
+        reply_code=None
+    )
+    
+    try:
+        db.session.add(new_note)
+        db.session.commit()
+        flash("Note added successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        print(f"DEBUG ERROR: {e}") # This shows up in your terminal
+        flash("Failed to save note.", "danger")
+
+    return redirect(request.referrer)
+
+
+@project_bp.route("/task/note/reply/<int:note_id>", methods=['POST'])
+@login_required
+def reply_note(note_id):
+    body = request.form.get('reply_body')
+    task_id = request.form.get('task_id')
+    
+    new_reply = Notes(
+        task_id=int(task_id),
+        member_id=current_user.member_id,
+        note_body=body,
+        reply_code=str(note_id)  # Store the parent ID here
+    )
+    
+    db.session.add(new_reply)
+    db.session.commit()
+    return redirect(request.referrer)
