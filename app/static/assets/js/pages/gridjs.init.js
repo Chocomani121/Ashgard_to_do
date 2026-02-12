@@ -79,10 +79,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         filterStart.setHours(0, 0, 0, 0);
                         filterEnd.setHours(23, 59, 59, 999);
                         
-                        let hasDateInRange = false;
+                        let hasDateInRange = false;  
+
+                        
                         
                         if (row.startDate) {
                             const projectStart = new Date(row.startDate);
+
+                              
                             projectStart.setHours(0, 0, 0, 0);
                             if (projectStart >= filterStart && projectStart <= filterEnd) {
                                 hasDateInRange = true;

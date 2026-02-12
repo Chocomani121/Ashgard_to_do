@@ -77,10 +77,12 @@ def create_app():
     from .main.routes import main as main_blueprint
     from app.features.reports.routes import reports_bp  as reports_blueprint
     from app.features.projects.routes import project_bp as project_blueprint
+    from app.features.department.routes import department_bp as department_blueprint
 
     app.register_blueprint(users_blueprint)
     app.register_blueprint(main_blueprint)
     app.register_blueprint(reports_blueprint)
     app.register_blueprint(project_blueprint)
-
+    app.register_blueprint(department_blueprint)
+    
     return app

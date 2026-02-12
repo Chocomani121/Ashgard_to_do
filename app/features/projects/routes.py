@@ -1026,3 +1026,7 @@ def create_project():
         db.session.rollback()
         flash(f'Error creating project: {str(e)}', 'danger')
         return redirect(url_for('project.projects'))
+
+@project_bp.route("/approvals")
+def approvals():
+    return render_template('approvals.html', title="Approvals")
