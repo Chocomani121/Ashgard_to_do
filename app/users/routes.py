@@ -1,14 +1,11 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint, current_app
 from app import db, bcrypt, mail
+from app.login import auth
 from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm, UpdateAccountForm
 from app.models import User, Department, Notes, Task
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 from sqlalchemy.orm import joinedload
-
-# Look for your existing imports at the top of app/users/routes.py
-
-
 import os
 import secrets
 from PIL import Image
@@ -34,57 +31,10 @@ def admin_register():
         db.session.add(user)
         db.session.commit()
         flash('Admin account created!', 'success')
-        return redirect(url_for('users.login'))
+        return redirect(url_for('auth.login'))
     
     # Points ONLY to the admin template
     return render_template('auth-register-admin.html', title='Register Admin', form=form)
-
-# 2. USER REGISTRATION
-@users.route("/register", methods=['GET', 'POST'])
-def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('project.projects'))
-
-    form = RegisterForm()
-    if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(
-            name=form.name.data,
-            username=form.username.data,
-            email=form.email.data,
-            password=hashed_password,
-            account_type='user'  # Hardcoded specifically for this route
-        )
-        db.session.add(user)
-        db.session.commit()
-        flash('Account created successfully!', 'success')
-        return redirect(url_for('users.login'))
-    
-    # Points ONLY to the standard user template
-    return render_template('auth-register.html', title='Register', form=form)
-
-@users.route("/")
-@users.route("/login", methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('project.projects'))
-    
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user and bcrypt.check_password_hash(user.password, form.password.data):
-            login_user(user, remember=form.remember.data)
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('project.projects'))
-        
-        form.email.errors.append('Invalid email or password.')
-        
-    return render_template('auth-login.html', title='Login', form=form)
-
-@users.route("/logout")
-def logout():
-    logout_user()
-    return redirect(url_for('users.login'))
 
 # --- PROFILE & PICTURES ---
 
@@ -124,21 +74,6 @@ def profile():
 
 # --- MEMBERS LIST (PAGINATED) ---
 
-@users.route("/members")
-@login_required
-@cache.cached(timeout=60)
-def members():
-    members = User.query.order_by(User.name.asc()).all()
-    departments = Department.query.order_by(Department.department_name.asc()).all()
-
-    return render_template(
-        'members.html',
-        title='Members',
-        members=members,
-        departments=departments,
-        total_users=len(members)
-    )
-
 @users.route("/delete_member/<int:member_id>", methods=['GET','POST'])
 @login_required
 def delete_member(member_id):
@@ -156,38 +91,6 @@ def delete_member(member_id):
     flash('Member deleted.', 'delete_success')
     return redirect(url_for('users.members'))
 
-# -------------------- PASSWORD RESET --------------------
-
-def send_reset_email(user):
-    token = user.get_reset_token()
-    msg = Message(
-        'Password Reset Request',
-        sender='noreply@ashgard-todo.com',
-        recipients=[user.email]
-    )
-    reset_url = url_for('users.reset_token', token=token, _external=True)
-    msg.body = f'''To reset your password, visit the following link:
-{reset_url}
-
-If you did not make this request, simply ignore this email and no changes will be made.
-'''
-    mail.send(msg)
-
-@users.route("/reset_password", methods=['GET', 'POST'])
-def reset_request():
-    if current_user.is_authenticated:
-        return redirect(url_for('project.projects'))
-
-    form = RequestResetForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user:
-            send_reset_email(user)
-        flash('An email has been sent with instructions to reset your password.', 'info')
-        return redirect(url_for('users.login'))
-
-    return render_template('auth-recoverpw.html', title='Reset Password', form=form)
-
 @users.route("/reset_password/<token>", methods=['GET', 'POST'])
 def reset_token(token):
     if current_user.is_authenticated:
@@ -204,7 +107,7 @@ def reset_token(token):
         user.password = hashed_password
         db.session.commit()
         flash('Your password has been updated! You are now able to log in', 'success')
-        return redirect(url_for('users.login'))
+        return redirect(url_for('auth.login'))
 
     return render_template('reset_token.html', title='Reset Password', form=form)
 
