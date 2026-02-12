@@ -161,14 +161,14 @@
                                         <div class="d-flex mb-4 border-bottom pb-3">
                                             <div class="flex-shrink-0 me-3">
                                                 <span class="avatar-sm rounded-circle bg-info text-white d-flex align-items-center justify-content-center">
-                                                    {{ note.author.name[0]|upper if note.author else '?' }}
+                                                    {{ note.author.name[0]|upper if note.author and note.author.name else '?' }}
                                                 </span>
                                             </div>
 
                                             <div class="flex-grow-1">
                                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                                     <strong>{{ note.author.name if note.author else 'Unknown' }}</strong>
-                                                    <small class="text-muted">{{ note.created_on.strftime('%b %d, %Y') }}</small>
+                                                    <small class="text-muted">{{ note.created_on.strftime('%b %d, %Y') if note.created_on else '' }}</small>
                                                 </div>
                                                 
                                                 <div class="p-2 bg-light rounded mt-2 border">
@@ -189,8 +189,8 @@
                                                         {% for reply in replies_map[note.notes_id] %}
                                                             <div class="mb-2 p-2 rounded bg-soft-light border-bottom">
                                                                 <div class="d-flex justify-content-between">
-                                                                    <small class="text-dark"><strong>{{ reply.author.name }}</strong></small>
-                                                                    <small class="text-muted" style="font-size: 10px;">{{ reply.created_on.strftime('%H:%M') }}</small>
+                                                                    <small class="text-dark"><strong>{{ reply.author.name if reply.author else 'Unknown' }}</strong></small>
+                                                                    <small class="text-muted" style="font-size: 10px;">{{ reply.created_on.strftime('%H:%M') if reply.created_on else '' }}</small>
                                                                 </div>
                                                                 <p class="mb-0 small text-muted">{{ reply.note_body }}</p>
                                                             </div>
@@ -208,7 +208,7 @@
                                                     </form>
                                                 </div>
                                             </div>
-                                            </div>
+                                        </div>
                                         {% else %}
                                         <div class="text-center text-muted py-5">
                                             <i class="bx bx-note mb-3" style="font-size: 3rem;"></i>
@@ -219,7 +219,6 @@
                                 </div>
                             </div>
                         </div>
-
                        <div class="modal fade" id="taskNoteModal" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content border-0 shadow-lg">

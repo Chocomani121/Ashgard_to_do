@@ -1030,3 +1030,38 @@ def create_project():
 @project_bp.route("/approvals")
 def approvals():
     return render_template('approvals.html', title="Approvals")
+
+
+# @project_bp.route("/task_details/<int:task_id>")
+# @login_required
+# def task_details(task_id):
+#     # 1. Fetch the task
+#     task = Task.query.get_or_404(task_id)
+    
+#     # 2. Fetch all notes (Now that parent_id is gone from models.py, this won't crash!)
+#     all_notes = Notes.query.filter_by(task_id=task_id).order_by(Notes.created_on.asc()).all()
+    
+#     # --- PASTE THE LOGIC HERE ---
+    
+#     # Separate main notes from replies
+#     main_notes = [n for n in all_notes if not n.reply_code]
+
+#     # Group replies by the ID stored in reply_code
+#     replies_map = {}
+#     for n in all_notes:
+#         if n.reply_code:
+#             try:
+#                 parent_id = int(n.reply_code)
+#                 if parent_id not in replies_map:
+#                     replies_map[parent_id] = []
+#                 replies_map[parent_id].append(n)
+#             except (ValueError, TypeError):
+#                 continue # Skip if reply_code isn't a valid number
+                
+#     # --- END OF LOGIC ---
+
+#     # 3. Pass everything to the template
+#     return render_template('task_details.html', 
+#                            task=task, 
+#                            notes=main_notes, 
+#                            replies_map=replies_map)

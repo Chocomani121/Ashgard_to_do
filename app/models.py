@@ -150,7 +150,7 @@ class Notes(db.Model):
     sub_task_id   = db.Column(db.Integer, db.ForeignKey('sub_task_list.sub_task_id'))
     p_members_id  = db.Column(db.Integer, db.ForeignKey('project_members.p_members_id'))
     member_id     = db.Column(db.Integer, db.ForeignKey('members.member_id'))
-    parent_id      = db.Column(db.Integer, db.ForeignKey('notes_tbl.notes_id'), nullable=True)
+    # parent_id      = db.Column(db.Integer, db.ForeignKey('notes_tbl.notes_id'), nullable=True)
      
     reply_code     = db.Column(db.String(255))
     note_body      = db.Column(db.Text, nullable=False)
@@ -161,7 +161,7 @@ class Notes(db.Model):
     pin_datetime   = db.Column(db.DateTime)
     generated_code = db.Column(db.String(255))
     
-    replies        = db.relationship('Notes', backref=db.backref('parent', remote_side=[notes_id]), lazy=True)
+    
 
 # --- REPORTS & COMMENTS SYSTEM ---
 
