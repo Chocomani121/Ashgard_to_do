@@ -85,8 +85,6 @@ def delete_member(member_id):
     db.session.delete(member)
     db.session.commit()
 
-    cache.clear()
-
     flash('Member deleted.', 'delete_success')
     return redirect(url_for('users.members'))
 
