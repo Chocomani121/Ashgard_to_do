@@ -1,7 +1,7 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, TaskAssignee, SubTask,  Report, ReportCC, Comment
-from app import db 
+from app import db
 from datetime import datetime, date, time
 from sqlalchemy import or_, text
 from sqlalchemy.exc import ProgrammingError, OperationalError
@@ -11,6 +11,27 @@ import random
 
 main = Blueprint('main', __name__)
 
+
+def _can_edit_task(task, user):
+    """Check if user can edit or mark complete a task.
+    Returns True if user is project manager OR assigned to the task."""
+    if not task or not user:
+        return False
+    project = Project.query.get(task.project_id) if task.project_id else None
+    if project and user.member_id == project.project_manager:
+        return True
+    try:
+        if task.assignees:
+            for ta in task.assignees:
+                if ta.project_member and ta.project_member.member_id == user.member_id:
+                    return True
+    except (ProgrammingError, OperationalError):
+        pass
+    if task.p_members_id:
+        pm = ProjectMembers.query.get(task.p_members_id)
+        if pm and pm.member_id == user.member_id:
+            return True
+    return False
 
 
 @main.route("/all_departments")
@@ -220,7 +241,7 @@ def task_details(id=None):
             is_project_member = pm_entry is not None
     
     # Check if user can edit/mark complete this task
-    can_edit_task = _can_edit_task(task, current_user)
+    can_edit_task_flag = _can_edit_task(task, current_user)
     
     # Get project for delete permission check
     project = Project.query.get(task.project_id) if task.project_id else None
@@ -237,4 +258,4 @@ def task_details(id=None):
     if not assignee_p_members_ids and task.p_members_id:
         assignee_p_members_ids.append(task.p_members_id)
     
-    return render_template('task_details.html', task=task, project=project, task_assignees=task_assignees, task_project_members=task_project_members, assignee_p_members_ids=assignee_p_members_ids, is_project_manager=is_project_manager, is_project_member=is_project_member, can_edit_task=can_edit_task)
+    return render_template('task_details.html', task=task, project=project, task_assignees=task_assignees, task_project_members=task_project_members, assignee_p_members_ids=assignee_p_members_ids, is_project_manager=is_project_manager, is_project_member=is_project_member, can_edit_task=can_edit_task_flag)

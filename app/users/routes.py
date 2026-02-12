@@ -85,8 +85,6 @@ def delete_member(member_id):
     db.session.delete(member)
     db.session.commit()
 
-    cache.clear()
-
     flash('Member deleted.', 'delete_success')
     return redirect(url_for('users.members'))
 
@@ -184,7 +182,7 @@ def add_note():
     return redirect(request.referrer)
 
 
-@users.route("/task_details/<int:task_id>")
+@users.route("/user/task_details/<int:task_id>")
 @login_required
 def task_details(task_id):
     task = Task.query.get_or_404(task_id)
