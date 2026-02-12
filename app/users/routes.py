@@ -149,7 +149,7 @@ def update_member(member_id):
 @users.route("/project/note/add", methods=['POST'])
 @login_required
 def add_note():
-    from app.models import Notes # Plural class name
+    from app.models import Notes 
     
     # 1. Get the data from the HTML form names
     task_id = request.form.get('task_id')
