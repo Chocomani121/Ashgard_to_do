@@ -23,7 +23,7 @@
 
                             <!-- Card Header with Button -->
                             <div class="card-header d-flex align-items-center justify-content-between">
-                                <h4 class="card-title mb-0">{{ project.project_name or 'Project Details' }}</h4>
+                                <h4 class="card-title mb-0"><span class="text-muted">Project Name:</span><span class="ms-4">{{ project.project_name or 'Project Details' }}</span></h4>
                                 {% if is_project_manager %}
                                 <div class="dropdown">
                                     <button class="btn btn-light" data-bs-toggle="dropdown">
