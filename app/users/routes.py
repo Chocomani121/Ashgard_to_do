@@ -66,6 +66,7 @@ def profile():
         current_user.name = form.name.data
         current_user.username = form.username.data
         current_user.email = form.email.data
+        current_user.department_id = form.department.data
         db.session.commit()
         flash('Your profile has been updated!', 'success')
         return redirect(url_for('users.profile'))
