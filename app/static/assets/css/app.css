@@ -6148,3 +6148,9 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
   overflow-y: auto;
   white-space: normal;
 }
+
+/* View-only: hide Action column for non–project members */
+.subtask-view-only .gridjs-th:last-child,
+.subtask-view-only .gridjs-td:last-child {
+  display: none !important;
+}

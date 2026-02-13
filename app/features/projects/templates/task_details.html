@@ -250,257 +250,23 @@
                             </div>
                         </div>  
 
-            <!-- SUBTASK TABLE (for project members assigned to this task – not PM; no Add Sub-Task, only PM can add) -->
-            {% if can_see_member_subtask %}
+            <!-- SUBTASK TABLE: everyone sees table; PM/members see Add Sub-Task + actions; non-members view-only (no Action column) -->
             <div class="row mt-4">
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header d-flex align-items-center">
-                            <h4 class="card-title mb-0">Sub-Task [1/6]</h4>
-                        </div>
-
-                        <div class="card-body">
-                            <div id="table5-gridjs" class="projectsTableTaskDetails"></div>
-
-                            <table id="projectsTableTaskDetails" class="table d-none">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Sub-Task Name</th>
-                                        <th>Owner</th>
-                                        <th>Status</th>
-                                        <th>Timestamp</th>
-                                        <th>Notes</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="fw-semibold">H20</td>
-                                        <td class="fw-semibold">Login Interface</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-primary text-primary">Ongoing</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                                <a href="javascript:void(0)"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#notes-modal-preview"
-                                                onclick="prepareNoteModal('H20', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!', '-windyl 12/25/2025(edit)')">
-
-
-                                                    <div style="
-                                                        max-height: 120px;
-                                                        overflow-y: auto;
-                                                        overflow-x: hidden;
-                                                        white-space: normal;
-                                                        line-height: 1.4;
-                                                    ">
-                                                        <p class="text-dark">
-                                                            ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!
-                                                        </p>
-                                                        <footer class="blockquote-footer">
-                                                            -windyl 12/25/2025(edit)
-                                                        </footer>
-                                                    </div>
-
-                                                </a>
-                                            </td>
-                                          <td class="text-nowrap">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
-                                                <div class="dropdown-menu dropdown-menu-end shadow">
-                                                    <a class="dropdown-item"
-                                                       data-bs-toggle="modal" 
-                                                       data-bs-target=".notes-modal">
-                                                        Submit
-                                                    </a>
-                                                    <a class="dropdown-item"
-                                                       data-bs-toggle="modal" 
-                                                       data-bs-target=".notes-modal">
-                                                        Edit
-                                                    </a>
-                                                <a class="dropdown-item text-danger" 
-                                                onclick="confirmDelete('H20')">Delete</a>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-warning text-warning">To be reviewed</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                            <a href="javascript:void(0)"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#notes-modal-preview"
-                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-
-                                            <div style="
-                                                max-height: 120px;
-                                                overflow-y: auto;
-                                                overflow-x: hidden;
-                                                white-space: normal;
-                                                line-height: 1.4;
-                                            ">
-                                                <p class="text-dark">
-                                                    Lopre Lorem - it may work(?)
-                                                </p>
-                                                <footer class="blockquote-footer">
-                                                    -windyl 12/25/2025(edit)
-                                                </footer>
-                                            </div>
-
-                                            </a>
-                                        </td>
-                                    </tr>
-                                      <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-danger text-danger">Rejected</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                            <a href="javascript:void(0)"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#notes-modal-preview"
-                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-                                                <div style="
-                                                    max-height: 120px;
-                                                    overflow-y: auto;
-                                                    overflow-x: hidden;
-                                                    white-space: normal;
-                                                    line-height: 1.4;
-                                                ">
-                                                    <p class="text-dark">
-                                                        Lopre Lorem - it may work(?)
-                                                    </p>
-                                                    <footer class="blockquote-footer">
-                                                        -windyl 12/25/2025(edit)
-                                                    </footer>
-                                                </div>
-
-                                            </a>
-                                        </td>
-                                        <td class="text-nowrap">
-                                        <button class="btn btn-sm btn-primary"
-                                            data-bs-toggle="modal"
-                                            data-bs-target=".notes-modal"
-                                            form="notesForm">
-                                            Re-Submit
-                                            </button>
-
-                                        </td>
-                                    </tr>
-                                      <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-secondary text-secondary">On Hold</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                                <a href="javascript:void(0)"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#notes-modal-preview"
-                                                onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-
-
-                                                    <div style="
-                                                        max-height: 120px;
-                                                        overflow-y: auto;
-                                                        overflow-x: hidden;
-                                                        white-space: normal;
-                                                        line-height: 1.4;
-                                                    ">
-                                                        <p class="text-dark">
-                                                            Lopre Lorem - it may work(?)
-                                                        </p>
-                                                        <footer class="blockquote-footer">
-                                                            -windyl 12/25/2025(edit)
-                                                        </footer>
-                                                    </div>
-
-                                                </a>
-                                            </td>
-                                        <td class="text-nowrap">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
-                                                <div class="dropdown-menu dropdown-menu-end shadow">
-                                                    <a class="dropdown-item"
-                                                       data-bs-toggle="modal" 
-                                                       data-bs-target=".notes-modal">
-                                                        Resume
-                                                    </a>
-                                                    <a class="dropdown-item"
-                                                       data-bs-toggle="modal" 
-                                                       data-bs-target=".notes-modal">
-                                                        Edit
-                                                    </a>
-                                                       <a class="dropdown-item text-danger" 
-                                                        href="javascript:void(0);" 
-                                                        onclick="confirmDelete('H20')">Delete</a>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                        <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-success text-success">Approved</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                                <a href="javascript:void(0)"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#notes-modal-preview"
-                                                onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-
-
-                                                    <div style="
-                                                        max-height: 120px;
-                                                        overflow-y: auto;
-                                                        overflow-x: hidden;
-                                                        white-space: normal;
-                                                        line-height: 1.4;
-                                                    ">
-                                                        <p class="text-dark">
-                                                            Lopre Lorem - it may work(?)
-                                                        </p>
-                                                        <footer class="blockquote-footer">
-                                                            -windyl 12/25/2025(edit)
-                                                        </footer>
-                                                    </div>
-
-                                                </a>
-                                            </td>
-                                    </tr>
-                                    <!-- Repeat more subtasks as needed -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- SUBTASK TABLE (Project Manager only) -->
-            {% if is_project_manager %}
-             <div class="row mt-4">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header d-flex align-items-center">
-                            <h4 class="card-title mb-0">Sub-Task [1/6] (Project Manager)</h4>
+                            <h4 class="card-title mb-0">Sub-Task [1/6]{% if is_project_manager %} (Project Manager){% endif %}</h4>
+                            {% if is_project_manager or is_project_member %}
                             <div class="ms-auto">
                                 <button class="btn btn-primary btn-rounded" data-bs-toggle="modal" data-bs-target=".create-task">
                                     <i class="mdi mdi-plus me-1"></i> Add Sub-Task
                                 </button>
                             </div>
+                            {% endif %}
                         </div>
 
                         <div class="card-body">
-                            <div id="table6-gridjs" class="projectsTableTaskDetailsPM"></div>
+                            <div id="table6-gridjs" class="projectsTableTaskDetailsPM {% if not is_project_member %}subtask-view-only{% endif %}"></div>
 
                             <table id="projectsTableTaskDetailsPM" class="table d-none">
                                 <thead>
@@ -546,6 +312,7 @@
                                             </a>
                                         </td>
                                           <td class="text-nowrap">
+                                            {% if is_project_manager %}
                                             <div class="dropdown">
                                                 <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
                                                 <div class="dropdown-menu dropdown-menu-end shadow">
@@ -565,6 +332,26 @@
                                                     onclick="confirmDelete('H20')">Delete</a>
                                                 </div>
                                             </div>
+                                            {% elif is_project_member %}
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                                <div class="dropdown-menu dropdown-menu-end shadow">
+                                                    <a class="dropdown-item"
+                                                       data-bs-toggle="modal" 
+                                                       data-bs-target=".notes-modal">
+                                                        Submit
+                                                    </a>
+                                                    <a class="dropdown-item"
+                                                       data-bs-toggle="modal" 
+                                                       data-bs-target=".notes-modal">
+                                                        Edit
+                                                    </a>
+                                                    <a class="dropdown-item">Hold</a>
+                                                    <a class="dropdown-item text-danger" 
+                                                       onclick="confirmDelete('H20')">Delete</a>
+                                                </div>
+                                            </div>
+                                            {% endif %}
                                         </td>
                                     </tr>
 
@@ -599,12 +386,16 @@
                                             </a>
                                         </td>
                                         <td class="text-nowrap">
+                                            {% if is_project_manager %}
                                             <button class="btn btn-sm btn-success me-1" data-bs-toggle="modal" data-bs-target=".notes-modal-approve" title="Approve" onclick="approveNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
                                                 <i class="mdi mdi-check"></i>
                                             </button>
                                             <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target=".notes-modal" title="Disapprove">
                                                 <i class="mdi mdi-close"></i>
                                             </button>
+                                            {% elif is_project_member %}
+                                            <span class="text-muted small">Pending review</span>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                       <tr>
@@ -636,11 +427,20 @@
                                             </a>
                                         </td>
                                         <td class="text-nowrap">
+                                            {% if is_project_manager %}
                                           <button class="btn btn-sm btn-primary"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#revertModal">
                                                 Revert
                                             </button>
+                                            {% elif is_project_member %}
+                                            <button class="btn btn-sm btn-primary"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target=".notes-modal"
+                                                    form="notesForm">
+                                                Re-Submit
+                                            </button>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                       <tr>
@@ -672,12 +472,23 @@
                                             </a>
                                         </td>
                                         <td class="text-nowrap">
+                                            {% if is_project_manager %}
                                             <button class="btn btn-sm btn-primary"
                                                 data-bs-toggle="modal"
                                                 data-bs-target=".notes-modal"
                                                 form="notesForm">
                                                 Follow Up
                                             </button>
+                                            {% elif is_project_member %}
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                                <div class="dropdown-menu dropdown-menu-end shadow">
+                                                    <a class="dropdown-item" data-bs-toggle="modal" data-bs-target=".notes-modal" form="notesForm">Follow Up</a>
+                                                    <a class="dropdown-item" data-bs-toggle="modal" data-bs-target=".notes-modal">Resume</a>
+                                                    <a class="dropdown-item" data-bs-toggle="modal" data-bs-target=".notes-modal">Edit</a>
+                                                </div>
+                                            </div>
+                                            {% endif %}
                                         </td>
                                      </tr>
                                          <tr>
@@ -709,8 +520,10 @@
                                             </a>
                                         </td>
                                         <td>
+                                            {% if is_project_manager or is_project_member %}
                                         <p>Approved on : 11/11/2026 20:00</p> 
                                             <footer class="blockquote-footer">  -Lurs </footer>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                     <!-- Repeat more subtasks as needed -->
@@ -720,7 +533,6 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
         </div>
     </div>
 </div>
