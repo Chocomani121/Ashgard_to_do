@@ -379,6 +379,7 @@
                                                                         <th class="text-center fw-bold py-2">Name</th>
                                                                         <th class="text-center fw-bold py-2">Start</th>
                                                                         <th class="text-center fw-bold py-2">End</th>
+                                                                        <th class="text-center fw-bold py-2">Status</th>
                                                                         <th class="text-center fw-bold py-2">Reviewer</th> 
                                                                     </tr>
                                                                 </thead>
@@ -394,6 +395,13 @@
                                                                         <td class="py-2">{{ report.author.name or report.author.username }}</td>
                                                                         <td class="py-2 text-center">{{ wp[0] if wp|length > 0 else wn }}</td>
                                                                         <td class="py-2 text-center">{{ wp[1] if wp|length > 1 else '' }}</td>
+                                                                        <td class="py-2 text-center">
+                                                                            {% if report.is_checked %}
+                                                                              <span class="badge bg-secondary bg-opacity-75 px-2 py-1">Reviewed</span>
+                                                                            {% else %}
+                                                                              <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                            {% endif %}
+                                                                          </td>
                                                                         <td class="py-2">{{ report.reviewer_user.name or report.reviewer_user.username if report.reviewer_user else '—' }}</td>
                                                                     </tr>
                                                                     {% endfor %}

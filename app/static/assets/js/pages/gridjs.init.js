@@ -573,6 +573,7 @@ if (table10Req && table10Res) {
     }).render(table10Res);
 }
 
+// 11. Company-Wide Report Table
 document.addEventListener('DOMContentLoaded', function() {
     const tableEl = document.getElementById("companyWideReport");
     const containerEl = document.getElementById("table11-gridjs");
@@ -597,7 +598,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // One cell per column: [Name payload, Start, End, Reviewer] so columns align
     function rowToGridData(r) {
-        return [[r.reportId, r.nameText], r.cells[1], r.cells[2], r.cells[3]];
+        return [[r.reportId, r.nameText], r.cells[1], r.cells[2], r.cells[3], r.cells[4]];
     }
 
     // 2. Initialize Grid.js with clickable Name column
@@ -619,6 +620,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             'Start',
             'End',
+            'Status',
             'Reviewer'
         ],
         data: allData.map(rowToGridData),
