@@ -266,6 +266,42 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// 2b. Project Details Tasks Table (responsive with search)
+document.addEventListener('DOMContentLoaded', function() {
+    const tbl = document.getElementById("projectTasksTable");
+    const container = document.getElementById("project-tasks-table-gridjs");
+    if (!tbl || !container || typeof gridjs === 'undefined') return;
+
+    const rows = Array.from(tbl.querySelectorAll('tbody tr'));
+    const allData = rows.map(tr => ({
+        cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML)),
+        searchText: Array.from(tr.querySelectorAll('td')).map(td => td.textContent || '').join(' ').toLowerCase()
+    }));
+
+    let searchVal = '';
+    const filtered = () => allData.filter(row => !searchVal || row.searchText.includes(searchVal.toLowerCase()));
+    const grid = new gridjs.Grid({
+        columns: ["Task Name", "Owner", "Status", "Sub Task", "Actions"],
+        data: filtered().map(row => row.cells),
+        pagination: { limit: 10 },
+        sort: true,
+        search: false,
+        className: { table: "table table-centered align-middle mb-0" }
+    }).render(container);
+
+    const searchEl = document.getElementById('taskSearchInput');
+    if (searchEl) {
+        let t;
+        searchEl.addEventListener('input', function() {
+            clearTimeout(t);
+            t = setTimeout(() => {
+                searchVal = this.value.trim();
+                grid.updateConfig({ data: filtered().map(row => row.cells) }).forceRender();
+            }, 300);
+        });
+    }
+});
+
 // 3. Task Table
 const table3Req = document.getElementById("projectsTableTask");
 const table3Res = document.getElementById("table3-gridjs");

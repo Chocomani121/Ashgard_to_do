@@ -55,9 +55,13 @@ def save_picture(form_picture):
 @login_required
 def profile():
     form = UpdateAccountForm()
+    
+    # Fetch the department name for the current user
+    user_dept = Department.query.get(current_user.department_id)
+    dept_name = user_dept.department_name if user_dept else "No Department Assigned"
+
     if form.validate_on_submit():
         if form.picture.data:
-            old_pic = current_user.image_file
             current_user.image_file = save_picture(form.picture.data)
         current_user.name = form.name.data
         current_user.username = form.username.data
@@ -65,11 +69,14 @@ def profile():
         db.session.commit()
         flash('Your profile has been updated!', 'success')
         return redirect(url_for('users.profile'))
+    
     elif request.method == 'GET':
         form.name.data = current_user.name
         form.username.data = current_user.username
         form.email.data = current_user.email
-    return render_template('profile.html', form=form)
+        # We don't set form.department because you want it to be static text
+        
+    return render_template('profile.html', form=form, dept_name=dept_name)
 
 # --- MEMBERS LIST (PAGINATED) ---
 
