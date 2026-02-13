@@ -183,8 +183,8 @@
                                                                             id="deleteReportBtn"
                                                                             class="btn btn-outline-danger btn-sm px-4" 
                                                                             onclick="confirmReportDelete()">
-                                                                        Delete
-                                                                    </button>
+                                                                        Delete        
+                                                                    </button>  
                                                                     <button type="button" 
                                                                             class="btn btn-outline-warning btn-sm px-4" 
                                                                             onclick="openEditModal()">
@@ -392,17 +392,17 @@
                                                                         data-start="{{ wp[0] if wp|length > 0 else '' }}" 
                                                                         data-end="{{ wp[1] if wp|length > 1 else '' }}" 
                                                                         role="button" style="cursor: pointer;">
-                                                                        <td class="py-2">{{ report.author.name or report.author.username }}</td>
-                                                                        <td class="py-2 text-center">{{ wp[0] if wp|length > 0 else wn }}</td>
-                                                                        <td class="py-2 text-center">{{ wp[1] if wp|length > 1 else '' }}</td>
-                                                                        <td class="py-2 text-center">
+                                                                        <td>{{ report.author.name or report.author.username }}</td>
+                                                                        <td>{{ wp[0] if wp|length > 0 else wn }}</td>
+                                                                        <td>{{ wp[1] if wp|length > 1 else '' }}</td>
+                                                                        <td>
                                                                             {% if report.is_checked %}
                                                                               <span class="badge bg-secondary bg-opacity-75 px-2 py-1">Reviewed</span>
                                                                             {% else %}
                                                                               <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
                                                                             {% endif %}
                                                                           </td>
-                                                                        <td class="py-2">{{ report.reviewer_user.name or report.reviewer_user.username if report.reviewer_user else '—' }}</td>
+                                                                        <td>{{ report.reviewer_user.name or report.reviewer_user.username if report.reviewer_user else '—' }}</td>
                                                                     </tr>
                                                                     {% endfor %}
                                                                 </tbody>
