@@ -1,8 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
-    var markCompleteButtons = document.querySelectorAll('.mark-complete-btn');
-    
-    markCompleteButtons.forEach(function(btn) {
-        btn.addEventListener('click', function() {
+    // Use event delegation so it works with GridJS-rendered content
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.mark-complete-btn');
+        if (!btn) return;
+
+        e.preventDefault();
             var taskId = btn.getAttribute('data-task-id');
             if (!taskId) return;
             
@@ -73,6 +75,5 @@ document.addEventListener('DOMContentLoaded', function() {
                     alert('Error: ' + error.message);
                 }
             });
-        });
     });
 });
