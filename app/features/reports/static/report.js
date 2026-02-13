@@ -432,13 +432,13 @@ document.addEventListener("DOMContentLoaded", function () {
             actionsEl.style.display = "block";
             authorActions.classList.remove("d-none");
             authorActions.style.display = "flex";
-          } else if (report.is_reviewer && !report.is_checked) {
+          } if (report.is_reviewer && !report.is_checked) {
             actionsEl.style.display = "block";
             reviewerActions.classList.remove("d-none");
             reviewerActions.style.display = "flex";
             var approvedBtn = document.getElementById("reportApprovedBtn");
             if (approvedBtn) approvedBtn.setAttribute("data-report-id", report.report_id);
-          } else {
+          } if (!report.is_author && !(report.is_reviewer && !report.is_checked)) {
             actionsEl.style.display = "none";
           }
         }
