@@ -628,13 +628,14 @@ document.addEventListener('DOMContentLoaded', function() {
             start: tr.getAttribute('data-start'),
             text: tr.innerText.toLowerCase(),
             nameText: tds[0] ? tds[0].innerText.trim() : '',
+            statusText: tds[3] ? tds[3].textContent.trim() : '',
             cells: cells
         };
     });
 
     // One cell per column: [Name payload, Start, End, Reviewer] so columns align
     function rowToGridData(r) {
-        return [[r.reportId, r.nameText], r.cells[1], r.cells[2], r.cells[3], r.cells[4]];
+        return [[r.reportId, r.nameText], r.cells[1], r.cells[2], r.statusText || '', r.cells[4]];
     }
 
     // 2. Initialize Grid.js with clickable Name column
@@ -656,7 +657,15 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             'Start',
             'End',
-            'Status',
+            {
+                name: 'Status',
+                formatter: (cell) => {
+                    const s = (cell || '').trim();
+                    const isReviewed = s.toLowerCase() === 'reviewed';
+                    const cls = isReviewed ? 'bg-secondary bg-opacity-75' : 'bg-danger bg-opacity-75';
+                    return gridjs.html('<span class="badge ' + cls + ' px-2 py-1">' + escapeHtml(s) + '</span>');
+                }
+            },
             'Reviewer'
         ],
         data: allData.map(rowToGridData),
@@ -665,7 +674,8 @@ document.addEventListener('DOMContentLoaded', function() {
         search: false,
         style: {
             table: { 'font-size': '0.9rem' },
-            th: { 'background-color': '#f8f9fa', 'color': '#495057', 'text-align': 'center' }
+            th: { 'background-color': '#f8f9fa', 'color': '#495057', 'text-align': 'center' },
+            td: { 'text-align': 'center' }
         }
     }).render(containerEl);
 

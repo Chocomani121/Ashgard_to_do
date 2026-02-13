@@ -118,7 +118,7 @@ def projects():
         for user in users
     ]
     
-    return render_template('index.html', projects_data=projects_data, departments=departments, users=users, users_json=users_json, stats=stats)
+    return render_template('index.html', projects_data=projects_data, departments=departments, users=users, users_json=users_json, stats=stats, today=date.today())
 
 @project_bp.route("/tasks")
 @login_required 
@@ -159,7 +159,7 @@ def all_departments():
         'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
         'ongoing': len([p for p in projects if p.project_status and p.project_status.lower() == 'ongoing']),
     }
-    return render_template('all_departments.html', departments=departments, users=users, stats=stats, dept_projects_data=dept_projects_data)
+    return render_template('all_departments.html', departments=departments, users=users, stats=stats, dept_projects_data=dept_projects_data, today=date.today())
 
 # --- Existing Routes ---
 
