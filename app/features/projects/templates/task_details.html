@@ -21,7 +21,7 @@
                         <div class="card mb-4"  style="height: 75vh;">
                             <!-- Card Header with Button -->
                             <div class="card-header d-flex align-items-center justify-content-between">
-                                <h4 class="card-title mb-0"><span class="text-muted">Task Name:</span> {{ task.task_name or 'Task Details' }}</h4>
+                                <h4 class="card-title mb-0"><span class="text-muted">Task Name:</span><span class="ms-4">{{ task.task_name or 'Task Details' }}</span></h4>
                                 <div class="d-flex align-items-center gap-1">
                                     {% set task_status_display = task.task_status or 'Ongoing' %}
                                     {% if can_edit_task %}
