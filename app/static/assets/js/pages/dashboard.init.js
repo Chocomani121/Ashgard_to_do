@@ -307,7 +307,7 @@ if (saleingCategoriesEl && typeof ApexCharts !== "undefined") {
   var centerLabel = !isNaN(progressNum) ? progressNum + "%" : (isTaskData ? (series[0] + series[1]) : "60");
   var options = {
     chart: {
-      height: 340,
+      height: 300,
       type: 'donut',
     },
     series: series,
