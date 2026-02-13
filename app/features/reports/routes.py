@@ -31,7 +31,6 @@ def _report_to_dict(report):
             'week_name': report.week_name,
             'report_content': report.report_content,
             'reviewer_id': report.reviewer_id,
-            'author_name': report.author.name,
             # This is the crucial line for the CC list populate:
             'cc_member_ids': [cc.member_id for cc in report.cc_entries]
         })
