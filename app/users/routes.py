@@ -59,7 +59,7 @@ def profile():
     # Fetch the department name for the current user
     user_dept = Department.query.get(current_user.department_id)
     dept_name = user_dept.department_name if user_dept else "No Department Assigned"
-
+    departments = Department.query.all()
     if form.validate_on_submit():
         if form.picture.data:
             current_user.image_file = save_picture(form.picture.data)
@@ -74,9 +74,10 @@ def profile():
         form.name.data = current_user.name
         form.username.data = current_user.username
         form.email.data = current_user.email
+        form.department.data = current_user.department_id
         # We don't set form.department because you want it to be static text
         
-    return render_template('profile.html', form=form, dept_name=dept_name)
+    return render_template('profile.html', form=form, dept_name=dept_name, departments=departments)
 
 # --- MEMBERS LIST (PAGINATED) ---
 
