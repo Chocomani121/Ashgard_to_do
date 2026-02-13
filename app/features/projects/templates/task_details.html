@@ -250,18 +250,13 @@
                             </div>
                         </div>  
 
-            <!-- SUBTASK TABLE (for project members – not shown to project manager) -->
-            {% if is_project_member and not is_project_manager %}
+            <!-- SUBTASK TABLE (for project members assigned to this task – not PM; no Add Sub-Task, only PM can add) -->
+            {% if can_see_member_subtask %}
             <div class="row mt-4">
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header d-flex align-items-center">
                             <h4 class="card-title mb-0">Sub-Task [1/6]</h4>
-                            <div class="ms-auto">
-                                <button class="btn btn-primary btn-rounded" data-bs-toggle="modal" data-bs-target=".create-task">
-                                    <i class="mdi mdi-plus me-1"></i> Add Sub-Task
-                                </button>
-                            </div>
                         </div>
 
                         <div class="card-body">

@@ -7,6 +7,7 @@ from sqlalchemy import or_, text
 from sqlalchemy.exc import ProgrammingError, OperationalError
 from sqlalchemy.orm import joinedload, selectinload
 import json
+import os
 import random
 
 
@@ -567,9 +568,9 @@ def task_details(id=None):
                             'name': manager_user.name or manager_user.username
                         })
     
-    # Role flags for subtask views: PM sees "Subtask (Project Manager)", other project members see "Subtask"
+    # Role flags for subtask views: PM sees "Subtask (Project Manager)"; only project members *assigned to this task* see "Subtask"; others see nothing
     project = Project.query.get(task.project_id) if task.project_id else None
-    is_project_manager = (project and current_user.member_id == project.project_manager)
+    is_project_manager = bool(project and current_user.member_id == project.project_manager)
     is_project_member = False
     if project:
         if is_project_manager:
@@ -580,7 +581,28 @@ def task_details(id=None):
                 member_id=current_user.member_id
             ).first()
             is_project_member = pm_entry is not None
-    
+    # Assigned to this task (via TaskAssignee or task.p_members_id) – required to see member subtask view
+    is_assigned_to_task = False
+    if task_assignees:
+        for u in task_assignees:
+            if u.member_id == current_user.member_id:
+                is_assigned_to_task = True
+                break
+    if not is_assigned_to_task and task.p_members_id:
+        pm_owner = ProjectMembers.query.get(task.p_members_id)
+        if pm_owner and pm_owner.member_id == current_user.member_id:
+            is_assigned_to_task = True
+    # Show member subtask block only if project member AND assigned to this task (PM always sees PM block)
+    can_see_member_subtask = is_project_member and not is_project_manager and is_assigned_to_task
+    # #region agent log
+    try:
+        _log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), '.cursor', 'debug.log')
+        with open(_log_path, 'a', encoding='utf-8') as _f:
+            _f.write(json.dumps({"location": "project.routes.task_details", "message": "subtask role flags", "data": {"task_id": task.task_id, "task_project_id": task.project_id, "current_user_member_id": getattr(current_user, 'member_id', None), "project_manager_id": project.project_manager if project else None, "is_project_manager": is_project_manager, "is_project_member": is_project_member, "is_assigned_to_task": is_assigned_to_task, "can_see_member_subtask": can_see_member_subtask}, "timestamp": __import__('time').time()}) + "\n")
+    except Exception:
+        pass
+    # #endregion
+
     # Check if user can edit/mark complete this task
     can_edit_task = _can_edit_task(task, current_user)
     
@@ -599,7 +621,7 @@ def task_details(id=None):
     if not assignee_p_members_ids and task.p_members_id:
         assignee_p_members_ids.append(task.p_members_id)
     
-    return render_template('task_details.html', task=task, project=project, task_assignees=task_assignees, task_project_members=task_project_members, assignee_p_members_ids=assignee_p_members_ids, is_project_manager=is_project_manager, is_project_member=is_project_member, can_edit_task=can_edit_task, notes=main_notes, replies_map=replies_map)
+    return render_template('task_details.html', task=task, project=project, task_assignees=task_assignees, task_project_members=task_project_members, assignee_p_members_ids=assignee_p_members_ids, is_project_manager=is_project_manager, is_project_member=is_project_member, can_see_member_subtask=can_see_member_subtask, can_edit_task=can_edit_task, notes=main_notes, replies_map=replies_map)
 
 @project_bp.route("/task_details/<int:id>/update", methods=['POST'])
 @login_required
