@@ -161,7 +161,6 @@ class Notes(db.Model):
     pin_datetime   = db.Column(db.DateTime)
     generated_code = db.Column(db.String(255))
     
-    
 
 # --- REPORTS & COMMENTS SYSTEM ---
 
