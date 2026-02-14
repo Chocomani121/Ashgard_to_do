@@ -6117,29 +6117,28 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
   white-space: normal;
 }
 
-/* For PM in Task Details */
+/* For PM in Task Details – equal column spacing (7 columns) */
+.projectsTableTaskDetailsPM .gridjs-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
 .projectsTableTaskDetailsPM .gridjs-th:nth-child(1),
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(1) {
-  width: 60px;
-  max-width: 60px;
-}
-
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(1),
 .projectsTableTaskDetailsPM .gridjs-th:nth-child(2),
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(2) {
-  width: 180px;
-  max-width: 180px;
-}
-
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(2),
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(3),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(3),
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(4),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(4),
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(5),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(5),
 .projectsTableTaskDetailsPM .gridjs-th:nth-child(6),
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(6) {
-  width: 400px;
-  max-width: 400px;
-}
-
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(6),
 .projectsTableTaskDetailsPM .gridjs-th:nth-child(7),
 .projectsTableTaskDetailsPM .gridjs-td:nth-child(7) {
-  width: 120px;
-  max-width: 120px;
+  width: 14.28%;
+  max-width: 14.28%;
 }
 
 /* Scrollable Notes column */

@@ -255,7 +255,7 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header d-flex align-items-center">
-                            <h4 class="card-title mb-0">Sub-Task [1/6]{% if is_project_manager %} (Project Manager){% endif %}</h4>
+                            <h4 class="card-title mb-0">Sub-Task [{{ subtask_list|length }}]{% if is_project_manager %} (Project Manager){% endif %}</h4>
                             {% if is_project_manager or is_project_member %}
                             <div class="ms-auto">
                                 <button class="btn btn-primary btn-rounded" data-bs-toggle="modal" data-bs-target=".create-task">
@@ -281,252 +281,28 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {% for st in subtask_list %}
                                     <tr>
-                                        <td class="fw-semibold">H20</td>
-                                        <td class="fw-semibold">Login Interface</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-primary text-primary">Ongoing</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                            <a href="javascript:void(0)"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#notes-modal-preview"
-                                            onclick="prepareNoteModal('H20', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!', '-windyl 12/25/2025(edit)')">
-
-
-                                                <div style="
-                                                    max-height: 120px;
-                                                    overflow-y: auto;
-                                                    overflow-x: hidden;
-                                                    white-space: normal;
-                                                    line-height: 1.4;
-                                                ">
-                                                    <p class="text-dark">
-                                                        ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!
-                                                    </p>
-                                                    <footer class="blockquote-footer">
-                                                        -windyl 12/25/2025(edit)
-                                                    </footer>
-                                                </div>
-
-                                            </a>
-                                        </td>
-                                          <td class="text-nowrap">
-                                            {% if is_project_manager %}
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
-                                                <div class="dropdown-menu dropdown-menu-end shadow">
-                                                    <a class="dropdown-item"
-                                                       data-bs-toggle="modal" 
-                                                       data-bs-target=".notes-modal">
-                                                        Submit
-                                                    </a>
-                                                    <a class="dropdown-item"
-                                                       data-bs-toggle="modal" 
-                                                       data-bs-target=".notes-modal">
-                                                        Edit
-                                                    </a>
-                                                    <a class="dropdown-item">Hold</a>
-                                                    <a class="dropdown-item text-danger" 
-                                               
-                                                    onclick="confirmDelete('H20')">Delete</a>
-                                                </div>
-                                            </div>
-                                            {% elif is_project_member %}
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
-                                                <div class="dropdown-menu dropdown-menu-end shadow">
-                                                    <a class="dropdown-item"
-                                                       data-bs-toggle="modal" 
-                                                       data-bs-target=".notes-modal">
-                                                        Submit
-                                                    </a>
-                                                    <a class="dropdown-item"
-                                                       data-bs-toggle="modal" 
-                                                       data-bs-target=".notes-modal">
-                                                        Edit
-                                                    </a>
-                                                    <a class="dropdown-item">Hold</a>
-                                                    <a class="dropdown-item text-danger" 
-                                                       onclick="confirmDelete('H20')">Delete</a>
-                                                </div>
-                                            </div>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-warning text-warning">To be reviewed</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                            <a href="javascript:void(0)"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#notes-modal-preview"
-                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-
-
-                                                <div style="
-                                                    max-height: 120px;
-                                                    overflow-y: auto;
-                                                    overflow-x: hidden;
-                                                    white-space: normal;
-                                                    line-height: 1.4;
-                                                ">
-                                                    <p class="text-dark">
-                                                        Lopre Lorem - it may work(?)
-                                                    </p>
-                                                    <footer class="blockquote-footer">
-                                                        -windyl 12/25/2025(edit)
-                                                    </footer>
-                                                </div>
-
-                                            </a>
-                                        </td>
-                                        <td class="text-nowrap">
-                                            {% if is_project_manager %}
-                                            <button class="btn btn-sm btn-success me-1" data-bs-toggle="modal" data-bs-target=".notes-modal-approve" title="Approve" onclick="approveNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-                                                <i class="mdi mdi-check"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target=".notes-modal" title="Disapprove">
-                                                <i class="mdi mdi-close"></i>
-                                            </button>
-                                            {% elif is_project_member %}
-                                            <span class="text-muted small">Pending review</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                      <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-danger text-danger">Rejected</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                            <a href="javascript:void(0)"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#notes-modal-preview"
-                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-                                                <div style="
-                                                    max-height: 120px;
-                                                    overflow-y: auto;
-                                                    overflow-x: hidden;
-                                                    white-space: normal;
-                                                    line-height: 1.4;
-                                                ">
-                                                    <p class="text-dark">
-                                                        Lopre Lorem - it may work(?)
-                                                    </p>
-                                                    <footer class="blockquote-footer">
-                                                        -windyl 12/25/2025(edit)
-                                                    </footer>
-                                                </div>
-
-                                            </a>
-                                        </td>
-                                        <td class="text-nowrap">
-                                            {% if is_project_manager %}
-                                          <button class="btn btn-sm btn-primary"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#revertModal">
-                                                Revert
-                                            </button>
-                                            {% elif is_project_member %}
-                                            <button class="btn btn-sm btn-primary"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target=".notes-modal"
-                                                    form="notesForm">
-                                                Re-Submit
-                                            </button>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                      <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-secondary text-secondary">On Hold</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                       <td style="width: 400px;" class="notes-preview-cell">
-                                            <a href="javascript:void(0)"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#notes-modal-preview"
-                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-                                                <div style="
-                                                    max-height: 120px;
-                                                    overflow-y: auto;
-                                                    overflow-x: hidden;
-                                                    white-space: normal;
-                                                    line-height: 1.4;
-                                                ">
-                                                    <p class="text-dark">
-                                                        Lopre Lorem - it may work(?)
-                                                    </p>
-                                                    <footer class="blockquote-footer">
-                                                        -windyl 12/25/2025(edit)
-                                                    </footer>
-                                                </div>
-
-                                            </a>
-                                        </td>
-                                        <td class="text-nowrap">
-                                            {% if is_project_manager %}
-                                            <button class="btn btn-sm btn-primary"
-                                                data-bs-toggle="modal"
-                                                data-bs-target=".notes-modal"
-                                                form="notesForm">
-                                                Follow Up
-                                            </button>
-                                            {% elif is_project_member %}
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
-                                                <div class="dropdown-menu dropdown-menu-end shadow">
-                                                    <a class="dropdown-item" data-bs-toggle="modal" data-bs-target=".notes-modal" form="notesForm">Follow Up</a>
-                                                    <a class="dropdown-item" data-bs-toggle="modal" data-bs-target=".notes-modal">Resume</a>
-                                                    <a class="dropdown-item" data-bs-toggle="modal" data-bs-target=".notes-modal">Edit</a>
-                                                </div>
-                                            </div>
-                                            {% endif %}
-                                        </td>
-                                     </tr>
-                                         <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-success text-success">Approved</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                            <a href="javascript:void(0)"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#notes-modal-preview"
-                                            onclick="prepareNoteModal('H20', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-                                                <div style="
-                                                    max-height: 120px;
-                                                    overflow-y: auto;
-                                                    overflow-x: hidden;
-                                                    white-space: normal;
-                                                    line-height: 1.4;
-                                                ">
-                                                    <p class="text-dark">
-                                                        Lopre Lorem - it may work(?)
-                                                    </p>
-                                                    <footer class="blockquote-footer">
-                                                        -windyl 12/25/2025(edit)
-                                                    </footer>
-                                                </div>
-
-                                            </a>
-                                        </td>
+                                        <td class="fw-semibold">{{ st.generated_code }}</td>
+                                        <td class="fw-semibold">{{ st.subtask_name }}</td>
+                                        <td>{{ st.owner_name }}</td>
                                         <td>
-                                            {% if is_project_manager or is_project_member %}
-                                        <p>Approved on : 11/11/2026 20:00</p> 
-                                            <footer class="blockquote-footer">  -Lurs </footer>
-                                            {% endif %}
+                                            {% if st.status == 'Ongoing' %}<span class="badge bg-soft-primary text-primary">Ongoing</span>
+                                            {% elif st.status == 'To be reviewed' %}<span class="badge bg-soft-warning text-warning">To be reviewed</span>
+                                            {% elif st.status == 'Rejected' %}<span class="badge bg-soft-danger text-danger">Rejected</span>
+                                            {% elif st.status == 'On Hold' %}<span class="badge bg-soft-secondary text-secondary">On Hold</span>
+                                            {% elif st.status == 'Approved' %}<span class="badge bg-soft-success text-success">Approved</span>
+                                            {% else %}<span class="badge bg-soft-primary text-primary">{{ st.status }}</span>{% endif %}
                                         </td>
+                                        <td>{% if st.checked_timestamp %}{{ st.checked_timestamp.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
+                                        <td style="width: 400px;" class="notes-preview-cell">—</td>
+                                        <td class="text-nowrap">—</td>
                                     </tr>
-                                    <!-- Repeat more subtasks as needed -->
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-muted text-center py-4">No subtasks yet. Use &quot;+ Add Sub-Task&quot; to create one.</td>
+                                    </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
@@ -550,58 +326,39 @@
 
             <!-- Modal Body -->
             <div class="modal-body">
-                <form id="subTaskForm">
+                <form id="subTaskForm" method="POST" action="{{ url_for('project.create_subtask', id=task.task_id) }}">
 
                     <div class="mb-3">
                         <label class="form-label">Sub-Task Name</label>
-                        <input type="text" class="form-control" placeholder="Enter sub-task name" required>
+                        <input type="text" name="subtask_name" class="form-control" placeholder="Enter sub-task name" required>
                     </div>
-                    <!-- Search + Modal = magic  -->
                     <div class="row">
-                        <div class="mb-3 position-relative" style="max-width: 390px;">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Owner</label>
-
-                            <!-- Input / Selected chips -->
-                            <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
-                                id="ownerInput"
-                                data-bs-toggle="dropdown">
-
-                                <span class="text-muted small">Select owner(s)</span>
-                            </div>
-
-                            <!-- Dropdown -->
-                            <div class="dropdown-menu p-3 shadow owner-dropdown">
-                                <input type="text"
-                                    class="form-control mb-2"
-                                    id="ownerSearch"
-                                    placeholder="Search colleague">
-
-                                <small class="text-muted">Contacts</small>
-
-                                <div class="list-group mt-2 owner-list"></div>
-
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    Clear
-                                    <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">
-                                        Confirm
-                                    </button>
-                                </div>
-                            </div>
+                            <select name="owner" class="form-select">
+                                <option value="">— Select member —</option>
+                                {% for m in task_assignees_for_subtask %}
+                                <option value="{{ m.p_members_id }}">{{ m.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Only members assigned to this task can be owners.</small>
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Status</label>
-                            <select class="form-select">
-                                <option selected>Ongoing</option>
-                                <option>Completed</option>
-                                <option>Pending</option>
+                            <select name="status" class="form-select">
+                                <option value="Ongoing" selected>Ongoing</option>
+                                <option value="To be reviewed">To be reviewed</option>
+                                <option value="Rejected">Rejected</option>
+                                <option value="On Hold">On Hold</option>
+                                <option value="Approved">Approved</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Notes</label>
-                        <textarea class="form-control" rows="3" placeholder="Optional notes..."></textarea>
+                        <textarea name="notes" class="form-control" rows="3" placeholder="Optional notes..."></textarea>
                     </div>
 
                 </form>

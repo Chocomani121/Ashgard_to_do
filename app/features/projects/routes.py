@@ -620,8 +620,99 @@ def task_details(id=None):
         pass
     if not assignee_p_members_ids and task.p_members_id:
         assignee_p_members_ids.append(task.p_members_id)
-    
-    return render_template('task_details.html', task=task, project=project, task_assignees=task_assignees, task_project_members=task_project_members, assignee_p_members_ids=assignee_p_members_ids, is_project_manager=is_project_manager, is_project_member=is_project_member, can_see_member_subtask=can_see_member_subtask, can_edit_task=can_edit_task, notes=main_notes, replies_map=replies_map)
+
+    # Subtask list for PM table: ID=generated_code, Owner, Status, Timestamp=checked_timestamp (Notes/Action left for later)
+    subtask_list = []
+    try:
+        raw_subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).order_by(SubTask.created_on.asc()).all()
+        for st in raw_subtasks:
+            owner_name = ''
+            if st.p_members_id:
+                pm = ProjectMembers.query.get(st.p_members_id)
+                if pm and pm.member_id:
+                    u = User.query.get(pm.member_id)
+                    owner_name = (u.name or u.username) if u else ''
+            subtask_list.append({
+                'sub_task_id': st.sub_task_id,
+                'generated_code': st.generated_code or '—',
+                'subtask_name': st.subtask_name or '—',
+                'owner_name': owner_name or '—',
+                'status': st.status or 'Ongoing',
+                'checked_timestamp': st.checked_timestamp,
+            })
+    except Exception:
+        pass
+
+    # Owner dropdown in Add Sub-Task: only members assigned to this task
+    task_assignees_for_subtask = [m for m in task_project_members if m['p_members_id'] in assignee_p_members_ids]
+
+    return render_template('task_details.html', task=task, project=project, task_assignees=task_assignees, task_project_members=task_project_members, assignee_p_members_ids=assignee_p_members_ids, is_project_manager=is_project_manager, is_project_member=is_project_member, can_see_member_subtask=can_see_member_subtask, can_edit_task=can_edit_task, notes=main_notes, replies_map=replies_map, subtask_list=subtask_list, task_assignees_for_subtask=task_assignees_for_subtask)
+
+
+@project_bp.route("/task_details/<int:id>/create_subtask", methods=['POST'])
+@login_required
+def create_subtask(id):
+    task = Task.query.get_or_404(id)
+    project = Project.query.get(task.project_id) if task.project_id else None
+    is_pm = bool(project and current_user.member_id == project.project_manager)
+    is_member = False
+    if project:
+        is_member = is_pm or (ProjectMembers.query.filter_by(project_id=task.project_id, member_id=current_user.member_id).first() is not None)
+    if not (is_pm or is_member):
+        flash('Only project members can add subtasks.', 'danger')
+        return redirect(url_for('project.task_details', id=id))
+
+    assignee_p_members_ids = []
+    try:
+        for ta in (task.assignees or []):
+            if ta.project_member:
+                assignee_p_members_ids.append(ta.project_member.p_members_id)
+    except (ProgrammingError, OperationalError):
+        pass
+    if not assignee_p_members_ids and task.p_members_id:
+        assignee_p_members_ids.append(task.p_members_id)
+
+    subtask_name = (request.form.get('subtask_name') or '').strip()
+    if not subtask_name:
+        flash('Sub-task name is required.', 'danger')
+        return redirect(url_for('project.task_details', id=id))
+
+    owner_p_members_id = request.form.get('owner')
+    if owner_p_members_id:
+        try:
+            owner_p_members_id = int(owner_p_members_id)
+            if owner_p_members_id not in assignee_p_members_ids:
+                flash('Owner must be a member assigned to this task.', 'danger')
+                return redirect(url_for('project.task_details', id=id))
+        except (ValueError, TypeError):
+            owner_p_members_id = None
+    else:
+        owner_p_members_id = None
+
+    status = (request.form.get('status') or 'Ongoing').strip()
+    allowed = ('Ongoing', 'To be reviewed', 'Rejected', 'On Hold', 'Approved')
+    if status not in allowed:
+        status = 'Ongoing'
+
+    count = SubTask.query.filter_by(parent_task_id=task.task_id).count()
+    generated_code = f"ST{task.task_id}-{count + 1}"
+
+    st = SubTask(
+        parent_task_id=task.task_id,
+        subtask_name=subtask_name,
+        generated_code=generated_code,
+        p_members_id=owner_p_members_id,
+        status=status,
+    )
+    db.session.add(st)
+    try:
+        db.session.commit()
+        flash('Sub-task created.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Failed to create sub-task.', 'danger')
+    return redirect(url_for('project.task_details', id=id))
+
 
 @project_bp.route("/task_details/<int:id>/update", methods=['POST'])
 @login_required

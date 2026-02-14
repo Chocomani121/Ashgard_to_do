@@ -135,12 +135,17 @@ class SubTask(db.Model):
     __tablename__     = 'sub_task_list'
     sub_task_id       = db.Column(db.Integer, primary_key=True)
     parent_task_id    = db.Column(db.Integer, db.ForeignKey('task_tbl.task_id'))
-    # notes_id removed here to break circular dependency
     subtask_name      = db.Column(db.String(255))
+    generated_code    = db.Column(db.String(255), nullable=True)   # e.g. ST8233, ST39-1
+    checked_timestamp = db.Column(db.DateTime(timezone=True), nullable=True)
+    status            = db.Column(db.String(255), default='Ongoing')  # Ongoing, To be reviewed, Rejected, On Hold, Approved
+    p_members_id      = db.Column(db.Integer, db.ForeignKey('project_members.p_members_id'), nullable=True)  # owner
     is_checked        = db.Column(db.Boolean, default=False)
     created_on        = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
-    
-    notes = db.relationship('Notes', backref='parent_subtask', lazy=True)
+    edited_on         = db.Column(db.DateTime(timezone=True), nullable=True)
+
+    project_member   = db.relationship('ProjectMembers', backref='subtasks_owned', lazy=True)
+    notes            = db.relationship('Notes', backref='parent_subtask', lazy=True)
 
 class Notes(db.Model):
     __tablename__ = 'notes_tbl'
