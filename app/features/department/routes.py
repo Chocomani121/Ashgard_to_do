@@ -47,7 +47,7 @@ def all_departments():
         'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
         'ongoing': len([p for p in projects if p.project_status and p.project_status.lower() == 'ongoing']),
     }
-    return render_template('all_departments.html', departments=departments, users=users, stats=stats, dept_projects_data=dept_projects_data)
+    return render_template('all_departments.html', departments=departments, users=users, stats=stats, dept_projects_data=dept_projects_data, today=date.today())
 
 @department_bp.route("/department/add", methods=['POST'])
 @login_required
