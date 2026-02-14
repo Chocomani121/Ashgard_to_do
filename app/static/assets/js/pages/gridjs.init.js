@@ -653,7 +653,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return gridjs.html(
                         '<a href="javascript:void(0)" class="company-wide-report-name-link text-dark text-decoration-none" data-report-id="' + escapeHtml(id) + '">' + escapeHtml(name) + '</a>'
                     );
-                }
+                }   
             },
             'Start',
             'End',

@@ -569,7 +569,19 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Department</label>
-                        <input type="text" class="form-control" value="{{ dept_name }}" readonly style="background-color: #f8f9fa;">
+                        <div style="width: 100%;">
+                            <select class="form-select" id="departmentSelect" name="department">
+                                {% if not dept_name or dept_name == "No Department Assigned" %}
+                                    <option value="" selected>No Department Assigned</option>
+                                {% endif %}
+                                {% for dept in departments %}
+                                    <option value="{{ dept.department_id }}" {{ 'selected' if dept.department_id == current_user.department_id else '' }}>
+                                        {{ dept.department_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
                         <small class="text-muted">Department is managed by Administration.</small>
                     </div>
                     <div class="mb-3">
@@ -579,7 +591,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    {{ form.submit(class="btn btn-primary") }}
+                    {{ form.submit(class="btn btn-warning") }}
                 </div>
             </form>
         </div>
