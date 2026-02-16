@@ -212,6 +212,16 @@ Purpose: Chip-based member selection for Create Project modal
           input.value = member.id;
           container.appendChild(input);
         });
+
+        const btn = document.getElementById("btn-save-project");
+        const spinner = document.getElementById("createProjectSpinner");
+        const btnText = document.getElementById("createProjectBtnText");
+        if (btn && spinner && btnText) {
+          btn.disabled = true;
+          spinner.classList.remove("d-none");
+          btnText.innerHTML = " Creating...";
+        }
+
       });
     }
 

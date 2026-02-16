@@ -43,15 +43,170 @@ def _can_edit_task(task, user):
             return True
     return False
 
+@project_bp.route("/department_projects") 
+@login_required
+def department_projects():
+    # Fetch all projects with related data (newest first)
+    projects = Project.query.order_by(Project.project_id.desc()).all()
+    departments = Department.query.all()
+    users = User.query.all()
+    
+    # Prepare projects data for template (progress = task-based, same as project details)
+    projects_data = []
+    for project in projects:
+        dept = Department.query.get(project.department_id) if project.department_id else None
+        manager = User.query.get(project.project_manager) if project.project_manager else None
+        deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
+        
+        # Get priority from project (defaults to 'High' if not set or column doesn't exist)
+        try:
+            priority_raw = project.priority
+            priority = str(priority_raw) if priority_raw else 'High'
+        except (AttributeError, KeyError):
+            priority = 'High'  # Fallback if column doesn't exist
+        
+        # Progress from tasks (completed / total), same logic as project details
+        project_tasks = Task.query.filter_by(project_id=project.project_id).all()
+        task_total = len(project_tasks)
+        task_completed = sum(1 for t in project_tasks if t.task_status == 'Completed')
+        progress_pct = round(task_completed / task_total * 100, 1) if task_total else 0
+        # Latest task (newest by task_id) for "Last Tasks" column
+        latest_task = Task.query.filter_by(project_id=project.project_id).order_by(Task.task_id.desc()).first()
+        latest_task_title = latest_task.task_name if latest_task else None
+        
+        projects_data.append({
+            'project': project,
+            'manager': manager,
+            'deadline': deadline,
+            'priority': priority,
+            'progress_pct': progress_pct,
+            'latest_task_title': latest_task_title,
+        })
+    
+    # Calculate statistics from projects
+    # Count only High priority projects for the Priority card
+    # Use the same logic as display: None/null priority defaults to 'High'
+    high_priority_count = 0
+    for item in projects_data:
+        try:
+            priority_val = item['priority']  # Use the converted priority from projects_data
+            if priority_val and priority_val.lower() == 'high':
+                high_priority_count += 1
+        except (AttributeError, KeyError):
+            pass  # Skip if priority column doesn't exist
+    
+    stats = {
+        'pending': len([p for p in projects if p.project_status and p.project_status.lower() == 'pending']),
+        'high_priority': high_priority_count,  # Only count projects with High priority
+        'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
+        'on_hold': len([p for p in projects if p.project_status and p.project_status.lower() == 'on hold'])
+    }
+    
+    # Convert users to JSON-serializable format for JavaScript
+    # Pass as Python list, let Jinja2 handle JSON encoding with |tojson filter
+    users_json = [
+        {
+            'member_id': user.member_id,
+            'name': user.name or user.username,
+            'username': user.username,
+            'department_id': user.department_id
+        }
+        for user in users
+    ]
+    
+    return render_template('department.html', projects_data=projects_data, departments=departments, users_json=users_json, stats=stats, today=date.today())
 
 @project_bp.route("/")
 @project_bp.route("/projects") 
 # @cache.cached(timeout=60)
 @login_required
 def projects():
+  # Project IDs where current user is a member (participant)
+    member_project_ids = ProjectMembers.query.filter(
+        ProjectMembers.member_id == current_user.member_id
+    ).with_entities(ProjectMembers.project_id)
+
+    # Only projects where user is manager or a project member
+    projects = Project.query.filter(
+        or_(
+            Project.project_manager == current_user.member_id,
+            Project.project_id.in_(member_project_ids)
+        )
+    ).order_by(Project.project_id.desc()).all()
+
+    departments = Department.query.all()
+    users = User.query.all()
+    
+    # Prepare projects data for template (progress = task-based, same as project details)
+    projects_data = []
+    for project in projects:
+        dept = Department.query.get(project.department_id) if project.department_id else None
+        manager = User.query.get(project.project_manager) if project.project_manager else None
+        deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
+        
+        # Get priority from project (defaults to 'High' if not set or column doesn't exist)
+        try:
+            priority_raw = project.priority
+            priority = str(priority_raw) if priority_raw else 'High'
+        except (AttributeError, KeyError):
+            priority = 'High'  # Fallback if column doesn't exist
+        
+        # Progress from tasks (completed / total), same logic as project details
+        project_tasks = Task.query.filter_by(project_id=project.project_id).all()
+        task_total = len(project_tasks)
+        task_completed = sum(1 for t in project_tasks if t.task_status == 'Completed')
+        progress_pct = round(task_completed / task_total * 100, 1) if task_total else 0
+        # Latest task (newest by task_id) for "Last Tasks" column
+        latest_task = Task.query.filter_by(project_id=project.project_id).order_by(Task.task_id.desc()).first()
+        latest_task_title = latest_task.task_name if latest_task else None
+        
+        projects_data.append({
+            'project': project,
+            'manager': manager,
+            'deadline': deadline,
+            'priority': priority,
+            'progress_pct': progress_pct,
+            'latest_task_title': latest_task_title,
+        })
+    
+    # Calculate statistics from projects
+    # Count only High priority projects for the Priority card
+    # Use the same logic as display: None/null priority defaults to 'High'
+    high_priority_count = 0
+    for item in projects_data:
+        try:
+            priority_val = item['priority']  # Use the converted priority from projects_data
+            if priority_val and priority_val.lower() == 'high':
+                high_priority_count += 1
+        except (AttributeError, KeyError):
+            pass  # Skip if priority column doesn't exist
+    
+    stats = {
+        'pending': len([p for p in projects if p.project_status and p.project_status.lower() == 'pending']),
+        'high_priority': high_priority_count,  # Only count projects with High priority
+        'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
+        'on_hold': len([p for p in projects if p.project_status and p.project_status.lower() == 'on hold'])
+    }
+    
+    # Convert users to JSON-serializable format for JavaScript
+    # Pass as Python list, let Jinja2 handle JSON encoding with |tojson filter
+    users_json = [
+        {
+            'member_id': user.member_id,
+            'name': user.name or user.username,
+            'username': user.username,
+            'department_id': user.department_id
+        }
+        for user in users
+    ]
+    
+    return render_template('index.html', projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
+
+@project_bp.route("/all_projects") 
+@login_required
+def all_projects():
     # Fetch all projects with related data (newest first)
     projects = Project.query.order_by(Project.project_id.desc()).all()
-    departments = Department.query.all()
     users = User.query.all()
     
     # Prepare projects data for template (progress = task-based, same as project details)
@@ -118,8 +273,8 @@ def projects():
         for user in users
     ]
     
-    return render_template('index.html', projects_data=projects_data, departments=departments, users=users, users_json=users_json, stats=stats, today=date.today())
-
+    return render_template('all_projects.html', projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
+    
 @project_bp.route("/tasks")
 @login_required 
 def tasks():
