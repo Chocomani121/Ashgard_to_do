@@ -204,5 +204,6 @@ class Comment(db.Model):
     replies = db.relationship(
         'Comment', 
         backref=db.backref('parent', remote_side=[comment_id]),
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
+        lazy=True
     )
