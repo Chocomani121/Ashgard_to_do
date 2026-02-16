@@ -185,7 +185,7 @@ class ReportCC(db.Model):
     cc_id = db.Column(db.Integer, primary_key=True)
     report_id = db.Column(db.Integer, db.ForeignKey('report_tbl.report_id'))
     member_id = db.Column(db.Integer, db.ForeignKey('members.member_id'))
-    user = db.relationship('User', backref='cc_reports')
+    user = db.relationship('User', backref='cc_reports', lazy=True)
 
 class Comment(db.Model):
     __tablename__ = 'comments_tbl'

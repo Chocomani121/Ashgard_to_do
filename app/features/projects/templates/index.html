@@ -1,364 +1,339 @@
 {% extends "layout.html" %}
-   {% block content %}
+{% block content %}
 <div class="main-content">
-                <div class="page-content">
-                    <div class="container-fluid">
+   <div class="page-content">
+      <div class="container-fluid">
 
-                        <div class="row">
-                            <div class="col-md-3 col-xl-3">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div>
-                                                <h6 class="mb-2 text-muted font-size-15">Pending Projects</h6>
-                                                <h4 class="mb-0 font-size-22 fw-bold">{{ stats.pending|default(0) }}</h4>
-                                            </div>
-                                           <div class="avatar-md">
-                                                <div class="avatar-title rounded bg-soft-info">
-                                                    <i class="mdi mdi-file-document-multiple-outline font-size-24 alert-info"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-3 col-xl-3">
-                                <div class="card">
-                                    <div class="card-body">
-                                          <div class="d-flex align-items-center justify-content-between">
-                                                <div>
-                                                    <h6 class="mb-2 text-muted font-size-15">Priority</h6>
-                                                    <h4 class="mb-0 font-size-22 fw-bold">{{ stats.high_priority|default(0) }}</h4>
-                                                </div>
-                                                <div class="avatar-md">
-                                                    <div class="avatar-title rounded bg-soft-danger">
-                                                        <i class="mdi mdi-alert-octagon font-size-24 text-danger" style="color: #8B1A1A !important;"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-3 col-xl-3">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                                <div>
-                                                    <h6 class="mb-2 text-muted font-size-15">Completed</h6>
-                                                    <h4 class="mb-0 font-size-22 fw-bold">{{ stats.completed|default(0) }}</h4>
-                                                </div>
-                                                <div class="avatar-md">
-                                                    <div class="avatar-title rounded bg-soft-success">
-                                                        <i class="mdi mdi-check-decagram font-size-24 text-success" style="color: #155724 !important;"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-3 col-xl-3">
-                                <div class="card">
-                                    <div class="card-body">
-                                         <div class="d-flex align-items-center justify-content-between">
-                                            <div>
-                                                <h6 class="mb-2 text-muted font-size-15">On Hold</h6>
-                                                <h4 class="mb-0 font-size-22 fw-bold">{{ stats.on_hold|default(0) }}</h4>
-                                            </div>
-
-                                            <div class="avatar-md">
-                                                <div class="avatar-title rounded bg-soft-secondary">
-                                                    <i class="bx bx-stopwatch font-size-24 text-secondary" style="color: #2e2e2e !important;"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> <!-- end row -->
-
-                        <div class="row"> 
-       
-                            <div class="col-12">
-                                  
-                                <div class="row">
-                                    <div class="col-lg-12">
-                                        <div class="card">
-                                          <div class="card-header d-flex align-items-center">
-                                                <h4 class="card-title mb-0">My Projects</h4>
-                                                <div class="ms-auto d-flex gap-2">
-                                                            
-                                                    <div class="d-flex flex-wrap gap-2">
-                                                        <!-- Search Bar -->
-                                                        <div style="width: 200px;">
-                                                            <input type="text" id="searchDeptProjects" class="form-control" placeholder="Type a keyword...">
-                                                        </div>
-                                                        <div class="input-group" style="width: 320px;">
-                                                            <span class="input-group-text">
-                                                                <i class="mdi mdi-calendar-range text-muted"></i>
-                                                            </span>
-                                                            <input type="text" id="datepicker-range" class="form-control" placeholder="Select Date Range">
-                                                        </div>
-
-                                                        <div style="width: 180px;">
-                                                            <select class="form-select" id="statusFilter">
-                                                                <option value="all">Status: All</option>
-                                                                <option value="Ongoing">Ongoing</option>
-                                                                <option value="On Hold">On Hold</option>
-                                                                <option value="Completed">Completed</option>
-                                                            </select>
-                                                        </div>
-
-                                                        <div style="width: 180px;">
-                                                            <select class="form-select" id="priorityFilter">
-                                                                <option value="all">Priority: All</option>
-                                                                <option value="Low">Low</option>
-                                                                <option value="Medium">Medium</option>
-                                                                <option value="High">High</option>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <button type="button" class="btn btn-primary btn-rounded" data-bs-toggle="modal" data-bs-target=".create-task">
-                                                        <i class="mdi mdi-plus me-1"></i> Create Project
-                                                    </button>
-                                                    
-                                                </div>
-                                            </div>
-
-                                            <div class="card-body">
-                                                <div id="table-gridjs"></div>
-
-                                                <!-- ORIGINAL TABLE (hidden but used by Grid.js) -->
-                                                <table id="projectsTable" class="table d-none">
-                                                      <thead>
-                                                                <tr>
-                                                                    <th style="width: 190px;">Project Name</th>
-                                                                    <th>Priority</th>
-                                                                    <th>Start Date</th>
-                                                                    <th>Deadline</th>
-                                                                    <th>Status</th>
-                                                                    <th>Progress</th>
-                                                                    <th>Project Manager</th>
-                                                                    <th>Client</th>
-                                                                    <th>Last Tasks</th>
-                                                                </tr>
-                                                            </thead>
-                                                        <tbody>
-                                                            {% if projects_data %}
-                                                            {% for item in projects_data %}
-                                                            <tr 
-                                                                data-status="{% if item.project.project_status == 'Pending' or not item.project.project_status %}Ongoing{% elif item.project.project_status == 'Cancelled' %}Ongoing{% else %}{{ item.project.project_status }}{% endif %}"
-                                                                data-priority="{{ item.priority or 'High' }}"
-                                                                data-start-date="{{ item.deadline.start_date.strftime('%Y-%m-%d') if item.deadline and item.deadline.start_date else '' }}"
-                                                                data-end-date="{{ item.deadline.end_date.strftime('%Y-%m-%d') if item.deadline and item.deadline.end_date else '' }}"
-                                                            >
-                                                                <td>
-                                                                    <a href="{{ url_for('project.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
-                                                                        {{ item.project.project_name or 'Unnamed Project' }}
-                                                                    </a>
-                                                                </td>
-                                                                <td>
-                                                                    {% if item.priority == 'High' %}
-                                                                    <div class="badge badge-soft-danger font-size-12">High</div>
-                                                                    {% elif item.priority == 'Medium' %}
-                                                                    <div class="badge badge-soft-warning font-size-12">Medium</div>
-                                                                    {% elif item.priority == 'Low' %}
-                                                                    <div class="badge badge-soft-info font-size-12">Low</div>
-                                                                    {% else %}
-                                                                    <div class="badge badge-soft-primary font-size-12">{{ item.priority or 'High' }}</div>
-                                                                    {% endif %}
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center">
-                                                                        {% if item.deadline and item.deadline.start_date %}
-                                                                        {{ item.deadline.start_date.strftime('%m / %d / %Y') }}
-                                                                        {% else %}
-                                                                        N/A
-                                                                        {% endif %}
-                                                                    </div>
-                                                                </td>
-                                                                <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center deadline-end {% if item.deadline and item.deadline.end_date and item.deadline.end_date.date() < today %}text-danger{% endif %}">
-                                                                        {% if item.deadline and item.deadline.end_date %}
-                                                                        {{ item.deadline.end_date.strftime('%m / %d / %Y') }}
-                                                                        {% else %}
-                                                                        N/A
-                                                                        {% endif %}
-                                                                    </div>
-                                                                </td>
-                                                                <td>
-                                                                    {% set display_status = 'Ongoing' if (item.project.project_status == 'Pending' or not item.project.project_status or item.project.project_status == 'Cancelled') else item.project.project_status %}
-                                                                    {% if display_status == 'Ongoing' %}
-                                                                    <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                    {% elif display_status == 'Completed' %}
-                                                                    <div class="badge badge-soft-success font-size-12">Completed</div>
-                                                                    {% elif display_status == 'On Hold' %}
-                                                                    <div class="badge badge-soft-secondary font-size-12">On Hold</div>
-                                                                    {% else %}
-                                                                    <div class="badge badge-soft-warning font-size-12">Ongoing</div>
-                                                                    {% endif %}
-                                                                </td>
-                                                                <td>
-                                                                    {% set pct = item.progress_pct|default(0) %}
-                                                                    <div class="progress">
-                                                                        <div class="progress-bar progress-bar-striped progress-bar-dynamic" role="progressbar" data-width-pct="{{ pct }}" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100">{{ pct }}%</div>
-                                                                    </div>
-                                                                </td>
-                                                                <td>
-                                                                    {{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}
-                                                                </td>
-                                                                <td>
-                                                                    {{ item.project.client_name or 'N/A' }}
-                                                                </td>
-                                                                <td>
-                                                                    {% if item.latest_task_title %}{% if item.latest_task_title|length > 40 %}<span title="{{ item.latest_task_title }}">{{ item.latest_task_title[:37] }}...</span>{% else %}{{ item.latest_task_title }}{% endif %}{% else %}<span class="text-muted" title="This project has no tasks yet">No tasks yet</span>{% endif %}
-                                                                </td>
-                                                            </tr>
-                                                            {% endfor %}
-                                                            {% else %}
-                                                            <tr>
-                                                                <td colspan="9" class="text-center text-muted">No projects found. Create your first project!</td>
-                                                            </tr>
-                                                            {% endif %}
-                                                        </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                               </div>
-                           </div> <!-- end row -->
-                            </div>  
-                        </div>  
-                        <!-- end row -->
-
-                    </div>
-                    <!-- container-fluid -->
-                </div>
-                <!-- End Page-content -->
-
-          
+         <div class="row">
+            <div class="col-md-3 col-xl-3">
+               <div class="card">
+                  <div class="card-body">
+                     <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                           <h6 class="mb-2 text-muted font-size-15">Pending Projects</h6>
+                           <h4 class="mb-0 font-size-22 fw-bold">{{ stats.pending|default(0) }}</h4>
+                        </div>
+                        <div class="avatar-md">
+                           <div class="avatar-title rounded bg-soft-info">
+                              <i class="mdi mdi-file-document-multiple-outline font-size-24 alert-info"></i>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
             </div>
-            <!-- end main content-->
-
-        </div>
-         <!--  Extra Large modal example -->
-            <div class="modal fade create-task" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-xl modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="myExtraLargeModalLabel">Create Project</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="col-md-3 col-xl-3">
+               <div class="card">
+                  <div class="card-body">
+                     <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                           <h6 class="mb-2 text-muted font-size-15">Priority</h6>
+                           <h4 class="mb-0 font-size-22 fw-bold">{{ stats.high_priority|default(0) }}</h4>
                         </div>
-                        <div class="modal-body">
-                            <form action="{{ url_for('project.create_project') }}" method="POST" id="createProjectForm">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label" for="project_name">Project Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" placeholder="Enter Project Name" id="project_name" name="project_name" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label" for="priority">Priority Level <span class="text-danger">*</span></label>
-                                            <select class="form-select" id="priority" name="priority" required>
-                                                <option value="High" selected>High</option>
-                                                <option value="Medium">Medium</option>
-                                                <option value="Low">Low</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label" for="client_name">Client Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" placeholder="Enter Client Name" id="client_name" name="client_name" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label" for="project_members">Add Members <span class="text-danger">*</span></label>
-                                            <!-- Hidden inputs container for selected member IDs -->
-                                            <div id="memberIdsContainerProject"></div>
-                                            
-                                            <!-- Input / Selected chips -->
-                                            <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input-project"
-                                                id="ownerInputProject"
-                                                data-bs-toggle="dropdown"
-                                                aria-expanded="false">
-                                                <span class="text-muted small">Select member(s)</span>
-                                            </div>
-
-                                            <!-- Dropdown -->
-                                            <div class="dropdown-menu p-3 shadow owner-dropdown-project" style="width: 100%;">
-                                                <input type="text"
-                                                    class="form-control mb-2"
-                                                    id="ownerSearchProject"
-                                                    placeholder="Search member">
-
-                                                <small class="text-muted">Contacts</small>
-
-                                                <div class="list-group mt-2 owner-list-project" style="max-height: 200px; overflow-y: auto;"></div>
-
-                                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                                    <a href="#" id="clearOwnersProject" class="text-muted small">Clear</a>
-                                                    <button type="button" class="btn btn-sm btn-primary" id="confirmOwnersProject">
-                                                        Confirm
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6" style="display: none;">
-                                        <div class="mb-3">
-                                            <label class="form-label" for="project_manager">Project Manager <span class="text-danger">*</span></label>
-                                            <select class="form-select" id="project_manager" name="project_manager" required>
-                                                <option value="">Select Project Manager</option>
-                                                {% for user in users %}
-                                                <option value="{{ user.member_id }}" {% if current_user.member_id == user.member_id %}selected{% endif %}>{{ user.name or user.username }}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label" for="start_date">Start Date <span class="text-danger">*</span></label>
-                                            <input type="date" class="form-control" id="start_date" name="start_date" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label" for="end_date">End Date (Deadline) <span class="text-danger">*</span></label>
-                                            <input type="date" class="form-control" id="end_date" name="end_date" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <div class="mb-3">
-                                            <label for="topicDescription" class="form-label">Description</label>
-                                            <textarea class="form-control" id="topicDescription" name="topicDescription" rows="3" placeholder="Enter description"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row mt-2">
-                                    <div class="col-12 text-end">
-                                        <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal"><i class="bx bx-x me-1 align-middle"></i> Cancel</button>
-
-                                        <button type="submit" class="btn btn-success" id="btn-save-project">
-                                            <span id="createProjectSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                                            <span id="createProjectBtnText"><i class="bx bx-check me-1 align-middle"></i> Create Project</span>
-                                        </button>                                    
-                                    </div>
-                                </div>
-                            </form>
+                        <div class="avatar-md">
+                           <div class="avatar-title rounded bg-soft-danger">
+                              <i class="mdi mdi-alert-octagon font-size-24 text-danger" style="color: #8B1A1A !important;"></i>
+                           </div>
                         </div>
-                    </div><!-- /.modal-content -->
-                </div><!-- /.modal-dialog -->
-            </div><!-- /.modal -->
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div class="col-md-3 col-xl-3">
+               <div class="card">
+                  <div class="card-body">
+                     <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                           <h6 class="mb-2 text-muted font-size-15">Completed</h6>
+                           <h4 class="mb-0 font-size-22 fw-bold">{{ stats.completed|default(0) }}</h4>
+                        </div>
+                        <div class="avatar-md">
+                           <div class="avatar-title rounded bg-soft-success">
+                              <i class="mdi mdi-check-decagram font-size-24 text-success" style="color: #155724 !important;"></i>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div class="col-md-3 col-xl-3">
+               <div class="card">
+                  <div class="card-body">
+                     <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                           <h6 class="mb-2 text-muted font-size-15">On Hold</h6>
+                           <h4 class="mb-0 font-size-22 fw-bold">{{ stats.on_hold|default(0) }}</h4>
+                        </div>
+                        <div class="avatar-md">
+                           <div class="avatar-title rounded bg-soft-secondary">
+                              <i class="bx bx-stopwatch font-size-24 text-secondary" style="color: #2e2e2e !important;"></i>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <!-- end row -->
+          
+         <div class="row">
+            <div class="col-12">
+               <div class="card">
+                  <div class="card-header d-flex align-items-center">
+                     <h4 class="card-title mb-0">My Projects</h4>
+                     <div class="ms-auto d-flex gap-2">
+                        <div class="d-flex flex-wrap gap-2">
+                           <!-- Search Bar -->
+                           <div style="width: 200px;">
+                              <input type="text" id="searchDeptProjects" class="form-control" placeholder="Type a keyword...">
+                           </div>
+                           <div class="input-group" style="width: 320px;">
+                              <span class="input-group-text">
+                              <i class="mdi mdi-calendar-range text-muted"></i>
+                              </span>
+                              <input type="text" id="datepicker-range" class="form-control" placeholder="Select Date Range">
+                           </div>
+                           <div style="width: 180px;">
+                              <select class="form-select" id="statusFilter">
+                                 <option value="all">Status: All</option>
+                                 <option value="Ongoing">Ongoing</option>
+                                 <option value="On Hold">On Hold</option>
+                                 <option value="Completed">Completed</option>
+                              </select>
+                           </div>
+                           <div style="width: 180px;">
+                              <select class="form-select" id="priorityFilter">
+                                 <option value="all">Priority: All</option>
+                                 <option value="Low">Low</option>
+                                 <option value="Medium">Medium</option>
+                                 <option value="High">High</option>
+                              </select>
+                           </div>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-rounded" data-bs-toggle="modal" data-bs-target=".create-task">
+                        <i class="mdi mdi-plus me-1"></i> Create Project
+                        </button>
+                     </div>
+                  </div>
+                  <div class="card-body">
+                     <div id="table-gridjs"></div>
+                     <!-- ORIGINAL TABLE (hidden but used by Grid.js) -->
+                     <table id="projectsTable" class="table d-none">
+                        <thead>
+                           <tr>
+                              <th style="width: 190px;">Project Name</th>
+                              <th>Priority</th>
+                              <th>Start Date</th>
+                              <th>Deadline</th>
+                              <th>Status</th>
+                              <th>Progress</th>
+                              <th>Project Manager</th>
+                              <th>Client</th>
+                              <th>Last Tasks</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {% if projects_data %}
+                           {% for item in projects_data %}
+                           <tr 
+                              data-status="{% if item.project.project_status == 'Pending' or not item.project.project_status %}Ongoing{% elif item.project.project_status == 'Cancelled' %}Ongoing{% else %}{{ item.project.project_status }}{% endif %}"
+                              data-priority="{{ item.priority or 'High' }}"
+                              data-start-date="{{ item.deadline.start_date.strftime('%Y-%m-%d') if item.deadline and item.deadline.start_date else '' }}"
+                              data-end-date="{{ item.deadline.end_date.strftime('%Y-%m-%d') if item.deadline and item.deadline.end_date else '' }}"
+                              >
+                              <td>
+                                 <a href="{{ url_for('project.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
+                                 {{ item.project.project_name or 'Unnamed Project' }}
+                                 </a>
+                              </td>
+                              <td>
+                                 {% if item.priority == 'High' %}
+                                 <div class="badge badge-soft-danger font-size-12">High</div>
+                                 {% elif item.priority == 'Medium' %}
+                                 <div class="badge badge-soft-warning font-size-12">Medium</div>
+                                 {% elif item.priority == 'Low' %}
+                                 <div class="badge badge-soft-info font-size-12">Low</div>
+                                 {% else %}
+                                 <div class="badge badge-soft-primary font-size-12">{{ item.priority or 'High' }}</div>
+                                 {% endif %}
+                              </td>
+                              <td style="width: 190px;">
+                                 <div class="d-flex align-items-center">
+                                    {% if item.deadline and item.deadline.start_date %}
+                                    {{ item.deadline.start_date.strftime('%m / %d / %Y') }}
+                                    {% else %}
+                                    N/A
+                                    {% endif %}
+                                 </div>
+                              </td>
+                              <td style="width: 190px;">
+                                 <div class="d-flex align-items-center deadline-end {% if item.deadline and item.deadline.end_date and item.deadline.end_date.date() < today %}text-danger{% endif %}">
+                                    {% if item.deadline and item.deadline.end_date %}
+                                    {{ item.deadline.end_date.strftime('%m / %d / %Y') }}
+                                    {% else %}
+                                    N/A
+                                    {% endif %}
+                                 </div>
+                              </td>
+                              <td>
+                                 {% set display_status = 'Ongoing' if (item.project.project_status == 'Pending' or not item.project.project_status or item.project.project_status == 'Cancelled') else item.project.project_status %}
+                                 {% if display_status == 'Ongoing' %}
+                                 <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                 {% elif display_status == 'Completed' %}
+                                 <div class="badge badge-soft-success font-size-12">Completed</div>
+                                 {% elif display_status == 'On Hold' %}
+                                 <div class="badge badge-soft-secondary font-size-12">On Hold</div>
+                                 {% else %}
+                                 <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                 {% endif %}
+                              </td>
+                              <td>
+                                 {% set pct = item.progress_pct|default(0) %}
+                                 <div class="progress">
+                                    <div class="progress-bar progress-bar-striped progress-bar-dynamic" role="progressbar" data-width-pct="{{ pct }}" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100">{{ pct }}%</div>
+                                 </div>
+                              </td>
+                              <td>
+                                 {{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}
+                              </td>
+                              <td>
+                                 {{ item.project.client_name or 'N/A' }}
+                              </td>
+                              <td>
+                                 {% if item.latest_task_title %}{% if item.latest_task_title|length > 40 %}<span title="{{ item.latest_task_title }}">{{ item.latest_task_title[:37] }}...</span>{% else %}{{ item.latest_task_title }}{% endif %}{% else %}<span class="text-muted" title="This project has no tasks yet">No tasks yet</span>{% endif %}
+                              </td>
+                           </tr>
+                           {% endfor %}
+                           {% else %}
+                           <tr>
+                              <td colspan="9" class="text-center text-muted">No projects found. Create your first project!</td>
+                           </tr>
+                           {% endif %}
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <!-- end row -->
+
+      </div>
+      <!-- container-fluid -->
+   </div>
+   <!-- End Page-content -->
+</div>
+<!-- end main content-->
+
+<div class="modal fade create-task" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
+   <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title" id="myExtraLargeModalLabel">Create Project</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <form action="{{ url_for('project.create_project') }}" method="POST" id="createProjectForm">
+               <div class="row">
+                  <div class="col-md-6">
+                     <div class="mb-3">
+                        <label class="form-label" for="project_name">Project Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" placeholder="Enter Project Name" id="project_name" name="project_name" required>
+                     </div>
+                  </div>
+                  <div class="col-md-6">
+                     <div class="mb-3">
+                        <label class="form-label" for="priority">Priority Level <span class="text-danger">*</span></label>
+                        <select class="form-select" id="priority" name="priority" required>
+                           <option value="High" selected>High</option>
+                           <option value="Medium">Medium</option>
+                           <option value="Low">Low</option>
+                        </select>
+                     </div>
+                  </div>
+                  <div class="col-md-6">
+                     <div class="mb-3">
+                        <label class="form-label" for="client_name">Client Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" placeholder="Enter Client Name" id="client_name" name="client_name" required>
+                     </div>
+                  </div>
+                  <div class="col-md-6">
+                     <div class="mb-3">
+                        <label class="form-label" for="project_members">Add Members <span class="text-danger">*</span></label>
+                        <!-- Hidden inputs container for selected member IDs -->
+                        <div id="memberIdsContainerProject"></div>
+                        <!-- Input / Selected chips -->
+                        <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input-project"
+                           id="ownerInputProject"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                           <span class="text-muted small">Select member(s)</span>
+                        </div>
+                        <!-- Dropdown -->
+                        <div class="dropdown-menu p-3 shadow owner-dropdown-project" style="width: 100%;">
+                           <input type="text"
+                              class="form-control mb-2"
+                              id="ownerSearchProject"
+                              placeholder="Search member">
+                           <small class="text-muted">Contacts</small>
+                           <div class="list-group mt-2 owner-list-project" style="max-height: 200px; overflow-y: auto;"></div>
+                           <div class="d-flex justify-content-between align-items-center mt-3">
+                              <a href="#" id="clearOwnersProject" class="text-muted small">Clear</a>
+                              <button type="button" class="btn btn-sm btn-primary" id="confirmOwnersProject">
+                              Confirm
+                              </button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="col-md-6" style="display: none;">
+                     <div class="mb-3">
+                        <label class="form-label" for="project_manager">Project Manager <span class="text-danger">*</span></label>
+                        <select class="form-select" id="project_manager" name="project_manager" required>
+                           <option value="">Select Project Manager</option>
+                           {% for user in users %}
+                           <option value="{{ user.member_id }}" {% if current_user.member_id == user.member_id %}selected{% endif %}>{{ user.name or user.username }}</option>
+                           {% endfor %}
+                        </select>
+                     </div>
+                  </div>
+                  <div class="col-md-6">
+                     <div class="mb-3">
+                        <label class="form-label" for="start_date">Start Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" required>
+                     </div>
+                  </div>
+                  <div class="col-md-6">
+                     <div class="mb-3">
+                        <label class="form-label" for="end_date">End Date (Deadline) <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" required>
+                     </div>
+                  </div>
+                  <div class="col-md-12">
+                     <div class="mb-3">
+                        <label for="topicDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="topicDescription" name="topicDescription" rows="3" placeholder="Enter description"></textarea>
+                     </div>
+                  </div>
+               </div>
+               <div class="row mt-2">
+                  <div class="col-12 text-end">
+                     <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal"><i class="bx bx-x me-1 align-middle"></i> Cancel</button>
+                     <button type="submit" class="btn btn-success" id="btn-save-project">
+                     <span id="createProjectSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                     <span id="createProjectBtnText"><i class="bx bx-check me-1 align-middle"></i> Create Project</span>
+                     </button>                                    
+                  </div>
+               </div>
+            </form>
+         </div>
+      </div>
+      <!-- /.modal-content -->
+   </div>
+   <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
 
 <script type="application/json" id="current-user-id">{% if current_user %}{{ current_user.member_id|tojson }}{% else %}null{% endif %}</script>
 <script type="application/json" id="users-data">{{ users_json|tojson }}</script>
 <script src="{{ url_for('project.static', filename='projects.init.js') }}"></script>
-
-   {% endblock content %}
+{% endblock content %}
