@@ -77,3 +77,19 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
 });
+
+// Create Project form (projects): add spinner and text
+document.addEventListener("DOMContentLoaded", function () {
+    const createProjectForm = document.getElementById("createTaskForm");
+    if (!createProjectForm) return;
+    createProjectForm.addEventListener("submit", function (e) {
+      const btn = document.getElementById("btn-save-event");
+      const spinner = document.getElementById("createTaskSpinner");
+      const btnText = document.getElementById("createTaskBtnText");
+      if (btn && spinner && btnText) {
+        btn.disabled = true;
+        spinner.classList.remove("d-none");
+        btnText.innerHTML = " Confirming...";
+      }
+    });
+  });

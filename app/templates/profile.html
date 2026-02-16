@@ -552,7 +552,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <form method="POST" action="{{ url_for('users.profile') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ url_for('users.profile') }}" enctype="multipart/form-data" id="editProfileForm">
                 {{ form.hidden_tag() }}
                 <div class="modal-body">
                     <div class="mb-3">
@@ -591,11 +591,30 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    {{ form.submit(class="btn btn-warning") }}
+                    <button type="submit" class="btn btn-warning" id="profileSubmitBtn">
+                        <span id="profileSubmitSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span id="profileSubmitText">Update Details</span>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    const form = document.querySelector("#editProfileForm");
+    if (!form) return;
+    form.addEventListener("submit", function() {
+        const btn = form.querySelector("#profileSubmitBtn");
+        const spinner = form.querySelector("#profileSubmitSpinner");
+        const text = form.querySelector("#profileSubmitText");
+        if (btn && spinner && text) {
+            btn.disabled = true;
+            spinner.classList.remove("d-none");
+            text.textContent = " Saving...";
+        }
+    });
+});
+    </script>
     {% endblock content %}

@@ -187,3 +187,19 @@ Purpose: Edit Members modal – show all users, prefill selected members, submit
     renderSelectedEdit();
   });
 })();
+
+// Edit Project form (project_details): add spinner and text
+document.addEventListener("DOMContentLoaded", function () {
+  const editProjectForm = document.getElementById("editProjectForm");
+  if (!editProjectForm) return;
+  editProjectForm.addEventListener("submit", function (e) {
+    const btn = document.getElementById("btn-edit-project");
+    const spinner = document.getElementById("editProjectSpinner");
+    const btnText = document.getElementById("editProjectBtnText");
+    if (btn && spinner && btnText) {
+      btn.disabled = true;
+      spinner.classList.remove("d-none");
+      btnText.innerHTML = " Saving...";
+    }
+  });
+});
