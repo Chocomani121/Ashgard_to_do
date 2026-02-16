@@ -1,0 +1,18 @@
+#taskNoteModal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 9999 !important; /* Ensures it stays above the sidebar */
+    width: 100% !important;
+    height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    background-color: rgba(0,0,0,0.5) !important; /* Manual backdrop if yours is broken */
+}
+
+#taskNoteModal .modal-dialog {
+    margin: 1.75rem auto !important;
+    display: flex !important;
+    align-items: center !important;
+    min-height: calc(100% - 3.5rem) !important;
+}

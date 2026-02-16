@@ -184,7 +184,7 @@
                                                                         <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #8B1A1A; display: inline-block;" title="High Priority"></span>
                                                                     </div>
                                                                 </td>
-                                                                    <td class="fw-semibold"><a href="{{ url_for('main.project_details') }}" class="text-dark">Osint</a>
+                                                                    <td class="fw-semibold"><a href="{{ url_for('project.project_details') }}" class="text-dark">Osint</a>
                                                                     </td>
                                                                     <td style="width: 190px;">
                                                                         <div class="d-flex align-items-center"> 11 / 12 / 2024 
@@ -463,7 +463,7 @@
                                                                                 <span class="rounded-circle" style="height: 12px; width: 12px; background-color: #8B1A1A; display: inline-block;" title="High Priority"></span>
                                                                             </div>
                                                                         </td>
-                                                                        <td class="fw-semibold"><a href="{{ url_for('main.task_details') }}" class="text-dark">API integration</a>
+                                                                        <td class="fw-semibold"><a href="{{ url_for('project.task_details') }}" class="text-dark">API integration</a>
                                                                         <td style="width: 190px;">
                                                                             <div class="d-flex align-items-center">
                                                                                 <img class="rounded-circle avatar-sm" src="assets/images/users/avatar-1.jpg" alt="">
@@ -545,10 +545,10 @@
             </div>
             <!-- Edit Modal -->
 
-            <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content"> <div class="modal-header">
-                <h5 class="modal-title" id="editProfileLabel">Edit Profile</h5>
+         <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content"> <div class="modal-header">
+                    <h5 class="modal-title" id="editProfileLabel">Edit Profile</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
@@ -569,7 +569,20 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Department</label>
-                        {{ form.department(class="form-control", readonly=True) }}
+                        <div style="width: 100%;">
+                            <select class="form-select" id="departmentSelect" name="department">
+                                {% if not dept_name or dept_name == "No Department Assigned" %}
+                                    <option value="" selected>No Department Assigned</option>
+                                {% endif %}
+                                {% for dept in departments %}
+                                    <option value="{{ dept.department_id }}" {{ 'selected' if dept.department_id == current_user.department_id else '' }}>
+                                        {{ dept.department_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <small class="text-muted">Department is managed by Administration.</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Profile Picture</label>
@@ -578,10 +591,11 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    {{ form.submit(class="btn btn-primary") }}
+                    {{ form.submit(class="btn btn-warning") }}
                 </div>
             </form>
         </div>
     </div>
 </div>
+
     {% endblock content %}

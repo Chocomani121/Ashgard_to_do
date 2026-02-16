@@ -155,7 +155,7 @@
                                                                 data-end-date="{{ item.deadline.end_date.strftime('%Y-%m-%d') if item.deadline and item.deadline.end_date else '' }}"
                                                             >
                                                                 <td>
-                                                                    <a href="{{ url_for('main.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
+                                                                    <a href="{{ url_for('project.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
                                                                         {{ item.project.project_name or 'Unnamed Project' }}
                                                                     </a>
                                                                 </td>
@@ -180,7 +180,7 @@
                                                                     </div>
                                                                 </td>
                                                                 <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center">
+                                                                    <div class="d-flex align-items-center deadline-end {% if item.deadline and item.deadline.end_date and item.deadline.end_date.date() < today %}text-danger{% endif %}">
                                                                         {% if item.deadline and item.deadline.end_date %}
                                                                         {{ item.deadline.end_date.strftime('%m / %d / %Y') }}
                                                                         {% else %}
@@ -266,7 +266,7 @@
                                                             {% for item in projects_data %}
                                                             <tr>
                                                                 <td>
-                                                                    <a href="{{ url_for('main.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
+                                                                    <a href="{{ url_for('project.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
                                                                         {{ item.project.project_name or 'Unnamed Project' }}
                                                                     </a>
                                                                 </td>
@@ -280,7 +280,7 @@
                                                                     </div>
                                                                 </td>
                                                                 <td style="width: 190px;">
-                                                                    <div class="d-flex align-items-center">
+                                                                    <div class="d-flex align-items-center deadline-end {% if item.deadline and item.deadline.end_date and item.deadline.end_date.date() < today %}text-danger{% endif %}">
                                                                         {% if item.deadline and item.deadline.end_date %}
                                                                         {{ item.deadline.end_date.strftime('%m / %d / %Y') }}
                                                                         {% else %}
@@ -354,7 +354,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form action="{{ url_for('main.create_project') }}" method="POST" id="createProjectForm">
+                            <form action="{{ url_for('project.create_project') }}" method="POST" id="createProjectForm">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
@@ -456,12 +456,6 @@
 
 <script type="application/json" id="current-user-id">{% if current_user %}{{ current_user.member_id|tojson }}{% else %}null{% endif %}</script>
 <script type="application/json" id="users-data">{{ users_json|tojson }}</script>
-<script src="{{ url_for('static', filename='assets/js/pages/projects.init.js') }}"></script>
-<script>
-document.querySelectorAll('.progress-bar-dynamic').forEach(function (el) {
-  var pct = el.getAttribute('data-width-pct');
-  if (pct != null) el.style.width = pct + '%';
-});
-</script>
+<script src="{{ url_for('project.static', filename='projects.init.js') }}"></script>
 
    {% endblock content %}

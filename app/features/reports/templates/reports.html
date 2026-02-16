@@ -25,7 +25,7 @@
               </div> -->
               {% with messages = get_flashed_messages(with_categories=true) %}
               {% if messages %}
-                  <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
+                <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
               {% endif %}
               {% endwith %}
             <div class="row">
@@ -177,14 +177,14 @@
                                                                     </td>
                                                                 </tr>
                                                             </table>
-                                                            <div id="reportDetailActions" style="display: none;">
+                                                            <div id="reportDetailActions" style="display: none;" class="d-flex py-2 gap-2 justify-content-center">
                                                                 <div id="reportDetailActionsAuthor" class="d-flex py-2 gap-2 justify-content-center" style="display: none;">
                                                                     <button type="button" 
                                                                             id="deleteReportBtn"
                                                                             class="btn btn-outline-danger btn-sm px-4" 
                                                                             onclick="confirmReportDelete()">
-                                                                        Delete
-                                                                    </button>
+                                                                        Delete        
+                                                                    </button>  
                                                                     <button type="button" 
                                                                             class="btn btn-outline-warning btn-sm px-4" 
                                                                             onclick="openEditModal()">
@@ -379,6 +379,7 @@
                                                                         <th class="text-center fw-bold py-2">Name</th>
                                                                         <th class="text-center fw-bold py-2">Start</th>
                                                                         <th class="text-center fw-bold py-2">End</th>
+                                                                        <th class="text-center fw-bold py-2">Status</th>
                                                                         <th class="text-center fw-bold py-2">Reviewer</th> 
                                                                     </tr>
                                                                 </thead>
@@ -391,10 +392,17 @@
                                                                         data-start="{{ wp[0] if wp|length > 0 else '' }}" 
                                                                         data-end="{{ wp[1] if wp|length > 1 else '' }}" 
                                                                         role="button" style="cursor: pointer;">
-                                                                        <td class="py-2">{{ report.author.name or report.author.username }}</td>
-                                                                        <td class="py-2 text-center">{{ wp[0] if wp|length > 0 else wn }}</td>
-                                                                        <td class="py-2 text-center">{{ wp[1] if wp|length > 1 else '' }}</td>
-                                                                        <td class="py-2">{{ report.reviewer_user.name or report.reviewer_user.username if report.reviewer_user else '—' }}</td>
+                                                                        <td>{{ report.author.name or report.author.username }}</td>
+                                                                        <td>{{ wp[0] if wp|length > 0 else wn }}</td>
+                                                                        <td>{{ wp[1] if wp|length > 1 else '' }}</td>
+                                                                        <td>
+                                                                            {% if report.is_checked %}
+                                                                              <span class="badge bg-secondary bg-opacity-75 px-2 py-1">Reviewed</span>
+                                                                            {% else %}
+                                                                              <span class="badge bg-danger bg-opacity-75 px-2 py-1">Pending</span>
+                                                                            {% endif %}
+                                                                          </td>
+                                                                        <td>{{ report.reviewer_user.name or report.reviewer_user.username if report.reviewer_user else '—' }}</td>
                                                                     </tr>
                                                                     {% endfor %}
                                                                 </tbody>
@@ -534,7 +542,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <form action="{{ url_for('main.create_report') }}" method="POST" id="reportForm">
+            <form action="{{ url_for('reports.create_report') }}" method="POST" id="reportForm">
                 <div class="modal-body pt-0">
                     <div class="row g-3">
                         <div class="col-lg-7">
@@ -659,7 +667,7 @@
 <span id="current-user-member-id" class="d-none">{% if current_user %}{{ current_user.member_id }}{% endif %}</span>
 <script type="application/json" id="users-data">{{ users_json|tojson }}</script>
 <script type="application/json" id="reports-data">{{ reports_json|tojson }}</script>
-<script src="{{ url_for('static', filename='assets/js/pages/report.js') }}"></script>
+<script src="{{ url_for('reports.static', filename='report.js') }}"></script>
 
 
 {% endblock content %}

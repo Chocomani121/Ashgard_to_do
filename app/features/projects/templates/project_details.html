@@ -6,7 +6,7 @@
                     <div class="container-fluid">
                         <nav aria-label="breadcrumb" class="mb-3">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ url_for('main.projects') }}">Projects</a></li>
+                                <li class="breadcrumb-item"><a href="{{ url_for('project.projects') }}">Projects</a></li>
                                 <li class="breadcrumb-item active" aria-current="page">Project Details</li>
                             </ol>
                         </nav>
@@ -23,7 +23,7 @@
 
                             <!-- Card Header with Button -->
                             <div class="card-header d-flex align-items-center justify-content-between">
-                                <h4 class="card-title mb-0">{{ project.project_name or 'Project Details' }}</h4>
+                                <h4 class="card-title mb-0"><span class="text-muted">Project Name:</span><span class="ms-4">{{ project.project_name or 'Project Details' }}</span></h4>
                                 {% if is_project_manager %}
                                 <div class="dropdown">
                                     <button class="btn btn-light" data-bs-toggle="dropdown">
@@ -91,51 +91,10 @@
 
                                 </div>
 
-                                <div class="row mt-4 d-flex flex-column-reverse flex-md-row">
-                                    <br>
-                                    <br>
-                                    <br>
-                                    <!-- LEFT: STATUS BREAKDOWN / CHART -->
-                                    <div class="col-xl-6 col-md-5">
-
-                                        <div class="text-center">
-                                            <!-- DONUT CHART (series from task counts: completed, ongoing) -->
-                                            <div
-                                                id="saleing-categories"
-                                                class="apex-charts mb-3"
-                                                data-colors='["#28b765", "#f4c238c2"]'
-                                                data-task-completed="{{ task_completed_count|default(0) }}"
-                                                data-task-ongoing="{{ task_ongoing_count|default(0) }}"
-                                                data-progress-pct="{{ progress_pct|default(0) }}"
-                                                dir="ltr">
-                                            </div>
-
-                                            <!-- LEGEND (percentages from task counts) -->
-                                            <div class="row pt-1">
-                                                <div class="col-6">
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="mdi mdi-circle font-size-10 text-success"></i>
-                                                        <p class="mb-0 ms-2">Completed</p>
-                                                        <span class="ms-2 fw-bold">{{ task_completed_pct|default(0) }}%</span>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-6">
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="mdi mdi-circle font-size-10 text-warning"></i>
-                                                        <p class="mb-0 ms-2">Ongoing</p>
-                                                        <span class="ms-2 fw-bold">{{ task_ongoing_pct|default(0) }}%</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                          
-                                        </div>
-                                    </div>
-
-                                    <!-- RIGHT: APPROVED / REJECTED -->
-                                     <div class="col-xl-6 col-md-5 d-flex align-items-center justify-content-center">
-                                        <div class="d-flex flex-row flex-md-column gap-5 text-start">
+                                <div class="row my-4 d-flex flex-column align-items-center text-center">
+                                    <!-- APPROVED / REJECTED -->
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <div class="d-flex gap-5 text-center">
 
                                         <div class="mb-2 text-success ">
                                             <span class="text-uppercase fw-semibold d-block fs-5">
@@ -158,7 +117,43 @@
                                         </div>
                                     </div>
 
-                                     
+                                    <!-- STATUS BREAKDOWN / CHART -->
+                                    <div class="col-xl-6 col-md-5">
+
+                                        <div class="text-center">
+                                            <!-- DONUT CHART (series from task counts: completed, ongoing) -->
+                                            <div
+                                                id="saleing-categories"
+                                                class="apex-charts mb-3"
+                                                data-colors='["#28b765", "#f4c238c2"]'
+                                                data-task-completed="{{ task_completed_count|default(0) }}"
+                                                data-task-ongoing="{{ task_ongoing_count|default(0) }}"
+                                                data-progress-pct="{{ progress_pct|default(0) }}"
+                                                dir="ltr">
+                                            </div>
+
+                                            <!-- LEGEND (percentages from task counts) -->
+                                            <div class="d-flex pt-1 align-items-center justify-content-center gap-4">
+                                                <div>
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="mdi mdi-circle font-size-10 text-success"></i>
+                                                        <p class="mb-0 ms-2">Completed</p>
+                                                        <span class="ms-2 fw-bold">{{ task_completed_pct|default(0) }}%</span>
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="mdi mdi-circle font-size-10 text-warning"></i>
+                                                        <p class="mb-0 ms-2">Ongoing</p>
+                                                        <span class="ms-2 fw-bold">{{ task_ongoing_pct|default(0) }}%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                          
+                                        </div>
+                                    </div>                                 
                                 </div>
                             </div>
                           </div>
@@ -256,35 +251,36 @@
                         </div>
                                 <div class="container-fluid">
                                     <div class="card">
-                                        <div class="card-header d-flex align-items-center justify-content-between">
+                                        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                                             <h4 class="card-title mb-0">Tasks</h4>
-                                            {% if is_project_manager %}
-                                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target=".create-task">
-                                                <i class="mdi mdi-plus me-1"></i> Create Task
-                                            </button>
-                                            {% endif %}
+                                            <div class="d-flex align-items-center gap-2">
+                                                <input type="text" class="form-control rounded-pill border" placeholder="Type a keyword..." id="taskSearchInput" style="width: 220px; min-width: 180px;">
+                                                {% if is_project_manager %}
+                                                <button type="button" class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target=".create-task">
+                                                    <i class="mdi mdi-plus me-1"></i> Create Task
+                                                </button>
+                                                {% endif %}
+                                            </div>
                                         </div>
 
                                         <div class="card-body">
-                                            <!-- Search Input -->
-                                            <div class="mb-3">
-                                                <input type="text" class="form-control" placeholder="Type a keyword..." id="taskSearchInput" style="width: 30%;">
-                                            </div>
+                                            <div id="project-tasks-table-gridjs" class="table-responsive"></div>
 
-                                            <table id="projectsTable" class="table table-hover table-nowrap align-middle mb-0" style="table-layout: fixed; width: 100%;">
+                                            <!-- Hidden table: data source for GridJS (responsive table rendered above) -->
+                                            <table id="projectTasksTable" class="table d-none">
                                                 <thead>
                                                     <tr>
-                                                        <th style="width: 20%;">Task Name <i class="mdi mdi-sort ms-1"></i></th>
-                                                        <th style="width: 20%;">Owner <i class="mdi mdi-sort ms-1"></i></th>
-                                                        <th style="width: 15%;">Status <i class="mdi mdi-sort ms-1"></i></th>
-                                                        <th style="width: 15%;">Sub Task <i class="mdi mdi-sort ms-1"></i></th>
-                                                        <th style="width: 30%;">Actions</th>
+                                                        <th>Task Name</th>
+                                                        <th>Owner</th>
+                                                        <th>Status</th>
+                                                        <th>Sub Task</th>
+                                                        <th>Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                         {% for task_info in tasks %}
                                                         <tr data-task-id="{{ task_info.task.task_id }}" data-task-status="{{ task_info.status }}">
-                                                            <td class="fw-semibold"><a href="{{ url_for('main.task_details', id=task_info.task.task_id) }}" class="text-dark">{{ task_info.task.task_name }}</a></td>
+                                                            <td class="fw-semibold"><a href="{{ url_for('project.task_details', id=task_info.task.task_id) }}" class="text-dark">{{ task_info.task.task_name }}</a></td>
                                                             <td style="width: 190px;">
                                                                 {% if task_info.assignees %}
                                                                 <div class="d-flex flex-wrap align-items-center gap-1">
@@ -336,38 +332,6 @@
                                                         {% endfor %}
                                                     </tbody>
                                             </table>
-                                            
-                                            <!-- Pagination -->
-                                            <div class="d-flex justify-content-between align-items-center mt-3">
-                                                <div>
-                                                    <span class="text-muted">
-                                                        {% if tasks %}
-                                                            Showing 1 to {{ tasks|length }} of {{ tasks|length }} results
-                                                        {% else %}
-                                                            Showing 0 to 0 of 0 results
-                                                        {% endif %}
-                                                    </span>
-                                                </div>
-                                                <div>
-                                                    <nav aria-label="Page navigation">
-                                                        <ul class="pagination pagination-rounded mb-0">
-                                                            <li class="page-item disabled">
-                                                                <a class="page-link" href="#" aria-label="Previous">
-                                                                    <span aria-hidden="true">Prev</span>
-                                                                </a>
-                                                            </li>
-                                                            <li class="page-item active">
-                                                                <a class="page-link" href="#">1</a>
-                                                            </li>
-                                                            <li class="page-item disabled">
-                                                                <a class="page-link" href="#" aria-label="Next">
-                                                                    <span aria-hidden="true">Next</span>
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </nav>
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -411,7 +375,7 @@
         
   {% if is_project_manager %}
   <!--  Create Task modal -->
-            <form method="POST" action="{{ url_for('main.create_task', id=project.project_id) }}" id="createTaskForm">
+            <form method="POST" action="{{ url_for('project.create_task', id=project.project_id) }}" id="createTaskForm">
                 <div id="createTaskOwnerIdsContainer"></div>
                 <div class="modal fade create-task" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-md modal-dialog-centered">
@@ -491,7 +455,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <form method="POST" action="{{ url_for('main.update_project', id=project.project_id) }}" id="editProjectForm">
+                            <form method="POST" action="{{ url_for('project.update_project', id=project.project_id) }}" id="editProjectForm">
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="form-label">Project Name</label>
@@ -545,7 +509,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <form method="POST" action="{{ url_for('main.update_project_manager', id=project.project_id) }}">
+                            <form method="POST" action="{{ url_for('project.update_project_manager', id=project.project_id) }}">
                                 <div class="mb-3">
                                     <label class="form-label">Project Manager</label>
                                     <select class="form-select" name="project_manager" required>
@@ -574,7 +538,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body py-4" style="min-height: 320px;">
-                            <form id="editProjectMembersForm" method="POST" action="{{ url_for('main.update_project_members', id=project.project_id) }}">
+                            <form id="editProjectMembersForm" method="POST" action="{{ url_for('project.update_project_members', id=project.project_id) }}">
                                 <div class="mb-4">
                                     <label class="form-label">Members <span class="text-danger">*</span></label>
                                     <div id="editMemberIdsContainer"></div>
@@ -616,7 +580,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <form method="POST" action="{{ url_for('main.update_project_description', id=project.project_id) }}">
+                            <form method="POST" action="{{ url_for('project.update_project_description', id=project.project_id) }}">
                                 <div class="mb-3">
                                     <label class="form-label">Description</label>
                                     <textarea class="form-control" name="project_desc" rows="6" placeholder="Enter project description">{{ project.project_desc or '' }}</textarea>
@@ -635,87 +599,6 @@
 <script type="application/json" id="project-assigned-members-for-task">{{ task_assignable_members|tojson }}</script>
 <script type="application/json" id="edit-project-users-data">{{ users_json|tojson }}</script>
 <script type="application/json" id="edit-project-initial-members">{{ edit_initial_members_json|tojson }}</script>
-<script src="{{ url_for('static', filename='assets/js/pages/project-details-edit.init.js') }}"></script>
-
-<script>
-// Mark Complete Button Handler for Project Details Page
-document.addEventListener('DOMContentLoaded', function() {
-    var markCompleteButtons = document.querySelectorAll('.mark-complete-btn');
-    
-    markCompleteButtons.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var taskId = btn.getAttribute('data-task-id');
-            if (!taskId) return;
-            
-            var row = btn.closest('tr');
-            var originalBtnHtml = btn.innerHTML;
-            
-            // Disable button during request
-            btn.disabled = true;
-            btn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Processing...';
-            
-            // Send AJAX request to mark task as complete
-            fetch(`/task/${taskId}/mark_complete`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update status badge
-                    var statusBadge = row.querySelector('.task-status-badge');
-                    if (statusBadge) {
-                        statusBadge.textContent = 'Completed';
-                        statusBadge.className = 'badge badge-soft-success font-size-12 task-status-badge';
-                    }
-                    
-                    // Update row data attribute
-                    row.setAttribute('data-task-status', 'Completed');
-                    
-                    // Replace button with completed text
-                    var actionsCell = btn.parentElement;
-                    actionsCell.innerHTML = '<span class="text-muted small">Task Completed</span>';
-                    
-                    // Show success message
-                    if (typeof Swal !== 'undefined') {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: 'Task marked as completed',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                    }
-                    
-                    // Reload page after a short delay to update progress charts and counts
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1500);
-                } else {
-                    throw new Error(data.error || 'Failed to mark task as complete');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                btn.disabled = false;
-                btn.innerHTML = originalBtnHtml;
-                
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: error.message || 'Failed to mark task as complete'
-                    });
-                } else {
-                    alert('Error: ' + error.message);
-                }
-            });
-        });
-    });
-});
-</script>
+<script src="{{ url_for('project.static', filename='project-details-edit.init.js') }}"></script>
+<script src="{{ url_for('project.static', filename='task.js') }}"></script>
    {% endblock content %}

@@ -7,301 +7,213 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
         <meta content="Themesdesign" name="author" />
-         <!-- Custom CSS -->
+        
         <link href="{{ url_for('static', filename='assets/custom/style.css') }}" id="app-style" rel="stylesheet" type="text/css" />
-        <!-- Sweet Alert-->
         <link href="{{ url_for('static', filename='assets/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
-        <!-- App favicon -->
         <link rel="shortcut icon" href="{{ url_for('static', filename='assets/images/ashgard_favicon.png') }}">
-        <!-- plugin css -->
         <link href="{{ url_for('static', filename='assets/libs/jsvectormap/css/jsvectormap.min.css') }}" rel="stylesheet" type="text/css" />
-        <!-- gridjs css -->
         <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/gridjs/theme/mermaid.min.css') }}">
-        <!-- Bootstrap Css -->
         <link href="{{ url_for('static', filename='assets/css/bootstrap.min.css') }}" id="bootstrap-style" rel="stylesheet" type="text/css" />
-        <!-- Icons Css -->
         <link href="{{ url_for('static', filename='assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
-        <!-- App Css-->
         <link href="{{ url_for('static', filename='assets/css/app.css') }}" id="app-style" rel="stylesheet" type="text/css" />
-        <!-- Sweet Alert-->
         <link href="{{ url_for('static', filename='assets/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
-        <!-- choices css -->
         <link href="{{ url_for('static', filename='assets/libs/choices.js/public/assets/styles/choices.min.css') }}" rel="stylesheet" type="text/css" />
         
-        <!-- alertifyjs Css -->
         <link href="{{ url_for('static', filename='assets/libs/alertifyjs/build/css/alertify.min.css') }}" rel="stylesheet" type="text/css" />
 
-        <!-- alertifyjs default themes  Css -->
-        <link href="assets/libs/alertifyjs/build/css/themes/default.min.css" rel="stylesheet" type="text/css" />
+        <link href="{{ url_for('static', filename='assets/libs/alertifyjs/build/css/themes/default.min.css') }}" rel="stylesheet" type="text/css" />
         
+        <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/@simonwep/pickr/themes/classic.min.css') }}"/> 
+        <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/@simonwep/pickr/themes/monolith.min.css') }}"/> 
+        <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/@simonwep/pickr/themes/nano.min.css') }}"/> 
 
-        <!-- color picker css -->
-        <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/@simonwep/pickr/themes/classic.min.css') }}"/> <!-- 'classic' theme -->
-        <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/@simonwep/pickr/themes/monolith.min.css') }}"/> <!-- 'monolith' theme -->
-        <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/@simonwep/pickr/themes/nano.min.css') }}"/> <!-- 'nano' theme -->
-
-        <!-- datepicker css -->
         <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/flatpickr/flatpickr.min.css') }}">
-           <!-- quill css -->
         <link href="{{ url_for('static', filename='assets/libs/quill/quill.core.css') }}" rel="stylesheet" type="text/css" />
         <link href="{{ url_for('static', filename='assets/libs/quill/quill.bubble.css') }}" rel="stylesheet" type="text/css" />
         <link href="{{ url_for('static', filename='assets/libs/quill/quill.snow.css') }}" rel="stylesheet" type="text/css" />
 
-        <!-- swiper css -->
         <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/swiper/swiper-bundle.min.css')}}">
 
-        <!-- nouisliderribute css -->
         <link rel="stylesheet" href="{{ url_for('static', filename='assets/libs/nouislider/nouislider.min.css')}}">
-        <!-- choices css -->
         <link href="{{ url_for('static', filename='assets/libs/choices.js/public/assets/styles/choices.min.css') }}" rel="stylesheet" type="text/css" />
         
-        <!-- alertifyjs Css -->
         <link href="{{ url_for('static', filename='assets/libs/alertifyjs/build/css/alertify.min.css') }}" rel="stylesheet" type="text/css" />
 
-        
-
-    </head>
+        <link rel="stylesheet" href="{{ url_for('reports.static', filename='report.css') }}">
     </head>
 
     <body>
-    <!-- ========== Left Sidebar Start ========== -->
-            <div class="vertical-menu">
+        <div class="vertical-menu">
 
-                <!-- LOGO -->
-                <div class="navbar-brand-box">
-                    <a href="{{ url_for('main.projects') }}" class="logo">
-                        <span class="logo-sm">
-                            <img src="../static/assets/images/ashgard-logo.png" alt="" height="26">
-                        </span>
-                        <span class="logo-lg">
-                            <img src="../static/assets/images/Ashgard-banner.png" alt="" height="28" width="200">
-                        </span>
-                    </a>
+            <div class="navbar-brand-box">
+                <a href="{{ url_for('project.projects') }}" class="logo">
+                    <span class="logo-sm">
+                        <img src="{{ url_for('static', filename='assets/images/ashgard-logo.png') }}" alt="" height="26">
+                    </span>
+                    <span class="logo-lg">
+                        <img src="{{ url_for('static', filename='assets/images/Ashgard-banner.png') }}" alt="" height="28" width="200">
+                    </span>
+                </a>
 
-                    <a href="index.html" class="logo logo-light">
-                        <span class="logo-lg">
-                            <img src="../static/assets/images/ashgard-logo.png" alt="" height="30">
-                        </span>
-                        <span class="logo-sm">
-                            <img src="../static/assets/images/ashgard-logo.png" alt="" height="26">
-                        </span>
-                    </a>
-                </div>
-
-                <button type="button" class="btn btn-sm px-3 font-size-24 header-item waves-effect vertical-menu-btn">
-                    <i class="bx bx-menu align-middle"></i>
-                </button>
-
-                     <div data-simplebar class="sidebar-menu-scroll">
-
-                        <!--- Sidemenu -->
-                        <div id="sidebar-menu">
-                            <!-- Left Menu Start -->
-                            <ul class="metismenu list-unstyled" id="side-menu">
-                                <li class="menu-title" data-key="t-menu">Workload</li>
-
-                            <li>
-                                <a href="{{ url_for('main.projects') }}">
-                                    <i class="bx bx-folder-open icon nav-icon"></i>
-                                    <span class="menu-item" href="{{ url_for('main.projects') }}" data-key="t-dashboard">Projects</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ url_for('main.tasks') }}">
-                                    <i class="bx bx-task icon nav-icon"></i>
-                                    <span class="menu-item" data-key="t-calendar">Tasks</span>
-                                </a>
-                            </li> 
-                            <li>
-                                <a href="{{ url_for('main.approvals') }}">
-                                   <i class="bx bx-list-check icon nav-icon"></i>
-                                   <span class="menu-item ms-1" data-key="t-todo" >Approvals</span><span class="badge bg-danger ms-1 ms-auto">2</span></span>
-                               </a> 
-                            </li> 
-
-                            <li class="menu-title" data-key="t-applications">General</li>
-
-                            <li>
-                                <a href="{{ url_for('main.all_departments') }}" >
-                                    <i class="bx bx-home-alt icon nav-icon"></i> 
-                                    <span class="menu-item" data-key="t-departments">Departments</span>
-                                </a>
-
-                            </li>
-
-                            <li>
-                                <a href="{{ url_for('main.members') }}" >
-                                    <i class="bx bx-group icon nav-icon"></i>
-                                    <span class="menu-item" data-key="t-todo">Members</span>
-                                </a>
-                            </li>
-                            
-                            <li>
-                                <a href="{{ url_for('main.reports') }}" >
-                                    <i class="bx bx-notepad icon nav-icon"></i>
-                                    <span class="menu-item" data-key="t-todo">Reports</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    <!-- Sidebar -->
-                </div>
+                <a href="index.html" class="logo logo-light">
+                    <span class="logo-lg">
+                        <img src="{{ url_for('static', filename='assets/images/ashgard-logo.png') }}" alt="" height="30">
+                    </span>
+                    <span class="logo-sm">
+                        <img src="{{ url_for('static', filename='assets/images/ashgard-logo.png') }}" alt="" height="26">
+                    </span>
+                </a>
             </div>
+
+            <button type="button" class="btn btn-sm px-3 font-size-24 header-item waves-effect vertical-menu-btn">
+                <i class="bx bx-menu align-middle"></i>
+            </button>
+
+            <div data-simplebar class="sidebar-menu-scroll">
+                <div id="sidebar-menu">
+                    <ul class="metismenu list-unstyled" id="side-menu">
+                        <li class="menu-title" data-key="t-menu">Workload</li>
+                        <li>
+                            <a href="{{ url_for('project.projects') }}">
+                                <i class="bx bx-folder-open icon nav-icon"></i>
+                                <span class="menu-item" data-key="t-dashboard">Projects</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('project.tasks') }}">
+                                <i class="bx bx-task icon nav-icon"></i>
+                                <span class="menu-item" data-key="t-calendar">Tasks</span>
+                            </a>
+                        </li> 
+                        <li>
+                            <a href="{{ url_for('project.approvals') }}">
+                                <i class="bx bx-list-check icon nav-icon"></i>
+                                <span class="menu-item ms-1" data-key="t-todo" >Approvals</span><span class="badge bg-danger ms-1 ms-auto">2</span>
+                            </a> 
+                        </li> 
+
+                        <li class="menu-title" data-key="t-applications">General</li>
+                        <li>
+                            <a href="{{ url_for('department.all_departments') }}" >
+                                <i class="bx bx-home-alt icon nav-icon"></i> 
+                                <span class="menu-item" data-key="t-departments">Departments</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('main.members') }}" >
+                                <i class="bx bx-group icon nav-icon"></i>
+                                <span class="menu-item" data-key="t-todo">Members</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('reports.reports') }}" >
+                                <i class="bx bx-notepad icon nav-icon"></i>
+                                <span class="menu-item" data-key="t-todo">Reports</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                </div>
+        </div>
             
-            <header id="page-topbar" class="isvertical-topbar">
-                <div class="navbar-header">
-                    <div class="d-flex">
-                        <!-- LOGO -->
-                        <div class="navbar-brand-box">
-                            <a href="index.html" class="logo logo-dark">
-                                <span class="logo-sm">
-                                    <img src="../static/assets/images/ashgard-logo.png" alt="" height="26">
-                                </span>
-                                <span class="logo-lg">
-                                    <img src="../static/assets/images/ashgard-logo.png" alt="" height="26">
-                                </span>
-                            </a>
+        <header id="page-topbar" class="isvertical-topbar">
+            <div class="navbar-header">
+                <div class="d-flex">
+                    <div class="navbar-brand-box">
+                        <a href="index.html" class="logo logo-dark">
+                            <span class="logo-sm">
+                                <img src="{{ url_for('static', filename='assets/images/ashgard-logo.png') }}" alt="" height="26">
+                            </span>
+                            <span class="logo-lg">
+                                <img src="{{ url_for('static', filename='assets/images/ashgard-logo.png') }}" alt="" height="26">
+                            </span>
+                        </a>
 
-                            <a href="index.html" class="logo logo-light">
-                                <span class="logo-lg">
-                                    <img src="../static/assets/images/ashgard-logo.png" alt="" height="30">
-                                </span>
-                                <span class="logo-sm">
-                                    <img src="../static/assets/images/ashgard-logo.png" alt="" height="26">
-                                </span>
-                            </a>
-                        </div>
-
-                        <button type="button" class="btn btn-sm px-3 font-size-24 header-item waves-effect vertical-menu-btn">
-                            <i class="bx bx-menu align-middle"></i>
-                        </button>
-
-                        <!-- start page title -->
-                        <div class="page-title-box align-self-center d-none d-md-block">
-                            <h4 class="page-title mb-0">
-                                {% block page_title %}Hi, Welcome Back!{% endblock %}
-                            </h4>
-                        </div>
-                        <!-- end page title -->
-
+                        <a href="index.html" class="logo logo-light">
+                            <span class="logo-lg">
+                                <img src="{{ url_for('static', filename='assets/images/ashgard-logo.png') }}" alt="" height="30">
+                            </span>
+                            <span class="logo-sm">
+                                <img src="{{ url_for('static', filename='assets/images/ashgard-logo.png') }}" alt="" height="26">
+                            </span>
+                        </a>
                     </div>
 
-                    <div class="d-flex">
+                    <button type="button" class="btn btn-sm px-3 font-size-24 header-item waves-effect vertical-menu-btn">
+                        <i class="bx bx-menu align-middle"></i>
+                    </button>
 
-                        <div class="dropdown d-inline-block">
-                            <button type="button" class="btn header-item noti-icon" id="page-header-notifications-dropdown-v"
-                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="bx bx-bell icon-sm align-middle"></i>
-                                <span class="noti-dot bg-danger rounded-pill">4</span>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-xl dropdown-menu-end p-0"
-                                aria-labelledby="page-header-notifications-dropdown-v">
-                                <div class="p-3">
-                                    <div class="row align-items-center">
-                                        <div class="col">
-                                            <h5 class="m-0 font-size-15"> Notifications </h5>
-                                        </div>
-                                        <div class="col-auto">
-                                            <a href="#!" class="small fw-semibold text-decoration-underline"> Mark all as read</a>
-                                        </div>
+                    <div class="page-title-box align-self-center d-none d-md-block">
+                        <h4 class="page-title mb-0">
+                            {% block page_title %}Hi, Welcome Back!{% endblock %}
+                        </h4>
+                    </div>
+                </div>
+
+                <div class="d-flex">
+                    <div class="dropdown d-inline-block">
+                        <button type="button" class="btn header-item noti-icon" id="page-header-notifications-dropdown-v"
+                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="bx bx-bell icon-sm align-middle"></i>
+                            <span class="noti-dot bg-danger rounded-pill">4</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-xl dropdown-menu-end p-0"
+                            aria-labelledby="page-header-notifications-dropdown-v">
+                            <div class="p-3">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <h5 class="m-0 font-size-15"> Notifications </h5>
+                                    </div>
+                                    <div class="col-auto">
+                                        <a href="#!" class="small fw-semibold text-decoration-underline"> Mark all as read</a>
                                     </div>
                                 </div>
-                                <div data-simplebar style="max-height: 250px;">
-                                    <a href="#!" class="text-reset notification-item">
-                                        <div class="d-flex">
-                                            <div class="flex-shrink-0 me-3">
-                                                <img src="../static/assets/images/users/avatar-3.jpg" class="rounded-circle avatar-sm" alt="user-pic">
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <p class="text-muted font-size-13 mb-0 float-end">1 hour ago</p>
-                                                <h6 class="mb-1">James Lemire</h6>
-                                                <div>
-                                                    <p class="mb-0">It will seem like simplified English.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <a href="#!" class="text-reset notification-item">
-                                        <div class="d-flex">
-                                            <div class="flex-shrink-0 avatar-sm me-3">
-                                              <a class="dropdown-item" href="{{ url_for('users.login') }}"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Logout</span></a>
-                                                    <i class="bx bx-cart"></i>
-                                                </span>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <p class="text-muted font-size-13 mb-0 float-end">3 min ago</p>
-                                                <h6 class="mb-1">Your order is placed</h6>
-                                                <div>
-                                                    <p class="mb-0">If several languages coalesce the grammar</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <a href="#!" class="text-reset notification-item">
-                                        <div class="d-flex">
-                                            <div class="flex-shrink-0 avatar-sm me-3">
-                                                <span class="avatar-title bg-success rounded-circle font-size-18">
-                                                    <i class="bx bx-badge-check"></i>
-                                                </span>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <p class="text-muted font-size-13 mb-0 float-end">8 min ago</p>
-                                                <h6 class="mb-1">Your item is shipped</h6>
-                                                <div>
-                                                    <p class="mb-0">If several languages coalesce the grammar</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </a>
-
-                                    <a href="#!" class="text-reset notification-item">
-                                        <div class="d-flex">
-                                            <div class="flex-shrink-0 me-3">
-                                                <img src="../static/assets/images/users/avatar-6.jpg" class="rounded-circle avatar-sm" alt="user-pic">
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <p class="text-muted font-size-13 mb-0 float-end">1 hour ago</p>
-                                                <h6 class="mb-1">Salena Layfield</h6>
-                                                <div>
-                                                    <p class="mb-1">As a skeptical Cambridge friend of mine occidental.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
-                                <div class="p-2 border-top d-grid">
-                                    <a class="btn btn-sm btn-link font-size-14 btn-block text-center" href="javascript:void(0)">
-                                        <i class="uil-arrow-circle-right me-1"></i> <span>View More..</span>
-                                    </a>
-                                </div>
                             </div>
-                        </div>
-            
-                        <div class="dropdown d-inline-block">
-                            <button type="button" class="btn header-item user text-start d-flex align-items-center" id="page-header-user-dropdown-v"
-                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                {% if current_user.is_authenticated %}
-                                    <img class="rounded-circle header-profile-user" src="{{ url_for('static', filename='profile_pics/' + current_user.image_file) }}" alt="Header Avatar">
-                                    <span class="d-none d-xl-inline-block ms-2 fw-medium font-size-15">{{ current_user.username }}</span>
-                                {% else %}
-                                    <img class="rounded-circle header-profile-user" src="{{ url_for('static', filename='assets/images/users/avatar-1.jpg') }}" alt="Guest Avatar">
-                                    <span class="d-none d-xl-inline-block ms-2 fw-medium font-size-15">Guest</span>
-                                {% endif %}
-                            </button>
-                            
-                            <div class="dropdown-menu dropdown-menu-end pt-0">
-                                <div class="p-3 border-bottom">
-                                </div>
-                                <a class="dropdown-item" href="{{ url_for('main.profile') }}"><i class="mdi mdi-account-circle text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Profile</span></a>
-                        
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ url_for('users.logout') }}"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Logout</span></a>
+                            <div data-simplebar style="max-height: 250px;">
+                                <a href="#!" class="text-reset notification-item">
+                                    <div class="d-flex">
+                                        <div class="flex-shrink-0 me-3">
+                                            <img src="{{ url_for('static', filename='assets/images/users/avatar-3.jpg') }}" class="rounded-circle avatar-sm" alt="user-pic">
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <p class="text-muted font-size-13 mb-0 float-end">1 hour ago</p>
+                                            <h6 class="mb-1">James Lemire</h6>
+                                            <p class="mb-0">It will seem like simplified English.</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="p-2 border-top d-grid">
+                                <a class="btn btn-sm btn-link font-size-14 btn-block text-center" href="javascript:void(0)">
+                                    <i class="uil-arrow-circle-right me-1"></i> <span>View More..</span>
+                                </a>
                             </div>
                         </div>
                     </div>
+            
+                    <div class="dropdown d-inline-block">
+                        <button type="button" class="btn header-item user text-start d-flex align-items-center" id="page-header-user-dropdown-v"
+                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {% if current_user.is_authenticated %}
+                                <img class="rounded-circle header-profile-user" src="{{ url_for('static', filename='profile_pics/' + current_user.image_file) }}" alt="Header Avatar">
+                                <span class="d-none d-xl-inline-block ms-2 fw-medium font-size-15">{{ current_user.username }}</span>
+                            {% else %}
+                                <img class="rounded-circle header-profile-user" src="{{ url_for('static', filename='assets/images/users/avatar-1.jpg') }}" alt="Guest Avatar">
+                                <span class="d-none d-xl-inline-block ms-2 fw-medium font-size-15">Guest</span>
+                            {% endif %}
+                        </button>
+                        
+                        <div class="dropdown-menu dropdown-menu-end pt-0">
+                            <div class="p-3 border-bottom"></div>
+                            <a class="dropdown-item" href="{{ url_for('main.profile') }}"><i class="mdi mdi-account-circle text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Profile</span></a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Logout</span></a>
+                        </div>
+                    </div>
                 </div>
-                
-            </header>
+            </div>
+        </header>
+
         <main role="main" class="containerh=100">
             {% block content %}
             {% endblock content %}
@@ -311,65 +223,45 @@
         <script src="{{ url_for('static', filename='assets/libs/jsvectormap/js/jsvectormap.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/jsvectormap/maps/world-merc.js') }}"></script>
 
-        <!-- ApexCharts must load before dashboard.init (donut chart on project_details) -->
         <script src="{{ url_for('static', filename='assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-
         <script src="{{ url_for('static', filename='assets/js/pages/dashboard.init.js') }}"></script>
 
-        <!-- Sweet Alerts js -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="{{ url_for('static', filename='assets/libs/sweetalert2/sweetalert2.min.js') }}"></script>
    
-        <!-- Sweet alert init js-->
         <script src="{{ url_for('static', filename='assets/js/pages/sweet-alerts.init.js') }}"></script>
-        <!-- Select2 JS -->
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
-        <!-- Custom Js -->
-         <script src="{{ url_for('static', filename='assets/custom/script.js') }}"></script>
+        <script src="{{ url_for('static', filename='assets/custom/script.js') }}"></script>
 
-        <!-- gridjs js -->
         <script src="{{ url_for('static', filename='assets/libs/gridjs/gridjs.umd.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/js/pages/gridjs.init.js') }}"></script> 
 
-        <!-- javascript -->
         <script src="{{ url_for('static', filename='assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/metismenujs/metismenujs.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/simplebar/simplebar.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/eva-icons/eva.min.js') }}"></script>
 
-        <!-- Charts and Apex JS -->
         <script src="{{ url_for('static', filename='assets/libs/apexcharts/apexcharts.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/chart.js/chart.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/js/pages/chartjs.init.js') }}"></script>
 
-        <!-- ckeditor -->
         <script src="{{ url_for('static', filename='assets/libs/@ckeditor/ckeditor5-build-classic/build/ckeditor.js') }}"></script>
-          <!-- choices js -->
         <script src="{{ url_for('static', filename='assets/libs/choices.js/public/assets/scripts/choices.min.js') }}"></script>
 
-        <!-- color picker js -->
         <script src="{{ url_for('static', filename='assets/libs/@simonwep/pickr/pickr.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/@simonwep/pickr/pickr.es5.min.js') }}"></script>
-        <!-- datepicker js -->
         <script src="{{ url_for('static', filename='assets/libs/flatpickr/flatpickr.min.js') }}"></script>
-        <!-- flatpickr range plugin -->
         <script src="{{ url_for('static', filename='assets/libs/flatpickr/plugins/rangePlugin.js') }}"></script>
 
-        <!-- init js -->
         <script src="{{ url_for('static', filename='assets/js/pages/form-advanced.init.js') }}"></script>
 
-        <!-- swiper js -->
         <script src="{{ url_for('static', filename='assets/libs/swiper/swiper-bundle.min.js')}}"></script>
 
-        <!-- alertifyjs js -->
         <script src="{{ url_for('static', filename='assets/libs/alertifyjs/build/alertify.min.js') }}"></script>
-        <!-- notification init -->
         <script src="{{ url_for('static', filename='assets/js/pages/notification.init.js') }}"></script>
         
-        <!-- nouisliderribute js -->
         <script src="{{ url_for('static', filename='assets/libs/nouislider/nouislider.min.js')}}"></script>
         <script src="{{url_for('static', filename='assets/libs/wnumb/wNumb.min.js')}}"></script>
 
     </body>
-
 </html>

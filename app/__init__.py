@@ -7,76 +7,84 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_migrate import Migrate
-from flask_caching import Cache
 
 load_dotenv()
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 login_manager = LoginManager()
-login_manager.login_view = 'users.login'
+# Changed from 'users.login' to 'auth.login'
+login_manager.login_view = 'auth.login'
 login_manager.login_message_category = 'info'
 login_manager.login_message = None
 mail = Mail()
 migrate = Migrate()
-cache = Cache()
 
 def create_app():
-    app = Flask(__name__)
+    # Renamed to flask_app to avoid "AttributeError: module 'app' has no attribute..."
+    flask_app = Flask(__name__)
 
-
-    app.config["CACHE_TYPE"] = "FileSystemCache"
-    app.config["CACHE_DIR"] = "flask_cache"  # Folder for cache files
-    app.config["CACHE_DEFAULT_TIMEOUT"] = 300 # 5-minute default
+    flask_app.config["CACHE_TYPE"] = "FileSystemCache"
+    flask_app.config["CACHE_DIR"] = "flask_cache"
+    flask_app.config["CACHE_DEFAULT_TIMEOUT"] = 300
 
     # --- DATABASE CONFIG ---
     user = os.getenv("DB_USER")
-    # Force string conversion to handle the special characters in your password safely
     raw_password = str(os.getenv("DB_PASSWORD", "")) 
     password = urllib.parse.quote_plus(raw_password)
     host = os.getenv("DB_HOST")
     
-    # Safely handle the Port conversion
     db_port = os.getenv("DB_PORT")
-    port = int(db_port) if db_port and db_port.isdigit() else 16751 # Vultr default from your .env
+    port = int(db_port) if db_port and db_port.isdigit() else 16751 
     
     db_name = os.getenv("DB_NAME")
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}"
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+    flask_app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}"
+    flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    flask_app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
     # --- MAIL CONFIG ---
-    app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.googlemail.com")
-    
-    # Safely handle Mail Port
+    flask_app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.googlemail.com")
     m_port = os.getenv("MAIL_PORT")
-    app.config["MAIL_PORT"] = int(m_port) if m_port and m_port.isdigit() else 587
+    flask_app.config["MAIL_PORT"] = int(m_port) if m_port and m_port.isdigit() else 587
     
-    app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "true").lower() == "true"
-    app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
-    app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
+    flask_app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "true").lower() == "true"
+    flask_app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
+    flask_app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 
-    db.init_app(app)
-    cache.init_app(app)
+    db.init_app(flask_app)
+    bcrypt.init_app(flask_app)
+    login_manager.init_app(flask_app)
+    mail.init_app(flask_app)
+    migrate.init_app(flask_app, db)
 
- 
-    bcrypt.init_app(app)
-    login_manager.init_app(app)
-    mail.init_app(app)
-    migrate.init_app(app, db)
-
-    @app.after_request
+    @flask_app.after_request
     def add_header(response):
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
         return response
 
+    # --- BLUEPRINT REGISTRATION ---
+    
+    # 1. Import the Blueprint objects first
+    from app.login.routes import auth_bp as auth_bp
     from .users.routes import users as users_blueprint
     from .main.routes import main as main_blueprint
+    from app.features.reports.routes import reports_bp  as reports_blueprint
+    from app.features.projects.routes import project_bp as project_blueprint
+    from app.features.department.routes import department_bp as department_blueprint
 
-    app.register_blueprint(users_blueprint)
-    app.register_blueprint(main_blueprint)
+    # 2. IMPORTANT: Import routes BEFORE registering the blueprint 
+    # This prevents the "AssertionError: The setup method 'route' can no longer be called"
+    # import app.login.routes 
+    
+    # 3. Register them on the flask_app instance
+    flask_app.register_blueprint(auth_bp)
+    flask_app.register_blueprint(users_blueprint)
+    flask_app.register_blueprint(main_blueprint)
+    flask_app.register_blueprint(reports_blueprint)
+    flask_app.register_blueprint(project_blueprint)
+    flask_app.register_blueprint(department_blueprint)
 
-    return app
+    return flask_app

@@ -1,7 +1,7 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, TaskAssignee, SubTask,  Report, ReportCC, Comment
-from app import db
+from app import db 
 from datetime import datetime, date, time
 from sqlalchemy import or_, text
 from sqlalchemy.exc import ProgrammingError, OperationalError
@@ -9,32 +9,11 @@ from sqlalchemy.orm import joinedload, selectinload
 import json
 import random
 
-main = Blueprint('main', __name__)
+
+department_bp = Blueprint('department', __name__, template_folder='templates', static_folder='static', static_url_path='/department/static')
 
 
-def _can_edit_task(task, user):
-    """Check if user can edit or mark complete a task.
-    Returns True if user is project manager OR assigned to the task."""
-    if not task or not user:
-        return False
-    project = Project.query.get(task.project_id) if task.project_id else None
-    if project and user.member_id == project.project_manager:
-        return True
-    try:
-        if task.assignees:
-            for ta in task.assignees:
-                if ta.project_member and ta.project_member.member_id == user.member_id:
-                    return True
-    except (ProgrammingError, OperationalError):
-        pass
-    if task.p_members_id:
-        pm = ProjectMembers.query.get(task.p_members_id)
-        if pm and pm.member_id == user.member_id:
-            return True
-    return False
-
-
-@main.route("/all_departments")
+@department_bp.route("/all_departments")
 @login_required
 def all_departments():
     departments = Department.query.all()
@@ -70,7 +49,7 @@ def all_departments():
     }
     return render_template('all_departments.html', departments=departments, users=users, stats=stats, dept_projects_data=dept_projects_data, today=date.today())
 
-@main.route("/department/add", methods=['POST'])
+@department_bp.route("/department/add", methods=['POST'])
 @login_required
 def add_department():
     name = request.form.get('department_name')
@@ -93,9 +72,9 @@ def add_department():
         
         db.session.commit()
         flash('Department added successfully!', 'success')
-    return redirect(url_for('main.all_departments'))
+    return redirect(url_for('department.all_departments'))
 
-@main.route("/department/edit/<int:id>", methods=['GET', 'POST'])
+@department_bp.route("/department/edit/<int:id>", methods=['GET', 'POST'])
 @login_required
 def edit_department(id):
 
@@ -120,36 +99,19 @@ def edit_department(id):
         department.edited_on = datetime.now()
         db.session.commit()
         flash('Department updated!', 'success')
-        return redirect(url_for('main.all_departments'))
+        return redirect(url_for('department.all_departments'))
     return render_template('edit_department.html', department=department)
 
-@main.route("/department/delete/<int:id>", methods=['POST'])
+@department_bp.route("/department/delete/<int:id>", methods=['POST'])
 @login_required
 def delete_department(id):
     department = Department.query.get_or_404(id)
     try:
         db.session.delete(department)
         db.session.commit()
-        flash('Department deleted!', 'warning')
+        flash('Department deleted!', 'success')
     except Exception:
         db.session.rollback()
         flash('Cannot delete department. It may have users assigned to it.', 'danger')
         
-    return redirect(url_for('main.all_departments'))
-
-
-@main.route("/approvals")
-def approvals():
-    return render_template('approvals.html', title="Approvals")
-
-@main.route("/members")
-@login_required
-def members():
-    users = User.query.all()
-    return render_template('members.html', title="Members", members=users, total_users=len(users))
-
-@main.route("/profile")
-@login_required
-def profile():
-    return render_template('profile.html')
-
+    return redirect(url_for('department.all_departments'))
