@@ -367,6 +367,18 @@ if (table7Req && table7Res) {
     }).render(table7Res);
 }
 
+// my task table
+const table8Req = document.getElementById("projectsTableMyTasks");
+const table8Res = document.getElementById("table8-gridjs");
+if (table8Req && table8Res) {
+    new gridjs.Grid({
+        from: table8Req,
+        pagination: { limit: 10 },
+        sort: true,
+        search: true,
+        className: { table: "table table-centered align-middle" }
+    }).render(table8Res);
+}
 // 6. Department Projects Table (from all_departments.html)
 document.addEventListener('DOMContentLoaded', function() {
     let grid = null;

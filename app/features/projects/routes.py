@@ -275,10 +275,50 @@ def all_projects():
     
     return render_template('all_projects.html', projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
     
-@project_bp.route("/tasks")
-@login_required 
-def tasks():
-    return render_template('tasks.html', title="Tasks Info")
+@project_bp.route("/my_tasks")
+@login_required
+def my_tasks():
+    # My ProjectMembers rows (I'm in these projects)
+    my_pm_rows = ProjectMembers.query.filter_by(member_id=current_user.member_id).all()
+    my_p_members_ids = [pm.p_members_id for pm in my_pm_rows]
+
+    if not my_p_members_ids:
+        return render_template('my_task.html', title="Tasks Info", tasks_data=[], today=date.today())
+
+    # Task IDs where I'm an assignee (TaskAssignee table)
+    task_ids_from_assignees = TaskAssignee.query.filter(
+        TaskAssignee.p_members_id.in_(my_p_members_ids)
+    ).with_entities(TaskAssignee.task_id).distinct()
+
+    # All tasks assigned to me: via assignees OR legacy single p_members_id
+    tasks = Task.query.filter(
+        or_(
+            Task.task_id.in_(task_ids_from_assignees),
+            Task.p_members_id.in_(my_p_members_ids)
+        )
+    ).order_by(Task.task_id.desc()).all()
+
+    # Build list for template (task, project, manager, deadline, progress_pct)
+    tasks_data = []
+    for task in tasks:
+        project = Project.query.get(task.project_id) if task.project_id else None
+        manager = User.query.get(project.project_manager) if project and project.project_manager else None
+        deadline = Deadlines.query.get(task.deadline_id) if task.deadline_id else None
+        # Progress: completed subtasks / total subtasks
+        subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).all()
+        st_total = len(subtasks)
+        st_done = sum(1 for s in subtasks if s.is_checked)
+        progress_pct = round(st_done / st_total * 100, 1) if st_total else 0
+        tasks_data.append({
+            'task': task,
+            'project': project,
+            'manager': manager,
+            'deadline': deadline,
+            'progress_pct': progress_pct,
+            'sub_total': st_total,
+        })
+
+    return render_template('my_task.html', title="Tasks Info", tasks_data=tasks_data, today=date.today())
 
 @project_bp.route("/all_departments")
 @login_required

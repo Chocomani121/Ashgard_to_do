@@ -1,0 +1,123 @@
+{% extends "layout.html" %}
+{% block page_title %}Tasks Info{% endblock %}
+   {% block content %}
+    <div id="layout-wrapper">
+
+            <div class="main-content">
+                <div class="page-content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="card">
+                                    <div class="card-header d-flex align-items-center">
+                                        <h4 class="card-title mb-0">My Tasks</h4>
+                                    </div>
+
+                                    <div class="card-body">
+                                        <div id="table8-gridjs"></div>
+
+                                        <!-- ORIGINAL TABLE (hidden but used by Grid.js) -->
+                                        <table id="projectsTableMyTasks" class="table d-none">
+                                                <thead>
+                                                        <tr>
+                                                            <th>Task Name</th>
+                                                            <th style="width: 190px;">Project</th>
+                                                            <th>Project Manager</th>
+                                                            <th>Priority</th>
+                                                            <th>Status</th>
+                                                            <th>Start Date</th>
+                                                            <th>Deadline</th>
+                                                            <th>Progress</th>
+                                                            <th>Sub Tasks</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% if tasks_data %}
+                                                        {% for item in tasks_data %}
+                                                        <tr>
+                                                            <td>
+                                                                <a href="{{ url_for('project.task_details', id=item.task.task_id) }}" class="text-dark fw-medium">
+                                                                    {{ item.task.task_name or 'Unnamed Task' }}
+                                                                </a>
+                                                            </td>
+                                                            <td>
+                                                                {% if item.project %}
+                                                                <a href="{{ url_for('project.project_details', id=item.project.project_id) }}" class="text-muted">
+                                                                    {{ item.project.project_name or 'N/A' }}
+                                                                </a>
+                                                                {% else %}
+                                                                N/A
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>{{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}</td>
+                                                            <td>
+                                                                {% if item.task.priority == 'High' %}
+                                                                <span class="badge badge-soft-danger font-size-12">High</span>
+                                                                {% elif item.task.priority == 'Medium' %}
+                                                                <span class="badge badge-soft-warning font-size-12">Medium</span>
+                                                                {% elif item.task.priority == 'Low' %}
+                                                                <span class="badge badge-soft-info font-size-12">Low</span>
+                                                                {% else %}
+                                                                <span class="badge badge-soft-primary font-size-12">{{ item.task.priority or 'High' }}</span>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                {% set display_status = item.task.task_status or 'Pending' %}
+                                                                {% if display_status == 'Completed' %}
+                                                                <span class="badge badge-soft-success font-size-12">Completed</span>
+                                                                {% elif display_status == 'On Hold' %}
+                                                                <span class="badge badge-soft-secondary font-size-12">On Hold</span>
+                                                                {% else %}
+                                                                <span class="badge badge-soft-warning font-size-12">Ongoing</span>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                {% if item.deadline and item.deadline.start_date %}
+                                                                {{ item.deadline.start_date.strftime('%m / %d / %Y') }}
+                                                                {% else %}
+                                                                N/A
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="{% if item.deadline and item.deadline.end_date and item.deadline.end_date.date() < today %}text-danger{% endif %}">
+                                                                {% if item.deadline and item.deadline.end_date %}
+                                                                {{ item.deadline.end_date.strftime('%m / %d / %Y') }}
+                                                                {% else %}
+                                                                N/A
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                {% set pct = item.progress_pct|default(0) %}
+                                                                <div class="progress">
+                                                                    <div class="progress-bar progress-bar-striped progress-bar-dynamic" role="progressbar" data-width-pct="{{ pct }}" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100">{{ pct }}%</div>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                {{ item.sub_total }}
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                        {% else %}
+                                                        <tr>
+                                                            <td colspan="8" class="text-center text-muted">No tasks assigned to you.</td>
+                                                        </tr>
+                                                        {% endif %}
+                                                    </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- container-fluid -->
+                </div>
+                <!-- End Page-content -->
+
+            <!--  Extra Large modal example -->
+        
+            
+            </div>
+            <!-- end main content-->
+
+        </div>
+        <script src="{{ url_for('project.static', filename='task.js') }}"></script>
+   {% endblock content %}
