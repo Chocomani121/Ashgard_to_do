@@ -159,7 +159,7 @@ def all_departments():
         'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
         'ongoing': len([p for p in projects if p.project_status and p.project_status.lower() == 'ongoing']),
     }
-    return render_template('all_departments.html', departments=departments, users=users, stats=stats, dept_projects_data=dept_projects_data, today=date.today())
+    return render_template('all_departments.html', departments=departments, users=users, stats=stats, dept_projects_data=dept_projects_data)
 
 # --- Existing Routes ---
 
@@ -508,7 +508,7 @@ def task_details(id=None):
             except (ValueError, TypeError):
                 pass
     
-    # Assignees for this task (from TaskAssignee or fallback to single owner from p_members_id)
+    # Assignees for this task
     task_assignees = []
     try:
         if task.assignees:
@@ -517,8 +517,9 @@ def task_details(id=None):
                     u = User.query.get(ta.project_member.member_id)
                     if u:
                         task_assignees.append(u)
-    except (ProgrammingError, OperationalError):
-        pass  # task_assignees table may not exist yet
+    except (Exception):
+        pass 
+        
     if not task_assignees and task.p_members_id:
         pm = ProjectMembers.query.get(task.p_members_id)
         if pm and pm.member_id:
@@ -526,7 +527,7 @@ def task_details(id=None):
             if u:
                 task_assignees.append(u)
     
-    # Project members (for Edit Task "Assigned member" dropdown: project members + project manager if not already a member)
+    # Project members logic
     task_project_members = []
     if task.project_id:
         project = Project.query.get(task.project_id)
@@ -536,38 +537,25 @@ def task_details(id=None):
                 u = User.query.get(pm.member_id)
                 if u:
                     task_project_members.append({'p_members_id': pm.p_members_id, 'name': u.name or u.username})
-        # Ensure project manager is in the list (PM can assign tasks to themselves)
+        
         if project and project.project_manager:
             pm_member_ids = [pm.member_id for pm in pms if pm.member_id]
             if project.project_manager not in pm_member_ids:
                 manager_user = User.query.get(project.project_manager)
                 if manager_user:
-                    pm_row = ProjectMembers.query.filter_by(
-                        project_id=task.project_id,
-                        member_id=project.project_manager
-                    ).first()
+                    pm_row = ProjectMembers.query.filter_by(project_id=task.project_id, member_id=project.project_manager).first()
                     if not pm_row:
-                        pm_row = ProjectMembers(
-                            project_id=task.project_id,
-                            member_id=project.project_manager,
-                            role='Project Manager'
-                        )
+                        pm_row = ProjectMembers(project_id=task.project_id, member_id=project.project_manager, role='Project Manager')
                         db.session.add(pm_row)
                         try:
                             db.session.commit()
                         except Exception:
                             db.session.rollback()
-                            pm_row = ProjectMembers.query.filter_by(
-                                project_id=task.project_id,
-                                member_id=project.project_manager
-                            ).first()
+                            pm_row = ProjectMembers.query.filter_by(project_id=task.project_id, member_id=project.project_manager).first()
                     if pm_row:
-                        task_project_members.append({
-                            'p_members_id': pm_row.p_members_id,
-                            'name': manager_user.name or manager_user.username
-                        })
+                        task_project_members.append({'p_members_id': pm_row.p_members_id, 'name': manager_user.name or manager_user.username})
     
-    # Role flags for subtask views: PM sees "Subtask (Project Manager)", other project members see "Subtask"
+    # Role flags
     project = Project.query.get(task.project_id) if task.project_id else None
     is_project_manager = (project and current_user.member_id == project.project_manager)
     is_project_member = False
@@ -575,31 +563,36 @@ def task_details(id=None):
         if is_project_manager:
             is_project_member = True
         else:
-            pm_entry = ProjectMembers.query.filter_by(
-                project_id=task.project_id,
-                member_id=current_user.member_id
-            ).first()
+            pm_entry = ProjectMembers.query.filter_by(project_id=task.project_id, member_id=current_user.member_id).first()
             is_project_member = pm_entry is not None
     
-    # Check if user can edit/mark complete this task
+    # FIXED: Renamed can_edit_task_flag to can_edit_task to match your template
     can_edit_task = _can_edit_task(task, current_user)
     
-    # Get project for delete permission check
-    project = Project.query.get(task.project_id) if task.project_id else None
-    
-    # p_members_id of current assignees (for edit task multi-select)
+    # p_members_id of current assignees
     assignee_p_members_ids = []
     try:
         if task.assignees:
             for ta in task.assignees:
                 if ta.project_member:
                     assignee_p_members_ids.append(ta.project_member.p_members_id)
-    except (ProgrammingError, OperationalError):
+    except (Exception):
         pass
     if not assignee_p_members_ids and task.p_members_id:
         assignee_p_members_ids.append(task.p_members_id)
     
-    return render_template('task_details.html', task=task, project=project, task_assignees=task_assignees, task_project_members=task_project_members, assignee_p_members_ids=assignee_p_members_ids, is_project_manager=is_project_manager, is_project_member=is_project_member, can_edit_task=can_edit_task, notes=main_notes, replies_map=replies_map)
+    return render_template('task_details.html', 
+        task=task, 
+        project=project, 
+        task_assignees=task_assignees, 
+        task_project_members=task_project_members, 
+        assignee_p_members_ids=assignee_p_members_ids, 
+        is_project_manager=is_project_manager, 
+        is_project_member=is_project_member, 
+        can_edit_task=can_edit_task, 
+        notes=main_notes, 
+        replies_map=replies_map
+    )
 
 @project_bp.route("/task_details/<int:id>/update", methods=['POST'])
 @login_required
@@ -1017,7 +1010,7 @@ def reply_note(note_id):
     body = request.form.get('reply_body')
     task_id = request.form.get('task_id')
     
-    new_reply = Notes(
+    new_reply = Notes(  
         task_id=int(task_id),
         member_id=current_user.member_id,
         note_body=body,
@@ -1027,3 +1020,31 @@ def reply_note(note_id):
     db.session.add(new_reply)
     db.session.commit()
     return redirect(request.referrer)
+
+@project_bp.route("/task_details/note/edit/<int:note_id>", methods=['POST'])
+@login_required
+def edit_note(note_id):
+    note = Notes.query.get_or_404(note_id)
+    
+    # Security Check
+    if note.member_id != current_user.member_id:
+        flash('Permission denied.', 'danger')
+        return redirect(url_for('project.task_details', id=note.task_id))
+
+    # Update Content
+    note.note_title = request.form.get('note_title')
+    note.note_body = request.form.get('note_body')
+    
+    # UPDATE TO CURRENT TIME
+    note.created_on = datetime.now() # This resets the time to 'now' on every save
+    
+    try:
+        db.session.commit()
+        flash('Updated successfully!', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Error updating note.', 'danger')
+    
+    return redirect(url_for('project.task_details', id=note.task_id))
+
+    
