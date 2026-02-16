@@ -21,8 +21,6 @@ class Department(db.Model):
     members         = db.relationship('User', backref='dept_info', lazy=True)
     projects        = db.relationship('Project', backref='dept_info', lazy=True)
 
-    edited_on       = db.Column(db.DateTime(timezone=True), onupdate=db.func.now())
-
 class User(db.Model, UserMixin):
     __tablename__ = 'members' 
     member_id       = db.Column(db.Integer, primary_key=True)
@@ -206,5 +204,6 @@ class Comment(db.Model):
     replies = db.relationship(
         'Comment', 
         backref=db.backref('parent', remote_side=[comment_id]),
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
+        lazy=True
     )
