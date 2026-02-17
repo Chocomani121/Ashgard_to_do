@@ -116,10 +116,7 @@
                                                                 {% endif %}
                                                             </td>
                                                             <td>
-                                                                {% set pct = item.progress_pct|default(0) %}
-                                                                <div class="progress">
-                                                                    <div class="progress-bar progress-bar-striped progress-bar-dynamic" role="progressbar" data-width-pct="{{ pct }}" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100">{{ pct }}%</div>
-                                                                </div>
+                                                                {{ item.progress_pct }}
                                                             </td>
                                                             <td>
                                                                 {{ item.sub_total }}

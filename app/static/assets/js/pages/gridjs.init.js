@@ -1363,10 +1363,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// 10. Approval Table
+// 10. Approval Table (skip when container is hidden - approvals page shows raw table)
 const table10Req = document.getElementById("projectsApproval");
 const table10Res = document.getElementById("table10-gridjs");
-if (table10Req && table10Res) {
+if (table10Req && table10Res && !table10Res.classList.contains("d-none")) {
     new gridjs.Grid({
         from: table10Req,
         pagination: { limit: 10 },

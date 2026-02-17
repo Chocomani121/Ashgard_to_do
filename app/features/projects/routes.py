@@ -375,7 +375,8 @@ def my_tasks():
         st_list = subtasks_by_task.get(task.task_id, [])
         st_total = len(st_list)
         st_done = sum(1 for s in st_list if s.is_checked)
-        progress_pct = round(st_done / st_total * 100, 1) if st_total else 0
+        progress_pct = f"{st_done}/{st_total}" if st_total > 0 else "0/0"
+        # progress_pct = round(st_done / st_total * 100, 1) if st_total else 0
         tasks_data.append({
             'task': task,
             'project': project,
@@ -450,7 +451,7 @@ def dept_tasks():
         st_list = subtasks_by_task.get(task.task_id, [])
         st_total = len(st_list)
         st_done = sum(1 for s in st_list if s.is_checked)
-        progress_pct = round(st_done / st_total * 100, 1) if st_total else 0
+        progress_pct = f"{st_done}/{st_total}" if st_total > 0 else "0/0"
         tasks_data.append({
             'task': task,
             'project': project,
@@ -1313,10 +1314,71 @@ def create_project():
         return redirect(url_for('project.projects'))
 
 @project_bp.route("/approvals")
+@login_required
 def approvals():
-    return render_template('approvals.html', title="Approvals")
+     # My ProjectMembers rows (I'm in these projects)
+    my_pm_rows = ProjectMembers.query.filter_by(member_id=current_user.member_id).all()
+    my_p_members_ids = [pm.p_members_id for pm in my_pm_rows]
 
+    if not my_p_members_ids:
+        return render_template('approvals.html', title="Tasks Info", tasks_data=[], today=date.today())
 
+    # Task IDs where I'm an assignee (TaskAssignee table)
+    task_ids_from_assignees = TaskAssignee.query.filter(
+        TaskAssignee.p_members_id.in_(my_p_members_ids)
+    ).with_entities(TaskAssignee.task_id).distinct()
+
+    # All tasks assigned to me: via assignees OR legacy single p_members_id
+    tasks = Task.query.filter(
+        or_(
+            Task.task_id.in_(task_ids_from_assignees),
+            Task.p_members_id.in_(my_p_members_ids)
+        )
+    ).order_by(Task.task_id.desc()).all()
+
+    if not tasks:
+        return render_template('approvals.html', title="Approvals", tasks_data=[], today=date.today())
+
+    # Bulk lookups to avoid N+1
+    project_ids = list({t.project_id for t in tasks if t.project_id})
+    projects = Project.query.filter(Project.project_id.in_(project_ids)).all()
+    project_by_id = {p.project_id: p for p in projects}
+
+    user_ids = list({p.project_manager for p in projects if p.project_manager})
+    users = User.query.filter(User.member_id.in_(user_ids)).all()
+    user_by_id = {u.member_id: u for u in users}
+
+    deadline_ids = list({t.deadline_id for t in tasks if t.deadline_id})
+    deadlines_list = Deadlines.query.filter(Deadlines.deadlines_id.in_(deadline_ids)).all() if deadline_ids else []
+    deadline_by_id = {d.deadlines_id: d for d in deadlines_list}
+
+    task_ids = [t.task_id for t in tasks]
+    subtasks = SubTask.query.filter(SubTask.parent_task_id.in_(task_ids)).all()
+    from collections import defaultdict
+    subtasks_by_task = defaultdict(list)
+    for s in subtasks:
+        subtasks_by_task[s.parent_task_id].append(s)
+
+    # Build list for template (no per-row queries)
+    tasks_data = []
+    for task in tasks:
+        project = project_by_id.get(task.project_id) if task.project_id else None
+        manager = user_by_id.get(project.project_manager) if project and project.project_manager else None
+        deadline = deadline_by_id.get(task.deadline_id) if task.deadline_id else None
+        st_list = subtasks_by_task.get(task.task_id, [])
+        st_total = len(st_list)
+        st_done = sum(1 for s in st_list if s.is_checked)
+        progress_pct = round(st_done / st_total * 100, 1) if st_total else 0
+        tasks_data.append({
+        'task': task,
+        'project': project,
+        'manager': manager,
+        'deadline': deadline,
+        'progress_pct': progress_pct,
+        'sub_total': st_total,
+        'subtasks': st_list,   # add this line
+    })
+    return render_template('approvals.html', title="Approvals",tasks_data=tasks_data, today=date.today())
 
 # Project Details Notes_tbl - Reply, Comment, Edit
 @project_bp.route("/project/note/add", methods=['POST'])
@@ -1448,7 +1510,7 @@ def all_task():
         st_list = subtasks_by_task.get(task.task_id, [])
         st_total = len(st_list)
         st_done = sum(1 for s in st_list if s.is_checked)
-        progress_pct = round(st_done / st_total * 100, 1) if st_total else 0
+        progress_pct = f"{st_done}/{st_total}" if st_total > 0 else "0/0"
         tasks_data.append({
             'task': task,
             'project': project,

@@ -135,6 +135,8 @@ class SubTask(db.Model):
     parent_task_id    = db.Column(db.Integer, db.ForeignKey('task_tbl.task_id'))
     # notes_id removed here to break circular dependency
     subtask_name      = db.Column(db.String(255))
+    generated_code    = db.Column(db.String(255), nullable=True)
+    checked_timestamp = db.Column(db.DateTime(timezone=True), nullable=True)
     is_checked        = db.Column(db.Boolean, default=False)
     created_on        = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     
