@@ -6153,3 +6153,13 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
 .subtask-view-only .gridjs-td:last-child {
   display: none !important;
 }
+
+/* Approved cell: single line to avoid overlap with Notes column */
+.subtask-approved-cell {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.875rem;
+  max-width: 100%;
+}

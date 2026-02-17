@@ -295,8 +295,78 @@
                                             {% else %}<span class="badge bg-soft-primary text-primary">{{ st.status }}</span>{% endif %}
                                         </td>
                                         <td>{% if st.checked_timestamp %}{{ st.checked_timestamp.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">—</td>
-                                        <td class="text-nowrap">—</td>
+                                        <td style="width: 400px;" class="notes-preview-cell">
+                                            {% if st.notes_preview and st.notes_preview != '—' %}
+                                            <div style="max-height: 120px; overflow-y: auto; overflow-x: hidden; white-space: normal; line-height: 1.4;">
+                                                {{ st.notes_preview }}
+                                            </div>
+                                            {% else %}
+                                            —
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-nowrap">
+                                            {% if is_project_manager %}
+                                                {% if st.status == 'Ongoing' %}
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                                    <div class="dropdown-menu dropdown-menu-end shadow">
+                                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="submit" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Submit for review">Submit</a>
+                                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editSubtaskModal" data-edit-form-action="{{ url_for('project.edit_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Edit</a>
+                                                        <a class="dropdown-item subtask-status-link" href="#" data-url="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-status="On Hold">Hold</a>
+                                                        <a class="dropdown-item text-danger subtask-delete-link" href="#" data-url="{{ url_for('project.delete_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-code="{{ st.generated_code }}">Delete</a>
+                                                    </div>
+                                                </div>
+                                                {% elif st.status == 'To be reviewed' %}
+                                                <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline me-1">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                                                    <input type="hidden" name="status" value="Approved">
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Approve"><i class="mdi mdi-check"></i></button>
+                                                </form>
+                                                <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                                                    <input type="hidden" name="status" value="Rejected">
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Reject"><i class="mdi mdi-close"></i></button>
+                                                </form>
+                                                {% elif st.status == 'Rejected' %}
+                                                <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline">
+                                                    <input type="hidden" name="status" value="To be reviewed">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                                                    <button type="submit" class="btn btn-sm btn-primary">Revert</button>
+                                                </form>
+                                                {% elif st.status == 'On Hold' %}
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                                    <div class="dropdown-menu dropdown-menu-end shadow">
+                                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up">Follow Up</a>
+                                                        <a class="dropdown-item subtask-status-link" href="#" data-url="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-status="Ongoing">Resume</a>
+                                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editSubtaskModal" data-edit-form-action="{{ url_for('project.edit_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Edit</a>
+                                                    </div>
+                                                </div>
+                                                {% elif st.status == 'Approved' %}
+                                                <span class="subtask-approved-cell">Approved on {% if st.checked_timestamp %}{{ st.checked_timestamp.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %} — {{ st.owner_name }}</span>
+                                                {% endif %}
+                                            {% elif is_project_member %}
+                                                {% if st.status == 'Ongoing' %}
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                                    <div class="dropdown-menu dropdown-menu-end shadow">
+                                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="submit" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Submit for review">Submit</a>
+                                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editSubtaskModal" data-edit-form-action="{{ url_for('project.edit_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Edit</a>
+                                                        <a class="dropdown-item subtask-status-link" href="#" data-url="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-status="On Hold">Hold</a>
+                                                        <a class="dropdown-item text-danger subtask-delete-link" href="#" data-url="{{ url_for('project.delete_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-code="{{ st.generated_code }}">Delete</a>
+                                                    </div>
+                                                </div>
+                                                {% elif st.status == 'To be reviewed' %}
+                                                <span class="text-muted small">Pending review</span>
+                                                {% elif st.status == 'Rejected' %}
+                                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="resubmit" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Re-Submit – reason for resubmit (will appear in notes)">Re-Submit</button>
+                                                {% elif st.status == 'On Hold' %}
+                                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up – send note for PM">Follow Up</button>
+                                                {% elif st.status == 'Approved' %}
+                                                <span class="subtask-approved-cell">Approved on {% if st.checked_timestamp %}{{ st.checked_timestamp.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %} — {{ st.owner_name }}</span>
+                                                {% endif %}
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                     {% else %}
                                     <tr>
@@ -344,16 +414,6 @@
                             <small class="text-muted">Only members assigned to this task can be owners.</small>
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Status</label>
-                            <select name="status" class="form-select">
-                                <option value="Ongoing" selected>Ongoing</option>
-                                <option value="To be reviewed">To be reviewed</option>
-                                <option value="Rejected">Rejected</option>
-                                <option value="On Hold">On Hold</option>
-                                <option value="Approved">Approved</option>
-                            </select>
-                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -616,6 +676,68 @@
   </div>
 </div>
 
+<!-- Subtask Note Modal (Submit / Re-Submit / Follow up) -->
+<div class="modal fade" id="subtaskNoteModal" tabindex="-1" data-bs-backdrop="static" data-note-url-template="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=0) }}">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="subtaskNoteModalTitle">Note</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="subtaskNoteForm" method="POST" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+        <input type="hidden" name="action" id="subtaskNoteAction" value="">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="subtaskNoteBody">Note <span class="text-danger">*</span></label>
+            <textarea name="note_body" id="subtaskNoteBody" class="form-control" rows="4" required placeholder="Enter your note..."></textarea>
+            <small class="text-muted" id="subtaskNoteHelp"></small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="subtaskNoteSubmitBtn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Subtask Modal -->
+<div class="modal fade" id="editSubtaskModal" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Sub-Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="editSubtaskForm" method="POST" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="editSubtaskNameInput">Sub-Task Name</label>
+            <input type="text" name="subtask_name" id="editSubtaskNameInput" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden form for subtask status update (Hold / Resume) -->
+<form id="subtaskStatusForm" method="POST" action="" class="d-none">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+  <input type="hidden" name="status" id="subtaskStatusFormStatus" value="">
+</form>
+
+<!-- Hidden form for subtask delete -->
+<form id="subtaskDeleteForm" method="POST" action="" class="d-none">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+</form>
 
 <div class="modal fade" id="addNotesProjectModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -649,9 +771,99 @@
 document.addEventListener("DOMContentLoaded", function() {
     var modalElement = document.getElementById('taskNoteModal');
     if (modalElement) {
-        // This physically moves the modal HTML out of the card and into the body
         document.body.appendChild(modalElement);
     }
+    // Move subtask modals to body so they display above backdrop (fixes "greys out, nothing shows")
+    var subtaskNoteModal = document.getElementById('subtaskNoteModal');
+    if (subtaskNoteModal) {
+        document.body.appendChild(subtaskNoteModal);
+    }
+    var editSubtaskModal = document.getElementById('editSubtaskModal');
+    if (editSubtaskModal) {
+        document.body.appendChild(editSubtaskModal);
+    }
+
+    // Subtask Note Modal: set form action and title when opened from a trigger
+    var subtaskNoteModalEl = document.getElementById('subtaskNoteModal');
+    if (subtaskNoteModalEl) {
+        subtaskNoteModalEl.addEventListener('show.bs.modal', function(e) {
+            var trigger = e.relatedTarget;
+            if (!trigger) return;
+            var form = document.getElementById('subtaskNoteForm');
+            var titleEl = document.getElementById('subtaskNoteModalTitle');
+            var actionInput = document.getElementById('subtaskNoteAction');
+            var bodyInput = document.getElementById('subtaskNoteBody');
+            var helpEl = document.getElementById('subtaskNoteHelp');
+            var submitBtn = document.getElementById('subtaskNoteSubmitBtn');
+            var noteUrl = trigger.dataset.noteFormAction;
+            if (!noteUrl && trigger.dataset.subtaskId) {
+                var template = subtaskNoteModalEl.getAttribute('data-note-url-template');
+                if (template) noteUrl = template.replace('/subtask/0/', '/subtask/' + trigger.dataset.subtaskId + '/');
+            }
+            if (noteUrl) form.action = noteUrl;
+            if (trigger.dataset.modalTitle) titleEl.textContent = trigger.dataset.modalTitle;
+            var action = (trigger.dataset.noteAction || '').toLowerCase();
+            if (action) actionInput.value = action;
+            if (bodyInput) bodyInput.value = '';
+            if (action === 'submit') {
+                if (submitBtn) submitBtn.textContent = 'Submit';
+                if (bodyInput) bodyInput.placeholder = 'Add a note and submit for review...';
+                if (helpEl) helpEl.textContent = 'Your note will be saved and the subtask will move to To be reviewed.';
+            } else if (action === 'resubmit') {
+                if (submitBtn) submitBtn.textContent = 'Re-Submit';
+                if (helpEl) helpEl.textContent = 'State the reason for resubmit; it will appear in subtask notes.';
+            } else {
+                if (submitBtn) submitBtn.textContent = 'Save';
+                if (helpEl) helpEl.textContent = '';
+            }
+        });
+    }
+
+    // Edit Subtask Modal: set form action and name when opened
+    var editSubtaskModalEl = document.getElementById('editSubtaskModal');
+    if (editSubtaskModalEl) {
+        editSubtaskModalEl.addEventListener('show.bs.modal', function(e) {
+            var trigger = e.relatedTarget;
+            if (!trigger) return;
+            var form = document.getElementById('editSubtaskForm');
+            var nameInput = document.getElementById('editSubtaskNameInput');
+            if (trigger.dataset.editFormAction) form.action = trigger.dataset.editFormAction;
+            if (trigger.dataset.subtaskName !== undefined) nameInput.value = trigger.dataset.subtaskName || '';
+        });
+    }
+
+    // Status link (Hold / Resume): submit hidden form
+    document.addEventListener('click', function(e) {
+        var link = e.target.closest('.subtask-status-link');
+        if (link) {
+            e.preventDefault();
+            var url = link.getAttribute('data-url');
+            var status = link.getAttribute('data-status');
+            if (url && status) {
+                var form = document.getElementById('subtaskStatusForm');
+                var statusInput = document.getElementById('subtaskStatusFormStatus');
+                if (form && statusInput) {
+                    form.action = url;
+                    statusInput.value = status;
+                    form.submit();
+                }
+            }
+        }
+
+        var delLink = e.target.closest('.subtask-delete-link');
+        if (delLink) {
+            e.preventDefault();
+            var url = delLink.getAttribute('data-url');
+            var code = delLink.getAttribute('data-code') || 'this subtask';
+            if (url && confirm('Delete subtask ' + code + '?')) {
+                var form = document.getElementById('subtaskDeleteForm');
+                if (form) {
+                    form.action = url;
+                    form.submit();
+                }
+            }
+        }
+    });
 });
 </script>
 
