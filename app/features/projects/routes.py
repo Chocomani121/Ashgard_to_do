@@ -76,6 +76,7 @@ def department_projects():
     projects_data = []
     for project in projects:
         manager = user_by_id.get(project.project_manager) if project.project_manager else None
+        department = dept_by_id.get(project.department_id) if project.department_id else None
         deadline = deadline_by_id.get(project.deadlines_id) if project.deadlines_id else None
 
         try:
@@ -93,6 +94,7 @@ def department_projects():
         projects_data.append({
             'project': project,
             'manager': manager,
+            'department': department,
             'deadline': deadline,
             'priority': priority,
             'progress_pct': progress_pct,
@@ -391,6 +393,18 @@ def my_tasks():
 def dept_tasks():
     # All tasks from all projects (no department filter)
     tasks = Task.query.order_by(Task.task_id.desc()).all()
+    # if not current_user.department_id:
+    #     tasks = []
+    # else:
+    #         project_ids = [
+    #             p.project_id
+    #             for p in Project.query.filter_by(department_id=current_user.department_id).all()
+    #         ]
+    #         tasks = (
+    #             Task.query.filter(Task.project_id.in_(project_ids))
+    #             .order_by(Task.task_id.desc())
+    #             .all()
+    #         ) if project_ids else []
 
     if not tasks:
         users = User.query.all()
@@ -1384,4 +1398,79 @@ def edit_note(note_id):
     
     return redirect(url_for('project.task_details', id=note.task_id))
 
+@project_bp.route("/all_task")
+@login_required
+def all_task():
+    # All tasks from all projects (no department filter)
+    tasks = Task.query.order_by(Task.task_id.desc()).all()
+
+    if not tasks:
+        users = User.query.all()
+        departments = Department.query.all()
+        stats = {'pending': 0, 'high_priority': 0, 'completed': 0, 'on_hold': 0}
+        users_json = [
+            {'member_id': u.member_id, 'name': u.name or u.username, 'username': u.username, 'department_id': u.department_id}
+            for u in users
+        ]
+        return render_template('all_task.html', title="All Info", tasks_data=[], stats=stats, users_json=users_json, departments=departments, today=date.today())
+
+    # Bulk lookups to avoid N+1
+    project_ids = list({t.project_id for t in tasks if t.project_id})
+    projects = Project.query.filter(Project.project_id.in_(project_ids)).all()
+    project_by_id = {p.project_id: p for p in projects}
+
+    user_ids = list({p.project_manager for p in projects if p.project_manager})
+    users = User.query.all()
+    user_by_id = {u.member_id: u for u in users}
+
+    deadline_ids = list({t.deadline_id for t in tasks if t.deadline_id})
+    deadlines_list = Deadlines.query.filter(Deadlines.deadlines_id.in_(deadline_ids)).all() if deadline_ids else []
+    deadline_by_id = {d.deadlines_id: d for d in deadlines_list}
+
+    department_ids = list({p.department_id for p in projects if p.department_id})
+    departments = Department.query.all()
+    dept_by_id = {d.department_id: d for d in departments}
+
+    task_ids = [t.task_id for t in tasks]
+    subtasks = SubTask.query.filter(SubTask.parent_task_id.in_(task_ids)).all()
+    from collections import defaultdict
+    subtasks_by_task = defaultdict(list)
+    for s in subtasks:
+        subtasks_by_task[s.parent_task_id].append(s)
+
+    # Build list for template (no per-row queries)
+    tasks_data = []
+    for task in tasks:
+        project = project_by_id.get(task.project_id) if task.project_id else None
+        manager = user_by_id.get(project.project_manager) if project and project.project_manager else None
+        deadline = deadline_by_id.get(task.deadline_id) if task.deadline_id else None
+        department = dept_by_id.get(project.department_id) if project and project.department_id else None
+        st_list = subtasks_by_task.get(task.task_id, [])
+        st_total = len(st_list)
+        st_done = sum(1 for s in st_list if s.is_checked)
+        progress_pct = round(st_done / st_total * 100, 1) if st_total else 0
+        tasks_data.append({
+            'task': task,
+            'project': project,
+            'department': department,
+            'manager': manager,
+            'deadline': deadline,
+            'progress_pct': progress_pct,
+            'sub_total': st_total,
+        })
+
+    # Calculate statistics from tasks
+    stats = {
+        'pending': len([t for t in tasks if (t.task_status or '').lower() in ('pending', 'ongoing', '') or not t.task_status]),
+        'high_priority': len([t for t in tasks if (t.priority or '').lower() == 'high']),
+        'completed': len([t for t in tasks if (t.task_status or '').lower() == 'completed']),
+        'on_hold': len([t for t in tasks if (t.task_status or '').lower() == 'on hold'])
+    }
+
+    users_json = [
+        {'member_id': u.member_id, 'name': u.name or u.username, 'username': u.username, 'department_id': u.department_id}
+        for u in users
+    ]
+
+    return render_template('all_task.html', title="All Task", tasks_data=tasks_data, stats=stats, users_json=users_json, departments=departments, today=date.today())
     
