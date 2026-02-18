@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block page_title %}PROJECT DETAILS{% endblock %}
    {% block content %}
-            <div class="main-content">
+         <div class="main-content">
                 <div class="page-content">
                     <div class="container-fluid">
                         <nav aria-label="breadcrumb" class="mb-3">
@@ -15,71 +15,51 @@
                             <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
                         {% endif %}
                         {% endwith %}
+
                  <div class="row">
-                <div class="col-xl-7">
-                    <!-- PROJECT OVERVIEW (Sticky Card) -->
-                    <div style="top: 90px;">
-                        <div class="card mb-4">
+                    <div class="col-xl-7">
+                        <!-- PROJECT OVERVIEW (Sticky Card) -->
+                        <div style="top: 90px;">
+                            <div class="card mb-4">
 
-                            <!-- Card Header with Button -->
-                            <div class="card-header d-flex align-items-center justify-content-between">
-                                <h4 class="card-title mb-0"><span class="text-muted">Project Name:</span><span class="ms-4">{{ project.project_name or 'Project Details' }}</span></h4>
-                                {% if is_project_manager %}
-                                <div class="dropdown">
-                                    <button class="btn btn-light" data-bs-toggle="dropdown">
-                                        <i class="mdi mdi-dots-vertical"></i>
-                                    </button>
-                                    <div class="dropdown-menu dropdown-menu-end">
-                                        <a class="dropdown-item"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editTaskModal">
-                                            Edit
-                                        </a>                                    
-                                        <a class="dropdown-item" href="javascript:void(0);"
-                                            data-project-id="{{ project.project_id }}"
-                                            data-project-name="{{ (project.project_name or 'this project')|e }}"
-                                            onclick="confirmDeleteProject(this.dataset.projectId, this.dataset.projectName)">Delete</a>
+                                <!-- Card Header with Button -->
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <h4 class="card-title mb-0"><span class="text-muted">Project Name:</span><span class="ms-4">{{ project.project_name or 'Project Details' }}</span></h4>
+                                    {% if is_project_manager %}
+                                    <div class="dropdown">
+                                        <button class="btn btn-light" data-bs-toggle="dropdown">
+                                            <i class="mdi mdi-dots-vertical"></i>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end">
+                                            <a class="dropdown-item"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editTaskModal">
+                                                Edit
+                                            </a>                                    
+                                            <a class="dropdown-item" href="javascript:void(0);"
+                                                data-project-id="{{ project.project_id }}"
+                                                data-project-name="{{ (project.project_name or 'this project')|e }}"
+                                                onclick="confirmDeleteProject(this.dataset.projectId, this.dataset.projectName)">Delete</a>
+                                        </div>
                                     </div>
+                                    {% endif %}
                                 </div>
-                                {% endif %}
-                            </div>
 
-                            <!-- Card Body -->
-                        <div class="card-body d-flex flex-column overflow-hidden">
+                                <!-- Card Body -->
+                            <div class="card-body d-flex flex-column overflow-hidden">
 
-                                <!-- Top Info Section -->
-                                <div class="row mb-3 g-3 flex-shrink-0">
-                                    <div class="col-md-3 col-sm-6">
-                                        <span class="text-muted">Priority:</span> 
-                                        {% if project.priority == 'High' %}
-                                        <span class="badge bg-soft-danger text-danger ms-1">High</span>
-                                        {% elif project.priority == 'Medium' %}
-                                        <span class="badge bg-soft-warning text-warning ms-1">Medium</span>
-                                        {% elif project.priority == 'Low' %}
-                                        <span class="badge bg-soft-info text-info ms-1">Low</span>
-                                        {% else %}
-                                        <span class="badge bg-soft-danger text-danger ms-1">{{ project.priority or 'High' }}</span>
-                                        {% endif %}
-                                    </div>
-
-                                    <div class="col-md-3 col-sm-6">
-                                        <span class="text-muted">Start date:</span> 
-                                        <strong class="ms-1">
-                                            {% if deadline and deadline.start_date %}
-                                                {{ deadline.start_date.strftime('%B %d, %Y') }}
+                                    <!-- Top Info Section -->
+                                    <div class="row mb-3 g-3 flex-shrink-0">
+                                        <div class="col-md-3 col-sm-6">
+                                            <span class="text-muted">Priority:</span> 
+                                            {% if project.priority == 'High' %}
+                                            <span class="badge bg-soft-danger text-danger ms-1">High</span>
+                                            {% elif project.priority == 'Medium' %}
+                                            <span class="badge bg-soft-warning text-warning ms-1">Medium</span>
+                                            {% elif project.priority == 'Low' %}
+                                            <span class="badge bg-soft-info text-info ms-1">Low</span>
                                             {% else %}
-                                                N/A
-                                            {% endif %}
-                                        </strong>
-                                    </div>
-
-                                    <div class="col-md-3 col-sm-6">
-                                        <span class="text-muted">End date:</span> 
-                                        <strong class="ms-1">
-                                            {% if deadline and deadline.end_date %}
-                                                {{ deadline.end_date.strftime('%B %d, %Y') }}
-                                            {% else %}
-                                                N/A
+                                            <span class="badge bg-soft-danger text-danger ms-1">{{ project.priority or 'High' }}</span>
                                             {% endif %}
                                         </strong>
                                     </div>
@@ -102,175 +82,205 @@
                                     <div class="d-flex align-items-center justify-content-center">
                                         <div class="d-flex gap-5 text-center">
 
-                                        <div class="mb-2 text-success ">
-                                            <span class="text-uppercase fw-semibold d-block fs-5">
-                                                Approved
-                                            </span>
-                                            <span class="fw-bold fs-3">
-                                                {{ task_completed_count|default(0) }}
-                                            </span>
+                                        <div class="col-md-3 col-sm-6">
+                                            <span class="text-muted">Start date:</span> 
+                                            <strong class="ms-1">
+                                                {% if deadline and deadline.start_date %}
+                                                    {{ deadline.start_date.strftime('%B %d, %Y') }}
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            </strong>
                                         </div>
 
-                                        <div class="text-warning">
-                                            <span class="text-uppercase fw-semibold d-block fs-5">
-                                                Ongoing
-                                            </span>
-                                            <span class="fw-bold fs-3 ">
-                                                {{ task_ongoing_count|default(0) }}
-                                            </span>
+                                        <div class="col-md-3 col-sm-6">
+                                            <span class="text-muted">End date:</span> 
+                                            <strong class="ms-1">
+                                                {% if deadline and deadline.end_date %}
+                                                    {{ deadline.end_date.strftime('%B %d, %Y') }}
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            </strong>
                                         </div>
 
+                                        <div class="col-md-3 col-sm-6">
+                                            <span class="text-muted">Client:</span> 
+                                            <strong class="ms-1">{{ project.client_name or '—' }}</strong>
                                         </div>
+
                                     </div>
 
-                                    <!-- STATUS BREAKDOWN / CHART -->
-                                    <div class="col-xl-6 col-md-5">
+                                    <div class="row my-4 d-flex flex-column align-items-center text-center">
+                                        <!-- APPROVED / REJECTED -->
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <div class="d-flex gap-5 text-center">
 
-                                        <div class="text-center">
-                                            <!-- DONUT CHART (series from task counts: completed, ongoing) -->
-                                            <div
-                                                id="saleing-categories"
-                                                class="apex-charts mb-3"
-                                                data-colors='["#28b765", "#f4c238c2"]'
-                                                data-task-completed="{{ task_completed_count|default(0) }}"
-                                                data-task-ongoing="{{ task_ongoing_count|default(0) }}"
-                                                data-progress-pct="{{ progress_pct|default(0) }}"
-                                                dir="ltr">
+                                            <div class="mb-2 text-success ">
+                                                <span class="text-uppercase fw-semibold d-block fs-5">
+                                                    Approved
+                                                </span>
+                                                <span class="fw-bold fs-3">
+                                                    {{ task_completed_count|default(0) }}
+                                                </span>
                                             </div>
 
-                                            <!-- LEGEND (percentages from task counts) -->
-                                            <div class="d-flex pt-1 align-items-center justify-content-center gap-4">
-                                                <div>
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="mdi mdi-circle font-size-10 text-success"></i>
-                                                        <p class="mb-0 ms-2">Completed</p>
-                                                        <span class="ms-2 fw-bold">{{ task_completed_pct|default(0) }}%</span>
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="mdi mdi-circle font-size-10 text-warning"></i>
-                                                        <p class="mb-0 ms-2">Ongoing</p>
-                                                        <span class="ms-2 fw-bold">{{ task_ongoing_pct|default(0) }}%</span>
-                                                    </div>
-                                                </div>
+                                            <div class="text-warning">
+                                                <span class="text-uppercase fw-semibold d-block fs-5">
+                                                    Ongoing
+                                                </span>
+                                                <span class="fw-bold fs-3 ">
+                                                    {{ task_ongoing_count|default(0) }}
+                                                </span>
                                             </div>
-                                            
-                                          
+
+                                            </div>
                                         </div>
-                                    </div>                                 
+
+                                        <!-- STATUS BREAKDOWN / CHART -->
+                                        <div class="col-xl-6 col-md-5">
+
+                                            <div class="text-center">
+                                                <!-- DONUT CHART (series from task counts: completed, ongoing) -->
+                                                <div
+                                                    id="saleing-categories"
+                                                    class="apex-charts mb-3"
+                                                    data-colors='["#28b765", "#f4c238c2"]'
+                                                    data-task-completed="{{ task_completed_count|default(0) }}"
+                                                    data-task-ongoing="{{ task_ongoing_count|default(0) }}"
+                                                    data-progress-pct="{{ progress_pct|default(0) }}"
+                                                    dir="ltr">
+                                                </div>
+
+                                                <!-- LEGEND (percentages from task counts) -->
+                                                <div class="d-flex pt-1 align-items-center justify-content-center gap-4">
+                                                    <div>
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="mdi mdi-circle font-size-10 text-success"></i>
+                                                            <p class="mb-0 ms-2">Completed</p>
+                                                            <span class="ms-2 fw-bold">{{ task_completed_pct|default(0) }}%</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="mdi mdi-circle font-size-10 text-warning"></i>
+                                                            <p class="mb-0 ms-2">Ongoing</p>
+                                                            <span class="ms-2 fw-bold">{{ task_ongoing_pct|default(0) }}%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>                                 
+                                    </div>
                                 </div>
-                            </div>
-                          </div>
-                           
+                            </div>  
                         </div>
                     </div>
-                        <div class="col-xl-5">
-                            <!-- Assigned Members -->
-                             <div class="card">
-                                    <div class="card-header d-flex align-items-center justify-content-between">
-                                        <h5 class="card-title mb-0">Assigned Members</h5>
-                                        {% if is_project_manager %}
-                                        <div class="dropdown">
-                                            <button class="btn btn-light btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="mdi mdi-dots-vertical"></i>
-                                            </button>
-                                            <div class="dropdown-menu dropdown-menu-end">
-                                                <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editProjectManagerModal">Edit Project Manager</a>
-                                                <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editMembersModal">Edit Members</a>
-                                            </div>
+
+                    <div class="col-xl-5">
+                        <!-- Assigned Members -->
+                            <div class="card">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <h5 class="card-title mb-0">Assigned Members</h5>
+                                    {% if is_project_manager %}
+                                    <div class="dropdown">
+                                        <button class="btn btn-light btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="mdi mdi-dots-vertical"></i>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end">
+                                            <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editProjectManagerModal">Edit Project Manager</a>
+                                            <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editMembersModal">Edit Members</a>
                                         </div>
-                                        {% endif %}
                                     </div>
-                                    <div class="card-body">
-                                    <div class="col-xl-12 col-md-7">
-                                        <div class="assigned-members overflow-auto pe-4 ps-4" style="max-height: 260px;"> 
-                                            <ul class="list-unstyled mb-0">
-                                                {% if manager %}
-                                                <li class="d-flex align-items-center mb-3">
-                                                    <img src="{{ url_for('static', filename='profile_pics/' + manager.image_file) }}" class="rounded-circle avatar-sm me-3" alt="{{ manager.name or manager.username }}">
+                                    {% endif %}
+                                </div>
+                                <div class="card-body">
+                                <div class="col-xl-12 col-md-7">
+                                    <div class="assigned-members overflow-auto pe-4 ps-4" style="height: 200px; overflow-y: auto;"> 
+                                        <ul class="list-unstyled mb-0">
+                                            {% if manager %}
+                                            <li class="d-flex align-items-center mb-3">
+                                                <img src="{{ url_for('static', filename='profile_pics/' + manager.image_file) }}" class="rounded-circle avatar-sm me-3" alt="{{ manager.name or manager.username }}">
+                                                <div>
+                                                    <h6 class="mb-0 font-size-16 fw-bold">{{ manager.name if manager.name else manager.username }}</h6>
+                                                    <small class="text-muted font-size-13">Project Manager</small>
+                                                </div>
+                                            </li>
+                                            {% endif %}
+                                            {% if assigned_members %}
+                                                {% for member_info in assigned_members %}
+                                                {% if not project.project_manager or member_info.user.member_id != project.project_manager %}
+                                                <li class="d-flex align-items-center mb-2">
+                                                    <img src="{{ url_for('static', filename='profile_pics/' + member_info.user.image_file) }}" class="rounded-circle avatar-sm me-3" alt="{{ member_info.user.name or member_info.user.username }}">
                                                     <div>
-                                                        <h6 class="mb-0 font-size-16 fw-bold">{{ manager.name if manager.name else manager.username }}</h6>
-                                                        <small class="text-muted font-size-13">Project Manager</small>
+                                                        <h6 class="mb-0 font-size-16 fw-bold">{{ member_info.user.name if member_info.user.name else member_info.user.username }}</h6>
+                                                        <!-- <small class="text-muted font-size-13">{{ member_info.role }}</small> -->
                                                     </div>
                                                 </li>
                                                 {% endif %}
-                                                {% if assigned_members %}
-                                                    {% for member_info in assigned_members %}
-                                                    {% if not project.project_manager or member_info.user.member_id != project.project_manager %}
-                                                    <li class="d-flex align-items-center mb-2">
-                                                        <img src="{{ url_for('static', filename='profile_pics/' + member_info.user.image_file) }}" class="rounded-circle avatar-sm me-3" alt="{{ member_info.user.name or member_info.user.username }}">
-                                                        <div>
-                                                            <h6 class="mb-0 font-size-16 fw-bold">{{ member_info.user.name if member_info.user.name else member_info.user.username }}</h6>
-                                                            <!-- <small class="text-muted font-size-13">{{ member_info.role }}</small> -->
-                                                        </div>
-                                                    </li>
-                                                    {% endif %}
-                                                    {% endfor %}
-                                                {% endif %}
-                                                {% if not manager and (not assigned_members or assigned_members|length == 0) %}
-                                                    <li class="text-muted">No assigned members</li>
-                                                {% endif %}
-                                            </ul>
-                                        </div>
-                                    </div>
+                                                {% endfor %}
+                                            {% endif %}
+                                            {% if not manager and (not assigned_members or assigned_members|length == 0) %}
+                                                <li class="text-muted">No assigned members</li>
+                                            {% endif %}
+                                        </ul>
                                     </div>
                                 </div>
-                                <!-- Description card -->
-                                <div class="card">
-                                    <div class="card-header d-flex align-items-center justify-content-between">
-                                        <h5 class="card-title mb-0">Description</h5>
-                                        {% if is_project_manager %}
-                                        <div class="dropdown">
-                                            <button class="btn btn-light btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="mdi mdi-dots-vertical"></i>
-                                            </button>
-                                            <div class="dropdown-menu dropdown-menu-end">
-                                                <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editDescriptionModal">Edit</a>
-                                                <a class="dropdown-item" href="javascript:void(0);"
-                                                    data-project-id="{{ project.project_id }}"
-                                                    data-project-name="{{ (project.project_name or 'this project')|e }}"
-                                                    onclick="confirmDeleteProject(this.dataset.projectId, this.dataset.projectName)">Delete</a>
-                                            </div>
+                                </div>
+                            </div>
+                            <!-- Description card -->
+                            <div class="card">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <h5 class="card-title mb-0">Description</h5>
+                                    {% if is_project_manager %}
+                                    <div class="dropdown">
+                                        <button class="btn btn-light btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="mdi mdi-dots-vertical"></i>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end">
+                                            <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editDescriptionModal">Edit</a>
+                                            <a class="dropdown-item" href="javascript:void(0);"
+                                                data-project-id="{{ project.project_id }}"
+                                                data-project-name="{{ (project.project_name or 'this project')|e }}"
+                                                onclick="confirmDeleteProject(this.dataset.projectId, this.dataset.projectName)">Delete</a>
                                         </div>
-                                        {% endif %}
                                     </div>
-                                    <div class="card-body">
-                                        <div class="col-xl-12 col-md-7">
-                                            <div class="project-description overflow-auto" style="max-height: 260px;">
-                                                <p class="text-muted mb-0">
-                                                    {% if project and project.project_desc %}
-                                                        {{ project.project_desc }}
-                                                    {% else %}
-                                                        <span class="text-muted">No description available.</span>
-                                                    {% endif %}
-                                                </p>
-                                            </div>
+                                    {% endif %}
+                                </div>
+                                <div class="card-body">
+                                    <div class="col-xl-12 col-md-7">
+                                        <div class="project-description overflow-auto" style="height: 200px; overflow-y: auto;">
+                                            <p class="text-muted mb-0">
+                                                {% if project and project.project_desc %}
+                                                    {{ project.project_desc }}
+                                                {% else %}
+                                                    <span class="text-muted">No description available.</span>
+                                                {% endif %}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
-                           </div>
-                      </div>
-       
-
+                            </div>
                         </div>
-                                <div class="container-fluid">
-                                    <div class="card">
-                                        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                                            <h4 class="card-title mb-0">Tasks</h4>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <input type="text" class="form-control rounded-pill border" placeholder="Type a keyword..." id="taskSearchInput" style="width: 220px; min-width: 180px;">
-                                                {% if is_project_manager %}
-                                                <button type="button" class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target=".create-task">
-                                                    <i class="mdi mdi-plus me-1"></i> Create Task
-                                                </button>
-                                                {% endif %}
-                                            </div>
-                                        </div>
+                 </div>
+               </div>
+                    <div class="container-fluid">
+                        <div class="card">
+                            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <h4 class="card-title mb-0">Tasks</h4>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="text" class="form-control rounded-pill border" placeholder="Type a keyword..." id="taskSearchInput" style="width: 220px; min-width: 180px;">
+                                    {% if is_project_manager %}
+                                    <button type="button" class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target=".create-task">
+                                        <i class="mdi mdi-plus me-1"></i> Create Task
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
 
-                                        <div class="card-body">
-                                            <div id="project-tasks-table-gridjs" class="table-responsive"></div>
+                            <div class="card-body">
+                                <div id="project-tasks-table-gridjs" class="table-responsive"></div>
 
                                             <!-- Hidden table: data source for GridJS (responsive table rendered above) -->
                                             <table id="projectTasksTable" class="table d-none">
@@ -344,20 +354,60 @@
                                                             <td colspan="6" class="text-muted text-center py-4">No tasks yet.</td>
                                                         </tr>
                                                         {% endfor %}
-                                                    </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-
+                                                    </div>
+                                                    {% else %}
+                                                    <span class="text-muted">Unassigned</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if task_info.status == 'Completed' %}
+                                                    <div class="badge badge-soft-success font-size-12 task-status-badge">Completed</div>
+                                                    {% elif task_info.status == 'Ongoing' %}
+                                                    <div class="badge bg-soft-warning text-warning font-size-12 task-status-badge">Ongoing</div>
+                                                    {% else %}
+                                                    <div class="badge bg-soft-secondary text-secondary font-size-12 task-status-badge">{{ task_info.status }}</div>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {{ task_info.progress }}
+                                                </td>
+                                                <td>
+                                                    {% if task_info.can_edit %}
+                                                        {% if task_info.status != 'Completed' %}
+                                                        <button type="button" class="btn btn-sm btn-outline-primary mark-complete-btn" data-task-id="{{ task_info.task.task_id }}">
+                                                            <i class="mdi mdi-check"></i> Mark Complete
+                                                        </button>
+                                                        {% else %}
+                                                        <span class="text-muted small">Task Completed</span>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {% if task_info.status == 'Completed' %}
+                                                        <span class="text-muted small">Task Completed</span>
+                                                        {% else %}
+                                                        <span class="text-muted small">View only</span>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% else %}
+                                            <tr>
+                                                <td colspan="5" class="text-muted text-center py-4">No tasks yet.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <!-- end row -->
-
                     </div>
-                    <!-- container-fluid -->
-                </div>
-                <!-- End Page-content -->
+
             </div>
+            <!-- end row -->
+
+        </div>
+        <!-- container-fluid -->
+    </div>
+    <!-- End Page-content -->
+</div>
 
         <div class="modal fade" id="addNotesProjectModal" tabindex="-1" aria-labelledby="addTopicModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -451,7 +501,10 @@
                                <div class="row mt-2">
                                 <div class="col-12 text-end">
                                     <button type="button" class="btn btn-danger me-1" data-bs-dismiss="modal"><i class="bx bx-x me-1 align-middle"></i> Cancel</button>
-                                    <button type="submit" class="btn btn-success" id="btn-save-event"><i class="bx bx-check me-1 align-middle"></i> Confirm</button>
+                                    <button type="submit" class="btn btn-success" id="btn-save-event">
+                                        <span id="createTaskSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                        <span id="createTaskBtnText"><i class="bx bx-check me-1 align-middle"></i> Confirm</span>
+                                    </button>
                                 </div>
                             </div>
                             </div>
@@ -506,7 +559,10 @@
                                 </div>
                                 <div class="d-flex justify-content-end gap-2 mt-4">
                                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                    <button type="submit" class="btn btn-primary" id="btn-edit-project">
+                                        <span id="editProjectSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                        <span id="editProjectBtnText">Save Changes</span>
+                                    </button>
                                 </div>
                             </form>
                         </div>

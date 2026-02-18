@@ -19,7 +19,7 @@ File: grid Js File
 */
 
 
-// 1. Department-Wide Projects Table (with filters)
+// 1.  Projects Table (with filters)
 document.addEventListener('DOMContentLoaded', function() {
     let grid1 = null;
     let allData1 = [];
@@ -228,41 +228,422 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+//  13 Department-Wide Projects Table (with filters)
+document.addEventListener('DOMContentLoaded', function() {
+    let grid1 = null;
+    let allData1 = [];
+    let currentFilters1 = {
+        status: 'all',
+        priority: 'all',
+        dateRange: null,
+        search: ''
+    };
+    
+    function initDepartmentWideProjectsGrid() {
+        const tableElement = document.getElementById("projectsDeptTable");
+        const gridContainer = document.getElementById("table13-gridjs");
+        
+        if (!tableElement || !gridContainer) {
+            return false;
+        }
+        
+        if (typeof gridjs === 'undefined') {
+            return false;
+        }
+        
+        try {
+            // Extract data from table rows with all metadata
+            const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
+            allData1 = tableRows.map(tr => ({
+                status: tr.getAttribute('data-status') || '',
+                priority: tr.getAttribute('data-priority') || '',
+                startDate: tr.getAttribute('data-start-date') || '',
+                endDate: tr.getAttribute('data-end-date') || '',
+                cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML)),
+                searchText: Array.from(tr.querySelectorAll('td')).map(td => td.textContent || '').join(' ').toLowerCase()
+            }));
+            
+            // Filter function
+            const getFilteredData = () => {
+                return allData1.filter(row => {
+                    // Search filter
+                    if (currentFilters1.search && !row.searchText.includes(currentFilters1.search.toLowerCase())) {
+                        return false;
+                    }
+                    
+                    // Status filter
+                    if (currentFilters1.status !== 'all' && row.status !== currentFilters1.status) {
+                        return false;
+                    }
+                    
+                    // Priority filter
+                    if (currentFilters1.priority !== 'all' && row.priority !== currentFilters1.priority) {
+                        return false;
+                    }
+                    
+                    // Date range filter
+                    if (currentFilters1.dateRange && currentFilters1.dateRange.length === 2) {
+                        const filterStart = new Date(currentFilters1.dateRange[0]);
+                        const filterEnd = new Date(currentFilters1.dateRange[1]);
+                        filterStart.setHours(0, 0, 0, 0);
+                        filterEnd.setHours(23, 59, 59, 999);
+                        
+                        let hasDateInRange = false;  
+
+                        
+                        
+                        if (row.startDate) {
+                            const projectStart = new Date(row.startDate);
+
+                              
+                            projectStart.setHours(0, 0, 0, 0);
+                            if (projectStart >= filterStart && projectStart <= filterEnd) {
+                                hasDateInRange = true;
+                            }
+                        }
+                        
+                        if (!hasDateInRange && row.endDate) {
+                            const projectEnd = new Date(row.endDate);
+                            projectEnd.setHours(23, 59, 59, 999);
+                            if (projectEnd >= filterStart && projectEnd <= filterEnd) {
+                                hasDateInRange = true;
+                            }
+                        }
+                        
+                        if (!hasDateInRange && row.startDate && row.endDate) {
+                            const projectStart = new Date(row.startDate);
+                            const projectEnd = new Date(row.endDate);
+                            projectStart.setHours(0, 0, 0, 0);
+                            projectEnd.setHours(23, 59, 59, 999);
+                            
+                            if ((projectStart <= filterEnd && projectEnd >= filterStart)) {
+                                hasDateInRange = true;
+                            }
+                        }
+                        
+                        if (!hasDateInRange) {
+                            return false;
+                        }
+                    }
+                    
+                    return true;
+                });
+            };
+            
+            // Initialize Grid.js
+            grid1 = new gridjs.Grid({
+                columns: ["Project Name", "Priority", "Start Date", "Deadline", "Status", "Progress", "Project Manager", "Client", "Department", "Last Tasks"],
+                data: getFilteredData().map(row => row.cells),
+                pagination: { limit: 10 },
+                sort: true,
+                search: false, // Disable built-in search, handle manually
+                className: { table: "table table-centered align-middle" }
+            }).render(gridContainer);
+            setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
+            
+            // Update grid function
+            const updateGrid = () => {
+                if (grid1) {
+                    const filteredData = getFilteredData().map(row => row.cells);
+                    grid1.updateConfig({ data: filteredData }).forceRender();
+                    setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
+                }
+            };
+            
+            // Handle status filter
+            const statusFilter = document.getElementById('statusFilterDeptProjects');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', function() {
+                    currentFilters1.status = this.value;
+                    updateGrid();
+                });
+            }
+            
+            // Handle priority filter
+            const priorityFilter = document.getElementById('priorityFilterDeptProjects');
+            if (priorityFilter) {
+                priorityFilter.addEventListener('change', function() {
+                    currentFilters1.priority = this.value;
+                    updateGrid();
+                });
+            }
+            
+            // Handle search input
+            const searchInput1 = document.getElementById('searchDeptProjects');
+            if (searchInput1) {
+                let searchTimeout1;
+                searchInput1.addEventListener('input', function() {
+                    clearTimeout(searchTimeout1);
+                    searchTimeout1 = setTimeout(() => {
+                        currentFilters1.search = this.value.trim();
+                        updateGrid();
+                    }, 300);
+                });
+            }
+            
+            // Initialize Flatpickr date range picker
+            const dateRangeInput = document.getElementById('datepicker-range-deptprojects');
+            if (dateRangeInput) {
+                const initDatePicker = () => {
+                    if (typeof flatpickr !== 'undefined') {
+                        flatpickr(dateRangeInput, {
+                            mode: 'range',
+                            dateFormat: 'Y-m-d',
+                            placeholder: 'Select Date Range',
+                            onChange: function(selectedDates, dateStr, instance) {
+                                if (selectedDates.length === 2) {
+                                    currentFilters1.dateRange = [
+                                        selectedDates[0].toISOString().split('T')[0],
+                                        selectedDates[1].toISOString().split('T')[0]
+                                    ];
+                                    updateGrid();
+                                } else if (selectedDates.length === 1) {
+                                    // Single date: filter to projects active on that day (same start and end)
+                                    const d = selectedDates[0].toISOString().split('T')[0];
+                                    currentFilters1.dateRange = [d, d];
+                                    updateGrid();
+                                } else if (selectedDates.length === 0) {
+                                    currentFilters1.dateRange = null;
+                                    updateGrid();
+                                }
+                            }
+                        });
+                    } else {
+                        setTimeout(initDatePicker, 100);
+                    }
+                };
+                initDatePicker();
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Department-Wide Projects Grid initialization error:', error);
+            return false;
+        }
+    }
+    
+    // Try to initialize immediately, then retry if Grid.js not ready
+    if (!initDepartmentWideProjectsGrid()) {
+        let attempts = 0;
+        const checkInterval = setInterval(function() {
+            attempts++;
+            if (initDepartmentWideProjectsGrid()) {
+                clearInterval(checkInterval);
+            } else if (attempts >= 50) {
+                clearInterval(checkInterval);
+                console.warn('Department-Wide Projects: Failed to initialize after 5 seconds');
+            }
+        }, 100);
+    }
+});
+
+
 // 2. Company-Wide Projects (search filter)
 document.addEventListener('DOMContentLoaded', function() {
-    const tbl = document.getElementById("projectsTableCompany");
-    const container = document.getElementById("table2-gridjs");
-    if (!tbl || !container || typeof gridjs === 'undefined') return;
+    let grid1 = null;
+    let allData1 = [];
+    let currentFilters1 = {
+        status: 'all',
+        priority: 'all',
+        dateRange: null,
+        search: ''
+    };
+    
+    function initDepartmentWideProjectsGrid() {
+        const tableElement = document.getElementById("projectsTableCompany");
+        const gridContainer = document.getElementById("table2-gridjs");
+        
+        if (!tableElement || !gridContainer) {
+            return false;
+        }
+        
+        if (typeof gridjs === 'undefined') {
+            return false;
+        }
+        
+        try {
+            // Extract data from table rows with all metadata
+            const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
+            allData1 = tableRows.map(tr => ({
+                status: tr.getAttribute('data-status') || '',
+                priority: tr.getAttribute('data-priority') || '',
+                startDate: tr.getAttribute('data-start-date') || '',
+                endDate: tr.getAttribute('data-end-date') || '',
+                cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML)),
+                searchText: Array.from(tr.querySelectorAll('td')).map(td => td.textContent || '').join(' ').toLowerCase()
+            }));
+            
+            // Filter function
+            const getFilteredData = () => {
+                return allData1.filter(row => {
+                    // Search filter
+                    if (currentFilters1.search && !row.searchText.includes(currentFilters1.search.toLowerCase())) {
+                        return false;
+                    }
+                    
+                    // Status filter
+                    if (currentFilters1.status !== 'all' && row.status !== currentFilters1.status) {
+                        return false;
+                    }
+                    
+                    // Priority filter
+                    if (currentFilters1.priority !== 'all' && row.priority !== currentFilters1.priority) {
+                        return false;
+                    }
+                    
+                    // Date range filter
+                    if (currentFilters1.dateRange && currentFilters1.dateRange.length === 2) {
+                        const filterStart = new Date(currentFilters1.dateRange[0]);
+                        const filterEnd = new Date(currentFilters1.dateRange[1]);
+                        filterStart.setHours(0, 0, 0, 0);
+                        filterEnd.setHours(23, 59, 59, 999);
+                        
+                        let hasDateInRange = false;  
 
-    const rows = Array.from(tbl.querySelectorAll('tbody tr'));
-    const allData2 = rows.map(tr => ({
-        cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML)),
-        searchText: Array.from(tr.querySelectorAll('td')).map(td => td.textContent || '').join(' ').toLowerCase()
-    }));
+                        
+                        
+                        if (row.startDate) {
+                            const projectStart = new Date(row.startDate);
 
-    let search2 = '';
-    const filtered = () => allData2.filter(row => !search2 || row.searchText.includes(search2.toLowerCase()));
-    const grid2 = new gridjs.Grid({
-        columns: ["Project Name", "Start Date", "Deadline", "Status", "Progress", "Project Manager", "Client", "Department", "Last Tasks"],
-        data: filtered().map(row => row.cells),
-        pagination: { limit: 10 },
-        sort: true,
-        search: false,
-        className: { table: "table table-centered align-middle" }
-    }).render(container);
-    setTimeout(function() { applyProgressBarWidths(container); }, 100);
-
-    const searchEl = document.getElementById('searchCompanyProjects');
-    if (searchEl) {
-        let t;
-        searchEl.addEventListener('input', function() {
-            clearTimeout(t);
-            t = setTimeout(() => {
-                search2 = this.value.trim();
-                grid2.updateConfig({ data: filtered().map(row => row.cells) }).forceRender();
-                setTimeout(function() { applyProgressBarWidths(container); }, 0);
-            }, 300);
-        });
+                              
+                            projectStart.setHours(0, 0, 0, 0);
+                            if (projectStart >= filterStart && projectStart <= filterEnd) {
+                                hasDateInRange = true;
+                            }
+                        }
+                        
+                        if (!hasDateInRange && row.endDate) {
+                            const projectEnd = new Date(row.endDate);
+                            projectEnd.setHours(23, 59, 59, 999);
+                            if (projectEnd >= filterStart && projectEnd <= filterEnd) {
+                                hasDateInRange = true;
+                            }
+                        }
+                        
+                        if (!hasDateInRange && row.startDate && row.endDate) {
+                            const projectStart = new Date(row.startDate);
+                            const projectEnd = new Date(row.endDate);
+                            projectStart.setHours(0, 0, 0, 0);
+                            projectEnd.setHours(23, 59, 59, 999);
+                            
+                            if ((projectStart <= filterEnd && projectEnd >= filterStart)) {
+                                hasDateInRange = true;
+                            }
+                        }
+                        
+                        if (!hasDateInRange) {
+                            return false;
+                        }
+                    }
+                    
+                    return true;
+                });
+            };
+            
+            // Initialize Grid.js
+            grid1 = new gridjs.Grid({
+                columns: ["Project Name", "Start Date", "Deadline", "Status", "Progress", "Project Manager", "Client", "Department", "Last Tasks"],
+                data: getFilteredData().map(row => row.cells),
+                pagination: { limit: 10 },
+                sort: true,
+                search: false, // Disable built-in search, handle manually
+                className: { table: "table table-centered align-middle" }
+            }).render(gridContainer);
+            setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
+            
+            // Update grid function
+            const updateGrid = () => {
+                if (grid1) {
+                    const filteredData = getFilteredData().map(row => row.cells);
+                    grid1.updateConfig({ data: filteredData }).forceRender();
+                    setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
+                }
+            };
+            
+            // Handle status filter
+            const statusFilter = document.getElementById('statusCompanyFilter');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', function() {
+                    currentFilters1.status = this.value;
+                    updateGrid();
+                });
+            }
+            
+            // Handle priority filter
+            const priorityFilter = document.getElementById('priorityCompanyFilter');
+            if (priorityFilter) {
+                priorityFilter.addEventListener('change', function() {
+                    currentFilters1.priority = this.value;
+                    updateGrid();
+                });
+            }
+            
+            // Handle search input
+            const searchInput1 = document.getElementById('searchCompanyProjects');
+            if (searchInput1) {
+                let searchTimeout1;
+                searchInput1.addEventListener('input', function() {
+                    clearTimeout(searchTimeout1);
+                    searchTimeout1 = setTimeout(() => {
+                        currentFilters1.search = this.value.trim();
+                        updateGrid();
+                    }, 300);
+                });
+            }
+            
+            // Initialize Flatpickr date range picker
+            const dateRangeInput = document.getElementById('datepicker-range-company');
+            if (dateRangeInput) {
+                const initDatePicker = () => {
+                    if (typeof flatpickr !== 'undefined') {
+                        flatpickr(dateRangeInput, {
+                            mode: 'range',
+                            dateFormat: 'Y-m-d',
+                            placeholder: 'Select Date Range',
+                            onChange: function(selectedDates, dateStr, instance) {
+                                if (selectedDates.length === 2) {
+                                    currentFilters1.dateRange = [
+                                        selectedDates[0].toISOString().split('T')[0],
+                                        selectedDates[1].toISOString().split('T')[0]
+                                    ];
+                                    updateGrid();
+                                } else if (selectedDates.length === 1) {
+                                    // Single date: filter to projects active on that day (same start and end)
+                                    const d = selectedDates[0].toISOString().split('T')[0];
+                                    currentFilters1.dateRange = [d, d];
+                                    updateGrid();
+                                } else if (selectedDates.length === 0) {
+                                    currentFilters1.dateRange = null;
+                                    updateGrid();
+                                }
+                            }
+                        });
+                    } else {
+                        setTimeout(initDatePicker, 100);
+                    }
+                };
+                initDatePicker();
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Department-Wide Projects Grid initialization error:', error);
+            return false;
+        }
+    }
+    
+    // Try to initialize immediately, then retry if Grid.js not ready
+    if (!initDepartmentWideProjectsGrid()) {
+        let attempts = 0;
+        const checkInterval = setInterval(function() {
+            attempts++;
+            if (initDepartmentWideProjectsGrid()) {
+                clearInterval(checkInterval);
+            } else if (attempts >= 50) {
+                clearInterval(checkInterval);
+                console.warn('Department-Wide Projects: Failed to initialize after 5 seconds');
+            }
+        }, 100);
     }
 });
 
@@ -366,6 +747,392 @@ if (table7Req && table7Res) {
         className: { table: "table table-centered align-middle" }
     }).render(table7Res);
 }
+
+// 8 my task table
+document.addEventListener('DOMContentLoaded', function() {
+    let grid = null;
+    let allData = [];
+    let currentFilters = {
+        department: 'All',
+        status: 'all',
+        priority: 'all',
+        dateRange: null,
+        search: ''
+    };
+    
+    function initMyTasksGrid() {
+        const tableElement = document.getElementById('projectsTableMyTasks');
+        const gridContainer = document.getElementById("table8-gridjs");
+        const dropdownButton = document.getElementById('categorySelect');
+        const dropdownMenu = dropdownButton ? dropdownButton.closest('.btn-group')?.querySelectorAll('.dropdown-item') || [] : [];
+        
+        // Must have table and grid container; categorySelect/dropdown are optional (for Dept Tasks page)
+        if (!tableElement || !gridContainer) {
+            return false;
+        }
+        
+        if (typeof gridjs === 'undefined') {
+            return false;
+        }
+        
+        try {
+            const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
+            allData = tableRows.map(tr => ({
+                task_name: tr.getAttribute('data-task-name') || '',
+                category: tr.getAttribute('data-category') || '',
+                status: tr.getAttribute('data-status') || '',
+                priority: tr.getAttribute('data-priority') || '',
+                startDate: tr.getAttribute('data-start-date') || '',
+                endDate: tr.getAttribute('data-end-date') || '',
+                cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML)),
+                searchText: Array.from(tr.querySelectorAll('td')).map(td => td.textContent || '').join(' ').toLowerCase()
+            }));
+            
+            const getFilteredData = () => {
+                return allData.filter(row => {
+                    if (currentFilters.search && !row.searchText.includes(currentFilters.search.toLowerCase())) {
+                        return false;
+                    }
+                    if (currentFilters.department !== 'All' && row.category && row.category !== currentFilters.department) {
+                        return false;
+                    }
+                    if (currentFilters.status !== 'all' && row.status !== currentFilters.status) {
+                        return false;
+                    }
+                    if (currentFilters.priority !== 'all' && row.priority !== currentFilters.priority) {
+                        return false;
+                    }
+                    if (currentFilters.dateRange && currentFilters.dateRange.length === 2) {
+                        const filterStart = new Date(currentFilters.dateRange[0]);
+                        const filterEnd = new Date(currentFilters.dateRange[1]);
+                        filterStart.setHours(0, 0, 0, 0);
+                        filterEnd.setHours(23, 59, 59, 999);
+                        let hasDateInRange = false;
+                        if (row.startDate) {
+                            const projectStart = new Date(row.startDate);
+                            projectStart.setHours(0, 0, 0, 0);
+                            if (projectStart >= filterStart && projectStart <= filterEnd) hasDateInRange = true;
+                        }
+                        if (!hasDateInRange && row.endDate) {
+                            const projectEnd = new Date(row.endDate);
+                            projectEnd.setHours(23, 59, 59, 999);
+                            if (projectEnd >= filterStart && projectEnd <= filterEnd) hasDateInRange = true;
+                        }
+                        if (!hasDateInRange && row.startDate && row.endDate) {
+                            const projectStart = new Date(row.startDate);
+                            const projectEnd = new Date(row.endDate);
+                            projectStart.setHours(0, 0, 0, 0);
+                            projectEnd.setHours(23, 59, 59, 999);
+                            if (projectStart <= filterEnd && projectEnd >= filterStart) hasDateInRange = true;
+                        }
+                        if (!hasDateInRange) return false;
+                    }
+                    return true;
+                });
+            };
+            
+            grid = new gridjs.Grid({
+                columns: ["Task Name", "Project", "Project Manager", "Priority", "Status", "Start Date", "Deadline", "Progress", "Sub Tasks"],
+                data: getFilteredData().map(row => row.cells),
+                pagination: { limit: 10 },
+                sort: true,
+                search: false,
+                className: { table: 'table table-bordered' }
+            }).render(gridContainer);
+            setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
+            
+            const updateGrid = () => {
+                if (grid) {
+                    grid.updateConfig({ data: getFilteredData().map(row => row.cells) }).forceRender();
+                    setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
+                }
+            };
+            
+            // Use My Tasks filter IDs first, fallback to Dept IDs for shared pages
+            const searchInput = document.getElementById('searchMyTaskProjects') || document.getElementById('searchDeptProjects');
+            if (searchInput) {
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        currentFilters.search = this.value;
+                        updateGrid();
+                    }, 300);
+                });
+            }
+            
+            dropdownMenu.forEach(item => {
+                item.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const selectedValue = this.getAttribute('data-value');
+                    dropdownButton.innerHTML = `${this.textContent} <i class="mdi mdi-chevron-down"></i>`;
+                    currentFilters.department = selectedValue || "All";
+                    updateGrid();
+                });
+            });
+            
+            const statusFilter = document.getElementById('statusFilter-mytask') || document.getElementById('statusFilterDept');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', function() {
+                    currentFilters.status = this.value;
+                    updateGrid();
+                });
+            }
+            
+            const priorityFilter = document.getElementById('priorityFilter-mytask') || document.getElementById('priorityFilterDept');
+            if (priorityFilter) {
+                priorityFilter.addEventListener('change', function() {
+                    currentFilters.priority = this.value;
+                    updateGrid();
+                });
+            }
+            
+            const dateRangeInput = document.getElementById('datepicker-range-mytask') || document.getElementById('datepicker-range-dept');
+            if (dateRangeInput) {
+                const initDatePicker = () => {
+                    if (typeof flatpickr !== 'undefined') {
+                        flatpickr(dateRangeInput, {
+                            mode: 'range',
+                            dateFormat: 'Y-m-d',
+                            placeholder: 'Select Date Range',
+                            onChange: function(selectedDates) {
+                                if (selectedDates.length === 2) {
+                                    currentFilters.dateRange = [
+                                        selectedDates[0].toISOString().split('T')[0],
+                                        selectedDates[1].toISOString().split('T')[0]
+                                    ];
+                                    updateGrid();
+                                } else if (selectedDates.length === 1) {
+                                    const d = selectedDates[0].toISOString().split('T')[0];
+                                    currentFilters.dateRange = [d, d];
+                                    updateGrid();
+                                } else if (selectedDates.length === 0) {
+                                    currentFilters.dateRange = null;
+                                    updateGrid();
+                                }
+                            }
+                        });
+                    } else {
+                        setTimeout(initDatePicker, 100);
+                    }
+                };
+                initDatePicker();
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('My Tasks Grid initialization error:', error);
+            return false;
+        }
+    }
+    
+    if (!initMyTasksGrid()) {
+        let attempts = 0;
+        const checkInterval = setInterval(function() {
+            attempts++;
+            if (initMyTasksGrid()) {
+                clearInterval(checkInterval);
+            } else if (attempts >= 50) {
+                clearInterval(checkInterval);
+                console.warn('My Tasks: Failed to initialize after 5 seconds');
+            }
+        }, 100);
+    }
+});
+
+    
+// 9 Dept Task table
+document.addEventListener('DOMContentLoaded', function() {
+    let grid = null;
+    let allData = [];
+    let currentFilters = {
+        department: 'All',
+        status: 'all',
+        priority: 'all',
+        dateRange: null,
+        search: ''
+    };
+    
+    function initMyTasksGrid() {
+        const tableElement = document.getElementById('projectsTableDeptTasks');
+        const gridContainer = document.getElementById("table9-gridjs");
+        const dropdownButton = document.getElementById('categorySelect');
+        const dropdownMenu = dropdownButton ? dropdownButton.closest('.btn-group')?.querySelectorAll('.dropdown-item') || [] : [];
+        
+        // Must have table and grid container; categorySelect/dropdown are optional (for Dept Tasks page)
+        if (!tableElement || !gridContainer) {
+            return false;
+        }
+        
+        if (typeof gridjs === 'undefined') {
+            return false;
+        }
+        
+        try {
+            const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
+            allData = tableRows.map(tr => ({
+                task_name: tr.getAttribute('data-task-name') || '',
+                category: tr.getAttribute('data-category') || '',
+                status: tr.getAttribute('data-status') || '',
+                priority: tr.getAttribute('data-priority') || '',
+                startDate: tr.getAttribute('data-start-date') || '',
+                endDate: tr.getAttribute('data-end-date') || '',
+                cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML)),
+                searchText: Array.from(tr.querySelectorAll('td')).map(td => td.textContent || '').join(' ').toLowerCase()
+            }));
+            
+            const getFilteredData = () => {
+                return allData.filter(row => {
+                    if (currentFilters.search && !row.searchText.includes(currentFilters.search.toLowerCase())) {
+                        return false;
+                    }
+                    if (currentFilters.department !== 'All' && row.category && row.category !== currentFilters.department) {
+                        return false;
+                    }
+                    if (currentFilters.status !== 'all' && row.status !== currentFilters.status) {
+                        return false;
+                    }
+                    if (currentFilters.priority !== 'all' && row.priority !== currentFilters.priority) {
+                        return false;
+                    }
+                    if (currentFilters.dateRange && currentFilters.dateRange.length === 2) {
+                        const filterStart = new Date(currentFilters.dateRange[0]);
+                        const filterEnd = new Date(currentFilters.dateRange[1]);
+                        filterStart.setHours(0, 0, 0, 0);
+                        filterEnd.setHours(23, 59, 59, 999);
+                        let hasDateInRange = false;
+                        if (row.startDate) {
+                            const projectStart = new Date(row.startDate);
+                            projectStart.setHours(0, 0, 0, 0);
+                            if (projectStart >= filterStart && projectStart <= filterEnd) hasDateInRange = true;
+                        }
+                        if (!hasDateInRange && row.endDate) {
+                            const projectEnd = new Date(row.endDate);
+                            projectEnd.setHours(23, 59, 59, 999);
+                            if (projectEnd >= filterStart && projectEnd <= filterEnd) hasDateInRange = true;
+                        }
+                        if (!hasDateInRange && row.startDate && row.endDate) {
+                            const projectStart = new Date(row.startDate);
+                            const projectEnd = new Date(row.endDate);
+                            projectStart.setHours(0, 0, 0, 0);
+                            projectEnd.setHours(23, 59, 59, 999);
+                            if (projectStart <= filterEnd && projectEnd >= filterStart) hasDateInRange = true;
+                        }
+                        if (!hasDateInRange) return false;
+                    }
+                    return true;
+                });
+            };
+            
+            grid = new gridjs.Grid({
+                columns: ["Task Name", "Project", "Department", "Project Manager", "Priority", "Status", "Start Date", "Deadline", "Progress", "Sub Tasks"],
+                data: getFilteredData().map(row => row.cells),
+                pagination: { limit: 10 },
+                sort: true,
+                search: false,
+                className: { table: 'table table-bordered' }
+            }).render(gridContainer);
+            setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
+            
+            const updateGrid = () => {
+                if (grid) {
+                    grid.updateConfig({ data: getFilteredData().map(row => row.cells) }).forceRender();
+                    setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
+                }
+            };
+            
+            // Dept Task filter IDs (from dept_task.html)
+            const searchInput = document.getElementById('searchDeptTaskProjects');
+            if (searchInput) {
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        currentFilters.search = this.value;
+                        updateGrid();
+                    }, 300);
+                });
+            }
+            
+            dropdownMenu.forEach(item => {
+                item.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const selectedValue = this.getAttribute('data-value');
+                    dropdownButton.innerHTML = `${this.textContent} <i class="mdi mdi-chevron-down"></i>`;
+                    currentFilters.department = selectedValue || "All";
+                    updateGrid();
+                });
+            });
+            
+            const statusFilter = document.getElementById('statusFilter-Depttask');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', function() {
+                    currentFilters.status = this.value;
+                    updateGrid();
+                });
+            }
+            
+            const priorityFilter = document.getElementById('priorityFilter-Depttask');
+            if (priorityFilter) {
+                priorityFilter.addEventListener('change', function() {
+                    currentFilters.priority = this.value;
+                    updateGrid();
+                });
+            }
+            
+            const dateRangeInput = document.getElementById('datepicker-range-Depttask');
+            if (dateRangeInput) {
+                const initDatePicker = () => {
+                    if (typeof flatpickr !== 'undefined') {
+                        flatpickr(dateRangeInput, {
+                            mode: 'range',
+                            dateFormat: 'Y-m-d',
+                            placeholder: 'Select Date Range',
+                            onChange: function(selectedDates) {
+                                if (selectedDates.length === 2) {
+                                    currentFilters.dateRange = [
+                                        selectedDates[0].toISOString().split('T')[0],
+                                        selectedDates[1].toISOString().split('T')[0]
+                                    ];
+                                    updateGrid();
+                                } else if (selectedDates.length === 1) {
+                                    const d = selectedDates[0].toISOString().split('T')[0];
+                                    currentFilters.dateRange = [d, d];
+                                    updateGrid();
+                                } else if (selectedDates.length === 0) {
+                                    currentFilters.dateRange = null;
+                                    updateGrid();
+                                }
+                            }
+                        });
+                    } else {
+                        setTimeout(initDatePicker, 100);
+                    }
+                };
+                initDatePicker();
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Dept Tasks Grid initialization error:', error);
+            return false;
+        }
+    }
+    
+    if (!initMyTasksGrid()) {
+        let attempts = 0;
+        const checkInterval = setInterval(function() {
+            attempts++;
+            if (initMyTasksGrid()) {
+                clearInterval(checkInterval);
+            } else if (attempts >= 50) {
+                clearInterval(checkInterval);
+                console.warn('Dept Tasks: Failed to initialize after 5 seconds');
+            }
+        }, 100);
+    }
+});
+
 
 // 6. Department Projects Table (from all_departments.html)
 document.addEventListener('DOMContentLoaded', function() {
@@ -596,10 +1363,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// 10. Approval Table
+// 10. Approval Table (skip when container is hidden - approvals page shows raw table)
 const table10Req = document.getElementById("projectsApproval");
 const table10Res = document.getElementById("table10-gridjs");
-if (table10Req && table10Res) {
+if (table10Req && table10Res && !table10Res.classList.contains("d-none")) {
     new gridjs.Grid({
         from: table10Req,
         pagination: { limit: 10 },
@@ -653,7 +1420,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return gridjs.html(
                         '<a href="javascript:void(0)" class="company-wide-report-name-link text-dark text-decoration-none" data-report-id="' + escapeHtml(id) + '">' + escapeHtml(name) + '</a>'
                     );
-                }
+                }   
             },
             'Start',
             'End',
@@ -745,5 +1512,197 @@ document.addEventListener('DOMContentLoaded', function() {
             onChange: applyFilters,
             onClear: applyFilters
         });
+    }
+});
+
+// 12. All task Table
+document.addEventListener('DOMContentLoaded', function() {
+    let grid = null;
+    let allData = [];
+    let currentFilters = {
+        department: 'All',
+        status: 'all',
+        priority: 'all',
+        dateRange: null,
+        search: ''
+    };
+    
+    function initMyTasksGrid() {
+        const tableElement = document.getElementById('projectsTableAllTasks');
+        const gridContainer = document.getElementById("table12-gridjs");
+        const dropdownButton = document.getElementById('categorySelect');
+        const dropdownMenu = dropdownButton ? dropdownButton.closest('.btn-group')?.querySelectorAll('.dropdown-item') || [] : [];
+        
+        // Must have table and grid container; categorySelect/dropdown are optional (for Dept Tasks page)
+        if (!tableElement || !gridContainer) {
+            return false;
+        }
+        
+        if (typeof gridjs === 'undefined') {
+            return false;
+        }
+        
+        try {
+            const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
+            allData = tableRows.map(tr => ({
+                task_name: tr.getAttribute('data-task-name') || '',
+                category: tr.getAttribute('data-category') || '',
+                status: tr.getAttribute('data-status') || '',
+                priority: tr.getAttribute('data-priority') || '',
+                startDate: tr.getAttribute('data-start-date') || '',
+                endDate: tr.getAttribute('data-end-date') || '',
+                cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML)),
+                searchText: Array.from(tr.querySelectorAll('td')).map(td => td.textContent || '').join(' ').toLowerCase()
+            }));
+            
+            const getFilteredData = () => {
+                return allData.filter(row => {
+                    if (currentFilters.search && !row.searchText.includes(currentFilters.search.toLowerCase())) {
+                        return false;
+                    }
+                    if (currentFilters.department !== 'All' && row.category && row.category !== currentFilters.department) {
+                        return false;
+                    }
+                    if (currentFilters.status !== 'all' && row.status !== currentFilters.status) {
+                        return false;
+                    }
+                    if (currentFilters.priority !== 'all' && row.priority !== currentFilters.priority) {
+                        return false;
+                    }
+                    if (currentFilters.dateRange && currentFilters.dateRange.length === 2) {
+                        const filterStart = new Date(currentFilters.dateRange[0]);
+                        const filterEnd = new Date(currentFilters.dateRange[1]);
+                        filterStart.setHours(0, 0, 0, 0);
+                        filterEnd.setHours(23, 59, 59, 999);
+                        let hasDateInRange = false;
+                        if (row.startDate) {
+                            const projectStart = new Date(row.startDate);
+                            projectStart.setHours(0, 0, 0, 0);
+                            if (projectStart >= filterStart && projectStart <= filterEnd) hasDateInRange = true;
+                        }
+                        if (!hasDateInRange && row.endDate) {
+                            const projectEnd = new Date(row.endDate);
+                            projectEnd.setHours(23, 59, 59, 999);
+                            if (projectEnd >= filterStart && projectEnd <= filterEnd) hasDateInRange = true;
+                        }
+                        if (!hasDateInRange && row.startDate && row.endDate) {
+                            const projectStart = new Date(row.startDate);
+                            const projectEnd = new Date(row.endDate);
+                            projectStart.setHours(0, 0, 0, 0);
+                            projectEnd.setHours(23, 59, 59, 999);
+                            if (projectStart <= filterEnd && projectEnd >= filterStart) hasDateInRange = true;
+                        }
+                        if (!hasDateInRange) return false;
+                    }
+                    return true;
+                });
+            };
+            
+            grid = new gridjs.Grid({
+                columns: ["Task Name", "Project", "Department", "Project Manager", "Priority", "Status", "Start Date", "Deadline", "Progress", "Sub Tasks"],
+                data: getFilteredData().map(row => row.cells),
+                pagination: { limit: 10 },
+                sort: true,
+                search: false,
+                className: { table: 'table table-bordered' }
+            }).render(gridContainer);
+            setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
+            
+            const updateGrid = () => {
+                if (grid) {
+                    grid.updateConfig({ data: getFilteredData().map(row => row.cells) }).forceRender();
+                    setTimeout(function() { applyProgressBarWidths(gridContainer); }, 100);
+                }
+            };
+            
+            // Use My Tasks filter IDs first, fallback to Dept IDs for shared pages
+            const searchInput = document.getElementById('searchAllTaskProjects') || document.getElementById('searchDeptProjects');
+            if (searchInput) {
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        currentFilters.search = this.value;
+                        updateGrid();
+                    }, 300);
+                });
+            }
+            
+            dropdownMenu.forEach(item => {
+                item.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const selectedValue = this.getAttribute('data-value');
+                    dropdownButton.innerHTML = `${this.textContent} <i class="mdi mdi-chevron-down"></i>`;
+                    currentFilters.department = selectedValue || "All";
+                    updateGrid();
+                });
+            });
+            
+            const statusFilter = document.getElementById('statusFilter-Alltask') || document.getElementById('statusFilterDept');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', function() {
+                    currentFilters.status = this.value;
+                    updateGrid();
+                });
+            }
+            
+            const priorityFilter = document.getElementById('priorityFilter-Alltask') || document.getElementById('priorityFilterDept');
+            if (priorityFilter) {
+                priorityFilter.addEventListener('change', function() {
+                    currentFilters.priority = this.value;
+                    updateGrid();
+                });
+            }
+            
+            const dateRangeInput = document.getElementById('datepicker-range-Alltask') || document.getElementById('datepicker-range-dept');
+            if (dateRangeInput) {
+                const initDatePicker = () => {
+                    if (typeof flatpickr !== 'undefined') {
+                        flatpickr(dateRangeInput, {
+                            mode: 'range',
+                            dateFormat: 'Y-m-d',
+                            placeholder: 'Select Date Range',
+                            onChange: function(selectedDates) {
+                                if (selectedDates.length === 2) {
+                                    currentFilters.dateRange = [
+                                        selectedDates[0].toISOString().split('T')[0],
+                                        selectedDates[1].toISOString().split('T')[0]
+                                    ];
+                                    updateGrid();
+                                } else if (selectedDates.length === 1) {
+                                    const d = selectedDates[0].toISOString().split('T')[0];
+                                    currentFilters.dateRange = [d, d];
+                                    updateGrid();
+                                } else if (selectedDates.length === 0) {
+                                    currentFilters.dateRange = null;
+                                    updateGrid();
+                                }
+                            }
+                        });
+                    } else {
+                        setTimeout(initDatePicker, 100);
+                    }
+                };
+                initDatePicker();
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('All Tasks Grid initialization error:', error);
+            return false;
+        }
+    }
+    
+    if (!initMyTasksGrid()) {
+        let attempts = 0;
+        const checkInterval = setInterval(function() {
+            attempts++;
+            if (initMyTasksGrid()) {
+                clearInterval(checkInterval);
+            } else if (attempts >= 50) {
+                clearInterval(checkInterval);
+                console.warn('All Tasks: Failed to initialize after 5 seconds');
+            }
+        }, 100);
     }
 });

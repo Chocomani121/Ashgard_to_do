@@ -1,0 +1,253 @@
+{% extends "layout.html" %}
+   {% block content %}
+<div class="main-content">
+                <div class="page-content">
+                    <div class="container-fluid">
+
+                        <div class="row">
+                            <div class="col-md-3 col-xl-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <h6 class="mb-2 text-muted font-size-15">Pending Projects</h6>
+                                                <h4 class="mb-0 font-size-22 fw-bold">{{ stats.pending|default(0) }}</h4>
+                                            </div>
+                                           <div class="avatar-md">
+                                                <div class="avatar-title rounded bg-soft-info">
+                                                    <i class="mdi mdi-file-document-multiple-outline font-size-24 alert-info"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 col-xl-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                          <div class="d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <h6 class="mb-2 text-muted font-size-15">Priority</h6>
+                                                    <h4 class="mb-0 font-size-22 fw-bold">{{ stats.high_priority|default(0) }}</h4>
+                                                </div>
+                                                <div class="avatar-md">
+                                                    <div class="avatar-title rounded bg-soft-danger">
+                                                        <i class="mdi mdi-alert-octagon font-size-24 text-danger" style="color: #8B1A1A !important;"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 col-xl-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <h6 class="mb-2 text-muted font-size-15">Completed</h6>
+                                                    <h4 class="mb-0 font-size-22 fw-bold">{{ stats.completed|default(0) }}</h4>
+                                                </div>
+                                                <div class="avatar-md">
+                                                    <div class="avatar-title rounded bg-soft-success">
+                                                        <i class="mdi mdi-check-decagram font-size-24 text-success" style="color: #155724 !important;"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 col-xl-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                         <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <h6 class="mb-2 text-muted font-size-15">On Hold</h6>
+                                                <h4 class="mb-0 font-size-22 fw-bold">{{ stats.on_hold|default(0) }}</h4>
+                                            </div>
+
+                                            <div class="avatar-md">
+                                                <div class="avatar-title rounded bg-soft-secondary">
+                                                    <i class="bx bx-stopwatch font-size-24 text-secondary" style="color: #2e2e2e !important;"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!-- end row -->
+
+                        <div class="row"> 
+       
+                            <div class="col-12">
+                                  
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="card">
+                                          <div class="card-header d-flex align-items-center">
+                                                <h4 class="card-title mb-0">Department-Wide Projects</h4>
+                                                <div class="ms-auto d-flex gap-2">
+                                                            
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        <!-- Search Bar -->
+                                                        <div style="width: 200px;">
+                                                            <input type="text" id="searchDeptProjects" class="form-control" placeholder="Type a keyword...">
+                                                        </div>
+                                                        <div class="input-group" style="width: 320px;">
+                                                            <span class="input-group-text">
+                                                                <i class="mdi mdi-calendar-range text-muted"></i>
+                                                            </span>
+                                                            <input type="text" id="datepicker-range-deptprojects" class="form-control" placeholder="Select Date Range">
+                                                        </div>
+
+                                                        <div style="width: 180px;">
+                                                            <select class="form-select" id="statusFilterDeptProjects">
+                                                                <option value="all">Status: All</option>
+                                                                <option value="Ongoing">Ongoing</option>
+                                                                <option value="On Hold">On Hold</option>
+                                                                <option value="Completed">Completed</option>
+                                                            </select>
+                                                        </div>
+
+                                                        <div style="width: 180px;">
+                                                            <select class="form-select" id="priorityFilterDeptProjects">
+                                                                <option value="all">Priority: All</option>
+                                                                <option value="Low">Low</option>
+                                                                <option value="Medium">Medium</option>
+                                                                <option value="High">High</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="card-body">
+                                                <div id="table13-gridjs"></div>
+
+                                                <!-- ORIGINAL TABLE (hidden but used by Grid.js) -->
+                                                <table id="projectsDeptTable" class="table d-none">
+                                                      <thead>
+                                                                <tr>
+                                                                    <th style="width: 190px;">Project Name</th>
+                                                                    <th>Priority</th>
+                                                                    <th>Start Date</th>
+                                                                    <th>Deadline</th>
+                                                                    <th>Status</th>
+                                                                    <th>Progress</th>
+                                                                    <th>Project Manager</th>
+                                                                    <th>Client</th>
+                                                                    <th>Last Tasks</th>
+                                                                </tr>
+                                                            </thead>
+                                                        <tbody>
+                                                            {% if projects_data %}
+                                                            {% for item in projects_data %}
+                                                            <tr 
+                                                                data-status="{% if item.project.project_status == 'Pending' or not item.project.project_status %}Ongoing{% elif item.project.project_status == 'Cancelled' %}Ongoing{% else %}{{ item.project.project_status }}{% endif %}"
+                                                                data-priority="{{ item.priority or 'High' }}"
+                                                                data-start-date="{{ item.deadline.start_date.strftime('%Y-%m-%d') if item.deadline and item.deadline.start_date else '' }}"
+                                                                data-end-date="{{ item.deadline.end_date.strftime('%Y-%m-%d') if item.deadline and item.deadline.end_date else '' }}"
+                                                            >
+                                                                <td>
+                                                                    <a href="{{ url_for('project.project_details', id=item.project.project_id) }}" class="text-dark fw-medium">
+                                                                        {{ item.project.project_name or 'Unnamed Project' }}
+                                                                    </a>
+                                                                </td>
+                                                                <td>
+                                                                    {% if item.priority == 'High' %}
+                                                                    <div class="badge badge-soft-danger font-size-12">High</div>
+                                                                    {% elif item.priority == 'Medium' %}
+                                                                    <div class="badge badge-soft-warning font-size-12">Medium</div>
+                                                                    {% elif item.priority == 'Low' %}
+                                                                    <div class="badge badge-soft-info font-size-12">Low</div>
+                                                                    {% else %}
+                                                                    <div class="badge badge-soft-primary font-size-12">{{ item.priority or 'High' }}</div>
+                                                                    {% endif %}
+                                                                </td>
+                                                                <td style="width: 190px;">
+                                                                    <div class="d-flex align-items-center">
+                                                                        {% if item.deadline and item.deadline.start_date %}
+                                                                        {{ item.deadline.start_date.strftime('%m / %d / %Y') }}
+                                                                        {% else %}
+                                                                        N/A
+                                                                        {% endif %}
+                                                                    </div>
+                                                                </td>
+                                                                <td style="width: 190px;">
+                                                                    <div class="d-flex align-items-center deadline-end {% if item.deadline and item.deadline.end_date and item.deadline.end_date.date() < today %}text-danger{% endif %}">
+                                                                        {% if item.deadline and item.deadline.end_date %}
+                                                                        {{ item.deadline.end_date.strftime('%m / %d / %Y') }}
+                                                                        {% else %}
+                                                                        N/A
+                                                                        {% endif %}
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    {% set display_status = 'Ongoing' if (item.project.project_status == 'Pending' or not item.project.project_status or item.project.project_status == 'Cancelled') else item.project.project_status %}
+                                                                    {% if display_status == 'Ongoing' %}
+                                                                    <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                                                    {% elif display_status == 'Completed' %}
+                                                                    <div class="badge badge-soft-success font-size-12">Completed</div>
+                                                                    {% elif display_status == 'On Hold' %}
+                                                                    <div class="badge badge-soft-secondary font-size-12">On Hold</div>
+                                                                    {% else %}
+                                                                    <div class="badge badge-soft-warning font-size-12">Ongoing</div>
+                                                                    {% endif %}
+                                                                </td>
+                                                                <td>
+                                                                    {% set pct = item.progress_pct|default(0) %}
+                                                                    <div class="progress">
+                                                                        <div class="progress-bar progress-bar-striped progress-bar-dynamic" role="progressbar" data-width-pct="{{ pct }}" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100">{{ pct }}%</div>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    {{ item.manager.name if item.manager and item.manager.name else (item.manager.username if item.manager else 'N/A') }}
+                                                                </td>
+                                                                <td>
+                                                                    {{ item.project.client_name or 'N/A' }}
+                                                                </td>
+                                                                <td>
+                                                                    {{ item.department.department_name if item.department else 'N/A' }}
+                                                                </td>
+                                                                <td>
+                                                                    {% if item.latest_task_title %}{% if item.latest_task_title|length > 40 %}<span title="{{ item.latest_task_title }}">{{ item.latest_task_title[:37] }}...</span>{% else %}{{ item.latest_task_title }}{% endif %}{% else %}<span class="text-muted" title="This project has no tasks yet">No tasks yet</span>{% endif %}
+                                                                </td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                            {% else %}
+                                                            <tr>
+                                                                <td colspan="9" class="text-center text-muted">No projects found. Create your first project!</td>
+                                                            </tr>
+                                                            {% endif %}
+                                                        </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                               </div>
+                           </div> <!-- end row -->
+     
+                            </div>  
+                        </div>  
+                        <!-- end row -->
+
+                    </div>
+                    <!-- container-fluid -->
+                </div>
+                <!-- End Page-content -->
+
+          
+            </div>
+            <!-- end main content-->
+
+        </div>
+         <!--  Extra Large modal example -->
+
+<script type="application/json" id="current-user-id">{% if current_user %}{{ current_user.member_id|tojson }}{% else %}null{% endif %}</script>
+<script type="application/json" id="users-data">{{ users_json|tojson }}</script>
+<script src="{{ url_for('project.static', filename='projects.init.js') }}"></script>
+
+   {% endblock content %}

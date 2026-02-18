@@ -21,8 +21,6 @@ class Department(db.Model):
     members         = db.relationship('User', backref='dept_info', lazy=True)
     projects        = db.relationship('Project', backref='dept_info', lazy=True)
 
-    edited_on       = db.Column(db.DateTime(timezone=True), onupdate=db.func.now())
-
 class User(db.Model, UserMixin):
     __tablename__ = 'members' 
     member_id       = db.Column(db.Integer, primary_key=True)
@@ -192,7 +190,7 @@ class ReportCC(db.Model):
     cc_id = db.Column(db.Integer, primary_key=True)
     report_id = db.Column(db.Integer, db.ForeignKey('report_tbl.report_id'))
     member_id = db.Column(db.Integer, db.ForeignKey('members.member_id'))
-    user = db.relationship('User', backref='cc_reports')
+    user = db.relationship('User', backref='cc_reports', lazy=True)
 
 class Comment(db.Model):
     __tablename__ = 'comments_tbl'
@@ -211,5 +209,6 @@ class Comment(db.Model):
     replies = db.relationship(
         'Comment', 
         backref=db.backref('parent', remote_side=[comment_id]),
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
+        lazy=True
     )

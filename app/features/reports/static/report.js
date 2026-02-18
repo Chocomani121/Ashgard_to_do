@@ -10,7 +10,6 @@
     return name.substring(0, 2).toUpperCase();
   }
 
-  
   function getAvatarHtml(user, size = "24px", fontSize = "10px") {
     // Check if user exists and has initials
     const initials = user.initials || "??";

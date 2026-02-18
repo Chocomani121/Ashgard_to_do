@@ -10,8 +10,8 @@
                         {% endif %}
                         {% endwith %}
 
-                        <div class="row">
-                          <div class="col-xxl-3">
+                        <div class="d-flex justify-content-center">
+                          <div class="col-xxl-8">
                                     <div class="card">
                                         <div class="card-body p-0">
                                             <div class="user-profile-img">
@@ -44,47 +44,49 @@
                                                         </div>
                                                     </div>
 
-                                                <div class="table-responsive mt-3 border-bottom pb-3">
-                                                    <table class="table align-middle table-sm table-nowrap table-borderless table-centered mb-0">
-                                                    <tbody>
-                                                        <tr>
-                                                            <th class="fw-bold">Name :</th>
-                                                            <td class="text-muted" id="tdName">{{ current_user.name }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <th class="fw-bold">Username :</th>
-                                                            <td class="text-muted" id="tdUsername">{{ current_user.username }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <th class="fw-bold">Email :</th>
-                                                            <td class="text-muted" id="tdEmail">{{ current_user.email }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <th class="fw-bold">Role :</th>
-                                                            <td class="text-muted" id="tdRole">{{ current_user.account_type | capitalize }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <th class="fw-bold">Department :</th>
-                                                            <td class="text-muted" id="tdDepartment">
-                                                                {{ current_user.dept_info.department_name if current_user.dept_info else 'N/A' }}
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                    </table>
-                                                </div> 
-
-                                                
                                                 <div class="mt-3 border-bottom pb-3">
-                                                    <h5 class="fw-bold mb-3">Reset Password</h5>
-                                                    <div class="mb-3">
-                                                        <input type="text" class="form-control" placeholder="Enter new value">
+                                                    <div class="d-flex flex-column gap-3">
+                                                        <div>
+                                                            <div class="fw-bold text-secondary mb-1">Name:</div>
+                                                            <div class="text-dark fs-5 fw-medium" id="tdName">{{ current_user.name }}</div>
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-bold text-secondary mb-1">Username:</div>
+                                                            <div class="text-dark fs-5 fw-medium" id="tdUsername">{{ current_user.username }}</div>
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-bold text-secondary mb-1">Email:</div>
+                                                            <div class="text-dark fs-5 fw-medium" id="tdEmail">{{ current_user.email }}</div>
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-bold text-secondary mb-1">Role:</div>
+                                                            <div class="text-dark fs-5 fw-medium" id="tdRole">{{ current_user.account_type | capitalize }}</div>
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-bold text-secondary mb-1">Department:</div>
+                                                            <div class="text-dark fs-5 fw-medium" id="tdDepartment">
+                                                                {{ current_user.dept_info.department_name if current_user.dept_info else 'N/A' }}
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">
-                                                        <i class="bx bx-lock-alt me-2"></i>Reset Password
-                                                    </button>
                                                 </div>
-                                                
-                                               <div class="mt-3">
+
+                                                <div class="mt-3 border-bottom pb-3">
+                                                    <h5 class="fw-light mb-3">Reset Password</h5>
+                                                    <div class="row g-2 align-items-end">
+                                                        <div class="col">
+                                                            <input type="password" class="form-control" placeholder="Enter new password">
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">
+                                                                <i class="bx bx-lock-alt me-2"></i>Reset Password
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            <!-- Temporary hidden card for admin requests-->
+                                               <div class="d-none mt-3">
                                                     <h5 class="fw-bold mb-3">Admin Requests</h5>
                                                     <div class="card">
                                                         <!-- Card Header with Expand/Collapse Button -->
@@ -150,7 +152,7 @@
                                     </div>
                                 </div>
 
-                            <div class="col-xxl-9">
+                            <div class="d-none col-xxl-9">
                             
                                 <!-- Tab content -->
                                 <div class="tab-content">
@@ -552,7 +554,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <form method="POST" action="{{ url_for('users.profile') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ url_for('users.profile') }}" enctype="multipart/form-data" id="editProfileForm">
                 {{ form.hidden_tag() }}
                 <div class="modal-body">
                     <div class="mb-3">
@@ -569,7 +571,19 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Department</label>
-                        <input type="text" class="form-control" value="{{ dept_name }}" readonly style="background-color: #f8f9fa;">
+                        <div style="width: 100%;">
+                            <select class="form-select" id="departmentSelect" name="department">
+                                {% if not dept_name or dept_name == "No Department Assigned" %}
+                                    <option value="" selected>No Department Assigned</option>
+                                {% endif %}
+                                {% for dept in departments %}
+                                    <option value="{{ dept.department_id }}" {{ 'selected' if dept.department_id == current_user.department_id else '' }}>
+                                        {{ dept.department_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
                         <small class="text-muted">Department is managed by Administration.</small>
                     </div>
                     <div class="mb-3">
@@ -579,11 +593,30 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    {{ form.submit(class="btn btn-primary") }}
+                    <button type="submit" class="btn btn-warning" id="profileSubmitBtn">
+                        <span id="profileSubmitSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span id="profileSubmitText">Update Details</span>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    const form = document.querySelector("#editProfileForm");
+    if (!form) return;
+    form.addEventListener("submit", function() {
+        const btn = form.querySelector("#profileSubmitBtn");
+        const spinner = form.querySelector("#profileSubmitSpinner");
+        const text = form.querySelector("#profileSubmitText");
+        if (btn && spinner && text) {
+            btn.disabled = true;
+            spinner.classList.remove("d-none");
+            text.textContent = " Saving...";
+        }
+    });
+});
+    </script>
     {% endblock content %}

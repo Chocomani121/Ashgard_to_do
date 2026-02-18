@@ -44,43 +44,155 @@ def _can_edit_task(task, user):
             return True
     return False
 
+@project_bp.route("/department_projects") 
+@login_required
+def department_projects():
+    # Fetch all projects with related data (newest first)
+    projects = Project.query.order_by(Project.project_id.desc()).all()
+    departments = Department.query.all()
+    users = User.query.all()
+
+    # Bulk lookups to avoid N+1
+    dept_by_id = {d.department_id: d for d in departments}
+    user_by_id = {u.member_id: u for u in users}
+    deadline_ids = list({p.deadlines_id for p in projects if p.deadlines_id})
+    deadlines_list = Deadlines.query.filter(Deadlines.deadlines_id.in_(deadline_ids)).all() if deadline_ids else []
+    deadline_by_id = {d.deadlines_id: d for d in deadlines_list}
+
+    # One query: all tasks for these projects (for progress + latest task)
+    project_ids = [p.project_id for p in projects]
+    tasks = Task.query.filter(Task.project_id.in_(project_ids)).all() if project_ids else []
+    from collections import defaultdict
+    task_total_by_project = defaultdict(int)
+    task_completed_by_project = defaultdict(int)
+    latest_task_by_project = {}
+    for t in tasks:
+        task_total_by_project[t.project_id] += 1
+        if t.task_status == 'Completed':
+            task_completed_by_project[t.project_id] += 1
+        if t.project_id not in latest_task_by_project or t.task_id > latest_task_by_project[t.project_id][0]:
+            latest_task_by_project[t.project_id] = (t.task_id, t.task_name)
+
+    # Prepare projects data for template (no per-row queries)
+    projects_data = []
+    for project in projects:
+        manager = user_by_id.get(project.project_manager) if project.project_manager else None
+        department = dept_by_id.get(project.department_id) if project.department_id else None
+        deadline = deadline_by_id.get(project.deadlines_id) if project.deadlines_id else None
+
+        try:
+            priority_raw = project.priority
+            priority = str(priority_raw) if priority_raw else 'High'
+        except (AttributeError, KeyError):
+            priority = 'High'
+
+        task_total = task_total_by_project.get(project.project_id, 0)
+        task_completed = task_completed_by_project.get(project.project_id, 0)
+        progress_pct = round(task_completed / task_total * 100, 1) if task_total else 0
+        latest_tuple = latest_task_by_project.get(project.project_id)
+        latest_task_title = latest_tuple[1] if latest_tuple else None
+
+        projects_data.append({
+            'project': project,
+            'manager': manager,
+            'department': department,
+            'deadline': deadline,
+            'priority': priority,
+            'progress_pct': progress_pct,
+            'latest_task_title': latest_task_title,
+        })
+
+    # Calculate statistics from projects
+    high_priority_count = 0
+    for item in projects_data:
+        try:
+            priority_val = item['priority']
+            if priority_val and priority_val.lower() == 'high':
+                high_priority_count += 1
+        except (AttributeError, KeyError):
+            pass
+
+    stats = {
+        'pending': len([p for p in projects if p.project_status and p.project_status.lower() == 'pending']),
+        'high_priority': high_priority_count,
+        'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
+        'on_hold': len([p for p in projects if p.project_status and p.project_status.lower() == 'on hold'])
+    }
+
+    users_json = [
+        {
+            'member_id': user.member_id,
+            'name': user.name or user.username,
+            'username': user.username,
+            'department_id': user.department_id
+        }
+        for user in users
+    ]
+
+    return render_template('department.html', projects_data=projects_data, departments=departments, users_json=users_json, stats=stats, today=date.today())
 
 @project_bp.route("/")
 @project_bp.route("/projects") 
 # @cache.cached(timeout=60)
 @login_required
 def projects():
-    # Fetch all projects with related data (newest first)
-    projects = Project.query.order_by(Project.project_id.desc()).all()
+  # Project IDs where current user is a member (participant)
+    member_project_ids = ProjectMembers.query.filter(
+        ProjectMembers.member_id == current_user.member_id
+    ).with_entities(ProjectMembers.project_id)
+
+    # Only projects where user is manager or a project member
+    projects = Project.query.filter(
+        or_(
+            Project.project_manager == current_user.member_id,
+            Project.project_id.in_(member_project_ids)
+        )
+    ).order_by(Project.project_id.desc()).all()
+
     departments = Department.query.all()
     users = User.query.all()
-    
-    # Prepare projects data for template (progress = task-based, same as project details)
+
+    # Bulk lookups to avoid N+1
+    dept_by_id = {d.department_id: d for d in departments}
+    user_by_id = {u.member_id: u for u in users}
+    deadline_ids = list({p.deadlines_id for p in projects if p.deadlines_id})
+    deadlines_list = Deadlines.query.filter(Deadlines.deadlines_id.in_(deadline_ids)).all() if deadline_ids else []
+    deadline_by_id = {d.deadlines_id: d for d in deadlines_list}
+
+    # One query: all tasks for these projects (for progress + latest task)
+    project_ids = [p.project_id for p in projects]
+    tasks = Task.query.filter(Task.project_id.in_(project_ids)).all() if project_ids else []
+    from collections import defaultdict
+    task_total_by_project = defaultdict(int)
+    task_completed_by_project = defaultdict(int)
+    latest_task_by_project = {}
+    for t in tasks:
+        task_total_by_project[t.project_id] += 1
+        if t.task_status == 'Completed':
+            task_completed_by_project[t.project_id] += 1
+        if t.project_id not in latest_task_by_project or t.task_id > latest_task_by_project[t.project_id][0]:
+            latest_task_by_project[t.project_id] = (t.task_id, t.task_name)
+
+    # Prepare projects data for template (no per-row queries)
     projects_data = []
     for project in projects:
-        dept = Department.query.get(project.department_id) if project.department_id else None
-        manager = User.query.get(project.project_manager) if project.project_manager else None
-        deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
-        
-        # Get priority from project (defaults to 'High' if not set or column doesn't exist)
+        manager = user_by_id.get(project.project_manager) if project.project_manager else None
+        deadline = deadline_by_id.get(project.deadlines_id) if project.deadlines_id else None
+
         try:
             priority_raw = project.priority
             priority = str(priority_raw) if priority_raw else 'High'
         except (AttributeError, KeyError):
-            priority = 'High'  # Fallback if column doesn't exist
-        
-        # Progress from tasks (completed / total), same logic as project details
-        project_tasks = Task.query.filter_by(project_id=project.project_id).all()
-        task_total = len(project_tasks)
-        task_completed = sum(1 for t in project_tasks if t.task_status == 'Completed')
+            priority = 'High'
+
+        task_total = task_total_by_project.get(project.project_id, 0)
+        task_completed = task_completed_by_project.get(project.project_id, 0)
         progress_pct = round(task_completed / task_total * 100, 1) if task_total else 0
-        # Latest task (newest by task_id) for "Last Tasks" column
-        latest_task = Task.query.filter_by(project_id=project.project_id).order_by(Task.task_id.desc()).first()
-        latest_task_title = latest_task.task_name if latest_task else None
-        
+        latest_tuple = latest_task_by_project.get(project.project_id)
+        latest_task_title = latest_tuple[1] if latest_tuple else None
+
         projects_data.append({
             'project': project,
-            'department': dept,
             'manager': manager,
             'deadline': deadline,
             'priority': priority,
@@ -119,13 +231,253 @@ def projects():
         for user in users
     ]
     
-    return render_template('index.html', projects_data=projects_data, departments=departments, users=users, users_json=users_json, stats=stats, today=date.today())
+    return render_template('index.html', projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
 
-@project_bp.route("/tasks")
-@login_required 
-def tasks():
-    return render_template('tasks.html', title="Tasks Info")
+@project_bp.route("/all_projects") 
+@login_required
+def all_projects():
+    # Fetch all projects with related data (newest first)
+    projects = Project.query.order_by(Project.project_id.desc()).all()
+    users = User.query.all()
 
+    # Bulk lookups to avoid N+1
+    departments = Department.query.all()
+    dept_by_id = {d.department_id: d for d in departments}
+    user_by_id = {u.member_id: u for u in users}
+    deadline_ids = list({p.deadlines_id for p in projects if p.deadlines_id})
+    deadlines_list = Deadlines.query.filter(Deadlines.deadlines_id.in_(deadline_ids)).all() if deadline_ids else []
+    deadline_by_id = {d.deadlines_id: d for d in deadlines_list}
+
+    # One query: all tasks for these projects (for progress + latest task)
+    project_ids = [p.project_id for p in projects]
+    tasks = Task.query.filter(Task.project_id.in_(project_ids)).all() if project_ids else []
+    from collections import defaultdict
+    task_total_by_project = defaultdict(int)
+    task_completed_by_project = defaultdict(int)
+    latest_task_by_project = {}
+    for t in tasks:
+        task_total_by_project[t.project_id] += 1
+        if t.task_status == 'Completed':
+            task_completed_by_project[t.project_id] += 1
+        if t.project_id not in latest_task_by_project or t.task_id > latest_task_by_project[t.project_id][0]:
+            latest_task_by_project[t.project_id] = (t.task_id, t.task_name)
+
+    # Prepare projects data for template (no per-row queries)
+    projects_data = []
+    for project in projects:
+        dept = dept_by_id.get(project.department_id) if project.department_id else None
+        manager = user_by_id.get(project.project_manager) if project.project_manager else None
+        deadline = deadline_by_id.get(project.deadlines_id) if project.deadlines_id else None
+
+        try:
+            priority_raw = project.priority
+            priority = str(priority_raw) if priority_raw else 'High'
+        except (AttributeError, KeyError):
+            priority = 'High'
+
+        task_total = task_total_by_project.get(project.project_id, 0)
+        task_completed = task_completed_by_project.get(project.project_id, 0)
+        progress_pct = round(task_completed / task_total * 100, 1) if task_total else 0
+        latest_tuple = latest_task_by_project.get(project.project_id)
+        latest_task_title = latest_tuple[1] if latest_tuple else None
+
+        projects_data.append({
+            'project': project,
+            'department': dept,
+            'manager': manager,
+            'deadline': deadline,
+            'priority': priority,
+            'progress_pct': progress_pct,
+            'latest_task_title': latest_task_title,
+        })
+
+    # Calculate statistics from projects
+    high_priority_count = 0
+    for item in projects_data:
+        try:
+            priority_val = item['priority']
+            if priority_val and priority_val.lower() == 'high':
+                high_priority_count += 1
+        except (AttributeError, KeyError):
+            pass
+
+    stats = {
+        'pending': len([p for p in projects if p.project_status and p.project_status.lower() == 'pending']),
+        'high_priority': high_priority_count,
+        'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
+        'on_hold': len([p for p in projects if p.project_status and p.project_status.lower() == 'on hold'])
+    }
+
+    users_json = [
+        {
+            'member_id': user.member_id,
+            'name': user.name or user.username,
+            'username': user.username,
+            'department_id': user.department_id
+        }
+        for user in users
+    ]
+
+    return render_template('all_projects.html', projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
+
+#My Tasks
+@project_bp.route("/my_tasks")
+@login_required
+def my_tasks():
+    # My ProjectMembers rows (I'm in these projects)
+    my_pm_rows = ProjectMembers.query.filter_by(member_id=current_user.member_id).all()
+    my_p_members_ids = [pm.p_members_id for pm in my_pm_rows]
+
+    if not my_p_members_ids:
+        return render_template('my_task.html', title="Tasks Info", tasks_data=[], today=date.today())
+
+    # Task IDs where I'm an assignee (TaskAssignee table)
+    task_ids_from_assignees = TaskAssignee.query.filter(
+        TaskAssignee.p_members_id.in_(my_p_members_ids)
+    ).with_entities(TaskAssignee.task_id).distinct()
+
+    # All tasks assigned to me: via assignees OR legacy single p_members_id
+    tasks = Task.query.filter(
+        or_(
+            Task.task_id.in_(task_ids_from_assignees),
+            Task.p_members_id.in_(my_p_members_ids)
+        )
+    ).order_by(Task.task_id.desc()).all()
+
+    if not tasks:
+        return render_template('my_task.html', title="Tasks Info", tasks_data=[], today=date.today())
+
+    # Bulk lookups to avoid N+1
+    project_ids = list({t.project_id for t in tasks if t.project_id})
+    projects = Project.query.filter(Project.project_id.in_(project_ids)).all()
+    project_by_id = {p.project_id: p for p in projects}
+
+    user_ids = list({p.project_manager for p in projects if p.project_manager})
+    users = User.query.filter(User.member_id.in_(user_ids)).all()
+    user_by_id = {u.member_id: u for u in users}
+
+    deadline_ids = list({t.deadline_id for t in tasks if t.deadline_id})
+    deadlines_list = Deadlines.query.filter(Deadlines.deadlines_id.in_(deadline_ids)).all() if deadline_ids else []
+    deadline_by_id = {d.deadlines_id: d for d in deadlines_list}
+
+    task_ids = [t.task_id for t in tasks]
+    subtasks = SubTask.query.filter(SubTask.parent_task_id.in_(task_ids)).all()
+    from collections import defaultdict
+    subtasks_by_task = defaultdict(list)
+    for s in subtasks:
+        subtasks_by_task[s.parent_task_id].append(s)
+
+    # Build list for template (no per-row queries)
+    tasks_data = []
+    for task in tasks:
+        project = project_by_id.get(task.project_id) if task.project_id else None
+        manager = user_by_id.get(project.project_manager) if project and project.project_manager else None
+        deadline = deadline_by_id.get(task.deadline_id) if task.deadline_id else None
+        st_list = subtasks_by_task.get(task.task_id, [])
+        st_total = len(st_list)
+        st_done = sum(1 for s in st_list if s.is_checked)
+        progress_pct = f"{st_done}/{st_total}" if st_total > 0 else "0/0"
+        # progress_pct = round(st_done / st_total * 100, 1) if st_total else 0
+        tasks_data.append({
+            'task': task,
+            'project': project,
+            'manager': manager,
+            'deadline': deadline,
+            'progress_pct': progress_pct,
+            'sub_total': st_total,
+        })
+
+    return render_template('my_task.html', title="Tasks Info", tasks_data=tasks_data, today=date.today())
+
+#Department-Wide Tasks
+@project_bp.route("/dept_tasks")
+@login_required
+def dept_tasks():
+    # All tasks from all projects (no department filter)
+    tasks = Task.query.order_by(Task.task_id.desc()).all()
+    # if not current_user.department_id:
+    #     tasks = []
+    # else:
+    #         project_ids = [
+    #             p.project_id
+    #             for p in Project.query.filter_by(department_id=current_user.department_id).all()
+    #         ]
+    #         tasks = (
+    #             Task.query.filter(Task.project_id.in_(project_ids))
+    #             .order_by(Task.task_id.desc())
+    #             .all()
+    #         ) if project_ids else []
+
+    if not tasks:
+        users = User.query.all()
+        departments = Department.query.all()
+        stats = {'pending': 0, 'high_priority': 0, 'completed': 0, 'on_hold': 0}
+        users_json = [
+            {'member_id': u.member_id, 'name': u.name or u.username, 'username': u.username, 'department_id': u.department_id}
+            for u in users
+        ]
+        return render_template('dept_task.html', title="Tasks Info", tasks_data=[], stats=stats, users_json=users_json, departments=departments, today=date.today())
+
+    # Bulk lookups to avoid N+1
+    project_ids = list({t.project_id for t in tasks if t.project_id})
+    projects = Project.query.filter(Project.project_id.in_(project_ids)).all()
+    project_by_id = {p.project_id: p for p in projects}
+
+    user_ids = list({p.project_manager for p in projects if p.project_manager})
+    users = User.query.all()
+    user_by_id = {u.member_id: u for u in users}
+
+    deadline_ids = list({t.deadline_id for t in tasks if t.deadline_id})
+    deadlines_list = Deadlines.query.filter(Deadlines.deadlines_id.in_(deadline_ids)).all() if deadline_ids else []
+    deadline_by_id = {d.deadlines_id: d for d in deadlines_list}
+
+    department_ids = list({p.department_id for p in projects if p.department_id})
+    departments = Department.query.all()
+    dept_by_id = {d.department_id: d for d in departments}
+
+    task_ids = [t.task_id for t in tasks]
+    subtasks = SubTask.query.filter(SubTask.parent_task_id.in_(task_ids)).all()
+    from collections import defaultdict
+    subtasks_by_task = defaultdict(list)
+    for s in subtasks:
+        subtasks_by_task[s.parent_task_id].append(s)
+
+    # Build list for template (no per-row queries)
+    tasks_data = []
+    for task in tasks:
+        project = project_by_id.get(task.project_id) if task.project_id else None
+        manager = user_by_id.get(project.project_manager) if project and project.project_manager else None
+        deadline = deadline_by_id.get(task.deadline_id) if task.deadline_id else None
+        department = dept_by_id.get(project.department_id) if project and project.department_id else None
+        st_list = subtasks_by_task.get(task.task_id, [])
+        st_total = len(st_list)
+        st_done = sum(1 for s in st_list if s.is_checked)
+        progress_pct = f"{st_done}/{st_total}" if st_total > 0 else "0/0"
+        tasks_data.append({
+            'task': task,
+            'project': project,
+            'department': department,
+            'manager': manager,
+            'deadline': deadline,
+            'progress_pct': progress_pct,
+            'sub_total': st_total,
+        })
+
+    # Calculate statistics from tasks
+    stats = {
+        'pending': len([t for t in tasks if (t.task_status or '').lower() in ('pending', 'ongoing', '') or not t.task_status]),
+        'high_priority': len([t for t in tasks if (t.priority or '').lower() == 'high']),
+        'completed': len([t for t in tasks if (t.task_status or '').lower() == 'completed']),
+        'on_hold': len([t for t in tasks if (t.task_status or '').lower() == 'on hold'])
+    }
+
+    users_json = [
+        {'member_id': u.member_id, 'name': u.name or u.username, 'username': u.username, 'department_id': u.department_id}
+        for u in users
+    ]
+
+    return render_template('dept_task.html', title="Tasks Info", tasks_data=tasks_data, stats=stats, users_json=users_json, departments=departments, today=date.today())
+    
 @project_bp.route("/all_departments")
 @login_required
 def all_departments():
@@ -136,7 +488,7 @@ def all_departments():
     # Progress = task-based (completed / total), same as projects index
     projects = Project.query.order_by(Project.project_id.desc()).all()
     dept_projects_data = []
-    for project in projects:
+    for project in projects:    
         dept = Department.query.get(project.department_id) if project.department_id else None
         manager = User.query.get(project.project_manager) if project.project_manager else None
         deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
@@ -160,7 +512,7 @@ def all_departments():
         'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
         'ongoing': len([p for p in projects if p.project_status and p.project_status.lower() == 'ongoing']),
     }
-    return render_template('all_departments.html', departments=departments, users=users, stats=stats, dept_projects_data=dept_projects_data, today=date.today())
+    return render_template('all_departments.html', departments=departments, users=users, stats=stats, dept_projects_data=dept_projects_data)
 
 # --- Existing Routes ---
 
@@ -512,7 +864,7 @@ def task_details(id=None):
             except (ValueError, TypeError):
                 pass
     
-    # Assignees for this task (from TaskAssignee or fallback to single owner from p_members_id)
+    # Assignees for this task
     task_assignees = []
     try:
         if task.assignees:
@@ -521,8 +873,9 @@ def task_details(id=None):
                     u = User.query.get(ta.project_member.member_id)
                     if u:
                         task_assignees.append(u)
-    except (ProgrammingError, OperationalError):
-        pass  # task_assignees table may not exist yet
+    except (Exception):
+        pass 
+        
     if not task_assignees and task.p_members_id:
         pm = ProjectMembers.query.get(task.p_members_id)
         if pm and pm.member_id:
@@ -530,7 +883,7 @@ def task_details(id=None):
             if u:
                 task_assignees.append(u)
     
-    # Project members (for Edit Task "Assigned member" dropdown: project members + project manager if not already a member)
+    # Project members logic
     task_project_members = []
     if task.project_id:
         project = Project.query.get(task.project_id)
@@ -540,36 +893,23 @@ def task_details(id=None):
                 u = User.query.get(pm.member_id)
                 if u:
                     task_project_members.append({'p_members_id': pm.p_members_id, 'name': u.name or u.username})
-        # Ensure project manager is in the list (PM can assign tasks to themselves)
+        
         if project and project.project_manager:
             pm_member_ids = [pm.member_id for pm in pms if pm.member_id]
             if project.project_manager not in pm_member_ids:
                 manager_user = User.query.get(project.project_manager)
                 if manager_user:
-                    pm_row = ProjectMembers.query.filter_by(
-                        project_id=task.project_id,
-                        member_id=project.project_manager
-                    ).first()
+                    pm_row = ProjectMembers.query.filter_by(project_id=task.project_id, member_id=project.project_manager).first()
                     if not pm_row:
-                        pm_row = ProjectMembers(
-                            project_id=task.project_id,
-                            member_id=project.project_manager,
-                            role='Project Manager'
-                        )
+                        pm_row = ProjectMembers(project_id=task.project_id, member_id=project.project_manager, role='Project Manager')
                         db.session.add(pm_row)
                         try:
                             db.session.commit()
                         except Exception:
                             db.session.rollback()
-                            pm_row = ProjectMembers.query.filter_by(
-                                project_id=task.project_id,
-                                member_id=project.project_manager
-                            ).first()
+                            pm_row = ProjectMembers.query.filter_by(project_id=task.project_id, member_id=project.project_manager).first()
                     if pm_row:
-                        task_project_members.append({
-                            'p_members_id': pm_row.p_members_id,
-                            'name': manager_user.name or manager_user.username
-                        })
+                        task_project_members.append({'p_members_id': pm_row.p_members_id, 'name': manager_user.name or manager_user.username})
     
     # Role flags for subtask views: PM sees "Subtask (Project Manager)"; only project members *assigned to this task* see "Subtask"; others see nothing
     project = Project.query.get(task.project_id) if task.project_id else None
@@ -579,10 +919,7 @@ def task_details(id=None):
         if is_project_manager:
             is_project_member = True
         else:
-            pm_entry = ProjectMembers.query.filter_by(
-                project_id=task.project_id,
-                member_id=current_user.member_id
-            ).first()
+            pm_entry = ProjectMembers.query.filter_by(project_id=task.project_id, member_id=current_user.member_id).first()
             is_project_member = pm_entry is not None
     # Assigned to this task (via TaskAssignee or task.p_members_id) – required to see member subtask view
     is_assigned_to_task = False
@@ -609,17 +946,14 @@ def task_details(id=None):
     # Check if user can edit/mark complete this task
     can_edit_task = _can_edit_task(task, current_user)
     
-    # Get project for delete permission check
-    project = Project.query.get(task.project_id) if task.project_id else None
-    
-    # p_members_id of current assignees (for edit task multi-select)
+    # p_members_id of current assignees
     assignee_p_members_ids = []
     try:
         if task.assignees:
             for ta in task.assignees:
                 if ta.project_member:
                     assignee_p_members_ids.append(ta.project_member.p_members_id)
-    except (ProgrammingError, OperationalError):
+    except (Exception):
         pass
     if not assignee_p_members_ids and task.p_members_id:
         assignee_p_members_ids.append(task.p_members_id)
@@ -1257,10 +1591,71 @@ def create_project():
         return redirect(url_for('project.projects'))
 
 @project_bp.route("/approvals")
+@login_required
 def approvals():
-    return render_template('approvals.html', title="Approvals")
+     # My ProjectMembers rows (I'm in these projects)
+    my_pm_rows = ProjectMembers.query.filter_by(member_id=current_user.member_id).all()
+    my_p_members_ids = [pm.p_members_id for pm in my_pm_rows]
 
+    if not my_p_members_ids:
+        return render_template('approvals.html', title="Tasks Info", tasks_data=[], today=date.today())
 
+    # Task IDs where I'm an assignee (TaskAssignee table)
+    task_ids_from_assignees = TaskAssignee.query.filter(
+        TaskAssignee.p_members_id.in_(my_p_members_ids)
+    ).with_entities(TaskAssignee.task_id).distinct()
+
+    # All tasks assigned to me: via assignees OR legacy single p_members_id
+    tasks = Task.query.filter(
+        or_(
+            Task.task_id.in_(task_ids_from_assignees),
+            Task.p_members_id.in_(my_p_members_ids)
+        )
+    ).order_by(Task.task_id.desc()).all()
+
+    if not tasks:
+        return render_template('approvals.html', title="Approvals", tasks_data=[], today=date.today())
+
+    # Bulk lookups to avoid N+1
+    project_ids = list({t.project_id for t in tasks if t.project_id})
+    projects = Project.query.filter(Project.project_id.in_(project_ids)).all()
+    project_by_id = {p.project_id: p for p in projects}
+
+    user_ids = list({p.project_manager for p in projects if p.project_manager})
+    users = User.query.filter(User.member_id.in_(user_ids)).all()
+    user_by_id = {u.member_id: u for u in users}
+
+    deadline_ids = list({t.deadline_id for t in tasks if t.deadline_id})
+    deadlines_list = Deadlines.query.filter(Deadlines.deadlines_id.in_(deadline_ids)).all() if deadline_ids else []
+    deadline_by_id = {d.deadlines_id: d for d in deadlines_list}
+
+    task_ids = [t.task_id for t in tasks]
+    subtasks = SubTask.query.filter(SubTask.parent_task_id.in_(task_ids)).all()
+    from collections import defaultdict
+    subtasks_by_task = defaultdict(list)
+    for s in subtasks:
+        subtasks_by_task[s.parent_task_id].append(s)
+
+    # Build list for template (no per-row queries)
+    tasks_data = []
+    for task in tasks:
+        project = project_by_id.get(task.project_id) if task.project_id else None
+        manager = user_by_id.get(project.project_manager) if project and project.project_manager else None
+        deadline = deadline_by_id.get(task.deadline_id) if task.deadline_id else None
+        st_list = subtasks_by_task.get(task.task_id, [])
+        st_total = len(st_list)
+        st_done = sum(1 for s in st_list if s.is_checked)
+        progress_pct = round(st_done / st_total * 100, 1) if st_total else 0
+        tasks_data.append({
+        'task': task,
+        'project': project,
+        'manager': manager,
+        'deadline': deadline,
+        'progress_pct': progress_pct,
+        'sub_total': st_total,
+        'subtasks': st_list,   # add this line
+    })
+    return render_template('approvals.html', title="Approvals",tasks_data=tasks_data, today=date.today())
 
 # Project Details Notes_tbl - Reply, Comment, Edit
 @project_bp.route("/project/note/add", methods=['POST'])
@@ -1305,7 +1700,7 @@ def reply_note(note_id):
     body = request.form.get('reply_body')
     task_id = request.form.get('task_id')
     
-    new_reply = Notes(
+    new_reply = Notes(  
         task_id=int(task_id),
         member_id=current_user.member_id,
         note_body=body,
@@ -1315,3 +1710,106 @@ def reply_note(note_id):
     db.session.add(new_reply)
     db.session.commit()
     return redirect(request.referrer)
+
+@project_bp.route("/task_details/note/edit/<int:note_id>", methods=['POST'])
+@login_required
+def edit_note(note_id):
+    note = Notes.query.get_or_404(note_id)
+    
+    # Security Check
+    if note.member_id != current_user.member_id:
+        flash('Permission denied.', 'danger')
+        return redirect(url_for('project.task_details', id=note.task_id))
+
+    # Update Content
+    note.note_title = request.form.get('note_title')
+    note.note_body = request.form.get('note_body')
+    
+    # UPDATE TO CURRENT TIME
+    note.created_on = datetime.now() # This resets the time to 'now' on every save
+    
+    try:
+        db.session.commit()
+        flash('Updated successfully!', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Error updating note.', 'danger')
+    
+    return redirect(url_for('project.task_details', id=note.task_id))
+
+@project_bp.route("/all_task")
+@login_required
+def all_task():
+    # All tasks from all projects (no department filter)
+    tasks = Task.query.order_by(Task.task_id.desc()).all()
+
+    if not tasks:
+        users = User.query.all()
+        departments = Department.query.all()
+        stats = {'pending': 0, 'high_priority': 0, 'completed': 0, 'on_hold': 0}
+        users_json = [
+            {'member_id': u.member_id, 'name': u.name or u.username, 'username': u.username, 'department_id': u.department_id}
+            for u in users
+        ]
+        return render_template('all_task.html', title="All Info", tasks_data=[], stats=stats, users_json=users_json, departments=departments, today=date.today())
+
+    # Bulk lookups to avoid N+1
+    project_ids = list({t.project_id for t in tasks if t.project_id})
+    projects = Project.query.filter(Project.project_id.in_(project_ids)).all()
+    project_by_id = {p.project_id: p for p in projects}
+
+    user_ids = list({p.project_manager for p in projects if p.project_manager})
+    users = User.query.all()
+    user_by_id = {u.member_id: u for u in users}
+
+    deadline_ids = list({t.deadline_id for t in tasks if t.deadline_id})
+    deadlines_list = Deadlines.query.filter(Deadlines.deadlines_id.in_(deadline_ids)).all() if deadline_ids else []
+    deadline_by_id = {d.deadlines_id: d for d in deadlines_list}
+
+    department_ids = list({p.department_id for p in projects if p.department_id})
+    departments = Department.query.all()
+    dept_by_id = {d.department_id: d for d in departments}
+
+    task_ids = [t.task_id for t in tasks]
+    subtasks = SubTask.query.filter(SubTask.parent_task_id.in_(task_ids)).all()
+    from collections import defaultdict
+    subtasks_by_task = defaultdict(list)
+    for s in subtasks:
+        subtasks_by_task[s.parent_task_id].append(s)
+
+    # Build list for template (no per-row queries)
+    tasks_data = []
+    for task in tasks:
+        project = project_by_id.get(task.project_id) if task.project_id else None
+        manager = user_by_id.get(project.project_manager) if project and project.project_manager else None
+        deadline = deadline_by_id.get(task.deadline_id) if task.deadline_id else None
+        department = dept_by_id.get(project.department_id) if project and project.department_id else None
+        st_list = subtasks_by_task.get(task.task_id, [])
+        st_total = len(st_list)
+        st_done = sum(1 for s in st_list if s.is_checked)
+        progress_pct = f"{st_done}/{st_total}" if st_total > 0 else "0/0"
+        tasks_data.append({
+            'task': task,
+            'project': project,
+            'department': department,
+            'manager': manager,
+            'deadline': deadline,
+            'progress_pct': progress_pct,
+            'sub_total': st_total,
+        })
+
+    # Calculate statistics from tasks
+    stats = {
+        'pending': len([t for t in tasks if (t.task_status or '').lower() in ('pending', 'ongoing', '') or not t.task_status]),
+        'high_priority': len([t for t in tasks if (t.priority or '').lower() == 'high']),
+        'completed': len([t for t in tasks if (t.task_status or '').lower() == 'completed']),
+        'on_hold': len([t for t in tasks if (t.task_status or '').lower() == 'on hold'])
+    }
+
+    users_json = [
+        {'member_id': u.member_id, 'name': u.name or u.username, 'username': u.username, 'department_id': u.department_id}
+        for u in users
+    ]
+
+    return render_template('all_task.html', title="All Task", tasks_data=tasks_data, stats=stats, users_json=users_json, departments=departments, today=date.today())
+    

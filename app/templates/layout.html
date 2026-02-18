@@ -72,26 +72,52 @@
             <div data-simplebar class="sidebar-menu-scroll">
                 <div id="sidebar-menu">
                     <ul class="metismenu list-unstyled" id="side-menu">
-                        <li class="menu-title" data-key="t-menu">Workload</li>
+                        <li class="menu-title" data-key="t-menu">Projects</li>
                         <li>
                             <a href="{{ url_for('project.projects') }}">
                                 <i class="bx bx-folder-open icon nav-icon"></i>
-                                <span class="menu-item" data-key="t-dashboard">Projects</span>
+                                <span class="menu-item"> Projects</span>
                             </a>
                         </li>
                         <li>
-                            <a href="{{ url_for('project.tasks') }}">
-                                <i class="bx bx-task icon nav-icon"></i>
-                                <span class="menu-item" data-key="t-calendar">Tasks</span>
+                            <a href="{{ url_for('project.department_projects') }}">
+                                <i class="bx bx-folder-open icon nav-icon"></i>
+                                <span class="menu-item">  Department </span>
                             </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('project.all_projects') }}">
+                                <i class="bx bx-folder-open icon nav-icon"></i>
+                                <span class="menu-item">  All Projects</span>
+                            </a>
+                        </li>
+                        <li class="menu-title" data-key="t-menu">Task</li>
+                        <li>
+                            <a href="{{ url_for('project.my_tasks') }}">
+                                <i class="bx bx-task icon nav-icon"></i>
+                                <span class="menu-item">My Tasks</span>
+                            </a> 
                         </li> 
+                        <li>
+                            <a href="{{url_for('project.dept_tasks')}}">
+                                <i class="bx bx-task icon nav-icon"></i>
+                                <span class="menu-item">Department Tasks</span>
+                            </a> 
+                        </li> 
+                        <li>
+                            <a href="{{url_for('project.all_task')}}">
+                                <i class="bx bx-task icon nav-icon"></i>
+                                <span class="menu-item">All Tasks</span>
+                            </a> 
+                        </li> 
+                        {% if current_user.is_authenticated and show_approvals_in_navbar %}
                         <li>
                             <a href="{{ url_for('project.approvals') }}">
                                 <i class="bx bx-list-check icon nav-icon"></i>
                                 <span class="menu-item ms-1" data-key="t-todo" >Approvals</span><span class="badge bg-danger ms-1 ms-auto">2</span>
                             </a> 
                         </li> 
-
+                        {% endif %}
                         <li class="menu-title" data-key="t-applications">General</li>
                         <li>
                             <a href="{{ url_for('department.all_departments') }}" >
@@ -230,7 +256,6 @@
         <script src="{{ url_for('static', filename='assets/libs/sweetalert2/sweetalert2.min.js') }}"></script>
    
         <script src="{{ url_for('static', filename='assets/js/pages/sweet-alerts.init.js') }}"></script>
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
         <script src="{{ url_for('static', filename='assets/custom/script.js') }}"></script>
 
         <script src="{{ url_for('static', filename='assets/libs/gridjs/gridjs.umd.js') }}"></script>
