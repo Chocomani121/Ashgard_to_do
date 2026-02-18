@@ -61,7 +61,26 @@
                                             {% else %}
                                             <span class="badge bg-soft-danger text-danger ms-1">{{ project.priority or 'High' }}</span>
                                             {% endif %}
-                                        </div>
+                                        </strong>
+                                    </div>
+
+                                    <div class="col-md-3 col-sm-6">
+                                        <span class="text-muted">Client:</span> 
+                                        <strong class="ms-1">{{ project.client_name or '—' }}</strong>
+                                    </div>
+
+                                </div>
+                                <div class="row mb-3 g-3 flex-shrink-0">
+                                    <div class="col-md-3 col-sm-6">
+                                        <span class="text-muted">Department:</span> 
+                                        <strong class="ms-1">{{ manager_department.department_name if manager_department else '—' }}</strong>
+                                    </div>
+                                </div>
+
+                                <div class="row my-4 d-flex flex-column align-items-center text-center">
+                                    <!-- APPROVED / REJECTED -->
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <div class="d-flex gap-5 text-center">
 
                                         <div class="col-md-3 col-sm-6">
                                             <span class="text-muted">Start date:</span> 
@@ -263,29 +282,77 @@
                             <div class="card-body">
                                 <div id="project-tasks-table-gridjs" class="table-responsive"></div>
 
-                                <!-- Hidden table: data source for GridJS (responsive table rendered above) -->
-                                <table id="projectTasksTable" class="table d-none">
-                                    <thead>
-                                        <tr>
-                                            <th>Task Name</th>
-                                            <th>Owner</th>
-                                            <th>Status</th>
-                                            <th>Sub Task</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                            {% for task_info in tasks %}
-                                            <tr data-task-id="{{ task_info.task.task_id }}" data-task-status="{{ task_info.status }}">
-                                                <td class="fw-semibold"><a href="{{ url_for('project.task_details', id=task_info.task.task_id) }}" class="text-dark">{{ task_info.task.task_name }}</a></td>
-                                                <td style="width: 190px;">
-                                                    {% if task_info.assignees %}
-                                                    <div class="d-flex flex-wrap align-items-center gap-1">
-                                                        {% for assignee in task_info.assignees %}
-                                                        <div class="d-flex align-items-center">
-                                                            <img class="rounded-circle avatar-xs me-1" src="{{ url_for('static', filename='profile_pics/' + assignee.image_file) }}" alt="" title="{{ assignee.name or assignee.username }}">
-                                                            <span class="small">{{ assignee.name or assignee.username }}{% if not loop.last %},{% endif %}</span>
-                                                        </div>
+                                            <!-- Hidden table: data source for GridJS (responsive table rendered above) -->
+                                            <table id="projectTasksTable" class="table d-none">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Task Name</th>
+                                                        <th>Owner</th>
+                                                        <th>Deadline</th>
+                                                        <th>Status</th>
+                                                        <th>Sub Task</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                        {% for task_info in tasks %}
+                                                        <tr data-task-id="{{ task_info.task.task_id }}" data-task-status="{{ task_info.status }}">
+                                                            <td class="fw-bold"><a href="{{ url_for('project.task_details', id=task_info.task.task_id) }}" class="text-dark fw-bold">{{ task_info.task.task_name }}</a></td>
+                                                            <td style="width: 190px;">
+                                                                {% if task_info.assignees %}
+                                                                <div class="d-flex flex-wrap align-items-center gap-1">
+                                                                    {% for assignee in task_info.assignees %}
+                                                                    <div class="d-flex align-items-center">
+                                                                        <img class="rounded-circle avatar-xs me-1" src="{{ url_for('static', filename='profile_pics/' + assignee.image_file) }}" alt="" title="{{ assignee.name or assignee.username }}">
+                                                                        <span class="small">{{ assignee.name or assignee.username }}{% if not loop.last %},{% endif %}</span>
+                                                                    </div>
+                                                                    {% endfor %}
+                                                                </div>
+                                                                {% else %}
+                                                                <span class="text-muted">Unassigned</span>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                {% if task_info.task.deadline_ref %}
+                                                                <span class="small">{{ task_info.task.deadline_ref.start_date.strftime('%d %b %Y') }} – {{ task_info.task.deadline_ref.end_date.strftime('%d %b %Y') }}</span>
+                                                                {% else %}
+                                                                <span class="text-muted">—</span>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                {% if task_info.status == 'Completed' %}
+                                                                <div class="badge badge-soft-success font-size-12 task-status-badge">Completed</div>
+                                                                {% elif task_info.status == 'Ongoing' %}
+                                                                <div class="badge bg-soft-warning text-warning font-size-12 task-status-badge">Ongoing</div>
+                                                                {% else %}
+                                                                <div class="badge bg-soft-secondary text-secondary font-size-12 task-status-badge">{{ task_info.status }}</div>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                {{ task_info.progress }}
+                                                            </td>
+                                                            <td>
+                                                                {% if task_info.can_edit %}
+                                                                    {% if task_info.status != 'Completed' %}
+                                                                    <button type="button" class="btn btn-sm btn-outline-primary mark-complete-btn" data-task-id="{{ task_info.task.task_id }}">
+                                                                        <i class="mdi mdi-check"></i> Mark Complete
+                                                                    </button>
+                                                                    {% else %}
+                                                                    <span class="text-muted small">Task Completed</span>
+                                                                    {% endif %}
+                                                                {% else %}
+                                                                    {% if task_info.status == 'Completed' %}
+                                                                    <span class="text-muted small">Task Completed</span>
+                                                                    {% else %}
+                                                                    <span class="text-muted small">View only</span>
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        {% else %}
+                                                        <tr>
+                                                            <td colspan="6" class="text-muted text-center py-4">No tasks yet.</td>
+                                                        </tr>
                                                         {% endfor %}
                                                     </div>
                                                     {% else %}
