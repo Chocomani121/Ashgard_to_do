@@ -934,14 +934,6 @@ def task_details(id=None):
             is_assigned_to_task = True
     # Show member subtask block only if project member AND assigned to this task (PM always sees PM block)
     can_see_member_subtask = is_project_member and not is_project_manager and is_assigned_to_task
-    # #region agent log
-    try:
-        _log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), '.cursor', 'debug.log')
-        with open(_log_path, 'a', encoding='utf-8') as _f:
-            _f.write(json.dumps({"location": "project.routes.task_details", "message": "subtask role flags", "data": {"task_id": task.task_id, "task_project_id": task.project_id, "current_user_member_id": getattr(current_user, 'member_id', None), "project_manager_id": project.project_manager if project else None, "is_project_manager": is_project_manager, "is_project_member": is_project_member, "is_assigned_to_task": is_assigned_to_task, "can_see_member_subtask": can_see_member_subtask}, "timestamp": __import__('time').time()}) + "\n")
-    except Exception:
-        pass
-    # #endregion
 
     # Check if user can edit/mark complete this task
     can_edit_task = _can_edit_task(task, current_user)

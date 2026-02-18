@@ -60,8 +60,8 @@
                                 </div>
                             </div>
 
-                            <!-- Card Body -->
-                          <div class="card-body d-flex flex-column overflow-hidden">
+                            <!-- Card Body: fixed height, only Description area scrolls -->
+                            <div class="card-body task-details-task-card-body d-flex flex-column overflow-hidden flex-grow-1 min-h-0">
 
                                 <!-- Top Info Section: Project Manager, Priority, Task Code, Task Status, Assigned Members, Start/End date -->
                                 <div class="row mb-3 g-3 flex-shrink-0 align-items-start">
@@ -133,10 +133,9 @@
                             
 
                                 <!-- Scrollable Description -->
-                              <div class="flex-grow-1 overflow-auto">
-                                    <h6>Description</h6>
-                                    <p class="text-muted mb-0">{{ task.task_description or 'No description.' }}
-                                    </p>
+                                <div class="task-details-description-scroll flex-grow-1 min-h-0 overflow-auto">
+                                    <h6 class="mb-2">Description</h6>
+                                    <p class="text-muted mb-0" style="word-break: break-word; white-space: pre-wrap;">{{ task.task_description or 'No description.' }}</p>
                                 </div>
                             </div>
                 </div>
@@ -156,41 +155,41 @@
                                             </button>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div class="mx-n4 px-4" data-simplebar style="height: 620px;; overflow-y: auto;">
+                                <div class="task-notes-scroll flex-grow-1 overflow-auto px-3 min-h-0">
                                     {% for note in notes %}
-                                    <div class="d-flex mb-4 border-bottom pb-3">
+                                    <div class="task-detail-note d-flex mb-4 pb-3 border-bottom">
                                         <div class="flex-shrink-0 me-3">
                                             <img src="{{ url_for('static', filename='profile_pics/' + (note.author.image_file if note.author and note.author.image_file else 'default.jpg')) }}" 
                                                 alt="" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #fff;">
                                         </div>
-
-                                    <div class="task-notes-scroll mx-n4 px-4 flex-grow-1 overflow-auto">
-                                        {% for note in notes %}
-                                        <div class="d-flex mb-4 border-bottom pb-3">
-                                            <div class="flex-shrink-0 me-3">
-                                                <img src="{{ url_for('static', filename='profile_pics/' + (note.author.image_file if note.author and note.author.image_file else 'default.jpg')) }}" 
-                                                    alt="" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #fff;">
+                                        <div class="flex-grow-1 min-width-0">
+                                            <div class="d-flex justify-content-between align-items-baseline gap-2 mb-1">
+                                                <strong class="text-dark">{{ note.author.name if note.author else 'Unknown' }}</strong>
+                                                <small class="text-muted flex-shrink-0">{{ note.created_on.strftime('%b %d, %Y') if note.created_on else '' }}</small>
                                             </div>
-
-                                            <div class="mt-2">
+                                            {% if note.note_title %}
+                                            <h6 class="mb-1 text-dark">{{ note.note_title }}</h6>
+                                            {% endif %}
+                                            <p class="text-muted mb-2 task-detail-note-body" style="white-space: pre-wrap; line-height: 1.5; word-break: break-word; overflow-wrap: break-word;">{{ note.note_body or '' }}</p>
+                                            <div class="task-detail-note-actions">
                                                 <a href="javascript:void(0);" class="text-primary small me-3" onclick="document.getElementById('reply-form-{{ note.notes_id }}').classList.toggle('d-none')">
                                                     <i class="mdi mdi-reply me-1"></i>Reply
                                                 </a>
                                                 
                                                 {# AUTHOR ONLY - Edit Main Note #}
                                                 {% if note.author.member_id == current_user.member_id %}
-                                                <a href="javascript:void(0);" class="text-info small" 
-                                                onclick="openEditNoteModal('{{ note.notes_id }}', '{{ note.note_title or ''}}', `{{ note.note_body }}`)">
+                                                <a href="javascript:void(0);" class="text-info small edit-note-link"
+                                                data-edit-url="{{ url_for('project.edit_note', note_id=note.notes_id) }}"
+                                                data-note-title="{{ (note.note_title or '')|e }}"
+                                                data-note-body="{{ (note.note_body or '')|e }}"
+                                                onclick="openEditNoteModal(this)">
                                                     <i class="mdi mdi-pencil-outline me-1"></i>Edit
                                                 </a>
                                                 {% endif %}
                                             </div>
 
-                                            {# REPLIES SECTION #}
                                             {% if replies_map.get(note.notes_id) %}
-                                            <div class="ms-4 mt-2 border-start ps-3" style="border-left: 2px solid #e9ecef !important;">
+                                            <div class="task-detail-note-replies mt-3 ms-2 ps-3 border-start">
                                                 {% for reply in replies_map[note.notes_id] %}
                                                 <div class="mb-2 p-2 rounded bg-soft-light border-bottom d-flex">
                                                     <img src="{{ url_for('static', filename='profile_pics/' + (reply.author.image_file if reply.author and reply.author.image_file else 'default.jpg')) }}"
@@ -201,22 +200,25 @@
                                                             <div>
                                                                 {# AUTHOR ONLY - Edit Reply #}
                                                                 {% if reply.author.member_id == current_user.member_id %}
-                                                                <a href="javascript:void(0);" class="text-info extra-small me-2" style="font-size: 11px;"
-                                                                onclick="openEditNoteModal('{{ reply.notes_id }}', '', `{{ reply.note_body }}`)">
+                                                                <a href="javascript:void(0);" class="text-info extra-small me-2 edit-note-link" style="font-size: 11px;"
+                                                                data-edit-url="{{ url_for('project.edit_note', note_id=reply.notes_id) }}"
+                                                                data-note-title=""
+                                                                data-note-body="{{ (reply.note_body or '')|e }}"
+                                                                onclick="openEditNoteModal(this)">
                                                                     Edit
                                                                 </a>
                                                                 {% endif %}
                                                                 <small class="text-muted" style="font-size: 10px;">{{ reply.created_on.strftime('%H:%M') if reply.created_on else '' }}</small>
                                                             </div>
                                                         </div>
-                                                        <p class="mb-0 small text-muted">{{ reply.note_body }}</p>
+                                                        <p class="mb-0 small text-muted" style="word-break: break-word; overflow-wrap: break-word;">{{ reply.note_body }}</p>
                                                     </div>
                                                 </div>
                                                 {% endfor %}
                                             </div>
                                             {% endif %}
 
-                                            <div id="reply-form-{{ note.notes_id }}" class="mt-2 d-none ms-4">
+                                            <div id="reply-form-{{ note.notes_id }}" class="mt-2 d-none ms-0">
                                                 <form action="{{ url_for('project.reply_note', note_id=note.notes_id) }}" method="POST">
                                                     <input type="hidden" name="task_id" value="{{ task.task_id }}">
                                                     <div class="input-group input-group-sm">
@@ -227,8 +229,10 @@
                                             </div>
                                         </div>
                                     </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
                         </div>
-                    </div>
                 </div>
             </div>
             <!-- end task-details-equal-row (Task + Notes); subtask table and modals below -->
@@ -769,6 +773,19 @@
 </div>
 
 <script>
+function openEditNoteModal(el) {
+    var form = document.getElementById('editNoteForm');
+    var titleInput = document.getElementById('EditNotesProjectTitle');
+    var bodyInput = document.getElementById('EditNotesProjectDescription');
+    if (form && el) form.action = el.getAttribute('data-edit-url') || '';
+    if (titleInput && el) titleInput.value = el.getAttribute('data-note-title') || '';
+    if (bodyInput && el) bodyInput.value = el.getAttribute('data-note-body') || '';
+    var modalEl = document.getElementById('editNotesProjectModal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+        var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+    }
+}
 document.addEventListener("DOMContentLoaded", function() {
     // Subtask table 3-dots: fixed positioning + flip so full menu is visible (not clipped)
     function initSubtaskTableDropdowns() {
