@@ -850,9 +850,14 @@ def task_details(id=None):
         flash('Task not found', 'error')
         return redirect(url_for('project.projects'))
     
-    # Fetch all notes for this task (for notes + replies section)
-    all_notes = Notes.query.filter_by(task_id=task.task_id).order_by(Notes.created_on.asc()).all()
+    # MODIFIED: Changed .asc() to .desc() to show newest notes first
+    all_notes = Notes.query.filter_by(task_id=task.task_id).order_by(
+        Notes.pin_stat.desc(), 
+        Notes.created_on.desc()
+    ).all()
+    
     main_notes = [n for n in all_notes if not n.reply_code]
+
     replies_map = {}
     for n in all_notes:
         if n.reply_code:
@@ -860,7 +865,10 @@ def task_details(id=None):
                 parent_id = int(n.reply_code)
                 if parent_id not in replies_map:
                     replies_map[parent_id] = []
-                replies_map[parent_id].append(n)
+                
+                # Keep replies in chronological order (Oldest at top of thread)
+                # Since all_notes is descending, we insert at the end to keep them 0, 1, 2...
+                replies_map[parent_id].append(n) 
             except (ValueError, TypeError):
                 pass
     
@@ -1657,41 +1665,40 @@ def approvals():
     })
     return render_template('approvals.html', title="Approvals",tasks_data=tasks_data, today=date.today())
 
-# Project Details Notes_tbl - Reply, Comment, Edit
-@project_bp.route("/project/note/add", methods=['POST'])
-@login_required
-def add_note():
-    from app.models import Notes 
-    
-    # 1. Get the data from the HTML form names
-    task_id = request.form.get('task_id')
-    body = request.form.get('note_body')
-    title = request.form.get('note_title')
-    
-    # 2. Basic validation
-    if not body or not task_id:
-        flash("Note body cannot be empty.", "danger")
-        return redirect(request.referrer)
 
-    # 3. Create the database object
-    new_note = Notes(
-        task_id=int(task_id),
-        member_id=current_user.member_id,
-        note_body=body,
-        generated_code=title, # Saving 'Notes Title' here
-        reply_code=None
-    )
+# Project Details Notes_tbl - Reply, Comment, Edit
+@project_bp.route("/task/<int:task_id>/add_note", methods=['POST'])
+@login_required
+def add_note(task_id):
+    # Ensure the task exists
+    task = Task.query.get_or_404(task_id)
     
+    # Get data from the form
+    title = request.form.get('note_title')
+    content = request.form.get('note_content')
+
+    if not content:
+        flash('Description is required', 'warning')
+        return redirect(url_for('project.task_details', id=task_id))
+
     try:
+        new_note = Notes(
+            task_id=task_id,
+            member_id=current_user.member_id,
+            note_body=content,          # Matches your DB column 'note_body'
+            generated_code=title,       # Matches your DB column 'generated_code'
+            created_on=datetime.now(),  # Matches your DB column 'created_on'
+            pin_stat=0                  # Defaulting to unpinned
+        )
+        
         db.session.add(new_note)
         db.session.commit()
-        flash("Note added successfully!", "success")
     except Exception as e:
         db.session.rollback()
-        print(f"DEBUG ERROR: {e}") # This shows up in your terminal
-        flash("Failed to save note.", "danger")
+        flash(f'Database Error: {str(e)}', 'danger')
 
-    return redirect(request.referrer)
+    # Redirect back to the task details page
+    return redirect(url_for('project.task_details', id=task_id))
 
 
 @project_bp.route("/task/note/reply/<int:note_id>", methods=['POST'])
@@ -1813,3 +1820,23 @@ def all_task():
 
     return render_template('all_task.html', title="All Task", tasks_data=tasks_data, stats=stats, users_json=users_json, departments=departments, today=date.today())
     
+@project_bp.route("/toggle_pin/<int:note_id>")
+@login_required
+def toggle_pin(note_id):
+    # 1. Find the specific note
+    note = Notes.query.get_or_404(note_id)
+    
+    # 2. Toggle the status
+    note.pin_stat = not note.pin_stat
+    
+    # 3. If you want to track WHEN it was pinned (for better sorting)
+    if note.pin_stat:
+        note.pin_datetime = datetime.now()
+    else:
+        note.pin_datetime = None
+        
+    # 4. Save to database
+    db.session.commit()
+    
+    # 5. Go back to where you were
+    return redirect(request.referrer or url_for('project.projects'))
