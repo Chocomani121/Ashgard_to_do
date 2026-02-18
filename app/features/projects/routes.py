@@ -7,6 +7,7 @@ from sqlalchemy import or_, text
 from sqlalchemy.exc import ProgrammingError, OperationalError
 from sqlalchemy.orm import joinedload, selectinload
 import json
+import os
 import random
 
 
@@ -534,6 +535,8 @@ def project_details(id=None):
     manager = User.query.get(project.project_manager) if project.project_manager else None
     deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
     department = Department.query.get(project.department_id) if project.department_id else None
+    # Department to show: project manager's department (reminds user which dept they're in)
+    manager_department = Department.query.get(manager.department_id) if (manager and manager.department_id) else department
     
     # Normalize status: convert Pending/Cancelled to Ongoing
     display_status = project.project_status
@@ -577,10 +580,10 @@ def project_details(id=None):
                         assignees.append(u)
             owner = assignees[0] if assignees else None  # legacy single owner for compatibility
             
-            # Calculate task progress (completed subtasks / total subtasks)
+            # Calculate task progress (approved subtasks count as completed / total subtasks)
             subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).all()
             total_subtasks = len(subtasks)
-            completed_subtasks = len([st for st in subtasks if st.is_checked])
+            completed_subtasks = len([st for st in subtasks if (st.status == 'Approved')])
             progress = f"{completed_subtasks}/{total_subtasks}" if total_subtasks > 0 else "0/0"
             
             # Normalize task status
@@ -635,6 +638,7 @@ def project_details(id=None):
                          manager=manager,
                          deadline=deadline,
                          department=department,
+                         manager_department=manager_department,
                          display_status=display_status,
                          assigned_members=assigned_members,
                          tasks=tasks,
@@ -915,9 +919,9 @@ def task_details(id=None):
                     if pm_row:
                         task_project_members.append({'p_members_id': pm_row.p_members_id, 'name': manager_user.name or manager_user.username})
     
-    # Role flags
+    # Role flags for subtask views: PM sees "Subtask (Project Manager)"; only project members *assigned to this task* see "Subtask"; others see nothing
     project = Project.query.get(task.project_id) if task.project_id else None
-    is_project_manager = (project and current_user.member_id == project.project_manager)
+    is_project_manager = bool(project and current_user.member_id == project.project_manager)
     is_project_member = False
     if project:
         if is_project_manager:
@@ -925,8 +929,29 @@ def task_details(id=None):
         else:
             pm_entry = ProjectMembers.query.filter_by(project_id=task.project_id, member_id=current_user.member_id).first()
             is_project_member = pm_entry is not None
-    
-    # FIXED: Renamed can_edit_task_flag to can_edit_task to match your template
+    # Assigned to this task (via TaskAssignee or task.p_members_id) – required to see member subtask view
+    is_assigned_to_task = False
+    if task_assignees:
+        for u in task_assignees:
+            if u.member_id == current_user.member_id:
+                is_assigned_to_task = True
+                break
+    if not is_assigned_to_task and task.p_members_id:
+        pm_owner = ProjectMembers.query.get(task.p_members_id)
+        if pm_owner and pm_owner.member_id == current_user.member_id:
+            is_assigned_to_task = True
+    # Show member subtask block only if project member AND assigned to this task (PM always sees PM block)
+    can_see_member_subtask = is_project_member and not is_project_manager and is_assigned_to_task
+    # #region agent log
+    try:
+        _log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), '.cursor', 'debug.log')
+        with open(_log_path, 'a', encoding='utf-8') as _f:
+            _f.write(json.dumps({"location": "project.routes.task_details", "message": "subtask role flags", "data": {"task_id": task.task_id, "task_project_id": task.project_id, "current_user_member_id": getattr(current_user, 'member_id', None), "project_manager_id": project.project_manager if project else None, "is_project_manager": is_project_manager, "is_project_member": is_project_member, "is_assigned_to_task": is_assigned_to_task, "can_see_member_subtask": can_see_member_subtask}, "timestamp": __import__('time').time()}) + "\n")
+    except Exception:
+        pass
+    # #endregion
+
+    # Check if user can edit/mark complete this task
     can_edit_task = _can_edit_task(task, current_user)
     
     # p_members_id of current assignees
@@ -940,19 +965,271 @@ def task_details(id=None):
         pass
     if not assignee_p_members_ids and task.p_members_id:
         assignee_p_members_ids.append(task.p_members_id)
-    
-    return render_template('task_details.html', 
-        task=task, 
-        project=project, 
-        task_assignees=task_assignees, 
-        task_project_members=task_project_members, 
-        assignee_p_members_ids=assignee_p_members_ids, 
-        is_project_manager=is_project_manager, 
-        is_project_member=is_project_member, 
-        can_edit_task=can_edit_task, 
-        notes=main_notes, 
-        replies_map=replies_map
+
+    # Subtask list for PM table: ID=generated_code, Owner, Status, Timestamp=checked_timestamp, Notes from notes_tbl
+    subtask_list = []
+    try:
+        raw_subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).order_by(SubTask.created_on.asc()).all()
+        for st in raw_subtasks:
+            owner_name = ''
+            if st.p_members_id:
+                pm = ProjectMembers.query.get(st.p_members_id)
+                if pm and pm.member_id:
+                    u = User.query.get(pm.member_id)
+                    owner_name = (u.name or u.username) if u else ''
+            # Notes for this subtask (notes_tbl linked by sub_task_id and task_id)
+            st_notes = []
+            notes_preview = '—'
+            try:
+                sub_notes = Notes.query.filter_by(task_id=task.task_id, sub_task_id=st.sub_task_id).order_by(Notes.created_on.desc()).all()
+                for n in sub_notes:
+                    author_name = ''
+                    if n.member_id:
+                        au = User.query.get(n.member_id)
+                        author_name = (au.name or au.username) if au else ''
+                    st_notes.append({
+                        'note_body': n.note_body or '',
+                        'created_on': n.created_on,
+                        'author_name': author_name or '—',
+                    })
+                if st_notes:
+                    latest = st_notes[0]
+                    body = (latest['note_body'] or '').strip()
+                    preview_len = 120
+                    notes_preview = (body[:preview_len] + ('…' if len(body) > preview_len else '')) if body else '—'
+                    if latest.get('author_name') and latest.get('created_on'):
+                        notes_preview += ' — ' + (latest['author_name'] or '') + ' ' + (latest['created_on'].strftime('%d/%m/%Y %H:%M') if latest['created_on'] else '')
+            except Exception:
+                pass
+            subtask_list.append({
+                'sub_task_id': st.sub_task_id,
+                'generated_code': st.generated_code or '—',
+                'subtask_name': st.subtask_name or '—',
+                'owner_name': owner_name or '—',
+                'status': st.status or 'Ongoing',
+                'checked_timestamp': st.checked_timestamp,
+                'notes': st_notes,
+                'notes_preview': notes_preview,
+            })
+    except Exception:
+        pass
+
+    # Owner dropdown in Add Sub-Task: only members assigned to this task
+    task_assignees_for_subtask = [m for m in task_project_members if m['p_members_id'] in assignee_p_members_ids]
+
+    # Department to show: project manager's department (same as project details)
+    manager = User.query.get(project.project_manager) if (project and project.project_manager) else None
+    manager_department = Department.query.get(manager.department_id) if (manager and manager.department_id) else None
+    if not manager_department and project and project.department_id:
+        manager_department = Department.query.get(project.department_id)
+
+    return render_template('task_details.html', task=task, project=project, task_assignees=task_assignees, task_project_members=task_project_members, assignee_p_members_ids=assignee_p_members_ids, is_project_manager=is_project_manager, is_project_member=is_project_member, can_see_member_subtask=can_see_member_subtask, can_edit_task=can_edit_task, notes=main_notes, replies_map=replies_map, subtask_list=subtask_list, task_assignees_for_subtask=task_assignees_for_subtask, manager_department=manager_department)
+
+
+@project_bp.route("/task_details/<int:id>/create_subtask", methods=['POST'])
+@login_required
+def create_subtask(id):
+    task = Task.query.get_or_404(id)
+    project = Project.query.get(task.project_id) if task.project_id else None
+    is_pm = bool(project and current_user.member_id == project.project_manager)
+    is_member = False
+    if project:
+        is_member = is_pm or (ProjectMembers.query.filter_by(project_id=task.project_id, member_id=current_user.member_id).first() is not None)
+    if not (is_pm or is_member):
+        flash('Only project members can add subtasks.', 'danger')
+        return redirect(url_for('project.task_details', id=id))
+
+    assignee_p_members_ids = []
+    try:
+        for ta in (task.assignees or []):
+            if ta.project_member:
+                assignee_p_members_ids.append(ta.project_member.p_members_id)
+    except (ProgrammingError, OperationalError):
+        pass
+    if not assignee_p_members_ids and task.p_members_id:
+        assignee_p_members_ids.append(task.p_members_id)
+
+    subtask_name = (request.form.get('subtask_name') or '').strip()
+    if not subtask_name:
+        flash('Sub-task name is required.', 'danger')
+        return redirect(url_for('project.task_details', id=id))
+
+    owner_p_members_id = request.form.get('owner')
+    if owner_p_members_id:
+        try:
+            owner_p_members_id = int(owner_p_members_id)
+            if owner_p_members_id not in assignee_p_members_ids:
+                flash('Owner must be a member assigned to this task.', 'danger')
+                return redirect(url_for('project.task_details', id=id))
+        except (ValueError, TypeError):
+            owner_p_members_id = None
+    else:
+        owner_p_members_id = None
+
+    # New subtasks default to Ongoing (status field removed from form)
+    status = 'Ongoing'
+
+    count = SubTask.query.filter_by(parent_task_id=task.task_id).count()
+    generated_code = f"ST{task.task_id}-{count + 1}"
+
+    st = SubTask(
+        parent_task_id=task.task_id,
+        subtask_name=subtask_name,
+        generated_code=generated_code,
+        p_members_id=owner_p_members_id,
+        status=status,
     )
+    db.session.add(st)
+    try:
+        db.session.commit()
+        flash('Sub-task created.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Failed to create sub-task.', 'danger')
+    return redirect(url_for('project.task_details', id=id))
+
+
+def _can_act_on_subtask(subtask, task, current_user):
+    """True if current user is PM of task's project or a project member (for member actions)."""
+    if not task or not task.project_id:
+        return False
+    project = Project.query.get(task.project_id)
+    if not project:
+        return False
+    if current_user.member_id == project.project_manager:
+        return True
+    pm_entry = ProjectMembers.query.filter_by(
+        project_id=task.project_id,
+        member_id=current_user.member_id
+    ).first()
+    return pm_entry is not None
+
+
+@project_bp.route("/task_details/<int:task_id>/subtask/<int:sub_task_id>/status", methods=['POST'])
+@login_required
+def update_subtask_status(task_id, sub_task_id):
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    if not _can_act_on_subtask(subtask, task, current_user):
+        flash('You do not have permission to update this subtask.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    status = (request.form.get('status') or '').strip()
+    allowed = ('Ongoing', 'To be reviewed', 'Rejected', 'On Hold', 'Approved')
+    if status not in allowed:
+        flash('Invalid status.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    subtask.status = status
+    if status == 'Approved':
+        from datetime import datetime as dt
+        subtask.checked_timestamp = dt.utcnow()
+        # If all subtasks for this task are now Approved, mark the parent task as Completed
+        all_subtasks = SubTask.query.filter_by(parent_task_id=task_id).all()
+        if all_subtasks and all(st.status == 'Approved' for st in all_subtasks):
+            task.task_status = 'Completed'
+    try:
+        db.session.commit()
+        if status == 'Approved' and task.task_status == 'Completed':
+            flash('Subtask approved. All subtasks complete — task marked as Completed.', 'success')
+        else:
+            flash('Subtask updated.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Failed to update subtask.', 'danger')
+    return redirect(url_for('project.task_details', id=task_id))
+
+
+@project_bp.route("/task_details/<int:task_id>/subtask/<int:sub_task_id>/delete", methods=['POST'])
+@login_required
+def delete_subtask(task_id, sub_task_id):
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    if not _can_act_on_subtask(subtask, task, current_user):
+        flash('You do not have permission to delete this subtask.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    try:
+        db.session.delete(subtask)
+        db.session.commit()
+        flash('Subtask deleted.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Failed to delete subtask.', 'danger')
+    return redirect(url_for('project.task_details', id=task_id))
+
+
+@project_bp.route("/task_details/<int:task_id>/subtask/<int:sub_task_id>/note", methods=['POST'])
+@login_required
+def subtask_note(task_id, sub_task_id):
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    if not _can_act_on_subtask(subtask, task, current_user):
+        flash('You do not have permission to add a note to this subtask.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    note_body = (request.form.get('note_body') or '').strip()
+    action = (request.form.get('action') or '').strip().lower()  # submit, resubmit, follow_up
+    if not note_body:
+        flash('Note is required.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    pm_entry = ProjectMembers.query.filter_by(
+        project_id=task.project_id,
+        member_id=current_user.member_id
+    ).first()
+    p_members_id = pm_entry.p_members_id if pm_entry else None
+    # Submit for review: only the member assigned to this subtask (owner) or PM may submit
+    if action == 'submit':
+        project = Project.query.get(task.project_id) if task.project_id else None
+        is_pm = project and current_user.member_id == project.project_manager
+        is_owner = subtask.p_members_id and pm_entry and subtask.p_members_id == pm_entry.p_members_id
+        if not (is_pm or is_owner):
+            flash('Only the member assigned to this subtask (or the PM) can submit it for review.', 'danger')
+            return redirect(url_for('project.task_details', id=task_id))
+    new_note = Notes(
+        task_id=task_id,
+        sub_task_id=sub_task_id,
+        member_id=current_user.member_id,
+        p_members_id=p_members_id,
+        note_body=note_body,
+        generated_code=action or 'note'
+    )
+    db.session.add(new_note)
+    if action == 'submit':
+        subtask.status = 'To be reviewed'
+    elif action == 'resubmit':
+        subtask.status = 'To be reviewed'
+    elif action == 'follow_up':
+        pass  # note only, PM can resume later
+    try:
+        db.session.commit()
+        if action == 'submit':
+            flash('Subtask submitted for review.', 'success')
+        elif action == 'resubmit':
+            flash('Re-submitted for review.', 'success')
+        else:
+            flash('Note saved.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Failed to save note.', 'danger')
+    return redirect(url_for('project.task_details', id=task_id))
+
+
+@project_bp.route("/task_details/<int:task_id>/subtask/<int:sub_task_id>/edit", methods=['POST'])
+@login_required
+def edit_subtask(task_id, sub_task_id):
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    if not _can_act_on_subtask(subtask, task, current_user):
+        flash('You do not have permission to edit this subtask.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    name = (request.form.get('subtask_name') or '').strip()
+    if name:
+        subtask.subtask_name = name
+    try:
+        db.session.commit()
+        flash('Subtask updated.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Failed to update subtask.', 'danger')
+    return redirect(url_for('project.task_details', id=task_id))
+
 
 @project_bp.route("/task_details/<int:id>/update", methods=['POST'])
 @login_required
