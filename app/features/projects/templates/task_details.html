@@ -158,22 +158,22 @@
                                     </div>
                                 </div>
 
-                                <div class="mx-n4 px-4" data-simplebar style="height: 620px;; overflow-y: auto;">
+                                <div class="mx-n4 px-4" data-simplebar style="height: 620px; overflow-y: auto;">
                                     {% for note in notes %}
-                                    <div class="d-flex mb-4 border-bottom pb-3">
-                                        <div class="flex-shrink-0 me-3">
-                                            <img src="{{ url_for('static', filename='profile_pics/' + (note.author.image_file if note.author and note.author.image_file else 'default.jpg')) }}" 
-                                                alt="" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #fff;">
-                                        </div>
-
-                                    <div class="task-notes-scroll mx-n4 px-4 flex-grow-1 overflow-auto">
-                                        {% for note in notes %}
                                         <div class="d-flex mb-4 border-bottom pb-3">
                                             <div class="flex-shrink-0 me-3">
                                                 <img src="{{ url_for('static', filename='profile_pics/' + (note.author.image_file if note.author and note.author.image_file else 'default.jpg')) }}" 
                                                     alt="" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #fff;">
                                             </div>
-
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <strong>{{ note.author.name if note.author else 'Unknown' }}</strong>
+                                                    <small class="text-muted">{{ note.created_on.strftime('%b %d, %Y') if note.created_on else '' }}</small>
+                                                </div>
+                                                <div class="p-2 bg-light rounded mt-2 border">
+                                                    {% if note.generated_code %}<h6 class="text-primary small mb-1">{{ note.generated_code }}</h6>{% endif %}
+                                                    <p class="mb-0 text-dark">{{ note.note_body }}</p>
+                                                </div>
                                             <div class="mt-2">
                                                 <a href="javascript:void(0);" class="text-primary small me-3" onclick="document.getElementById('reply-form-{{ note.notes_id }}').classList.toggle('d-none')">
                                                     <i class="mdi mdi-reply me-1"></i>Reply
@@ -225,8 +225,16 @@
                                                     </div>
                                                 </form>
                                             </div>
+                                            </div>
                                         </div>
+                                    {% else %}
+                                    <div class="text-center text-muted py-5">
+                                        <i class="bx bx-note mb-3" style="font-size: 3rem;"></i>
+                                        <p>No notes found for this task.</p>
                                     </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
