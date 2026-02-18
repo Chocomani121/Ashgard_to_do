@@ -90,6 +90,12 @@
                                     </div>
 
                                 </div>
+                                <div class="row mb-3 g-3 flex-shrink-0">
+                                    <div class="col-md-3 col-sm-6">
+                                        <span class="text-muted">Department:</span> 
+                                        <strong class="ms-1">{{ manager_department.department_name if manager_department else '—' }}</strong>
+                                    </div>
+                                </div>
 
                                 <div class="row my-4 d-flex flex-column align-items-center text-center">
                                     <!-- APPROVED / REJECTED -->
@@ -272,6 +278,7 @@
                                                     <tr>
                                                         <th>Task Name</th>
                                                         <th>Owner</th>
+                                                        <th>Deadline</th>
                                                         <th>Status</th>
                                                         <th>Sub Task</th>
                                                         <th>Actions</th>
@@ -280,7 +287,7 @@
                                                 <tbody>
                                                         {% for task_info in tasks %}
                                                         <tr data-task-id="{{ task_info.task.task_id }}" data-task-status="{{ task_info.status }}">
-                                                            <td class="fw-semibold"><a href="{{ url_for('project.task_details', id=task_info.task.task_id) }}" class="text-dark">{{ task_info.task.task_name }}</a></td>
+                                                            <td class="fw-bold"><a href="{{ url_for('project.task_details', id=task_info.task.task_id) }}" class="text-dark fw-bold">{{ task_info.task.task_name }}</a></td>
                                                             <td style="width: 190px;">
                                                                 {% if task_info.assignees %}
                                                                 <div class="d-flex flex-wrap align-items-center gap-1">
@@ -293,6 +300,13 @@
                                                                 </div>
                                                                 {% else %}
                                                                 <span class="text-muted">Unassigned</span>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                {% if task_info.task.deadline_ref %}
+                                                                <span class="small">{{ task_info.task.deadline_ref.start_date.strftime('%d %b %Y') }} – {{ task_info.task.deadline_ref.end_date.strftime('%d %b %Y') }}</span>
+                                                                {% else %}
+                                                                <span class="text-muted">—</span>
                                                                 {% endif %}
                                                             </td>
                                                             <td>
@@ -327,7 +341,7 @@
                                                         </tr>
                                                         {% else %}
                                                         <tr>
-                                                            <td colspan="5" class="text-muted text-center py-4">No tasks yet.</td>
+                                                            <td colspan="6" class="text-muted text-center py-4">No tasks yet.</td>
                                                         </tr>
                                                         {% endfor %}
                                                     </tbody>

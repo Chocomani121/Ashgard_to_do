@@ -183,6 +183,8 @@ def project_details(id=None):
     manager = User.query.get(project.project_manager) if project.project_manager else None
     deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
     department = Department.query.get(project.department_id) if project.department_id else None
+    # Department to show: project manager's department (reminds user which dept they're in)
+    manager_department = Department.query.get(manager.department_id) if (manager and manager.department_id) else department
     
     # Normalize status: convert Pending/Cancelled to Ongoing
     display_status = project.project_status
@@ -226,10 +228,10 @@ def project_details(id=None):
                         assignees.append(u)
             owner = assignees[0] if assignees else None  # legacy single owner for compatibility
             
-            # Calculate task progress (completed subtasks / total subtasks)
+            # Calculate task progress (approved subtasks count as completed / total subtasks)
             subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).all()
             total_subtasks = len(subtasks)
-            completed_subtasks = len([st for st in subtasks if st.is_checked])
+            completed_subtasks = len([st for st in subtasks if (st.status == 'Approved')])
             progress = f"{completed_subtasks}/{total_subtasks}" if total_subtasks > 0 else "0/0"
             
             # Normalize task status
@@ -284,6 +286,7 @@ def project_details(id=None):
                          manager=manager,
                          deadline=deadline,
                          department=department,
+                         manager_department=manager_department,
                          display_status=display_status,
                          assigned_members=assigned_members,
                          tasks=tasks,
@@ -672,7 +675,13 @@ def task_details(id=None):
     # Owner dropdown in Add Sub-Task: only members assigned to this task
     task_assignees_for_subtask = [m for m in task_project_members if m['p_members_id'] in assignee_p_members_ids]
 
-    return render_template('task_details.html', task=task, project=project, task_assignees=task_assignees, task_project_members=task_project_members, assignee_p_members_ids=assignee_p_members_ids, is_project_manager=is_project_manager, is_project_member=is_project_member, can_see_member_subtask=can_see_member_subtask, can_edit_task=can_edit_task, notes=main_notes, replies_map=replies_map, subtask_list=subtask_list, task_assignees_for_subtask=task_assignees_for_subtask)
+    # Department to show: project manager's department (same as project details)
+    manager = User.query.get(project.project_manager) if (project and project.project_manager) else None
+    manager_department = Department.query.get(manager.department_id) if (manager and manager.department_id) else None
+    if not manager_department and project and project.department_id:
+        manager_department = Department.query.get(project.department_id)
+
+    return render_template('task_details.html', task=task, project=project, task_assignees=task_assignees, task_project_members=task_project_members, assignee_p_members_ids=assignee_p_members_ids, is_project_manager=is_project_manager, is_project_member=is_project_member, can_see_member_subtask=can_see_member_subtask, can_edit_task=can_edit_task, notes=main_notes, replies_map=replies_map, subtask_list=subtask_list, task_assignees_for_subtask=task_assignees_for_subtask, manager_department=manager_department)
 
 
 @project_bp.route("/task_details/<int:id>/create_subtask", methods=['POST'])
@@ -771,9 +780,16 @@ def update_subtask_status(task_id, sub_task_id):
     if status == 'Approved':
         from datetime import datetime as dt
         subtask.checked_timestamp = dt.utcnow()
+        # If all subtasks for this task are now Approved, mark the parent task as Completed
+        all_subtasks = SubTask.query.filter_by(parent_task_id=task_id).all()
+        if all_subtasks and all(st.status == 'Approved' for st in all_subtasks):
+            task.task_status = 'Completed'
     try:
         db.session.commit()
-        flash('Subtask updated.', 'success')
+        if status == 'Approved' and task.task_status == 'Completed':
+            flash('Subtask approved. All subtasks complete — task marked as Completed.', 'success')
+        else:
+            flash('Subtask updated.', 'success')
     except Exception:
         db.session.rollback()
         flash('Failed to update subtask.', 'danger')

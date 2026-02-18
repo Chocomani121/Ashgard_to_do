@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let searchVal = '';
     const filtered = () => allData.filter(row => !searchVal || row.searchText.includes(searchVal.toLowerCase()));
     const grid = new gridjs.Grid({
-        columns: ["Task Name", "Owner", "Status", "Sub Task", "Actions"],
+        columns: ["Task Name", "Owner", "Deadline", "Status", "Sub Task", "Actions"],
         data: filtered().map(row => row.cells),
         pagination: { limit: 10 },
         sort: true,
