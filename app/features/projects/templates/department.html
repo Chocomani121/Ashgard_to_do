@@ -99,11 +99,11 @@
                                                             <span class="input-group-text">
                                                                 <i class="mdi mdi-calendar-range text-muted"></i>
                                                             </span>
-                                                            <input type="text" id="datepicker-range" class="form-control" placeholder="Select Date Range">
+                                                            <input type="text" id="datepicker-range-deptprojects" class="form-control" placeholder="Select Date Range">
                                                         </div>
 
                                                         <div style="width: 180px;">
-                                                            <select class="form-select" id="statusFilter">
+                                                            <select class="form-select" id="statusFilterDeptProjects">
                                                                 <option value="all">Status: All</option>
                                                                 <option value="Ongoing">Ongoing</option>
                                                                 <option value="On Hold">On Hold</option>
@@ -112,7 +112,7 @@
                                                         </div>
 
                                                         <div style="width: 180px;">
-                                                            <select class="form-select" id="priorityFilter">
+                                                            <select class="form-select" id="priorityFilterDeptProjects">
                                                                 <option value="all">Priority: All</option>
                                                                 <option value="Low">Low</option>
                                                                 <option value="Medium">Medium</option>
@@ -124,10 +124,10 @@
                                             </div>
 
                                             <div class="card-body">
-                                                <div id="table-gridjs"></div>
+                                                <div id="table13-gridjs"></div>
 
                                                 <!-- ORIGINAL TABLE (hidden but used by Grid.js) -->
-                                                <table id="projectsTable" class="table d-none">
+                                                <table id="projectsDeptTable" class="table d-none">
                                                       <thead>
                                                                 <tr>
                                                                     <th style="width: 190px;">Project Name</th>
@@ -207,6 +207,9 @@
                                                                 </td>
                                                                 <td>
                                                                     {{ item.project.client_name or 'N/A' }}
+                                                                </td>
+                                                                <td>
+                                                                    {{ item.department.department_name if item.department else 'N/A' }}
                                                                 </td>
                                                                 <td>
                                                                     {% if item.latest_task_title %}{% if item.latest_task_title|length > 40 %}<span title="{{ item.latest_task_title }}">{{ item.latest_task_title[:37] }}...</span>{% else %}{{ item.latest_task_title }}{% endif %}{% else %}<span class="text-muted" title="This project has no tasks yet">No tasks yet</span>{% endif %}

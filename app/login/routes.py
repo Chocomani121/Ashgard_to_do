@@ -1,7 +1,8 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint, current_app
 from app import db, bcrypt, mail
 from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm, UpdateAccountForm
-from app.models import User, Department, Notes, Task
+from app.models import User, Department, Notes, Task, Project
+
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 from sqlalchemy.orm import joinedload
@@ -32,6 +33,7 @@ def login():
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('project.projects'))
         form.email.errors.append('Invalid email or password.')
+
     return render_template('auth/auth-login.html', title='Login', form=form)
 
 @auth_bp.route("/register", methods=['GET', 'POST'])

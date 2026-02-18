@@ -64,6 +64,18 @@ def create_app():
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
         return response
+    # --- CONTEXT PROCESSOR FOR APPROVALS ---
+    
+    @flask_app.context_processor
+    def inject_show_approvals():
+        from flask_login import current_user
+        show_approvals_in_navbar = False
+        if current_user.is_authenticated:
+            from app.models import Project
+            show_approvals_in_navbar = Project.query.filter_by(
+                project_manager=current_user.member_id
+            ).first() is not None
+        return {'show_approvals_in_navbar': show_approvals_in_navbar}
 
     # --- BLUEPRINT REGISTRATION ---
     
