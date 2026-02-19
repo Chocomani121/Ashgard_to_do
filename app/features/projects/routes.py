@@ -534,7 +534,9 @@ def project_details(id=None):
     manager = User.query.get(project.project_manager) if project.project_manager else None
     deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
     department = Department.query.get(project.department_id) if project.department_id else None
-    
+    # Department for display: project manager's department, or project's department as fallback
+    manager_department = Department.query.get(manager.department_id) if manager and manager.department_id else department
+
     # Normalize status: convert Pending/Cancelled to Ongoing
     display_status = project.project_status
     if not display_status or display_status == 'Pending' or display_status == 'Cancelled':
@@ -635,6 +637,7 @@ def project_details(id=None):
                          manager=manager,
                          deadline=deadline,
                          department=department,
+                         manager_department=manager_department,
                          display_status=display_status,
                          assigned_members=assigned_members,
                          tasks=tasks,
@@ -953,18 +956,77 @@ def task_details(id=None):
         pass
     if not assignee_p_members_ids and task.p_members_id:
         assignee_p_members_ids.append(task.p_members_id)
-    
-    return render_template('task_details.html', 
-        task=task, 
-        project=project, 
-        task_assignees=task_assignees, 
-        task_project_members=task_project_members, 
-        assignee_p_members_ids=assignee_p_members_ids, 
-        is_project_manager=is_project_manager, 
-        is_project_member=is_project_member, 
-        can_edit_task=can_edit_task, 
-        notes=main_notes, 
-        replies_map=replies_map
+
+    # Department for display: project manager's department, or project's department as fallback
+    manager_user = User.query.get(project.project_manager) if project and project.project_manager else None
+    manager_department = None
+    if manager_user and manager_user.department_id:
+        manager_department = Department.query.get(manager_user.department_id)
+    elif project and project.department_id:
+        manager_department = Department.query.get(project.department_id)
+
+    # Build subtask_list for template (SubTask with owner_name, notes_preview)
+    from collections import defaultdict
+    subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).all()
+    p_member_ids = list({s.p_members_id for s in subtasks if s.p_members_id})
+    pm_to_user = {}
+    if p_member_ids:
+        for pm in ProjectMembers.query.filter(ProjectMembers.p_members_id.in_(p_member_ids)).all():
+            if pm.member_id:
+                u = User.query.get(pm.member_id)
+                if u:
+                    pm_to_user[pm.p_members_id] = u.name or u.username
+    sub_note_ids = [s.sub_task_id for s in subtasks]
+    notes_by_sub = defaultdict(list)
+    if sub_note_ids:
+        for n in Notes.query.filter(Notes.sub_task_id.in_(sub_note_ids)).order_by(Notes.created_on.desc()).all():
+            notes_by_sub[n.sub_task_id].append(n.note_body or '')
+    subtask_list = []
+    for st in subtasks:
+        owner_name = pm_to_user.get(st.p_members_id, '—') if st.p_members_id else '—'
+        previews = notes_by_sub.get(st.sub_task_id, [])
+        notes_preview = (previews[0][:80] + '…') if previews and previews[0] else '—'
+        subtask_list.append(type('SubtaskRow', (), {
+            'sub_task_id': st.sub_task_id, 'generated_code': st.generated_code or '—',
+            'subtask_name': st.subtask_name or '—', 'owner_name': owner_name,
+            'status': st.status or 'Ongoing', 'checked_timestamp': st.checked_timestamp,
+            'notes_preview': notes_preview
+        })())
+    task_assignees_for_subtask = [m for m in task_project_members if m['p_members_id'] in assignee_p_members_ids]
+
+    # Current user's p_members_id (for member-owned subtask actions: Resume, Edit on On Hold)
+    current_user_pm = ProjectMembers.query.filter_by(
+        project_id=task.project_id, member_id=current_user.member_id
+    ).first() if task.project_id else None
+    current_user_p_members_id = current_user_pm.p_members_id if current_user_pm else None
+
+    subtask_list = []
+    for st in subtasks:
+        owner_name = pm_to_user.get(st.p_members_id, '—') if st.p_members_id else '—'
+        previews = notes_by_sub.get(st.sub_task_id, [])
+        notes_preview = (previews[0][:80] + '…') if previews and previews[0] else '—'
+        is_owner = bool(st.p_members_id and current_user_p_members_id and st.p_members_id == current_user_p_members_id)
+        subtask_list.append(type('SubtaskRow', (), {
+            'sub_task_id': st.sub_task_id, 'generated_code': st.generated_code or '—',
+            'subtask_name': st.subtask_name or '—', 'owner_name': owner_name,
+            'status': st.status or 'Ongoing', 'checked_timestamp': st.checked_timestamp,
+            'notes_preview': notes_preview, 'is_owner': is_owner
+        })())
+
+    return render_template('task_details.html',
+        task=task,
+        project=project,
+        task_assignees=task_assignees,
+        task_project_members=task_project_members,
+        assignee_p_members_ids=assignee_p_members_ids,
+        is_project_manager=is_project_manager,
+        is_project_member=is_project_member,
+        can_edit_task=can_edit_task,
+        notes=main_notes,
+        replies_map=replies_map,
+        manager_department=manager_department,
+        subtask_list=subtask_list,
+        task_assignees_for_subtask=task_assignees_for_subtask,
     )
 
 
@@ -1116,13 +1178,22 @@ def subtask_note(task_id, sub_task_id):
         member_id=current_user.member_id
     ).first()
     p_members_id = pm_entry.p_members_id if pm_entry else None
-    # Submit for review: only the member assigned to this subtask (owner) or PM may submit
+    # Submit for review: PM, subtask owner, or any task assignee may submit
     if action == 'submit':
         project = Project.query.get(task.project_id) if task.project_id else None
         is_pm = project and current_user.member_id == project.project_manager
-        is_owner = subtask.p_members_id and pm_entry and subtask.p_members_id == pm_entry.p_members_id
-        if not (is_pm or is_owner):
-            flash('Only the member assigned to this subtask (or the PM) can submit it for review.', 'danger')
+        is_subtask_owner = subtask.p_members_id and pm_entry and subtask.p_members_id == pm_entry.p_members_id
+        is_task_assignee = False
+        if pm_entry:
+            if task.p_members_id == pm_entry.p_members_id:
+                is_task_assignee = True
+            else:
+                for ta in (task.assignees or []):
+                    if ta.p_members_id == pm_entry.p_members_id:
+                        is_task_assignee = True
+                        break
+        if not (is_pm or is_subtask_owner or is_task_assignee):
+            flash('Only the project manager, subtask owner, or a task assignee can submit for review.', 'danger')
             return redirect(url_for('project.task_details', id=task_id))
     new_note = Notes(
         task_id=task_id,
