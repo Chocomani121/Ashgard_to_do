@@ -231,7 +231,7 @@
                         {% endif %}
 
                                 <div id="reply-form-{{ note.notes_id }}" class="mt-2 d-none ms-4">
-                                    <form action="{{ url_for('project.reply_note', note_id=note.notes_id) }}" method="POST">
+                                    <form action="{{ url_for('project.add_note', task_id=task.task_id) }}" method="POST">
                                         <input type="hidden" name="task_id" value="{{ task.task_id }}">
                                         <div class="input-group input-group-sm">
                                             <input type="text" name="reply_body" class="form-control" placeholder="Write a reply..." required>
@@ -449,7 +449,7 @@
 <div class="modal fade" id="taskNoteModal" tabindex="-1" aria-labelledby="taskNoteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <form action="{{ url_for('project.add_task_note', task_id=task.task_id) }}" method="POST">
+            <form action="{{ url_for('project.add_note', task_id=task.task_id) }}" method="POST">
                 <div class="modal-header">
                     <h5 class="modal-title" id="taskNoteModalLabel">Add Task Note</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -684,7 +684,7 @@
 <div class="modal fade" id="addNotesProjectModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <form action="{{ url_for('project.add_note') }}" method="POST">
+            <form action="{{ url_for('project.add_note', task_id=task.task_id) }}" method="POST">
                 <div class="modal-header">
                     <h5 class="modal-title">Sub-Task Action</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
