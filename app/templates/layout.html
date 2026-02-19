@@ -114,10 +114,11 @@
                         <li>
                             <a href="{{ url_for('project.approvals') }}">
                                 <i class="bx bx-list-check icon nav-icon"></i>
-                                <span class="menu-item ms-1" data-key="t-todo" >Approvals</span><span class="badge bg-danger ms-1 ms-auto">2</span>
+                                <span class="menu-item ms-1" data-key="t-todo" >Approvals</span>{% if approvals_pending_count %}<span class="badge bg-danger ms-1 ms-auto">{{ approvals_pending_count }}</span>{% endif %}
                             </a> 
                         </li> 
                         {% endif %}
+                
                         <li class="menu-title" data-key="t-applications">General</li>
                         <li>
                             <a href="{{ url_for('department.all_departments') }}" >

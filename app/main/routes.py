@@ -138,9 +138,9 @@ def delete_department(id):
     return redirect(url_for('main.all_departments'))
 
 
-@main.route("/approvals")
-def approvals():
-    return render_template('approvals.html', title="Approvals")
+# @main.route("/approvals")
+# def approvals():
+#     return render_template('approvals.html', title="Approvals")
 
 @main.route("/members")
 @login_required
