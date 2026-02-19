@@ -1601,6 +1601,51 @@ def approvals():
 
     return render_template('approvals.html', title="Approvals", tasks_data=tasks_data, stats=stats, users_json=users_json, departments=departments, today=date.today())
     
+@project_bp.route("/approvals/<int:task_id>/subtask/<int:sub_task_id>/status", methods=['POST'])
+@login_required
+def update_subtask_status_approvals(task_id, sub_task_id):
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    if not _can_act_on_subtask(subtask, task, current_user):
+        flash('You do not have permission to update this subtask.', 'danger')
+        return redirect(url_for('project.approvals'))
+    status = (request.form.get('status') or '').strip()
+    allowed = ('Ongoing', 'To be reviewed', 'Rejected', 'On Hold', 'Approved')
+    if status not in allowed:
+        flash('Invalid status.', 'danger')
+        return redirect(url_for('project.approvals'))
+    # Save note when approving/rejecting (from approvals page modal)
+    note_body = (request.form.get('note_body') or '').strip()
+    if note_body and status in ('Approved', 'Rejected'):
+        pm_entry = ProjectMembers.query.filter_by(project_id=task.project_id, member_id=current_user.member_id).first()
+        p_members_id = pm_entry.p_members_id if pm_entry else None
+        note = Notes(
+            task_id=task_id,
+            sub_task_id=sub_task_id,
+            member_id=current_user.member_id,
+            p_members_id=p_members_id,
+            note_body=note_body,
+            generated_code=status.lower()
+        )
+        db.session.add(note)
+    subtask.status = status
+    if status == 'Approved':
+        from datetime import datetime as dt
+        subtask.checked_timestamp = dt.utcnow()
+        # If all subtasks for this task are now Approved, mark the parent task as Completed
+        all_subtasks = SubTask.query.filter_by(parent_task_id=task_id).all()
+        if all_subtasks and all(st.status == 'Approved' for st in all_subtasks):
+            task.task_status = 'Completed'
+    try:
+        db.session.commit()
+        if status == 'Approved' and task.task_status == 'Completed':
+            flash('Subtask approved. All subtasks complete — task marked as Completed.', 'success')
+        else:
+            flash('Subtask updated.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Failed to update subtask.', 'danger')
+    return redirect(url_for('project.approvals'))
 
 # Project Details Notes_tbl - Reply, Comment, Edit
 @project_bp.route("/project/note/add", methods=['POST'])
