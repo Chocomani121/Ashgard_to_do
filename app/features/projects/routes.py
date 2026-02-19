@@ -954,9 +954,12 @@ def task_details(id=None):
     if not assignee_p_members_ids and task.p_members_id:
         assignee_p_members_ids.append(task.p_members_id)
     
+    department = Department.query.get(project.department_id) if project and project.department_id else None
+    
     return render_template('task_details.html', 
         task=task, 
         project=project, 
+        department=department,
         task_assignees=task_assignees, 
         task_project_members=task_project_members, 
         assignee_p_members_ids=assignee_p_members_ids, 

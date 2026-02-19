@@ -59,7 +59,7 @@
                                         </div>
                                         <div class="col-md-4">
                                             <div class="text-muted small">Department</div>
-                                            <strong class="d-block mt-1">{{ manager_department.department_name if manager_department else '—' }}</strong>
+                                            <strong class="d-block mt-1">{{ department.department_name if department else '—' }}</strong>
                                         </div>
                                     </div>
                                     <div class="row mb-3 g-3 flex-shrink-0">
@@ -282,13 +282,9 @@
                     </div>
 
                 </div>
-                <!-- end row -->
-
-            </div>
-            <!-- container-fluid -->
+                <!-- End page-content -->
         </div>
-        <!-- End Page-content -->
-    </div>
+        <!-- End main-content -->
 
         <div class="modal fade" id="addNotesProjectModal" tabindex="-1" aria-labelledby="addTopicModalLabel" aria-hidden="true">
             <div class="modal-dialog">
