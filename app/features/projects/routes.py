@@ -846,9 +846,14 @@ def task_details(id=None):
         flash('Task not found', 'error')
         return redirect(url_for('project.projects'))
     
-    # Fetch all notes for this task (for notes + replies section)
-    all_notes = Notes.query.filter_by(task_id=task.task_id).order_by(Notes.created_on.asc()).all()
+    # MODIFIED: Changed .asc() to .desc() to show newest notes first
+    all_notes = Notes.query.filter_by(task_id=task.task_id).order_by(
+        Notes.pin_stat.desc(), 
+        Notes.created_on.desc()
+    ).all()
+    
     main_notes = [n for n in all_notes if not n.reply_code]
+
     replies_map = {}
     for n in all_notes:
         if n.reply_code:
@@ -856,7 +861,10 @@ def task_details(id=None):
                 parent_id = int(n.reply_code)
                 if parent_id not in replies_map:
                     replies_map[parent_id] = []
-                replies_map[parent_id].append(n)
+                
+                # Keep replies in chronological order (Oldest at top of thread)
+                # Since all_notes is descending, we insert at the end to keep them 0, 1, 2...
+                replies_map[parent_id].append(n) 
             except (ValueError, TypeError):
                 pass
     
@@ -1601,42 +1609,86 @@ def approvals():
 
     return render_template('approvals.html', title="Approvals", tasks_data=tasks_data, stats=stats, users_json=users_json, departments=departments, today=date.today())
     
+@project_bp.route("/approvals/<int:task_id>/subtask/<int:sub_task_id>/status", methods=['POST'])
+@login_required
+def update_subtask_status_approvals(task_id, sub_task_id):
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    if not _can_act_on_subtask(subtask, task, current_user):
+        flash('You do not have permission to update this subtask.', 'danger')
+        return redirect(url_for('project.approvals'))
+    status = (request.form.get('status') or '').strip()
+    allowed = ('Ongoing', 'To be reviewed', 'Rejected', 'On Hold', 'Approved')
+    if status not in allowed:
+        flash('Invalid status.', 'danger')
+        return redirect(url_for('project.approvals'))
+    # Save note when approving/rejecting (from approvals page modal)
+    note_body = (request.form.get('note_body') or '').strip()
+    if note_body and status in ('Approved', 'Rejected'):
+        pm_entry = ProjectMembers.query.filter_by(project_id=task.project_id, member_id=current_user.member_id).first()
+        p_members_id = pm_entry.p_members_id if pm_entry else None
+        note = Notes(
+            task_id=task_id,
+            sub_task_id=sub_task_id,
+            member_id=current_user.member_id,
+            p_members_id=p_members_id,
+            note_body=note_body,
+            generated_code=status.lower()
+        )
+        db.session.add(note)
+    subtask.status = status
+    if status == 'Approved':
+        from datetime import datetime as dt
+        subtask.checked_timestamp = dt.utcnow()
+        # If all subtasks for this task are now Approved, mark the parent task as Completed
+        all_subtasks = SubTask.query.filter_by(parent_task_id=task_id).all()
+        if all_subtasks and all(st.status == 'Approved' for st in all_subtasks):
+            task.task_status = 'Completed'
+    try:
+        db.session.commit()
+        if status == 'Approved' and task.task_status == 'Completed':
+            flash('Subtask approved. All subtasks complete — task marked as Completed.', 'success')
+        else:
+            flash('Subtask updated.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Failed to update subtask.', 'danger')
+    return redirect(url_for('project.approvals'))
+
 
 # Project Details Notes_tbl - Reply, Comment, Edit
-@project_bp.route("/project/note/add", methods=['POST'])
+@project_bp.route("/task/<int:task_id>/add_note", methods=['POST'])
 @login_required
-def add_note():
-    from app.models import Notes 
+def add_note(task_id):
+    # Ensure the task exists
+    task = Task.query.get_or_404(task_id)
     
-    # 1. Get the data from the HTML form names
-    task_id = request.form.get('task_id')
-    body = request.form.get('note_body')
+    # Get data from the form
     title = request.form.get('note_title')
-    
-    # 2. Basic validation
-    if not body or not task_id:
-        flash("Note body cannot be empty.", "danger")
-        return redirect(request.referrer)
+    content = request.form.get('note_content')
 
-    # 3. Create the database object
-    new_note = Notes(
-        task_id=int(task_id),
-        member_id=current_user.member_id,
-        note_body=body,
-        generated_code=title, # Saving 'Notes Title' here
-        reply_code=None
-    )
-    
+    if not content:
+        flash('Description is required', 'warning')
+        return redirect(url_for('project.task_details', id=task_id))
+
     try:
+        new_note = Notes(
+            task_id=task_id,
+            member_id=current_user.member_id,
+            note_body=content,          # Matches your DB column 'note_body'
+            generated_code=title,       # Matches your DB column 'generated_code'
+            created_on=datetime.now(),  # Matches your DB column 'created_on'
+            pin_stat=0                  # Defaulting to unpinned
+        )
+        
         db.session.add(new_note)
         db.session.commit()
-        flash("Note added successfully!", "success")
     except Exception as e:
         db.session.rollback()
-        print(f"DEBUG ERROR: {e}") # This shows up in your terminal
-        flash("Failed to save note.", "danger")
+        flash(f'Database Error: {str(e)}', 'danger')
 
-    return redirect(request.referrer)
+    # Redirect back to the task details page
+    return redirect(url_for('project.task_details', id=task_id))
 
 
 @project_bp.route("/task/note/reply/<int:note_id>", methods=['POST'])
@@ -1758,3 +1810,23 @@ def all_task():
 
     return render_template('all_task.html', title="All Task", tasks_data=tasks_data, stats=stats, users_json=users_json, departments=departments, today=date.today())
     
+@project_bp.route("/toggle_pin/<int:note_id>")
+@login_required
+def toggle_pin(note_id):
+    # 1. Find the specific note
+    note = Notes.query.get_or_404(note_id)
+    
+    # 2. Toggle the status
+    note.pin_stat = not note.pin_stat
+    
+    # 3. If you want to track WHEN it was pinned (for better sorting)
+    if note.pin_stat:
+        note.pin_datetime = datetime.now()
+    else:
+        note.pin_datetime = None
+        
+    # 4. Save to database
+    db.session.commit()
+    
+    # 5. Go back to where you were
+    return redirect(request.referrer or url_for('project.projects'))

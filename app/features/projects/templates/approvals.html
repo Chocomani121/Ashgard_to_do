@@ -20,9 +20,9 @@
                                             <div style="width: 180px;">
                                                 <select class="form-select" id="statusFilterApprovalProjects">
                                                     <option value="all">Status: All</option>
-                                                    <option value="Ongoing">Ongoing</option>
+                                                    <option value="To be reviewed">To be reviewed</option>
                                                     <option value="On Hold">On Hold</option>
-                                                    <option value="Completed">Completed</option>
+                                                    <option value="Rejected">Rejected</option>
                                                 </select>
                                             </div>
                                             <div style="width: 180px;">
@@ -60,8 +60,10 @@
                                                 {% if item.subtasks %}
                                                 {% for st in item.subtasks %}
                                                 {% set st_status = st.status or 'Ongoing' %}
-                                                {# data_status used by GridJS/search filter (Completed / On Hold / Ongoing) #}
-                                                {% set data_status = 'Completed' if st_status in ('Completed','Approved') else ('On Hold' if st_status == 'On Hold' else 'Ongoing') %}
+                                                {# Skip Ongoing, Approved, Completed — only show items needing PM action #}
+                                                {% if st_status not in ('Ongoing', 'Approved', 'Completed') %}
+                                                {# data_status used by GridJS status filter (must match filter dropdown values) #}
+                                                {% set data_status = 'Completed' if st_status in ('Completed','Approved') else st_status %}
                                                 <tr
                                                     data-status="{{ data_status }}"
                                                     data-priority="{{ item.task.priority or 'High' }}"
@@ -93,29 +95,21 @@
                                                         {% endif %}
                                                     </td>
                                                     <td class="text-nowrap">
-                                                        {% if st_status == 'Ongoing' %}
-                                                        <div class="dropup">
-                                                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
-                                                            <ul class="dropdown-menu dropdown-menu-end shadow">
-                                                                <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="submit" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Submit for review">Submit</a></li>
-                                                                <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editSubtaskModal" data-edit-form-action="{{ url_for('project.edit_subtask', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Edit</a></li>
-                                                                <li><a class="dropdown-item subtask-status-link" href="#" data-url="{{ url_for('project.update_subtask_status', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}" data-status="On Hold">Hold</a></li>
-                                                                <li><a class="dropdown-item text-danger subtask-delete-link" href="#" data-url="{{ url_for('project.delete_subtask', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}" data-code="{{ st.generated_code }}">Delete</a></li>
-                                                            </ul>
-                                                        </div>
-                                                        {% elif st_status == 'To be reviewed' %}
-                                                        <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline me-1">
-                                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-                                                            <input type="hidden" name="status" value="Approved">
-                                                            <button type="submit" class="btn btn-sm btn-success" title="Approve"><i class="mdi mdi-check"></i></button>
-                                                        </form>
-                                                        <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline">
-                                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-                                                            <input type="hidden" name="status" value="Rejected">
-                                                            <button type="submit" class="btn btn-sm btn-danger" title="Reject"><i class="mdi mdi-close"></i></button>
-                                                        </form>
+                                                        {% if st_status == 'To be reviewed' %}
+                                                        <button type="button" class="btn btn-sm btn-success me-1 approve-reject-btn" title="Approve"
+                                                            data-bs-toggle="modal" data-bs-target="#approveRejectModal"
+                                                            data-form-action="{{ url_for('project.update_subtask_status_approvals', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}"
+                                                            data-status="Approved" data-subtask-name="{{ st.subtask_name or 'Unnamed' }}">
+                                                            <i class="mdi mdi-check"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-danger approve-reject-btn" title="Reject"
+                                                            data-bs-toggle="modal" data-bs-target="#approveRejectModal"
+                                                            data-form-action="{{ url_for('project.update_subtask_status_approvals', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}"
+                                                            data-status="Rejected" data-subtask-name="{{ st.subtask_name or 'Unnamed' }}">
+                                                            <i class="mdi mdi-close"></i>
+                                                        </button>
                                                         {% elif st_status == 'Rejected' %}
-                                                        <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline me-1">
+                                                        <form method="POST" action="{{ url_for('project.update_subtask_status_approvals', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline me-1">
                                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
                                                             <input type="hidden" name="status" value="To be reviewed">
                                                             <button type="submit" class="btn btn-sm btn-primary">Revert</button>
@@ -131,6 +125,7 @@
                                                         {% endif %}
                                                     </td>
                                                 </tr>
+                                                {% endif %}
                                                 {% endfor %}
                                                 {% endif %}
                                                 {% endfor %}
@@ -156,6 +151,36 @@
             </div>
             <!-- end main content-->
 
+        </div>
+
+        <!-- Approve / Reject Modal: add note before confirming -->
+        <div class="modal fade" id="approveRejectModal" tabindex="-1" data-bs-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="approveRejectModalTitle">Add Note</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="approveRejectForm" method="POST" action="">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                        <input type="hidden" name="status" id="approveRejectStatus" value="">
+                        <input type="hidden" name="next" value="{{ url_for('project.approvals') }}">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label" for="approveRejectNoteBody">Note <span class="text-muted">(optional)</span></label>
+                                <textarea name="note_body" id="approveRejectNoteBody" class="form-control" rows="4" placeholder="Add a note for approval or rejection..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="approveRejectSubmitBtn">
+                                <span class="spinner-border spinner-border-sm me-1 d-none" id="approveRejectSpinner" role="status"></span>
+                                <span id="approveRejectBtnText">Confirm</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <!-- Subtask Note Modal (Submit / Re-Submit / Follow up) -->
@@ -218,72 +243,6 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
         </form>
 
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var subtaskNoteModalEl = document.getElementById('subtaskNoteModal');
-            if (subtaskNoteModalEl) {
-                subtaskNoteModalEl.addEventListener('show.bs.modal', function(e) {
-                    var trigger = e.relatedTarget;
-                    if (!trigger) return;
-                    var form = document.getElementById('subtaskNoteForm');
-                    var titleEl = document.getElementById('subtaskNoteModalTitle');
-                    var actionInput = document.getElementById('subtaskNoteAction');
-                    var bodyInput = document.getElementById('subtaskNoteBody');
-                    var helpEl = document.getElementById('subtaskNoteHelp');
-                    var submitBtn = document.getElementById('subtaskNoteSubmitBtn');
-                    if (trigger.dataset.noteFormAction) form.action = trigger.dataset.noteFormAction;
-                    if (trigger.dataset.modalTitle) titleEl.textContent = trigger.dataset.modalTitle;
-                    var action = (trigger.dataset.noteAction || '').toLowerCase();
-                    if (action) actionInput.value = action;
-                    if (bodyInput) bodyInput.value = '';
-                    if (action === 'submit') {
-                        if (submitBtn) submitBtn.textContent = 'Submit';
-                        if (bodyInput) bodyInput.placeholder = 'Add a note and submit for review...';
-                        if (helpEl) helpEl.textContent = 'Your note will be saved and the subtask will move to To be reviewed.';
-                    } else if (action === 'resubmit') {
-                        if (submitBtn) submitBtn.textContent = 'Re-Submit';
-                        if (helpEl) helpEl.textContent = 'State the reason for resubmit; it will appear in subtask notes.';
-                    } else {
-                        if (submitBtn) submitBtn.textContent = 'Save';
-                        if (helpEl) helpEl.textContent = '';
-                    }
-                });
-            }
-            var editSubtaskModalEl = document.getElementById('editSubtaskModal');
-            if (editSubtaskModalEl) {
-                editSubtaskModalEl.addEventListener('show.bs.modal', function(e) {
-                    var trigger = e.relatedTarget;
-                    if (!trigger) return;
-                    var form = document.getElementById('editSubtaskForm');
-                    var nameInput = document.getElementById('editSubtaskNameInput');
-                    if (trigger.dataset.editFormAction) form.action = trigger.dataset.editFormAction;
-                    if (trigger.dataset.subtaskName !== undefined) nameInput.value = trigger.dataset.subtaskName || '';
-                });
-            }
-            document.addEventListener('click', function(e) {
-                var link = e.target.closest('.subtask-status-link');
-                if (link) {
-                    e.preventDefault();
-                    var url = link.getAttribute('data-url');
-                    var status = link.getAttribute('data-status');
-                    if (url && status) {
-                        var form = document.getElementById('subtaskStatusForm');
-                        if (form) { form.action = url; document.getElementById('subtaskStatusFormStatus').value = status; form.submit(); }
-                    }
-                }
-                var delLink = e.target.closest('.subtask-delete-link');
-                if (delLink) {
-                    e.preventDefault();
-                    var url = delLink.getAttribute('data-url');
-                    var code = delLink.getAttribute('data-code') || '';
-                    if (url && confirm('Delete sub-task ' + code + '?')) {
-                        var form = document.getElementById('subtaskDeleteForm');
-                        if (form) { form.action = url; form.submit(); }
-                    }
-                }
-            });
-        });
-        </script>
-
+        <script src="{{ url_for('project.static', filename='approval.js') }}"></script>
         <script src="{{ url_for('project.static', filename='task.js') }}"></script>
    {% endblock content %}
