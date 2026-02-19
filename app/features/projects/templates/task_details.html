@@ -789,7 +789,7 @@
 <div class="modal fade" id="addNotesProjectModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <form action="{{ url_for('project.add_note') }}" method="POST">
+            <form action="{{ url_for('project.add_note', task_id=task.task_id) }}" method="POST">
                 <div class="modal-header">
                     <h5 class="modal-title">Add Note</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
