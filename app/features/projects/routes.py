@@ -1115,7 +1115,7 @@ def subtask_note(task_id, sub_task_id):
         task_id=task_id,
         sub_task_id=sub_task_id,
         member_id=current_user.member_id,
-        p_members_id=p_members_id,
+        p_members_id=p_memb  ers_id,
         note_body=note_body,
         generated_code=action or 'note'
     )
