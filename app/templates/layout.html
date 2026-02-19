@@ -75,38 +75,38 @@
                         <li class="menu-title" data-key="t-menu">Projects</li>
                         <li>
                             <a href="{{ url_for('project.projects') }}">
-                                <i class="bx bx-folder-open icon nav-icon"></i>
-                                <span class="menu-item"> Projects</span>
+                                <i class="mdi mdi-folder-edit-outline icon nav-icon"></i>
+                                <span class="menu-item">My Projects</span>
                             </a>
                         </li>
                         <li>
                             <a href="{{ url_for('project.department_projects') }}">
-                                <i class="bx bx-folder-open icon nav-icon"></i>
-                                <span class="menu-item">  Department </span>
+                                <i class="mdi mdi-folder-outline icon nav-icon"></i>
+                                <span class="menu-item"> Department Projects </span>
                             </a>
                         </li>
                         <li>
                             <a href="{{ url_for('project.all_projects') }}">
-                                <i class="bx bx-folder-open icon nav-icon"></i>
+                                <i class="mdi mdi-folder-multiple-outline icon nav-icon"></i>
                                 <span class="menu-item">  All Projects</span>
                             </a>
                         </li>
                         <li class="menu-title" data-key="t-menu">Task</li>
                         <li>
                             <a href="{{ url_for('project.my_tasks') }}">
-                                <i class="bx bx-task icon nav-icon"></i>
+                                <i class="mdi mdi-file-document-edit-outline icon nav-icon"></i>
                                 <span class="menu-item">My Tasks</span>
                             </a> 
                         </li> 
                         <li>
                             <a href="{{url_for('project.dept_tasks')}}">
-                                <i class="bx bx-task icon nav-icon"></i>
+                                <i class="mdi mdi-file-document-outline nav-icon"></i>
                                 <span class="menu-item">Department Tasks</span>
                             </a> 
                         </li> 
                         <li>
                             <a href="{{url_for('project.all_task')}}">
-                                <i class="bx bx-task icon nav-icon"></i>
+                                <i class="mdi mdi-file-document-multiple-outline nav-icon"></i>
                                 <span class="menu-item">All Tasks</span>
                             </a> 
                         </li> 
@@ -266,6 +266,8 @@
         <script src="{{ url_for('static', filename='assets/libs/metismenujs/metismenujs.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/simplebar/simplebar.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/eva-icons/eva.min.js') }}"></script>
+        <!-- materialdesign icon js-->
+        <script src="{{ url_for('static', filename='assets/js/pages/materialdesign.init.js') }}"></script>
 
         <script src="{{ url_for('static', filename='assets/libs/apexcharts/apexcharts.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/libs/chart.js/chart.min.js') }}"></script>

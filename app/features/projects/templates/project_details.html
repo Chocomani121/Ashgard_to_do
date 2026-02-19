@@ -50,56 +50,16 @@
 
                                     <!-- Top Info Section -->
                                     <div class="row mb-3 g-3 flex-shrink-0">
-                                        <div class="col-md-3 col-sm-6">
-                                            <span class="text-muted">Priority:</span> 
-                                            {% if project.priority == 'High' %}
-                                            <span class="badge bg-soft-danger text-danger ms-1">High</span>
-                                            {% elif project.priority == 'Medium' %}
-                                            <span class="badge bg-soft-warning text-warning ms-1">Medium</span>
-                                            {% elif project.priority == 'Low' %}
-                                            <span class="badge bg-soft-info text-info ms-1">Low</span>
-                                            {% else %}
-                                            <span class="badge bg-soft-danger text-danger ms-1">{{ project.priority or 'High' }}</span>
-                                            {% endif %}
-                                        </strong>
-                                    </div>
-
-                                    <div class="col-md-3 col-sm-6">
-                                        <span class="text-muted">Client:</span> 
-                                        <strong class="ms-1">{{ project.client_name or '—' }}</strong>
-                                    </div>
-
-                                </div>
-                                <div class="row mb-3 g-3 flex-shrink-0">
-                                    <div class="col-md-3 col-sm-6">
-                                        <span class="text-muted">Department:</span> 
-                                        <strong class="ms-1">{{ manager_department.department_name if manager_department else '—' }}</strong>
-                                    </div>
-                                </div>
-
-                                <div class="row my-4 d-flex flex-column align-items-center text-center">
-                                    <!-- APPROVED / REJECTED -->
-                                    <div class="d-flex align-items-center justify-content-center">
-                                        <div class="d-flex gap-5 text-center">
-
-                                        <div class="col-md-3 col-sm-6">
-                                            <span class="text-muted">Start date:</span> 
-                                            <strong class="ms-1">
-                                                {% if deadline and deadline.start_date %}
-                                                    {{ deadline.start_date.strftime('%B %d, %Y') }}
+                                            <div class="col-md-3 col-sm-6">
+                                                <span class="text-muted">Priority:</span> 
+                                                {% if project.priority == 'High' %}
+                                                <span class="badge bg-soft-danger text-danger ms-1">High</span>
+                                                {% elif project.priority == 'Medium' %}
+                                                <span class="badge bg-soft-warning text-warning ms-1">Medium</span>
+                                                {% elif project.priority == 'Low' %}
+                                                <span class="badge bg-soft-info text-info ms-1">Low</span>
                                                 {% else %}
-                                                    N/A
-                                                {% endif %}
-                                            </strong>
-                                        </div>
-
-                                        <div class="col-md-3 col-sm-6">
-                                            <span class="text-muted">End date:</span> 
-                                            <strong class="ms-1">
-                                                {% if deadline and deadline.end_date %}
-                                                    {{ deadline.end_date.strftime('%B %d, %Y') }}
-                                                {% else %}
-                                                    N/A
+                                                <span class="badge bg-soft-danger text-danger ms-1">{{ project.priority or 'High' }}</span>
                                                 {% endif %}
                                             </strong>
                                         </div>
@@ -108,8 +68,32 @@
                                             <span class="text-muted">Client:</span> 
                                             <strong class="ms-1">{{ project.client_name or '—' }}</strong>
                                         </div>
+                                        <div class="col-md-3 col-sm-6">
+                                            <span class="text-muted">Start date:</span>
+                                            <strong class="ms-1">
+                                                {% if deadline and deadline.start_date %}
+                                                {{ deadline.start_date.strftime('%B %d, %Y') }}
+                                                {% else %}
+                                                N/A
+                                                {% endif %}
+                                            </strong>
+                                        </div>
+                                        <div class="col-md-3 col-sm-6">
+                                            <span class="text-muted">End date:</span>
+                                            <strong class="ms-1">
+                                                {% if deadline and deadline.end_date %}
+                                                {{ deadline.end_date.strftime('%B %d, %Y') }}
+                                                {% else %}
+                                                N/A
+                                                {% endif %}
+                                            </strong>
+                                        </div>
+                                        <div class="col-md-3 col-sm-6">
+                                            <span class="text-muted">Department:</span> 
+                                            <strong class="ms-1">{{ manager_department.department_name if manager_department else '—' }}</strong>
+                                        </div>
 
-                                    </div>
+                                </div>
 
                                     <div class="row my-4 d-flex flex-column align-items-center text-center">
                                         <!-- APPROVED / REJECTED -->
@@ -308,47 +292,53 @@
                                                                     </div>
                                                                     {% endfor %}
                                                                 </div>
-                                                               
-                                                    {% else %}
-                                                    <span class="text-muted">Unassigned</span>
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    {% if task_info.status == 'Completed' %}
-                                                    <div class="badge badge-soft-success font-size-12 task-status-badge">Completed</div>
-                                                    {% elif task_info.status == 'Ongoing' %}
-                                                    <div class="badge bg-soft-warning text-warning font-size-12 task-status-badge">Ongoing</div>
-                                                    {% else %}
-                                                    <div class="badge bg-soft-secondary text-secondary font-size-12 task-status-badge">{{ task_info.status }}</div>
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    {{ task_info.progress }}
-                                                </td>
-                                                <td>
-                                                    {% if task_info.can_edit %}
-                                                        {% if task_info.status != 'Completed' %}
-                                                        <button type="button" class="btn btn-sm btn-outline-primary mark-complete-btn" data-task-id="{{ task_info.task.task_id }}">
-                                                            <i class="mdi mdi-check"></i> Mark Complete
-                                                        </button>
+                                                                {% else %}
+                                                                <span class="text-muted">Unassigned</span>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                {% if task_info.task.deadline_ref %}
+                                                                <span class="small">{{ task_info.task.deadline_ref.start_date.strftime('%d %b %Y') }} – {{ task_info.task.deadline_ref.end_date.strftime('%d %b %Y') }}</span>
+                                                                {% else %}
+                                                                <span class="text-muted">—</span>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                {% if task_info.status == 'Completed' %}
+                                                                <div class="badge badge-soft-success font-size-12 task-status-badge">Completed</div>
+                                                                {% elif task_info.status == 'Ongoing' %}
+                                                                <div class="badge bg-soft-warning text-warning font-size-12 task-status-badge">Ongoing</div>
+                                                                {% else %}
+                                                                <div class="badge bg-soft-secondary text-secondary font-size-12 task-status-badge">{{ task_info.status }}</div>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                {{ task_info.progress }}
+                                                            </td>
+                                                            <td>
+                                                                {% if task_info.can_edit %}
+                                                                    {% if task_info.status != 'Completed' %}
+                                                                    <button type="button" class="btn btn-sm btn-outline-primary mark-complete-btn" data-task-id="{{ task_info.task.task_id }}">
+                                                                        <i class="mdi mdi-check"></i> Mark Complete
+                                                                    </button>
+                                                                    {% else %}
+                                                                    <span class="text-muted small">Task Completed</span>
+                                                                    {% endif %}
+                                                                {% else %}
+                                                                    {% if task_info.status == 'Completed' %}
+                                                                    <span class="text-muted small">Task Completed</span>
+                                                                    {% else %}
+                                                                    <span class="text-muted small">View only</span>
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
                                                         {% else %}
-                                                        <span class="text-muted small">Task Completed</span>
-                                                        {% endif %}
-                                                    {% else %}
-                                                        {% if task_info.status == 'Completed' %}
-                                                        <span class="text-muted small">Task Completed</span>
-                                                        {% else %}
-                                                        <span class="text-muted small">View only</span>
-                                                        {% endif %}
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                            {% else %}
-                                            <tr>
-                                                <td colspan="5" class="text-muted text-center py-4">No tasks yet.</td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
+                                                        <tr>
+                                                            <td colspan="6" class="text-muted text-center py-4">No tasks yet.</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                </tbody>
                                 </table>
                             </div>
                         </div>
