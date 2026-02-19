@@ -6219,38 +6219,90 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
   flex-direction: column;
 }
 
-/* Notes card only: cap height so notes scroll inside; page can still scroll to subtask table */
-.task-details-equal-row .col-6:last-child .task-details-card-equal {
-  max-height: 75vh;
-  min-height: 300px;
+/* Both Task and Notes cards: equal fixed height per redline (taller boxes) */
+.task-details-equal-row .col-6 .task-details-card-equal {
+  height: 560px;
+  max-height: 80vh;
+  min-height: 480px;
   overflow: hidden;
 }
-.task-details-equal-row .col-6:last-child .task-details-card-equal .card-body {
+.task-details-equal-row .col-6 .task-details-card-equal .card-body {
   min-height: 0;
   flex: 1 1 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
-.task-details-equal-row .col-6:last-child .task-details-card-equal .card-body .flex-grow-1 {
+.task-details-equal-row .col-6 .task-details-card-equal .card-body .task-notes-scroll {
   min-height: 0;
 }
+/* Don't collapse Task card description - use class min-height instead */
+.task-details-equal-row .col-6 .task-details-card-equal .card-body .flex-grow-1:not(.task-details-description-scroll) {
+  min-height: 0;
+}
+/*  ONLY this area scrolls */
+.task-details-description-scroll {
+  min-height: 5rem;
+  flex: 1 1 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
 
-/* Notes list: scroll inside Notes card; scrollbar hidden */
+/* Notes list: scroll inside Notes card; scrollbar visible */
 .task-notes-scroll {
   flex: 1 1 0;
   min-height: 0;
   overflow-y: auto !important;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
 }
 .task-notes-scroll::-webkit-scrollbar {
-  display: none;
+  width: 8px;
 }
+.task-notes-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+.task-notes-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+}
+.task-notes-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+/* Prevent horizontal scroll: constrain width and wrap long note content */
+.task-notes-scroll {
+  overflow-x: hidden !important;
+  max-width: 100%;
+}
+.task-detail-note {
+  min-width: 0;
+  max-width: 100%;
+}
+.task-detail-note-body,
 .task-notes-scroll .p-2.bg-light p,
-.task-notes-scroll .text-dark {
+.task-notes-scroll .text-dark,
+.task-detail-note-replies p {
   word-break: break-word;
   overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+/* Project Details: Description box – fixed height, scrollable (per second screenshot) */
+.project-description-box {
+  max-height: 260px;
+}
+
+/* Project Details: left card height aligns with right column */
+.project-details-row .col-xl-7 .project-details-overview-card {
+  min-height: 100%;
+}
+.project-details-status-chart .apex-charts {
+  margin-left: auto;
+  margin-right: auto;
 }
