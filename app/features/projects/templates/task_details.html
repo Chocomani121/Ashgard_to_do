@@ -4,7 +4,6 @@
 <div class="main-content">
     <div class="page-content">
         <div class="container-fluid">
-            <!-- Breadcrumb -->
             <nav aria-label="breadcrumb" class="mb-3">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url_for('project.projects') }}">Projects</a></li>
@@ -62,7 +61,6 @@
 
                             <!-- Card Body -->
                           <div class="card-body d-flex flex-column overflow-hidden">
-
                                 <!-- Top Info Section: Project Manager, Priority, Task Code, Task Status, Assigned Members, Start/End date -->
                                 <div class="row mb-3 g-3 flex-shrink-0 align-items-start">
                                     <div class="col-6 col-md-3">
@@ -131,16 +129,15 @@
                                     </div>
                                 </div>
                             
-
                                 <!-- Scrollable Description -->
                               <div class="flex-grow-1 overflow-auto">
                                     <h6>Description</h6>
                                     <p class="text-muted mb-0">{{ task.task_description or 'No description.' }}
                                     </p>
                                 </div>
+                             </div>
                             </div>
-                </div>
-                </div>
+                          </div>
 
                 <!-- RIGHT: Notes (col-6, equal height with Task card) -->
                 <div class="col-6 d-flex">
@@ -164,8 +161,7 @@
                     <div class="flex-shrink-0 me-3">
                         <img src="{{ url_for('static', filename='profile_pics/' + (note.author.image_file if note.author and note.author.image_file else 'default.jpg')) }}" 
                             alt="" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #fff;">
-                    </div>
-
+                        </div>
                     <div class="flex-grow-1">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <div>
@@ -234,27 +230,27 @@
                         </div>
                         {% endif %}
 
-                        <div id="reply-form-{{ note.notes_id }}" class="mt-2 d-none ms-4">
-                            <form action="{{ url_for('project.reply_note', note_id=note.notes_id) }}" method="POST">
-                                <input type="hidden" name="task_id" value="{{ task.task_id }}">
-                                <div class="input-group input-group-sm">
-                                    <input type="text" name="reply_body" class="form-control" placeholder="Write a reply..." required>
-                                    <button class="btn btn-primary btn-sm" type="submit">Post</button>
+                                <div id="reply-form-{{ note.notes_id }}" class="mt-2 d-none ms-4">
+                                    <form action="{{ url_for('project.reply_note', note_id=note.notes_id) }}" method="POST">
+                                        <input type="hidden" name="task_id" value="{{ task.task_id }}">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" name="reply_body" class="form-control" placeholder="Write a reply..." required>
+                                            <button class="btn btn-primary btn-sm" type="submit">Post</button>
+                                        </div>
+                                    </form>
                                 </div>
-                            </form>
+                            </div>
                         </div>
+                        {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="bx bx-note mb-3" style="font-size: 3rem;"></i>
+                            <p>No notes found for this task.</p>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
-                {% else %}
-                <div class="text-center text-muted py-5">
-                    <i class="bx bx-note mb-3" style="font-size: 3rem;"></i>
-                    <p>No notes found for this task.</p>
-                </div>
-                {% endfor %}
             </div>
         </div>
-    </div>
-</div>
 
                     <!-- {# --- EDIT MODAL FOR SUBTASK--- #} -->
                     <div class="modal fade" id="editNotesProjectModal" tabindex="-1" aria-hidden="true" style="z-index: 9999;">
@@ -287,7 +283,7 @@
             <!-- SUBTASK TABLE: everyone sees table; PM/members see Add Sub-Task + actions; non-members view-only (no Action column) -->
             <div class="row mt-4">
                 <div class="col-12">
-                    <div class="card subtask-table-card">
+                    <div class="card">
                         <div class="card-header d-flex align-items-center">
                             <h4 class="card-title mb-0">Sub-Task [{{ subtask_list|length }}]{% if is_project_manager %} (Project Manager){% endif %}</h4>
                             {% if is_project_manager or is_project_member %}
@@ -444,137 +440,36 @@
                         <label class="form-label">Notes</label>
                         <textarea name="notes" class="form-control" rows="3" placeholder="Optional notes..."></textarea>
                     </div>
-
-                </form>
+                </div>
             </div>
-
-            <!-- Modal Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="subTaskForm" class="btn btn-success">
-                    <i class="mdi mdi-check me-1"></i> Save Sub-Task
-                </button>
-            </div>
-
         </div>
     </div>
 </div>
 
-<!-- Edit Task Modal: Task name | Priority; Task status | Assigned member; Start | End; Description -->
-<div class="modal fade" data-bs-backdrop="static" id="editTaskModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal fade" id="taskNoteModal" tabindex="-1" aria-labelledby="taskNoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Task</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" action="{{ url_for('project.update_task', id=task.task_id) }}" id="editTaskForm">
+            <form action="{{ url_for('project.add_task_note', task_id=task.task_id) }}" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="taskNoteModalLabel">Add Task Note</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Task Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="task_name" id="editTaskName" value="{{ task.task_name or '' }}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Priority</label>
-                                <select class="form-select" name="priority" id="editTaskPriority">
-                                    <option value="Low" {% if task.priority == 'Low' %}selected{% endif %}>Low</option>
-                                    <option value="Medium" {% if task.priority == 'Medium' %}selected{% endif %}>Medium</option>
-                                    <option value="High" {% if task.priority == 'High' %}selected{% endif %}>High</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Task Status</label>
-                                <select class="form-select" name="task_status" id="editTaskStatus">
-                                    <option value="Ongoing" {% if (task.task_status or 'Ongoing') == 'Ongoing' %}selected{% endif %}>Ongoing</option>
-                                    <option value="Completed" {% if task.task_status == 'Completed' %}selected{% endif %}>Completed</option>
-                                    <option value="On Hold" {% if task.task_status == 'On Hold' %}selected{% endif %}>On Hold</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Assigned members</label>
-                                <div class="border rounded p-2" style="max-height: 120px; overflow-y: auto;">
-                                    {% for pm in task_project_members|default([]) %}
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="owner_id" value="{{ pm.p_members_id }}" id="editOwner{{ pm.p_members_id }}" {% if pm.p_members_id in assignee_p_members_ids %}checked{% endif %}>
-                                        <label class="form-check-label" for="editOwner{{ pm.p_members_id }}">{{ pm.name }}</label>
-                                    </div>
-                                    {% endfor %}
-                                    {% if not task_project_members %}
-                                    <span class="text-muted small">No project members available.</span>
-                                    {% endif %}
-                                </div>
-                                <small class="text-muted">Select one or more members assigned to this task.</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Start date</label>
-                                <input type="date" class="form-control" name="start_date" id="editTaskStartDate" value="{% if task.deadline_ref %}{{ task.deadline_ref.start_date.strftime('%Y-%m-%d') }}{% endif %}">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">End date</label>
-                                <input type="date" class="form-control" name="end_date" id="editTaskEndDate" value="{% if task.deadline_ref %}{{ task.deadline_ref.end_date.strftime('%Y-%m-%d') }}{% endif %}">
-                            </div>
-                        </div>
-                    </div>
                     <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-control" name="task_description" id="editTaskDescription" rows="3" placeholder="Task description">{{ task.task_description or '' }}</textarea>
+                        <label class="form-label">Note Details</label>
+                        <textarea name="note_body" class="form-control" rows="5" placeholder="Write your note here..." required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Note</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Hidden form for delete task (submitted by JS after confirm) -->
-<form id="deleteTaskForm" method="POST" action="{{ url_for('project.delete_task', id=task.task_id) }}" style="display: none;"></form>
-
-<!-- Notes Modal -->
-<div class="modal fade notes-modal" data-bs-backdrop="static" id="note-modal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Add Note</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-        <textarea id="notesInput" class="form-control" rows="4"
-          placeholder="Enter your note here..."></textarea>
-
-        <input type="hidden" id="activeNotesTarget">
-        <input type="hidden" id="actionType">
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button class="btn btn-primary" onclick="saveNote()">Save Note</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Notes Preview -->
-<div class="modal fade" id="notes-modal-preview" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="subtaskNoteModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -789,30 +684,26 @@
 <div class="modal fade" id="addNotesProjectModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <form action="{{ url_for('project.add_note', task_id=task.task_id) }}" method="POST">
+            <form action="{{ url_for('project.add_note') }}" method="POST">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add Note</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title">Sub-Task Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" name="task_id" value="{{ task.task_id }}"> 
                     <div class="mb-3">
-                        <label class="form-label">Notes Title</label>
-                        <input type="text" name="note_title" class="form-control" placeholder="E.g., Progress Update">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea name="note_body" class="form-control" rows="4" required></textarea>
+                        <label class="form-label">Add a comment (Optional)</label>
+                        <textarea name="note_body" class="form-control" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Note</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Confirm</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -939,67 +830,47 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 function openEditNoteModal(noteId, title, body) {
     const form = document.getElementById('editNoteForm');
-    // Point this to your edit route
+    // Dynamically set the form action URL
     form.action = `/project/edit_note/${noteId}`;
-
-    const titleInput = document.getElementById('EditNotesProjectTitle');
-    const titleContainer = document.getElementById('editTitleContainer');
     
-    titleInput.value = title;
+    document.getElementById('EditNotesProjectTitle').value = title;
     document.getElementById('EditNotesProjectDescription').value = body;
-
-    // Hide title field if editing a reply (replies usually don't have titles)
-    if (title === '') {
-        titleContainer.style.display = 'none';
-    } else {
-        titleContainer.style.display = 'block';
-    }
-
+    
+    // Show the modal
     var editModal = new bootstrap.Modal(document.getElementById('editNotesProjectModal'));
     editModal.show();
 }
 
-// Ensure modal is moved to body to avoid backdrop issues
-document.addEventListener("DOMContentLoaded", function() {
-    var modal = document.getElementById('editNotesProjectModal');
-    if (modal) { document.body.appendChild(modal); }
+// 2. Task Completion Toggle
+document.getElementById('markCompleteBtn')?.addEventListener('click', function() {
+    const taskId = this.getAttribute('data-task-id');
+    if(confirm("Are you sure you want to mark this task as completed?")) {
+        window.location.href = `/project/task/complete/${taskId}`;
+    }
 });
 
+// 3. Delete Confirmation
+function confirmDeleteTask(taskName) {
+    return confirm(`Are you sure you want to delete "${taskName}"? This action cannot be undone.`);
+}
 
-    // Run this when the page loads after adding a note
-    window.onload = function() {
-        const notesContainer = document.querySelector('.notes-container'); // Use your actual class name
-        if (notesContainer) {
-            notesContainer.scrollTop = 0;
-        }
-    };
-
-</script>
-
-<script>
-    // 1. Force the main window to the top on reload
-    if (window.performance && window.performance.navigation.type === 1) {
-        window.scrollTo(0, 0);
-    }
-
-    // 2. Target the specific Notes scroll container
-    document.addEventListener("DOMContentLoaded", function() {
-        // We look for the div that has the height 620px and overflow
-        const notesScrollArea = document.querySelector('[data-simplebar]');
+// 4. Sub-task Modal Logic (for Submit/Re-submit)
+const subtaskNoteModal = document.getElementById('subtaskNoteModal');
+if (subtaskNoteModal) {
+    subtaskNoteModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const subtaskId = button.getAttribute('data-subtask-id');
+        const action = button.getAttribute('data-note-action');
+        const title = button.getAttribute('data-modal-title');
         
-        if (notesScrollArea) {
-            // This resets the scroll inside the Notes card specifically
-            notesScrollArea.scrollTop = 0;
-            
-            // If you are using the SimpleBar library, it needs this:
-            const simpleBarInstance = SimpleBar.instances.get(notesScrollArea);
-            if (simpleBarInstance) {
-                simpleBarInstance.getScrollElement().scrollTop = 0;
-            }
-        }
+        const modalTitle = subtaskNoteModal.querySelector('.modal-title');
+        const actionInput = subtaskNoteModal.querySelector('#subtaskActionInput');
+        const idInput = subtaskNoteModal.querySelector('#subtaskIdInput');
+        
+        modalTitle.textContent = title;
+        idInput.value = subtaskId;
+        actionInput.value = action;
     });
+}
 </script>
-
-<script src="{{ url_for('project.static', filename='task.js') }}"></script>
-
-{% endblock content %}
+{% endblock %}
