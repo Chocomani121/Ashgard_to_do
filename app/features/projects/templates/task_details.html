@@ -13,12 +13,10 @@
                 </ol>
             </nav>
             
-             <div class="row">
-                <!-- LEFT CONTENT -->
-                <div class="col-xl-6">
-                    <!-- PROJECT OVERVIEW (Sticky Card) -->
-                    <div style="top: 90px;">
-                        <div class="card mb-4"  style="height: 75vh;">
+             <div class="row align-items-stretch task-details-equal-row">
+                <!-- LEFT: Task details (col-6, equal height with Notes) -->
+                <div class="col-6 d-flex">
+                    <div class="card mb-4 flex-grow-1 d-flex flex-column task-details-card-equal">
                             <!-- Card Header with Button -->
                             <div class="card-header d-flex align-items-center justify-content-between">
                                 <h4 class="card-title mb-0"><span class="text-muted">Task Name:</span><span class="ms-4">{{ task.task_name or 'Task Details' }}</span></h4>
@@ -127,6 +125,10 @@
                                         <div class="text-muted small">End date</div>
                                         <strong class="d-block mt-1">{% if task.deadline_ref %}{{ task.deadline_ref.end_date.strftime('%d %b %Y') }}{% else %}—{% endif %}</strong>
                                     </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="text-muted small">Department</div>
+                                        <strong class="d-block mt-1">{{ manager_department.department_name if manager_department else '—' }}</strong>
+                                    </div>
                                 </div>
                             
 
@@ -137,45 +139,41 @@
                                     </p>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                </div>
                 </div>
 
-                    <div class="col-xl-6">
-                        <div class="card">
-                            <div class="card-body" >
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="flex-grow-1">
-                                        <h5 class="card-title mb-0">Notes ({{ notes|length }})</h5>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#taskNoteModal">
-                                            <i class="mdi mdi-plus me-1"></i> Add Notes
-                                        </button>
+                <!-- RIGHT: Notes (col-6, equal height with Task card) -->
+                <div class="col-6 d-flex">
+                    <div class="card mb-4 flex-grow-1 d-flex flex-column task-details-card-equal">
+                        <div class="card-body d-flex flex-column overflow-hidden flex-grow-1">
+                            <div class="d-flex align-items-center mb-3 flex-shrink-0">
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title mb-0">Notes ({{ notes|length }})</h5>
+                                </div>
+                                        <div class="flex-shrink-0">
+                                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#taskNoteModal">
+                                                <i class="mdi mdi-plus me-1"></i> Add Notes
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="mx-n4 px-4" data-simplebar style="height: 620px;; overflow-y: auto;">
+                                <div class="mx-n4 px-4" data-simplebar style="height: 620px; overflow-y: auto;">
                                     {% for note in notes %}
-                                    <div class="d-flex mb-4 border-bottom pb-3">
-                                        <div class="flex-shrink-0 me-3">
-                                            <img src="{{ url_for('static', filename='profile_pics/' + (note.author.image_file if note.author and note.author.image_file else 'default.jpg')) }}" 
-                                                alt="" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #fff;">
-                                        </div>
-
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                                <strong>{{ note.author.name if note.author else 'Unknown' }}</strong>
-                                                <small class="text-muted">{{ note.created_on.strftime('%b %d, %Y') if note.created_on else '' }}</small>
+                                        <div class="d-flex mb-4 border-bottom pb-3">
+                                            <div class="flex-shrink-0 me-3">
+                                                <img src="{{ url_for('static', filename='profile_pics/' + (note.author.image_file if note.author and note.author.image_file else 'default.jpg')) }}" 
+                                                    alt="" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #fff;">
                                             </div>
-                                            
-                                            <div class="p-2 bg-light rounded mt-2 border">
-                                                {% if note.generated_code %}
-                                                    <h6 class="text-primary small mb-1">{{ note.generated_code }}</h6>
-                                                {% endif %}
-                                                <p class="mb-0 text-dark">{{ note.note_body }}</p>
-                                            </div>
-
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <strong>{{ note.author.name if note.author else 'Unknown' }}</strong>
+                                                    <small class="text-muted">{{ note.created_on.strftime('%b %d, %Y') if note.created_on else '' }}</small>
+                                                </div>
+                                                <div class="p-2 bg-light rounded mt-2 border">
+                                                    {% if note.generated_code %}<h6 class="text-primary small mb-1">{{ note.generated_code }}</h6>{% endif %}
+                                                    <p class="mb-0 text-dark">{{ note.note_body }}</p>
+                                                </div>
                                             <div class="mt-2">
                                                 <a href="javascript:void(0);" class="text-primary small me-3" onclick="document.getElementById('reply-form-{{ note.notes_id }}').classList.toggle('d-none')">
                                                     <i class="mdi mdi-reply me-1"></i>Reply
@@ -227,8 +225,8 @@
                                                     </div>
                                                 </form>
                                             </div>
+                                            </div>
                                         </div>
-                                    </div>
                                     {% else %}
                                     <div class="text-center text-muted py-5">
                                         <i class="bx bx-note mb-3" style="font-size: 3rem;"></i>
@@ -239,6 +237,9 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+            <!-- end task-details-equal-row (Task + Notes); subtask table and modals below -->
 
                     {# --- EDIT MODAL --- #}
                     <div class="modal fade" id="editNotesProjectModal" tabindex="-1" aria-hidden="true" style="z-index: 9999;">
@@ -268,262 +269,23 @@
                         </div>
                     </div>
 
-            <!-- SUBTASK TABLE (for project members – not shown to project manager) -->
-            {% if is_project_member and not is_project_manager %}
+            <!-- SUBTASK TABLE: everyone sees table; PM/members see Add Sub-Task + actions; non-members view-only (no Action column) -->
             <div class="row mt-4">
                 <div class="col-12">
-                    <div class="card">
+                    <div class="card subtask-table-card">
                         <div class="card-header d-flex align-items-center">
-                            <h4 class="card-title mb-0">Sub-Task [1/6]</h4>
+                            <h4 class="card-title mb-0">Sub-Task [{{ subtask_list|length }}]{% if is_project_manager %} (Project Manager){% endif %}</h4>
+                            {% if is_project_manager or is_project_member %}
                             <div class="ms-auto">
                                 <button class="btn btn-primary btn-rounded" data-bs-toggle="modal" data-bs-target=".create-task">
                                     <i class="mdi mdi-plus me-1"></i> Add Sub-Task
                                 </button>
                             </div>
+                            {% endif %}
                         </div>
 
-                        <div class="card-body">
-                            <div id="table5-gridjs" class="projectsTableTaskDetails"></div>
-
-                            <table id="projectsTableTaskDetails" class="table d-none">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Sub-Task Name</th>
-                                        <th>Owner</th>
-                                        <th>Status</th>
-                                        <th>Timestamp</th>
-                                        <th>Notes</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="fw-semibold">H20</td>
-                                        <td class="fw-semibold">Login Interface</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-primary text-primary">Ongoing</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                                <a href="javascript:void(0)"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#notes-modal-preview"
-                                                onclick="prepareNoteModal('H20', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!', '-windyl 12/25/2025(edit)')">
-
-
-                                                    <div style="
-                                                        max-height: 120px;
-                                                        overflow-y: auto;
-                                                        overflow-x: hidden;
-                                                        white-space: normal;
-                                                        line-height: 1.4;
-                                                    ">
-                                                        <p class="text-dark">
-                                                            ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!
-                                                        </p>
-                                                        <footer class="blockquote-footer">
-                                                            -windyl 12/25/2025(edit)
-                                                        </footer>
-                                                    </div>
-
-                                                </a>
-                                            </td>
-                                          <td class="text-nowrap">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
-                                                <div class="dropdown-menu dropdown-menu-end shadow">
-                                                    <a class="dropdown-item"
-                                                       data-bs-toggle="modal" 
-                                                       data-bs-target=".notes-modal">
-                                                        Submit
-                                                    </a>
-                                                    <a class="dropdown-item"
-                                                       data-bs-toggle="modal" 
-                                                       data-bs-target=".notes-modal">
-                                                        Edit
-                                                    </a>
-                                                <a class="dropdown-item text-danger" 
-                                                onclick="confirmDelete('H20')">Delete</a>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-warning text-warning">To be reviewed</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                            <a href="javascript:void(0)"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#notes-modal-preview"
-                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-
-                                            <div style="
-                                                max-height: 120px;
-                                                overflow-y: auto;
-                                                overflow-x: hidden;
-                                                white-space: normal;
-                                                line-height: 1.4;
-                                            ">
-                                                <p class="text-dark">
-                                                    Lopre Lorem - it may work(?)
-                                                </p>
-                                                <footer class="blockquote-footer">
-                                                    -windyl 12/25/2025(edit)
-                                                </footer>
-                                            </div>
-
-                                            </a>
-                                        </td>
-                                    </tr>
-                                      <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-danger text-danger">Rejected</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                            <a href="javascript:void(0)"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#notes-modal-preview"
-                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-                                                <div style="
-                                                    max-height: 120px;
-                                                    overflow-y: auto;
-                                                    overflow-x: hidden;
-                                                    white-space: normal;
-                                                    line-height: 1.4;
-                                                ">
-                                                    <p class="text-dark">
-                                                        Lopre Lorem - it may work(?)
-                                                    </p>
-                                                    <footer class="blockquote-footer">
-                                                        -windyl 12/25/2025(edit)
-                                                    </footer>
-                                                </div>
-
-                                            </a>
-                                        </td>
-                                        <td class="text-nowrap">
-                                        <button class="btn btn-sm btn-primary"
-                                            data-bs-toggle="modal"
-                                            data-bs-target=".notes-modal"
-                                            form="notesForm">
-                                            Re-Submit
-                                            </button>
-
-                                        </td>
-                                    </tr>
-                                      <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-secondary text-secondary">On Hold</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                                <a href="javascript:void(0)"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#notes-modal-preview"
-                                                onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-
-
-                                                    <div style="
-                                                        max-height: 120px;
-                                                        overflow-y: auto;
-                                                        overflow-x: hidden;
-                                                        white-space: normal;
-                                                        line-height: 1.4;
-                                                    ">
-                                                        <p class="text-dark">
-                                                            Lopre Lorem - it may work(?)
-                                                        </p>
-                                                        <footer class="blockquote-footer">
-                                                            -windyl 12/25/2025(edit)
-                                                        </footer>
-                                                    </div>
-
-                                                </a>
-                                            </td>
-                                        <td class="text-nowrap">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
-                                                <div class="dropdown-menu dropdown-menu-end shadow">
-                                                    <a class="dropdown-item"
-                                                       data-bs-toggle="modal" 
-                                                       data-bs-target=".notes-modal">
-                                                        Resume
-                                                    </a>
-                                                    <a class="dropdown-item"
-                                                       data-bs-toggle="modal" 
-                                                       data-bs-target=".notes-modal">
-                                                        Edit
-                                                    </a>
-                                                       <a class="dropdown-item text-danger" 
-                                                        href="javascript:void(0);" 
-                                                        onclick="confirmDelete('H20')">Delete</a>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                        <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-success text-success">Approved</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                                <a href="javascript:void(0)"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#notes-modal-preview"
-                                                onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-
-
-                                                    <div style="
-                                                        max-height: 120px;
-                                                        overflow-y: auto;
-                                                        overflow-x: hidden;
-                                                        white-space: normal;
-                                                        line-height: 1.4;
-                                                    ">
-                                                        <p class="text-dark">
-                                                            Lopre Lorem - it may work(?)
-                                                        </p>
-                                                        <footer class="blockquote-footer">
-                                                            -windyl 12/25/2025(edit)
-                                                        </footer>
-                                                    </div>
-
-                                                </a>
-                                            </td>
-                                    </tr>
-                                    <!-- Repeat more subtasks as needed -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- SUBTASK TABLE (Project Manager only) -->
-            {% if is_project_manager %}
-             <div class="row mt-4">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header d-flex align-items-center">
-                            <h4 class="card-title mb-0">Sub-Task [1/6] (Project Manager)</h4>
-                            <div class="ms-auto">
-                                <button class="btn btn-primary btn-rounded" data-bs-toggle="modal" data-bs-target=".create-task">
-                                    <i class="mdi mdi-plus me-1"></i> Add Sub-Task
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="card-body">
-                            <div id="table6-gridjs" class="projectsTableTaskDetailsPM"></div>
+                        <div class="card-body subtask-table-card-body">
+                            <div id="table6-gridjs" class="projectsTableTaskDetailsPM {% if not is_project_member %}subtask-view-only{% endif %}"></div>
 
                             <table id="projectsTableTaskDetailsPM" class="table d-none">
                                 <thead>
@@ -538,212 +300,98 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {% for st in subtask_list %}
                                     <tr>
-                                        <td class="fw-semibold">H20</td>
-                                        <td class="fw-semibold">Login Interface</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-primary text-primary">Ongoing</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                            <a href="javascript:void(0)"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#notes-modal-preview"
-                                            onclick="prepareNoteModal('H20', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!', '-windyl 12/25/2025(edit)')">
-
-
-                                                <div style="
-                                                    max-height: 120px;
-                                                    overflow-y: auto;
-                                                    overflow-x: hidden;
-                                                    white-space: normal;
-                                                    line-height: 1.4;
-                                                ">
-                                                    <p class="text-dark">
-                                                        ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto nulla beatae impedit nobis? Animi iusto sunt, hic laborum maiores odit consequatur deserunt libero aut est voluptas mollitia quisquam placeat nulla!
-                                                    </p>
-                                                    <footer class="blockquote-footer">
-                                                        -windyl 12/25/2025(edit)
-                                                    </footer>
-                                                </div>
-
-                                            </a>
-                                        </td>
-                                          <td class="text-nowrap">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
-                                                <div class="dropdown-menu dropdown-menu-end shadow">
-                                                    <a class="dropdown-item"
-                                                       data-bs-toggle="modal" 
-                                                       data-bs-target=".notes-modal">
-                                                        Submit
-                                                    </a>
-                                                    <a class="dropdown-item"
-                                                       data-bs-toggle="modal" 
-                                                       data-bs-target=".notes-modal">
-                                                        Edit
-                                                    </a>
-                                                    <a class="dropdown-item">Hold</a>
-                                                    <a class="dropdown-item text-danger" 
-                                               
-                                                    onclick="confirmDelete('H20')">Delete</a>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-warning text-warning">To be reviewed</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                            <a href="javascript:void(0)"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#notes-modal-preview"
-                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-
-
-                                                <div style="
-                                                    max-height: 120px;
-                                                    overflow-y: auto;
-                                                    overflow-x: hidden;
-                                                    white-space: normal;
-                                                    line-height: 1.4;
-                                                ">
-                                                    <p class="text-dark">
-                                                        Lopre Lorem - it may work(?)
-                                                    </p>
-                                                    <footer class="blockquote-footer">
-                                                        -windyl 12/25/2025(edit)
-                                                    </footer>
-                                                </div>
-
-                                            </a>
-                                        </td>
-                                        <td class="text-nowrap">
-                                            <button class="btn btn-sm btn-success me-1" data-bs-toggle="modal" data-bs-target=".notes-modal-approve" title="Approve" onclick="approveNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-                                                <i class="mdi mdi-check"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target=".notes-modal" title="Disapprove">
-                                                <i class="mdi mdi-close"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                      <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-danger text-danger">Rejected</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                            <a href="javascript:void(0)"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#notes-modal-preview"
-                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-                                                <div style="
-                                                    max-height: 120px;
-                                                    overflow-y: auto;
-                                                    overflow-x: hidden;
-                                                    white-space: normal;
-                                                    line-height: 1.4;
-                                                ">
-                                                    <p class="text-dark">
-                                                        Lopre Lorem - it may work(?)
-                                                    </p>
-                                                    <footer class="blockquote-footer">
-                                                        -windyl 12/25/2025(edit)
-                                                    </footer>
-                                                </div>
-
-                                            </a>
-                                        </td>
-                                        <td class="text-nowrap">
-                                          <button class="btn btn-sm btn-primary"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#revertModal">
-                                                Revert
-                                            </button>
-                                        </td>
-                                    </tr>
-                                      <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-secondary text-secondary">On Hold</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                       <td style="width: 400px;" class="notes-preview-cell">
-                                            <a href="javascript:void(0)"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#notes-modal-preview"
-                                            onclick="prepareNoteModal('H21', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-                                                <div style="
-                                                    max-height: 120px;
-                                                    overflow-y: auto;
-                                                    overflow-x: hidden;
-                                                    white-space: normal;
-                                                    line-height: 1.4;
-                                                ">
-                                                    <p class="text-dark">
-                                                        Lopre Lorem - it may work(?)
-                                                    </p>
-                                                    <footer class="blockquote-footer">
-                                                        -windyl 12/25/2025(edit)
-                                                    </footer>
-                                                </div>
-
-                                            </a>
-                                        </td>
-                                        <td class="text-nowrap">
-                                            <button class="btn btn-sm btn-primary"
-                                                data-bs-toggle="modal"
-                                                data-bs-target=".notes-modal"
-                                                form="notesForm">
-                                                Follow Up
-                                            </button>
-                                        </td>
-                                     </tr>
-                                         <tr>
-                                        <td class="fw-semibold">H21</td>
-                                        <td class="fw-semibold">Backend</td>
-                                        <td>Lurs</td>
-                                        <td><span class="badge bg-soft-success text-success">Approved</span></td>
-                                        <td>11/12/2024 23:00</td>
-                                        <td style="width: 400px;" class="notes-preview-cell">
-                                            <a href="javascript:void(0)"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#notes-modal-preview"
-                                            onclick="prepareNoteModal('H20', 'ipsum dolor sit amet consectetur adipisicing elit. Ex inventore quis fugiat, tenetur blanditiis reiciendis eos, eum dolorum sint soluta veritatis, laborum veniam omnis.', '-windyl 12/25/2025(edit)')">
-                                                <div style="
-                                                    max-height: 120px;
-                                                    overflow-y: auto;
-                                                    overflow-x: hidden;
-                                                    white-space: normal;
-                                                    line-height: 1.4;
-                                                ">
-                                                    <p class="text-dark">
-                                                        Lopre Lorem - it may work(?)
-                                                    </p>
-                                                    <footer class="blockquote-footer">
-                                                        -windyl 12/25/2025(edit)
-                                                    </footer>
-                                                </div>
-
-                                            </a>
-                                        </td>
+                                        <td class="fw-semibold">{{ st.generated_code }}</td>
+                                        <td class="fw-semibold">{{ st.subtask_name }}</td>
+                                        <td>{{ st.owner_name }}</td>
                                         <td>
-                                        <p>Approved on : 11/11/2026 20:00</p> 
-                                            <footer class="blockquote-footer">  -Lurs </footer>
+                                            {% if st.status == 'Ongoing' %}<span class="badge bg-soft-primary text-primary">Ongoing</span>
+                                            {% elif st.status == 'To be reviewed' %}<span class="badge bg-soft-warning text-warning">To be reviewed</span>
+                                            {% elif st.status == 'Rejected' %}<span class="badge bg-soft-danger text-danger">Rejected</span>
+                                            {% elif st.status == 'On Hold' %}<span class="badge bg-soft-secondary text-secondary">On Hold</span>
+                                            {% elif st.status == 'Approved' %}<span class="badge bg-soft-success text-success">Approved</span>
+                                            {% else %}<span class="badge bg-soft-primary text-primary">{{ st.status }}</span>{% endif %}
+                                        </td>
+                                        <td>{% if st.checked_timestamp %}{{ st.checked_timestamp.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
+                                        <td class="notes-preview-cell">
+                                            {% if st.notes_preview and st.notes_preview != '—' %}
+                                            <div class="notes-preview-inner">
+                                                {{ st.notes_preview }}
+                                            </div>
+                                            {% else %}
+                                            —
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-nowrap">
+                                            {% set can_act = is_project_manager or is_project_member %}
+                                            {% if can_act %}
+                                                {% if st.status == 'Ongoing' %}
+                                                {# PM and member: same actions — dropup so menu opens upward and is not clipped #}
+                                                <div class="dropup">
+                                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>
+                                                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="submit" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Submit for review">Submit</a></li>
+                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editSubtaskModal" data-edit-form-action="{{ url_for('project.edit_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Edit</a></li>
+                                                        <li><a class="dropdown-item subtask-status-link" href="#" data-url="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-status="On Hold">Hold</a></li>
+                                                        <li><a class="dropdown-item text-danger subtask-delete-link" href="#" data-url="{{ url_for('project.delete_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-code="{{ st.generated_code }}">Delete</a></li>
+                                                    </ul>
+                                                </div>
+                                                {% elif st.status == 'To be reviewed' %}
+                                                {% if is_project_manager %}
+                                                <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline me-1">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                                                    <input type="hidden" name="status" value="Approved">
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Approve"><i class="mdi mdi-check"></i></button>
+                                                </form>
+                                                <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                                                    <input type="hidden" name="status" value="Rejected">
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Reject"><i class="mdi mdi-close"></i></button>
+                                                </form>
+                                                {% else %}
+                                                <span class="text-muted small">Pending review</span>
+                                                {% endif %}
+                                                {% elif st.status == 'Rejected' %}
+                                                {% if is_project_manager %}
+                                                <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline">
+                                                    <input type="hidden" name="status" value="To be reviewed">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                                                    <button type="submit" class="btn btn-sm btn-primary">Revert</button>
+                                                </form>
+                                                {% else %}
+                                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="resubmit" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Re-Submit – reason for resubmit (will appear in notes)">Re-Submit</button>
+                                                {% endif %}
+                                                {% elif st.status == 'On Hold' %}
+                                                {% if is_project_manager %}
+                                                <div class="dropup">
+                                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>
+                                                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up">Follow Up</a></li>
+                                                        <li><a class="dropdown-item subtask-status-link" href="#" data-url="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-status="Ongoing">Resume</a></li>
+                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editSubtaskModal" data-edit-form-action="{{ url_for('project.edit_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Edit</a></li>
+                                                    </ul>
+                                                </div>
+                                                {% else %}
+                                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up – send note for PM">Follow Up</button>
+                                                {% endif %}
+                                                {% elif st.status == 'Approved' %}
+                                                <span class="subtask-approved-cell">Approved on {% if st.checked_timestamp %}{{ st.checked_timestamp.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %} — {{ st.owner_name }}</span>
+                                                {% endif %}
+                                            {% endif %}
                                         </td>
                                     </tr>
-                                    <!-- Repeat more subtasks as needed -->
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-muted text-center py-4">No subtasks yet. Use &quot;+ Add Sub-Task&quot; to create one.</td>
+                                    </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
-            {% endif %}
         </div>
     </div>
 </div>
@@ -761,58 +409,25 @@
 
             <!-- Modal Body -->
             <div class="modal-body">
-                <form id="subTaskForm">
+                <form id="subTaskForm" method="POST" action="{{ url_for('project.create_subtask', id=task.task_id) }}">
 
                     <div class="mb-3">
                         <label class="form-label">Sub-Task Name</label>
-                        <input type="text" class="form-control" placeholder="Enter sub-task name" required>
+                        <input type="text" name="subtask_name" class="form-control" placeholder="Enter sub-task name" required>
                     </div>
-                    <!-- Search + Modal = magic  -->
-                    <div class="row">
-                        <div class="mb-3 position-relative" style="max-width: 390px;">
-                            <label class="form-label">Owner</label>
-
-                            <!-- Input / Selected chips -->
-                            <div class="form-control d-flex flex-wrap align-items-center gap-1 owner-input"
-                                id="ownerInput"
-                                data-bs-toggle="dropdown">
-
-                                <span class="text-muted small">Select owner(s)</span>
-                            </div>
-
-                            <!-- Dropdown -->
-                            <div class="dropdown-menu p-3 shadow owner-dropdown">
-                                <input type="text"
-                                    class="form-control mb-2"
-                                    id="ownerSearch"
-                                    placeholder="Search colleague">
-
-                                <small class="text-muted">Contacts</small>
-
-                                <div class="list-group mt-2 owner-list"></div>
-
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    Clear
-                                    <button type="button" class="btn btn-sm btn-primary" id="confirmOwners">
-                                        Confirm
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Status</label>
-                            <select class="form-select">
-                                <option selected>Ongoing</option>
-                                <option>Completed</option>
-                                <option>Pending</option>
-                            </select>
-                        </div>
+                    <div class="mb-3">
+                        <label class="form-label">Owner</label>
+                        <select name="owner" class="form-select">
+                            <option value="">— Select member —</option>
+                            {% for m in task_assignees_for_subtask %}
+                            <option value="{{ m.p_members_id }}">{{ m.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted d-block mt-1">Only members assigned to this task can be owners.</small>
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label">Notes</label>
-                        <textarea class="form-control" rows="3" placeholder="Optional notes..."></textarea>
+                        <textarea name="notes" class="form-control" rows="3" placeholder="Optional notes..."></textarea>
                     </div>
 
                 </form>
@@ -821,7 +436,7 @@
             <!-- Modal Footer -->
             <div class="modal-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="subTaskForm" class="btn btn-primary">
+                <button type="submit" form="subTaskForm" class="btn btn-success">
                     <i class="mdi mdi-check me-1"></i> Save Sub-Task
                 </button>
             </div>
@@ -1070,6 +685,68 @@
   </div>
 </div>
 
+<!-- Subtask Note Modal (Submit / Re-Submit / Follow up) -->
+<div class="modal fade" id="subtaskNoteModal" tabindex="-1" data-bs-backdrop="static" data-note-url-template="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=0) }}">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="subtaskNoteModalTitle">Note</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="subtaskNoteForm" method="POST" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+        <input type="hidden" name="action" id="subtaskNoteAction" value="">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="subtaskNoteBody">Note <span class="text-danger">*</span></label>
+            <textarea name="note_body" id="subtaskNoteBody" class="form-control" rows="4" required placeholder="Enter your note..."></textarea>
+            <small class="text-muted" id="subtaskNoteHelp"></small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="subtaskNoteSubmitBtn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Subtask Modal -->
+<div class="modal fade" id="editSubtaskModal" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Sub-Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="editSubtaskForm" method="POST" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="editSubtaskNameInput">Sub-Task Name</label>
+            <input type="text" name="subtask_name" id="editSubtaskNameInput" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden form for subtask status update (Hold / Resume) -->
+<form id="subtaskStatusForm" method="POST" action="" class="d-none">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+  <input type="hidden" name="status" id="subtaskStatusFormStatus" value="">
+</form>
+
+<!-- Hidden form for subtask delete -->
+<form id="subtaskDeleteForm" method="POST" action="" class="d-none">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+</form>
 
 <div class="modal fade" id="addNotesProjectModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -1100,32 +777,127 @@
 </div>
 
 <script>
-function openEditNoteModal(noteId, title, body) {
-    const form = document.getElementById('editNoteForm');
-    // Point this to your edit route
-    form.action = "/task_details/note/edit/" + noteId;
-
-    const titleInput = document.getElementById('EditNotesProjectTitle');
-    const titleContainer = document.getElementById('editTitleContainer');
-    
-    titleInput.value = title;
-    document.getElementById('EditNotesProjectDescription').value = body;
-
-    // Hide title field if editing a reply (replies usually don't have titles)
-    if (title === '') {
-        titleContainer.style.display = 'none';
-    } else {
-        titleContainer.style.display = 'block';
+document.addEventListener("DOMContentLoaded", function() {
+    // Subtask table 3-dots: fixed positioning + flip so full menu is visible (not clipped)
+    function initSubtaskTableDropdowns() {
+        var container = document.getElementById('table6-gridjs');
+        if (!container || typeof bootstrap === 'undefined') return;
+        var toggles = container.querySelectorAll('[data-bs-toggle="dropdown"]');
+        var popperConfig = {
+            strategy: 'fixed',
+            modifiers: [
+                { name: 'flip', options: { fallbackPlacements: ['top', 'bottom'] } },
+                { name: 'preventOverflow', options: { padding: 8 } }
+            ]
+        };
+        toggles.forEach(function(btn) {
+            var existing = bootstrap.Dropdown.getInstance(btn);
+            if (existing) existing.dispose();
+            new bootstrap.Dropdown(btn, { popperConfig: popperConfig });
+        });
+    }
+    setTimeout(initSubtaskTableDropdowns, 100);
+    var table6 = document.getElementById('table6-gridjs');
+    if (table6 && typeof MutationObserver !== 'undefined') {
+        var mo = new MutationObserver(function() { setTimeout(initSubtaskTableDropdowns, 50); });
+        mo.observe(table6, { childList: true, subtree: true });
     }
 
-    var editModal = new bootstrap.Modal(document.getElementById('editNotesProjectModal'));
-    editModal.show();
-}
+    var modalElement = document.getElementById('taskNoteModal');
+    if (modalElement) {
+        document.body.appendChild(modalElement);
+    }
+    // Move subtask modals to body so they display above backdrop (fixes "greys out, nothing shows")
+    var subtaskNoteModal = document.getElementById('subtaskNoteModal');
+    if (subtaskNoteModal) {
+        document.body.appendChild(subtaskNoteModal);
+    }
+    var editSubtaskModal = document.getElementById('editSubtaskModal');
+    if (editSubtaskModal) {
+        document.body.appendChild(editSubtaskModal);
+    }
 
-// Ensure modal is moved to body to avoid backdrop issues
-document.addEventListener("DOMContentLoaded", function() {
-    var modal = document.getElementById('editNotesProjectModal');
-    if (modal) { document.body.appendChild(modal); }
+    // Subtask Note Modal: set form action and title when opened from a trigger
+    var subtaskNoteModalEl = document.getElementById('subtaskNoteModal');
+    if (subtaskNoteModalEl) {
+        subtaskNoteModalEl.addEventListener('show.bs.modal', function(e) {
+            var trigger = e.relatedTarget;
+            if (!trigger) return;
+            var form = document.getElementById('subtaskNoteForm');
+            var titleEl = document.getElementById('subtaskNoteModalTitle');
+            var actionInput = document.getElementById('subtaskNoteAction');
+            var bodyInput = document.getElementById('subtaskNoteBody');
+            var helpEl = document.getElementById('subtaskNoteHelp');
+            var submitBtn = document.getElementById('subtaskNoteSubmitBtn');
+            var noteUrl = trigger.dataset.noteFormAction;
+            if (!noteUrl && trigger.dataset.subtaskId) {
+                var template = subtaskNoteModalEl.getAttribute('data-note-url-template');
+                if (template) noteUrl = template.replace('/subtask/0/', '/subtask/' + trigger.dataset.subtaskId + '/');
+            }
+            if (noteUrl) form.action = noteUrl;
+            if (trigger.dataset.modalTitle) titleEl.textContent = trigger.dataset.modalTitle;
+            var action = (trigger.dataset.noteAction || '').toLowerCase();
+            if (action) actionInput.value = action;
+            if (bodyInput) bodyInput.value = '';
+            if (action === 'submit') {
+                if (submitBtn) submitBtn.textContent = 'Submit';
+                if (bodyInput) bodyInput.placeholder = 'Add a note and submit for review...';
+                if (helpEl) helpEl.textContent = 'Your note will be saved and the subtask will move to To be reviewed.';
+            } else if (action === 'resubmit') {
+                if (submitBtn) submitBtn.textContent = 'Re-Submit';
+                if (helpEl) helpEl.textContent = 'State the reason for resubmit; it will appear in subtask notes.';
+            } else {
+                if (submitBtn) submitBtn.textContent = 'Save';
+                if (helpEl) helpEl.textContent = '';
+            }
+        });
+    }
+
+    // Edit Subtask Modal: set form action and name when opened
+    var editSubtaskModalEl = document.getElementById('editSubtaskModal');
+    if (editSubtaskModalEl) {
+        editSubtaskModalEl.addEventListener('show.bs.modal', function(e) {
+            var trigger = e.relatedTarget;
+            if (!trigger) return;
+            var form = document.getElementById('editSubtaskForm');
+            var nameInput = document.getElementById('editSubtaskNameInput');
+            if (trigger.dataset.editFormAction) form.action = trigger.dataset.editFormAction;
+            if (trigger.dataset.subtaskName !== undefined) nameInput.value = trigger.dataset.subtaskName || '';
+        });
+    }
+
+    // Status link (Hold / Resume): submit hidden form
+    document.addEventListener('click', function(e) {
+        var link = e.target.closest('.subtask-status-link');
+        if (link) {
+            e.preventDefault();
+            var url = link.getAttribute('data-url');
+            var status = link.getAttribute('data-status');
+            if (url && status) {
+                var form = document.getElementById('subtaskStatusForm');
+                var statusInput = document.getElementById('subtaskStatusFormStatus');
+                if (form && statusInput) {
+                    form.action = url;
+                    statusInput.value = status;
+                    form.submit();
+                }
+            }
+        }
+
+        var delLink = e.target.closest('.subtask-delete-link');
+        if (delLink) {
+            e.preventDefault();
+            var url = delLink.getAttribute('data-url');
+            var code = delLink.getAttribute('data-code') || 'this subtask';
+            if (url && confirm('Delete subtask ' + code + '?')) {
+                var form = document.getElementById('subtaskDeleteForm');
+                if (form) {
+                    form.action = url;
+                    form.submit();
+                }
+            }
+        }
+    });
 });
 </script>
 

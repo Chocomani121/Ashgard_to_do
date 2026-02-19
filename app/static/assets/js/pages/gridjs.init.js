@@ -662,7 +662,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let searchVal = '';
     const filtered = () => allData.filter(row => !searchVal || row.searchText.includes(searchVal.toLowerCase()));
     const grid = new gridjs.Grid({
-        columns: ["Task Name", "Owner", "Status", "Sub Task", "Actions"],
+        columns: ["Task Name", "Owner", "Deadline", "Status", "Sub Task", "Actions"],
         data: filtered().map(row => row.cells),
         pagination: { limit: 10 },
         sort: true,
@@ -1363,18 +1363,237 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// 10. Approval Table (skip when container is hidden - approvals page shows raw table)
-const table10Req = document.getElementById("projectsApproval");
-const table10Res = document.getElementById("table10-gridjs");
-if (table10Req && table10Res && !table10Res.classList.contains("d-none")) {
-    new gridjs.Grid({
-        from: table10Req,
-        pagination: { limit: 10 },
-        sort: true,
-        search: true,
-        className: { table: "table table-centered align-middle" }
-    }).render(table10Res);
-}
+// 10. Approval Table (approvals.html - Task Name, Project, Department, etc. with filters)
+document.addEventListener('DOMContentLoaded', function() {
+    let grid = null;
+    let allData = [];
+    let currentFilters = {
+        department: 'All',
+        status: 'all',
+        priority: 'all',
+        dateRange: null,
+        search: ''
+    };
+    
+    function initApprovalGrid() {
+        const tableElement = document.getElementById('projectsApproval');
+        const gridContainer = document.getElementById("table10-gridjs");
+        const dropdownButton = document.getElementById('categorySelect');
+        const dropdownMenu = dropdownButton ? dropdownButton.closest('.btn-group')?.querySelectorAll('.dropdown-item') || [] : [];
+        
+        // Must have table and grid container; dropdown optional (approvals page has no category dropdown)
+        if (!tableElement || !gridContainer) {
+            return false;
+        }
+        
+        if (typeof gridjs === 'undefined') {
+            return false;
+        }
+        
+        try {
+            // Extract data from table rows with all metadata
+            const tableRows = Array.from(tableElement.querySelectorAll('tbody tr'));
+            allData = tableRows.map(tr => ({
+                category: tr.getAttribute('data-category') || '',
+                status: tr.getAttribute('data-status') || '',
+                priority: tr.getAttribute('data-priority') || '',
+                startDate: tr.getAttribute('data-start-date') || '',
+                endDate: tr.getAttribute('data-end-date') || '',
+                cells: Array.from(tr.querySelectorAll('td')).map(td => gridjs.html(td.innerHTML)),
+                searchText: Array.from(tr.querySelectorAll('td')).map(td => td.textContent || '').join(' ').toLowerCase()
+            }));
+            
+            // Filter function
+            const getFilteredData = () => {
+                return allData.filter(row => {
+                    // Search filter
+                    if (currentFilters.search && !row.searchText.includes(currentFilters.search.toLowerCase())) {
+                        return false;
+                    }
+                    
+                    // Department filter
+                    if (currentFilters.department !== 'All' && row.category !== currentFilters.department) {
+                        return false;
+                    }
+                    
+                    // Status filter
+                    if (currentFilters.status !== 'all' && row.status !== currentFilters.status) {
+                        return false;
+                    }
+                    
+                    // Priority filter
+                    if (currentFilters.priority !== 'all' && row.priority !== currentFilters.priority) {
+                        return false;
+                    }
+                    
+                    // Date range filter
+                    if (currentFilters.dateRange && currentFilters.dateRange.length === 2) {
+                        const filterStart = new Date(currentFilters.dateRange[0]);
+                        const filterEnd = new Date(currentFilters.dateRange[1]);
+                        filterStart.setHours(0, 0, 0, 0);
+                        filterEnd.setHours(23, 59, 59, 999);
+                        
+                        let hasDateInRange = false;
+                        
+                        if (row.startDate) {
+                            const projectStart = new Date(row.startDate);
+                            projectStart.setHours(0, 0, 0, 0);
+                            if (projectStart >= filterStart && projectStart <= filterEnd) {
+                                hasDateInRange = true;
+                            }
+                        }
+                        
+                        if (!hasDateInRange && row.endDate) {
+                            const projectEnd = new Date(row.endDate);
+                            projectEnd.setHours(23, 59, 59, 999);
+                            if (projectEnd >= filterStart && projectEnd <= filterEnd) {
+                                hasDateInRange = true;
+                            }
+                        }
+                        
+                        if (!hasDateInRange && row.startDate && row.endDate) {
+                            const projectStart = new Date(row.startDate);
+                            const projectEnd = new Date(row.endDate);
+                            projectStart.setHours(0, 0, 0, 0);
+                            projectEnd.setHours(23, 59, 59, 999);
+                            
+                            if ((projectStart <= filterEnd && projectEnd >= filterStart)) {
+                                hasDateInRange = true;
+                            }
+                        }
+                        
+                        if (!hasDateInRange) {
+                            return false;
+                        }
+                    }
+                    
+                    return true;
+                });
+            };
+            
+
+            // Initialize Grid.js - columns match approvals.html: Task Name, Project, Department, Project Manager, Priority, Status, Start Date, Deadline, Progress, Sub Tasks
+            grid = new gridjs.Grid({
+                columns: ["Task Name", "Project", "Subtask", "Status", "Action"],
+                data: getFilteredData().map(row => row.cells),
+                pagination: { limit: 10 },
+                sort: true,
+                search: false, // Disable built-in search, handle manually
+                className: {
+                    table: 'table table-bordered'
+                }
+            }).render(gridContainer);
+            setTimeout(function() { if (typeof applyProgressBarWidths === 'function') applyProgressBarWidths(gridContainer); }, 100);
+            
+            // Update grid function
+            const updateGrid = () => {
+                if (grid) {
+                    const filteredData = getFilteredData().map(row => row.cells);
+                    grid.updateConfig({ data: filteredData }).forceRender();
+                    setTimeout(function() { if (typeof applyProgressBarWidths === 'function') applyProgressBarWidths(gridContainer); }, 100);
+                }
+            };
+            
+            // Handle search input
+            const searchInput = document.getElementById('searchApprovalProjects');
+            if (searchInput) {
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        currentFilters.search = this.value;
+                        updateGrid();
+                    }, 300);
+                });
+            }
+            
+            // Handle department dropdown filtering (optional - approvals page may not have category dropdown)
+            if (dropdownButton && dropdownMenu.length > 0) {
+                dropdownMenu.forEach(item => {
+                    item.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        const selectedValue = this.getAttribute('data-value');
+                        dropdownButton.innerHTML = `${this.textContent} <i class="mdi mdi-chevron-down"></i>`;
+                        currentFilters.department = selectedValue || "All";
+                        updateGrid();
+                    });
+                });
+            }
+            
+            // Handle status filter
+            const statusFilter = document.getElementById('statusFilterApprovalProjects');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', function() {
+                    currentFilters.status = this.value;
+                    updateGrid();
+                });
+            }
+            
+            // Handle priority filter
+            const priorityFilter = document.getElementById('priorityFilterDeptApprovalProjects');
+            if (priorityFilter) {
+                priorityFilter.addEventListener('change', function() {
+                    currentFilters.priority = this.value;
+                    updateGrid();
+                });
+            }
+            
+            // Initialize Flatpickr date range picker
+            const dateRangeInput = document.getElementById('datepicker-range-dept-approval');
+            if (dateRangeInput) {
+                // Wait for flatpickr to be available
+                const initDatePicker = () => {
+                    if (typeof flatpickr !== 'undefined') {
+                        flatpickr(dateRangeInput, {
+                            mode: 'range',
+                            dateFormat: 'Y-m-d',
+                            placeholder: 'Select Date Range',
+                            onChange: function(selectedDates, dateStr, instance) {
+                                if (selectedDates.length === 2) {
+                                    currentFilters.dateRange = [
+                                        selectedDates[0].toISOString().split('T')[0],
+                                        selectedDates[1].toISOString().split('T')[0]
+                                    ];
+                                    updateGrid();
+                                } else if (selectedDates.length === 1) {
+                                    // Single date: filter to projects active on that day (same start and end)
+                                    const d = selectedDates[0].toISOString().split('T')[0];
+                                    currentFilters.dateRange = [d, d];
+                                    updateGrid();
+                                } else if (selectedDates.length === 0) {
+                                    currentFilters.dateRange = null;
+                                    updateGrid();
+                                }
+                            }
+                        });
+                    } else {
+                        setTimeout(initDatePicker, 100);
+                    }
+                };
+                initDatePicker();
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Approvals Grid initialization error:', error);
+            return false;
+        }
+    }
+    
+    // Try to initialize immediately, then retry if Grid.js not ready
+    if (!initApprovalGrid()) {
+        let attempts = 0;
+        const checkInterval = setInterval(function() {
+            attempts++;
+            if (initApprovalGrid()) {
+                clearInterval(checkInterval);
+            } else if (attempts >= 50) {
+                clearInterval(checkInterval);
+                console.warn('Approvals: Failed to initialize after 5 seconds');
+            }
+        }, 100);
+    }
+});
 
 // 11. Company-Wide Report Table
 document.addEventListener('DOMContentLoaded', function() {
