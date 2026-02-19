@@ -534,7 +534,9 @@ def project_details(id=None):
     manager = User.query.get(project.project_manager) if project.project_manager else None
     deadline = Deadlines.query.get(project.deadlines_id) if project.deadlines_id else None
     department = Department.query.get(project.department_id) if project.department_id else None
-    
+    # Department for display: project manager's department, or project's department as fallback
+    manager_department = Department.query.get(manager.department_id) if manager and manager.department_id else department
+
     # Normalize status: convert Pending/Cancelled to Ongoing
     display_status = project.project_status
     if not display_status or display_status == 'Pending' or display_status == 'Cancelled':
@@ -635,6 +637,7 @@ def project_details(id=None):
                          manager=manager,
                          deadline=deadline,
                          department=department,
+                         manager_department=manager_department,
                          display_status=display_status,
                          assigned_members=assigned_members,
                          tasks=tasks,
@@ -1175,13 +1178,22 @@ def subtask_note(task_id, sub_task_id):
         member_id=current_user.member_id
     ).first()
     p_members_id = pm_entry.p_members_id if pm_entry else None
-    # Submit for review: only the member assigned to this subtask (owner) or PM may submit
+    # Submit for review: PM, subtask owner, or any task assignee may submit
     if action == 'submit':
         project = Project.query.get(task.project_id) if task.project_id else None
         is_pm = project and current_user.member_id == project.project_manager
-        is_owner = subtask.p_members_id and pm_entry and subtask.p_members_id == pm_entry.p_members_id
-        if not (is_pm or is_owner):
-            flash('Only the member assigned to this subtask (or the PM) can submit it for review.', 'danger')
+        is_subtask_owner = subtask.p_members_id and pm_entry and subtask.p_members_id == pm_entry.p_members_id
+        is_task_assignee = False
+        if pm_entry:
+            if task.p_members_id == pm_entry.p_members_id:
+                is_task_assignee = True
+            else:
+                for ta in (task.assignees or []):
+                    if ta.p_members_id == pm_entry.p_members_id:
+                        is_task_assignee = True
+                        break
+        if not (is_pm or is_subtask_owner or is_task_assignee):
+            flash('Only the project manager, subtask owner, or a task assignee can submit for review.', 'danger')
             return redirect(url_for('project.task_details', id=task_id))
     new_note = Notes(
         task_id=task_id,
