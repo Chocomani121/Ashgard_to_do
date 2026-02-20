@@ -384,8 +384,7 @@
                                                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up – send note for PM">Follow Up</button>
                                                 {% endif %}
                                                 {% elif st.status == 'Approved' %}
-                                                <span class="subtask-approved-cell">Approved on {% if st.checked_timestamp %}{{ st.checked_timestamp.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %} — {{ st.owner_name }}</span>
-                                                {% endif %}
+                                                Approved on {% if st.checked_timestamp %}{{ st.checked_timestamp.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %} — {{ (project.manager.name or project.manager.username) if project and project.manager else '—' }}                                                {% endif %}
                                             {% endif %}
                                         </td>
                                     </tr>
