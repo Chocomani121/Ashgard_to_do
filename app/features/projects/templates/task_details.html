@@ -4,7 +4,6 @@
 <div class="main-content">
     <div class="page-content">
         <div class="container-fluid">
-            <!-- Breadcrumb -->
             <nav aria-label="breadcrumb" class="mb-3">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url_for('project.projects') }}">Projects</a></li>
@@ -62,73 +61,74 @@
                         <!-- Card Body: fixed height, only Description area scrolls -->
                         <div class="card-body task-details-task-card-body d-flex flex-column overflow-hidden flex-grow-1 min-h-0">
                             <!-- Top Info Section -->
-                                <div class="row mb-3 g-3 flex-shrink-0 align-items-start">
-                                    <div class="col-6 col-md-3">
-                                        <div class="text-muted small">Project Manager</div>
-                                        <strong class="d-block mt-1">{% if task.project_info and task.project_info.manager %}{{ task.project_info.manager.name or task.project_info.manager.username }}{% else %}N/A{% endif %}</strong>
+                            <div class="row mb-3 g-3 flex-shrink-0 align-items-start">
+                                <div class="col-6 col-md-3">
+                                    <div class="text-muted small">Project Manager</div>
+                                    <strong class="d-block mt-1">{% if task.project_info and task.project_info.manager %}{{ task.project_info.manager.name or task.project_info.manager.username }}{% else %}N/A{% endif %}</strong>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="text-muted small">Priority</div>
+                                    <div class="mt-1">
+                                    {% if task.priority == 'High' %}
+                                    <span class="badge bg-soft-danger text-danger">High</span>
+                                    {% elif task.priority == 'Medium' %}
+                                    <span class="badge bg-soft-warning text-warning">Medium</span>
+                                    {% elif task.priority == 'Low' %}
+                                    <span class="badge bg-soft-info text-info">Low</span>
+                                    {% else %}
+                                    <span class="badge bg-soft-secondary text-secondary">{{ task.priority or 'N/A' }}</span>
+                                    {% endif %}
                                     </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="text-muted small">Priority</div>
-                                        <div class="mt-1">
-                                        {% if task.priority == 'High' %}
-                                        <span class="badge bg-soft-danger text-danger">High</span>
-                                        {% elif task.priority == 'Medium' %}
-                                        <span class="badge bg-soft-warning text-warning">Medium</span>
-                                        {% elif task.priority == 'Low' %}
-                                        <span class="badge bg-soft-info text-info">Low</span>
-                                        {% else %}
-                                        <span class="badge bg-soft-secondary text-secondary">{{ task.priority or 'N/A' }}</span>
-                                        {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="text-muted small">Task Code</div>
-                                        <strong class="d-block mt-1">{{ task.generated_code or ('#' ~ task.task_id) }}</strong>
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="text-muted small">Task Status</div>
-                                        <div class="mt-1">
-                                        {% set display_status = task.task_status or 'Ongoing' %}
-                                        {% if display_status == 'Ongoing' %}
-                                        <span class="badge bg-soft-warning text-warning">Ongoing</span>
-                                        {% elif display_status == 'Completed' %}
-                                        <span class="badge badge-soft-success font-size-12">Completed</span>
-                                        {% elif display_status == 'On Hold' %}
-                                        <span class="badge bg-soft-secondary text-secondary">On Hold</span>
-                                        {% else %}
-                                        <span class="badge bg-soft-secondary text-secondary">{{ display_status }}</span>
-                                        {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="text-muted small">Assigned Members</div>
-                                        <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
-                                        {% if task_assignees %}
-                                        {% for assignee in task_assignees %}
-                                        <div class="d-flex align-items-center">
-                                            <img class="rounded-circle avatar-xs me-1" src="{{ url_for('static', filename='profile_pics/' + assignee.image_file) }}" alt="" title="{{ assignee.name or assignee.username }}">
-                                            <span class="small">{{ assignee.name or assignee.username }}{% if not loop.last %},{% endif %}</span>
-                                        </div>
-                                        {% endfor %}
-                                        {% else %}
-                                        <span class="text-muted small">Unassigned</span>
-                                        {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="text-muted small">Start date</div>
-                                        <strong class="d-block mt-1">{% if task.deadline_ref %}{{ task.deadline_ref.start_date.strftime('%d %b %Y') }}{% else %}—{% endif %}</strong>
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="text-muted small">End date</div>
-                                        <strong class="d-block mt-1">{% if task.deadline_ref %}{{ task.deadline_ref.end_date.strftime('%d %b %Y') }}{% else %}—{% endif %}</strong>
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="text-muted small">Department</div>
-                                        <strong class="d-block mt-1">{{ manager_department.department_name if manager_department else '—' }}</strong>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="text-muted small">Task Code</div>
+                                    <strong class="d-block mt-1">{{ task.generated_code or ('#' ~ task.task_id) }}</strong>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="text-muted small">Task Status</div>
+                                    <div class="mt-1">
+                                    {% set display_status = task.task_status or 'Ongoing' %}
+                                    {% if display_status == 'Ongoing' %}
+                                    <span class="badge bg-soft-warning text-warning">Ongoing</span>
+                                    {% elif display_status == 'Completed' %}
+                                    <span class="badge badge-soft-success font-size-12">Completed</span>
+                                    {% elif display_status == 'On Hold' %}
+                                    <span class="badge bg-soft-secondary text-secondary">On Hold</span>
+                                    {% else %}
+                                    <span class="badge bg-soft-secondary text-secondary">{{ display_status }}</span>
+                                    {% endif %}
                                     </div>
                                 </div>
 
+                                <div class="col-6 col-md-3">
+                                    <div class="text-muted small">Assigned Members</div>
+                                    <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
+                                    {% if task_assignees %}
+                                    {% for assignee in task_assignees %}
+                                    <div class="d-flex align-items-center">
+                                        <img class="rounded-circle avatar-xs me-1" src="{{ url_for('static', filename='profile_pics/' + assignee.image_file) }}" alt="" title="{{ assignee.name or assignee.username }}">
+                                        <span class="small">{{ assignee.name or assignee.username }}{% if not loop.last %},{% endif %}</span>
+                                    </div>
+                                    {% endfor %}
+                                    {% else %}
+                                    <span class="text-muted small">Unassigned</span>
+                                    {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="text-muted small">Start date</div>
+                                    <strong class="d-block mt-1">{% if task.deadline_ref %}{{ task.deadline_ref.start_date.strftime('%d %b %Y') }}{% else %}—{% endif %}</strong>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="text-muted small">End date</div>
+                                    <strong class="d-block mt-1">{% if task.deadline_ref %}{{ task.deadline_ref.end_date.strftime('%d %b %Y') }}{% else %}—{% endif %}</strong>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="text-muted small">Department</div>
+                                    <strong class="d-block mt-1">{{ manager_department.department_name if manager_department else '—' }}</strong>
+                                </div>
+                            </div>
+                        
                             <!-- Scrollable Description -->
                             <div class="task-details-description-scroll flex-grow-1 min-h-0 overflow-auto">
                                 <h6 class="mb-2">Description</h6>
@@ -139,83 +139,79 @@
                 </div>
 
                 <!-- RIGHT: Notes (col-6, equal height with Task card) -->
-                <div class="col-6 d-flex">
+               <div class="col-6 d-flex">
                     <div class="card mb-4 flex-grow-1 d-flex flex-column task-details-card-equal">
                         <div class="card-body d-flex flex-column overflow-hidden flex-grow-1">
+                            
+                            {# HEADER SECTION #}
                             <div class="d-flex align-items-center mb-3 flex-shrink-0">
                                 <div class="flex-grow-1">
                                     <h5 class="card-title mb-0">Notes ({{ notes|length }})</h5>
                                 </div>
                                 <div class="flex-shrink-0">
                                     <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#taskNoteModal">
-                                        <i class="mdi mdi-plus me-1"></i> Add Notes
+                                        <i class="mdi mdi-plus me-1"></i> Add Note
                                     </button>
                                 </div>
                             </div>
-                            <div class="task-notes-scroll flex-grow-1 overflow-auto px-3 min-h-0">
-                                    {% for note in notes %}
-                                    <div class="task-detail-note d-flex mb-4 pb-3 border-bottom">
+
+                            {# SCROLLABLE NOTES AREA #}
+                            <div class="mx-n4 px-4 flex-grow-1" data-simplebar style="height: 620px; overflow-y: auto;">
+                                {% for note in notes %}
+                                    <div class="d-flex mb-4 border-bottom pb-3">
+                                        {# Avatar #}
                                         <div class="flex-shrink-0 me-3">
                                             <img src="{{ url_for('static', filename='profile_pics/' + (note.author.image_file if note.author and note.author.image_file else 'default.jpg')) }}" 
                                                 alt="" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #fff;">
                                         </div>
-                                        <div class="flex-grow-1 min-width-0">
-                                            <div class="d-flex justify-content-between align-items-baseline gap-2 mb-1">
-                                                <strong class="text-dark">{{ note.author.name if note.author else 'Unknown' }}</strong>
-                                                <small class="text-muted flex-shrink-0">{{ note.created_on.strftime('%b %d, %Y') if note.created_on else '' }}</small>
+
+                                        <div class="flex-grow-1">
+                                            {# Note Header #}
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <div>
+                                                    <strong>{{ note.author.name if note.author else 'Unknown' }}</strong>
+                                                    <a href="{{ url_for('project.toggle_pin', note_id=note.notes_id) }}" class="ms-2">
+                                                        {% if note.pin_stat %}
+                                                            <i class="mdi mdi-pin text-warning font-size-16"></i>
+                                                        {% else %}
+                                                            <i class="mdi mdi-pin-outline text-muted font-size-14"></i>
+                                                        {% endif %}
+                                                    </a>
+                                                </div>
+                                                <small class="text-muted">{{ note.created_on.strftime('%b %d, %Y') if note.created_on else '' }}</small>
                                             </div>
-                                            {% if note.note_title %}
-                                            <h6 class="mb-1 text-dark">{{ note.note_title }}</h6>
-                                            {% endif %}
-                                            <p class="text-muted mb-2 task-detail-note-body" style="white-space: pre-wrap; line-height: 1.5; word-break: break-word; overflow-wrap: break-word;">{{ note.note_body or '' }}</p>
-                                            <div class="task-detail-note-actions">
+                                            
+                                            {# Note Content Box #}
+                                            <div class="p-2 {% if note.pin_stat %}bg-soft-warning border-warning{% else %}bg-light border{% endif %} rounded mt-2 border">
+                                                {% if note.pin_stat %}
+                                                    <span class="badge bg-warning text-dark mb-2"><i class="mdi mdi-pin me-1"></i>PINNED</span>
+                                                {% endif %}
+                                                
+                                                {% if note.note_title %}
+                                                    <h6 class="text-primary small mb-1">{{ note.note_title }}</h6>
+                                                {% endif %}
+                                                <p class="mb-0 text-dark" style="white-space: pre-wrap;">{{ note.note_body }}</p>
+                                            </div>
+
+                                            {# Actions #}
+                                            <div class="mt-2">
                                                 <a href="javascript:void(0);" class="text-primary small me-3" onclick="document.getElementById('reply-form-{{ note.notes_id }}').classList.toggle('d-none')">
                                                     <i class="mdi mdi-reply me-1"></i>Reply
                                                 </a>
                                                 
-                                                {# AUTHOR ONLY - Edit Main Note #}
                                                 {% if note.author.member_id == current_user.member_id %}
-                                                <a href="javascript:void(0);" class="text-info small edit-note-link"
+                                                <a href="javascript:void(0);" class="text-info small" 
+                                                onclick="openEditNoteModal(this)"
                                                 data-edit-url="{{ url_for('project.edit_note', note_id=note.notes_id) }}"
-                                                data-note-title="{{ (note.note_title or '')|e }}"
-                                                data-note-body="{{ (note.note_body or '')|e }}"
-                                                onclick="openEditNoteModal(this)">
+                                                data-note-title="{{ note.note_title|e }}"
+                                                data-note-body="{{ note.note_body|e }}">
                                                     <i class="mdi mdi-pencil-outline me-1"></i>Edit
                                                 </a>
                                                 {% endif %}
                                             </div>
 
-                                            {% if replies_map.get(note.notes_id) %}
-                                            <div class="task-detail-note-replies mt-3 ms-2 ps-3 border-start">
-                                                {% for reply in replies_map[note.notes_id] %}
-                                                <div class="mb-2 p-2 rounded bg-soft-light border-bottom d-flex">
-                                                    <img src="{{ url_for('static', filename='profile_pics/' + (reply.author.image_file if reply.author and reply.author.image_file else 'default.jpg')) }}"
-                                                        alt="" class="rounded-circle flex-shrink-0" style="width: 28px; height: 28px; object-fit: cover;">
-                                                    <div class="flex-grow-1 ms-2">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <small class="text-dark"><strong>{{ reply.author.name if reply.author else 'Unknown' }}</strong></small>
-                                                            <div>
-                                                                {# AUTHOR ONLY - Edit Reply #}
-                                                                {% if reply.author.member_id == current_user.member_id %}
-                                                                <a href="javascript:void(0);" class="text-info extra-small me-2 edit-note-link" style="font-size: 11px;"
-                                                                data-edit-url="{{ url_for('project.edit_note', note_id=reply.notes_id) }}"
-                                                                data-note-title=""
-                                                                data-note-body="{{ (reply.note_body or '')|e }}"
-                                                                onclick="openEditNoteModal(this)">
-                                                                    Edit
-                                                                </a>
-                                                                {% endif %}
-                                                                <small class="text-muted" style="font-size: 10px;">{{ reply.created_on.strftime('%H:%M') if reply.created_on else '' }}</small>
-                                                            </div>
-                                                        </div>
-                                                        <p class="mb-0 small text-muted" style="word-break: break-word; overflow-wrap: break-word;">{{ reply.note_body }}</p>
-                                                    </div>
-                                                </div>
-                                                {% endfor %}
-                                            </div>
-                                            {% endif %}
-
-                                            <div id="reply-form-{{ note.notes_id }}" class="mt-2 d-none ms-0">
+                                            {# Reply Form #}
+                                            <div id="reply-form-{{ note.notes_id }}" class="mt-2 d-none">
                                                 <form action="{{ url_for('project.reply_note', note_id=note.notes_id) }}" method="POST">
                                                     <input type="hidden" name="task_id" value="{{ task.task_id }}">
                                                     <div class="input-group input-group-sm">
@@ -224,19 +220,34 @@
                                                     </div>
                                                 </form>
                                             </div>
-                                        </div>
-                                    </div>
-                                    {% else %}
+
+                                            {# Nested Replies #}
+                                            {% if replies_map.get(note.notes_id) %}
+                                            <div class="mt-3 border-start ps-3">
+                                                {% for reply in replies_map[note.notes_id] %}
+                                                    <div class="mb-2 p-2 rounded bg-soft-light border-bottom small">
+                                                        <div class="d-flex justify-content-between">
+                                                            <strong>{{ reply.author.name }}</strong>
+                                                            <small class="text-muted">{{ reply.created_on.strftime('%H:%M') }}</small>
+                                                        </div>
+                                                        <p class="mb-0">{{ reply.note_body }}</p>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div> 
+                                    </div> 
+                                {% else %}
                                     <div class="text-center text-muted py-5">
                                         <i class="bx bx-note mb-3" style="font-size: 3rem;"></i>
                                         <p>No notes found for this task.</p>
                                     </div>
-                                    {% endfor %}
-                            </div>
-                        </div>
-                    </div>
+                                {% endfor %}
+                            </div> {# End Scrollable Area #}
+                        </div> {# End Card Body #}
+                    </div> {# End Card #}
                 </div>
-            </div>
+            </div> {# End Row #}
 
             <!-- Edit Note Modal -->
             <div class="modal fade" id="editNotesProjectModal" tabindex="-1" aria-hidden="true">
@@ -263,13 +274,29 @@
                                     </div>  
                                 </form>
                             </div>
-                        </div>
+                            <div class="modal-body">
+                                <div class="mb-3" id="editTitleContainer">
+                                    <label class="form-label font-weight-bold">Title</label>
+                                    <input type="text" name="note_title" id="EditNotesProjectTitle" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label font-weight-bold">Message</label>
+                                    <textarea name="note_body" id="EditNotesProjectDescription" class="form-control" rows="4" required></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-light">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary px-4">Update</button>
+                            </div>  
+                        </form>
                     </div>
+                </div>
+            </div>
 
             <!-- Sub-Task Table -->
             <div class="row mt-4">
                 <div class="col-12">
-                    <div class="card subtask-table-card">
+                    <div class="card">
                         <div class="card-header d-flex align-items-center">
                             <h4 class="card-title mb-0">Sub-Task [{{ subtask_list|length }}]{% if is_project_manager %} (Project Manager){% endif %}</h4>
                             {% if is_project_manager or is_project_member %}
@@ -437,101 +464,29 @@
                         <label class="form-label">Notes</label>
                         <textarea name="notes" class="form-control" rows="3" placeholder="Optional notes..."></textarea>
                     </div>
-
-                </form>
+                </div>
             </div>
-
-            <!-- Modal Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="subTaskForm" class="btn btn-success">
-                    <i class="mdi mdi-check me-1"></i> Save Sub-Task
-                </button>
-            </div>
-
         </div>
     </div>
 </div>
 
-<!-- Edit Task Modal: Task name | Priority; Task status | Assigned member; Start | End; Description -->
-<div class="modal fade" data-bs-backdrop="static" id="editTaskModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal fade" id="taskNoteModal" tabindex="-1" aria-labelledby="taskNoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Task</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" action="{{ url_for('project.update_task', id=task.task_id) }}" id="editTaskForm">
+            <form action="{{ url_for('project.add_note', task_id=task.task_id) }}" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="taskNoteModalLabel">Add Task Note</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Task Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="task_name" id="editTaskName" value="{{ task.task_name or '' }}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Priority</label>
-                                <select class="form-select" name="priority" id="editTaskPriority">
-                                    <option value="Low" {% if task.priority == 'Low' %}selected{% endif %}>Low</option>
-                                    <option value="Medium" {% if task.priority == 'Medium' %}selected{% endif %}>Medium</option>
-                                    <option value="High" {% if task.priority == 'High' %}selected{% endif %}>High</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Task Status</label>
-                                <select class="form-select" name="task_status" id="editTaskStatus">
-                                    <option value="Ongoing" {% if (task.task_status or 'Ongoing') == 'Ongoing' %}selected{% endif %}>Ongoing</option>
-                                    <option value="Completed" {% if task.task_status == 'Completed' %}selected{% endif %}>Completed</option>
-                                    <option value="On Hold" {% if task.task_status == 'On Hold' %}selected{% endif %}>On Hold</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Assigned members</label>
-                                <div class="border rounded p-2" style="max-height: 120px; overflow-y: auto;">
-                                    {% for pm in task_project_members|default([]) %}
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="owner_id" value="{{ pm.p_members_id }}" id="editOwner{{ pm.p_members_id }}" {% if pm.p_members_id in assignee_p_members_ids %}checked{% endif %}>
-                                        <label class="form-check-label" for="editOwner{{ pm.p_members_id }}">{{ pm.name }}</label>
-                                    </div>
-                                    {% endfor %}
-                                    {% if not task_project_members %}
-                                    <span class="text-muted small">No project members available.</span>
-                                    {% endif %}
-                                </div>
-                                <small class="text-muted">Select one or more members assigned to this task.</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Start date</label>
-                                <input type="date" class="form-control" name="start_date" id="editTaskStartDate" value="{% if task.deadline_ref %}{{ task.deadline_ref.start_date.strftime('%Y-%m-%d') }}{% endif %}">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">End date</label>
-                                <input type="date" class="form-control" name="end_date" id="editTaskEndDate" value="{% if task.deadline_ref %}{{ task.deadline_ref.end_date.strftime('%Y-%m-%d') }}{% endif %}">
-                            </div>
-                        </div>
-                    </div>
                     <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-control" name="task_description" id="editTaskDescription" rows="3" placeholder="Task description">{{ task.task_description or '' }}</textarea>
+                        <label class="form-label">Note Details</label>
+                        <textarea name="note_body" class="form-control" rows="5" placeholder="Write your note here..." required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Note</button>
                 </div>
             </form>
         </div>
@@ -605,118 +560,143 @@
 </div>
 
 <!-- Add Note Modal (Task) -->
-<div class="modal fade" id="taskNoteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <form action="{{ url_for('project.add_note', task_id=task.task_id) }}" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Note</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Notes Title</label>
-                        <input type="text" name="note_title" class="form-control" placeholder="E.g., Progress Update">
+                    <div class="modal fade" id="taskNoteModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <form action="{{ url_for('project.add_note', task_id=task.task_id) }}" method="POST">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Add Note</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Notes Title</label>
+                                            <input type="text" name="note_title" class="form-control" placeholder="E.g., Progress Update">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Description</label>
+                                            <textarea name="note_content" class="form-control" rows="4" required></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-primary">Add Note</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea name="note_content" class="form-control" rows="4" required></textarea>
+
+
+
+                <div class="modal fade" id="editNoteModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <form action="" method="POST" id="editNoteForm">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Edit Note</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Title/Code</label>
+                                        <input type="text" name="note_title" id="edit_note_title" class="form-control">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Note Content</label>
+                                        <textarea name="note_content" id="edit_note_body" class="form-control" rows="4" required></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-info">Update Note</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Note</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
-<!-- Revert Modal -->
-<div class="modal fade" id="revertModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+                    <!-- Revert modal -->
+                    <div class="modal fade" id="revertModal" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
 
-      <div class="modal-header">
-        <h5 class="modal-title">Revert Task</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
+                            <div class="modal-header">
+                                <h5 class="modal-title">Revert Task</h5>
+                                <button class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
 
-      <div class="modal-body">
-        <p class="mb-2">
-          This will move the task back to <strong>“To be reviewed”</strong>.
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-        <button class="btn btn-primary">Confirm Revert</button>
-      </div>
-    </div>
-  </div>
-</div>
+                            <div class="modal-body">
+                                <p class="mb-2">
+                                This will move the task back to <strong>“To be reviewed”</strong>.
+                                </p>
 
-<!-- Subtask Note Modal (Submit / Re-Submit / Follow up) -->
-<div class="modal fade" id="subtaskNoteModal" tabindex="-1" data-bs-backdrop="static" data-note-url-template="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=0) }}">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="subtaskNoteModalTitle">Note</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <form id="subtaskNoteForm" method="POST" action="">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-        <input type="hidden" name="action" id="subtaskNoteAction" value="">
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label" for="subtaskNoteBody">Note <span class="text-danger">*</span></label>
-            <textarea name="note_body" id="subtaskNoteBody" class="form-control" rows="4" required placeholder="Enter your note..."></textarea>
-            <small class="text-muted" id="subtaskNoteHelp"></small>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="subtaskNoteSubmitBtn">Save</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+                            <div class="modal-footer">
+                                <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                <button class="btn btn-primary">Confirm Revert</button>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
 
-<!-- Edit Subtask Modal -->
-<div class="modal fade" id="editSubtaskModal" tabindex="-1" data-bs-backdrop="static">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Edit Sub-Task</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <form id="editSubtaskForm" method="POST" action="">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label" for="editSubtaskNameInput">Sub-Task Name</label>
-            <input type="text" name="subtask_name" id="editSubtaskNameInput" class="form-control" required>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+                    <!-- Subtask Note Modal (Submit / Re-Submit / Follow up) -->
+                    <div class="modal fade" id="subtaskNoteModal" tabindex="-1" data-bs-backdrop="static" data-note-url-template="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=0) }}">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="subtaskNoteModalTitle">Note</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            
+                            <form id="subtaskNoteForm" method="POST" action="">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                                <input type="hidden" name="action" id="subtaskNoteAction" value="">
+                                <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label" for="subtaskNoteBody">Note <span class="text-danger">*</span></label>
+                                    <textarea name="note_body" id="subtaskNoteBody" class="form-control" rows="4" required placeholder="Enter your note..."></textarea>
+                                    <small class="text-muted" id="subtaskNoteHelp"></small>
+                                </div>
+                                </div>
+                                <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary" id="subtaskNoteSubmitBtn">Save</button>
+                                </div>
+                            </form>
+                            </div>
+                        </div>
+                    </div>
 
-<!-- Hidden form for subtask status update (Hold / Resume) -->
-<form id="subtaskStatusForm" method="POST" action="" class="d-none">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-  <input type="hidden" name="status" id="subtaskStatusFormStatus" value="">
-</form>
+                        <!-- Edit Subtask Modal -->
+                    <div class="modal fade" id="editSubtaskModal" tabindex="-1" data-bs-backdrop="static">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Edit Sub-Task</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form id="editSubtaskForm" method="POST" action="">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                                <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label" for="editSubtaskNameInput">Sub-Task Name</label>
+                                    <input type="text" name="subtask_name" id="editSubtaskNameInput" class="form-control" required>
+                                </div>
+                                </div>
+                                <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save</button>
+                                </div>
+                            </form>
+                            </div>
+                        </div>
+                    </div>
 
-<!-- Hidden form for subtask delete -->
-<form id="subtaskDeleteForm" method="POST" action="" class="d-none">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-</form>
+                        <!-- Hidden form for subtask status update (Hold / Resume) -->
+                        <form id="subtaskStatusForm" method="POST" action="" class="d-none">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                        <input type="hidden" name="status" id="subtaskStatusFormStatus" value="">
+                        </form>
 
 <script>
 function openEditNoteModal(el) {
@@ -863,11 +843,13 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 
-<script>
-    // 1. Force the main window to the top on reload
-    if (window.performance && window.performance.navigation.type === 1) {
-        window.scrollTo(0, 0);
+// 2. Task Completion Toggle
+document.getElementById('markCompleteBtn')?.addEventListener('click', function() {
+    const taskId = this.getAttribute('data-task-id');
+    if(confirm("Are you sure you want to mark this task as completed?")) {
+        window.location.href = `/project/task/complete/${taskId}`;
     }
+});
 
     document.addEventListener("DOMContentLoaded", function() {
         const notesScrollArea = document.querySelector('[data-simplebar]');
@@ -883,7 +865,4 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 </script>
-
-<script src="{{ url_for('project.static', filename='task.js') }}"></script>
-
-{% endblock content %}
+{% endblock %}
