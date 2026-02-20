@@ -34,7 +34,7 @@
                                         <div class="dropdown-menu dropdown-menu-end">
                                             <a class="dropdown-item"
                                                 data-bs-toggle="modal"
-                                                data-bs-target="#editTaskModal">
+                                                data-bs-target="#editProjectModal">
                                                 Edit
                                             </a>                                    
                                             <a class="dropdown-item" href="javascript:void(0);"
@@ -291,5 +291,244 @@
         </div>
         <!-- End Page-content -->
     </div>
+
+    {% if is_project_manager %}
+    <!-- Create Task Modal -->
+    <div class="modal fade create-task" data-bs-backdrop="static" tabindex="-1" aria-labelledby="createTaskLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createTaskLabel">Create Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createTaskForm" method="POST" action="{{ url_for('project.create_task', id=project.project_id) }}">
+                        <div id="createTaskOwnerIdsContainer"></div>
+                        <div class="mb-3">
+                            <label class="form-label">Task Name <span class="text-danger">*</span></label>
+                            <input type="text" name="task_name" class="form-control" placeholder="Enter task name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Assign Members <span class="text-danger">*</span></label>
+                            <div class="dropdown">
+                                <div class="form-control d-flex flex-wrap align-items-center gap-1" id="ownerInput" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="text-muted small">Select member(s)</span>
+                                </div>
+                                <div class="dropdown-menu p-3 shadow" style="width: 100%;">
+                                    <input type="text" class="form-control mb-2" id="ownerSearch" placeholder="Search member">
+                                    <small class="text-muted">Contacts</small>
+                                    <div class="list-group mt-2 owner-list" style="max-height: 200px; overflow-y: auto;"></div>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <a href="#" id="clearOwners" class="text-muted small">Clear</a>
+                                        <button type="button" class="btn btn-sm btn-primary">Confirm</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Start Date</label>
+                                    <input type="date" name="start_date" class="form-control" id="CreateTask-StartDate">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">End Date</label>
+                                    <input type="date" name="end_date" class="form-control" id="CreateTask-EndDate">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="task_description" class="form-control" rows="3" placeholder="Optional description"></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success" id="btn-create-task">
+                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                <span class="btn-text"><i class="mdi mdi-check me-1"></i> Create Task</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Project Modal -->
+    <div class="modal fade" id="editProjectModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ url_for('project.update_project', id=project.project_id) }}" id="editProjectForm">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Project Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="project_name" value="{{ project.project_name or '' }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Priority</label>
+                                    <select class="form-select" name="priority">
+                                        <option value="High" {% if project.priority == 'High' %}selected{% endif %}>High</option>
+                                        <option value="Medium" {% if project.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                                        <option value="Low" {% if project.priority == 'Low' %}selected{% endif %}>Low</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Client</label>
+                                    <input type="text" class="form-control" name="client_name" value="{{ project.client_name or '' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Status</label>
+                                    <select class="form-select" name="project_status">
+                                        <option value="Ongoing" {% if (project.project_status or 'Ongoing') == 'Ongoing' %}selected{% endif %}>Ongoing</option>
+                                        <option value="On Hold" {% if project.project_status == 'On Hold' %}selected{% endif %}>On Hold</option>
+                                        <option value="Completed" {% if project.project_status == 'Completed' %}selected{% endif %}>Completed</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Start Date</label>
+                                    <input type="date" class="form-control" name="start_date" value="{% if deadline and deadline.start_date %}{{ deadline.start_date.strftime('%Y-%m-%d') }}{% endif %}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">End Date</label>
+                                    <input type="date" class="form-control" name="end_date" value="{% if deadline and deadline.end_date %}{{ deadline.end_date.strftime('%Y-%m-%d') }}{% endif %}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success" id="btn-edit-project">
+                            <span id="editProjectSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                            <span id="editProjectBtnText"><i class="mdi mdi-check me-1"></i> Save</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Project Manager Modal -->
+    <div class="modal fade" id="editProjectManagerModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Project Manager</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ url_for('project.update_project_manager', id=project.project_id) }}">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Project Manager <span class="text-danger">*</span></label>
+                            <select class="form-select" name="project_manager" required>
+                                <option value="">Select Project Manager</option>
+                                {% for user in users %}
+                                <option value="{{ user.member_id }}" {% if manager and user.member_id == manager.member_id %}selected{% endif %}>{{ user.name or user.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success" id="btn-edit-project-manager">
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            <span class="btn-text"><i class="mdi mdi-check me-1"></i> Save</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Members Modal -->
+    <div class="modal fade" id="editMembersModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Members</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ url_for('project.update_project_members', id=project.project_id) }}" id="editProjectMembersForm">
+                    <div class="modal-body">
+                        <div id="editMemberIdsContainer"></div>
+                        <div class="mb-3">
+                            <label class="form-label">Project Members <span class="text-danger">*</span></label>
+                            <div class="dropdown">
+                                <div class="form-control d-flex flex-wrap align-items-center gap-1" id="ownerInputEditProject" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="text-muted small">Select member(s)</span>
+                                </div>
+                                <div class="dropdown-menu p-3 shadow" style="width: 100%;">
+                                    <input type="text" class="form-control mb-2" id="ownerSearchEditProject" placeholder="Search member">
+                                    <small class="text-muted">Contacts</small>
+                                    <div class="list-group mt-2 owner-list-edit-project" style="max-height: 200px; overflow-y: auto;"></div>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <a href="#" id="clearOwnersEditProject" class="text-muted small">Clear</a>
+                                        <button type="button" class="btn btn-sm btn-primary" id="confirmOwnersEditProject">Confirm</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success" id="btn-edit-members">
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            <span class="btn-text"><i class="mdi mdi-check me-1"></i> Save</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Description Modal -->
+    <div class="modal fade" id="editDescriptionModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Description</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ url_for('project.update_project_description', id=project.project_id) }}">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="project_desc" class="form-control" rows="5" placeholder="Enter project description">{{ project.project_desc or '' }}</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success" id="btn-edit-description">
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            <span class="btn-text"><i class="mdi mdi-check me-1"></i> Save</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <script type="application/json" id="project-assigned-members-for-task">{{ task_assignable_members|tojson }}</script>
+    <script type="application/json" id="edit-project-users-data">{{ users_json|tojson }}</script>
+    <script type="application/json" id="edit-project-initial-members">{{ edit_initial_members_json|tojson }}</script>
+    <script src="{{ url_for('project.static', filename='project-details-edit.init.js') }}"></script>
 
 {% endblock %}
