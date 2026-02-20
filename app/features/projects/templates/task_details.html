@@ -4,6 +4,7 @@
 <div class="main-content">
     <div class="page-content">
         <div class="container-fluid">
+            <!-- Breadcrumb -->
             <nav aria-label="breadcrumb" class="mb-3">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url_for('project.projects') }}">Projects</a></li>
@@ -296,7 +297,7 @@
             <!-- Sub-Task Table -->
             <div class="row mt-4">
                 <div class="col-12">
-                    <div class="card">
+                    <div class="card subtask-table-card">
                         <div class="card-header d-flex align-items-center">
                             <h4 class="card-title mb-0">Sub-Task [{{ subtask_list|length }}]{% if is_project_manager %} (Project Manager){% endif %}</h4>
                             {% if is_project_manager or is_project_member %}
@@ -411,8 +412,7 @@
                                                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up – send note for PM">Follow Up</button>
                                                 {% endif %}
                                                 {% elif st.status == 'Approved' %}
-                                                <span class="subtask-approved-cell">Approved on {% if st.checked_timestamp %}{{ st.checked_timestamp.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %} — {{ st.owner_name }}</span>
-                                                {% endif %}
+                                                Approved on {% if st.checked_timestamp %}{{ st.checked_timestamp.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %} — {{ (project.manager.name or project.manager.username) if project and project.manager else '—' }}                                                {% endif %}
                                             {% endif %}
                                         </td>
                                     </tr>
@@ -464,29 +464,101 @@
                         <label class="form-label">Notes</label>
                         <textarea name="notes" class="form-control" rows="3" placeholder="Optional notes..."></textarea>
                     </div>
-                </div>
+
+                </form>
             </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="subTaskForm" class="btn btn-success">
+                    <i class="mdi mdi-check me-1"></i> Save Sub-Task
+                </button>
+            </div>
+
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="taskNoteModal" tabindex="-1" aria-labelledby="taskNoteModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<!-- Edit Task Modal: Task name | Priority; Task status | Assigned member; Start | End; Description -->
+<div class="modal fade" data-bs-backdrop="static" id="editTaskModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <form action="{{ url_for('project.add_note', task_id=task.task_id) }}" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="taskNoteModalLabel">Add Task Note</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('project.update_task', id=task.task_id) }}" id="editTaskForm">
                 <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Task Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="task_name" id="editTaskName" value="{{ task.task_name or '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Priority</label>
+                                <select class="form-select" name="priority" id="editTaskPriority">
+                                    <option value="Low" {% if task.priority == 'Low' %}selected{% endif %}>Low</option>
+                                    <option value="Medium" {% if task.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                                    <option value="High" {% if task.priority == 'High' %}selected{% endif %}>High</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Task Status</label>
+                                <select class="form-select" name="task_status" id="editTaskStatus">
+                                    <option value="Ongoing" {% if (task.task_status or 'Ongoing') == 'Ongoing' %}selected{% endif %}>Ongoing</option>
+                                    <option value="Completed" {% if task.task_status == 'Completed' %}selected{% endif %}>Completed</option>
+                                    <option value="On Hold" {% if task.task_status == 'On Hold' %}selected{% endif %}>On Hold</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Assigned members</label>
+                                <div class="border rounded p-2" style="max-height: 120px; overflow-y: auto;">
+                                    {% for pm in task_project_members|default([]) %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="owner_id" value="{{ pm.p_members_id }}" id="editOwner{{ pm.p_members_id }}" {% if pm.p_members_id in assignee_p_members_ids %}checked{% endif %}>
+                                        <label class="form-check-label" for="editOwner{{ pm.p_members_id }}">{{ pm.name }}</label>
+                                    </div>
+                                    {% endfor %}
+                                    {% if not task_project_members %}
+                                    <span class="text-muted small">No project members available.</span>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">Select one or more members assigned to this task.</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Start date</label>
+                                <input type="date" class="form-control" name="start_date" id="editTaskStartDate" value="{% if task.deadline_ref %}{{ task.deadline_ref.start_date.strftime('%Y-%m-%d') }}{% endif %}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">End date</label>
+                                <input type="date" class="form-control" name="end_date" id="editTaskEndDate" value="{% if task.deadline_ref %}{{ task.deadline_ref.end_date.strftime('%Y-%m-%d') }}{% endif %}">
+                            </div>
+                        </div>
+                    </div>
                     <div class="mb-3">
-                        <label class="form-label">Note Details</label>
-                        <textarea name="note_body" class="form-control" rows="5" placeholder="Write your note here..." required></textarea>
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="task_description" id="editTaskDescription" rows="3" placeholder="Task description">{{ task.task_description or '' }}</textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Note</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -835,22 +907,56 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 });
+function openEditNoteModal(noteId, title, body) {
+    const form = document.getElementById('editNoteForm');
+    // Point this to your edit route
+    form.action = `/project/edit_note/${noteId}`;
+
+    const titleInput = document.getElementById('EditNotesProjectTitle');
+    const titleContainer = document.getElementById('editTitleContainer');
+    
+    titleInput.value = title;
+    document.getElementById('EditNotesProjectDescription').value = body;
+
+    // Hide title field if editing a reply (replies usually don't have titles)
+    if (title === '') {
+        titleContainer.style.display = 'none';
+    } else {
+        titleContainer.style.display = 'block';
+    }
+
+    var editModal = new bootstrap.Modal(document.getElementById('editNotesProjectModal'));
+    editModal.show();
+}
 
 // Ensure modal is moved to body to avoid backdrop issues
 document.addEventListener("DOMContentLoaded", function() {
     var modal = document.getElementById('editNotesProjectModal');
     if (modal) { document.body.appendChild(modal); }
 });
+
+
+    // Run this when the page loads after adding a note
+    window.onload = function() {
+        const notesContainer = document.querySelector('.notes-container'); // Use your actual class name
+        if (notesContainer) {
+            notesContainer.scrollTop = 0;
+        }
+    };
+
 </script>
 
-// 2. Task Completion Toggle
-document.getElementById('markCompleteBtn')?.addEventListener('click', function() {
-    const taskId = this.getAttribute('data-task-id');
-    if(confirm("Are you sure you want to mark this task as completed?")) {
-        window.location.href = `/project/task/complete/${taskId}`;
+<script>
+    // 1. Force the main window to the top on reload
+    if (window.performance && window.performance.navigation.type === 1) {
+        window.scrollTo(0, 0);
     }
-});
 
+    // 2. Target the specific Notes scroll container
+    document.addEventListener("DOMContentLoaded", function() {
+        // We look for the div that has the height 620px and overflow
+        const notesScrollArea = document.querySelector('[data-simplebar]');
+        
     document.addEventListener("DOMContentLoaded", function() {
         const notesScrollArea = document.querySelector('[data-simplebar]');
         if (notesScrollArea) {
@@ -865,4 +971,7 @@ document.getElementById('markCompleteBtn')?.addEventListener('click', function()
         }
     });
 </script>
-{% endblock %}
+
+<script src="{{ url_for('project.static', filename='task.js') }}"></script>
+
+{% endblock content %}
