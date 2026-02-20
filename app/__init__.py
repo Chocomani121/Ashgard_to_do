@@ -69,13 +69,27 @@ def create_app():
     @flask_app.context_processor
     def inject_show_approvals():
         from flask_login import current_user
+        from app.models import Project, Task, SubTask
         show_approvals_in_navbar = False
+        approvals_pending_count = 0
         if current_user.is_authenticated:
-            from app.models import Project
-            show_approvals_in_navbar = Project.query.filter_by(
+            pm_project_ids = [p.project_id for p in Project.query.filter_by(
                 project_manager=current_user.member_id
-            ).first() is not None
-        return {'show_approvals_in_navbar': show_approvals_in_navbar}
+            ).with_entities(Project.project_id).all()]
+            if pm_project_ids:
+                show_approvals_in_navbar = True
+                task_ids = [t.task_id for t in Task.query.filter(
+                    Task.project_id.in_(pm_project_ids)
+                ).with_entities(Task.task_id).all()]
+                if task_ids:
+                    approvals_pending_count = SubTask.query.filter(
+                        SubTask.parent_task_id.in_(task_ids),
+                        SubTask.status.in_(('To be reviewed', 'On Hold', 'Rejected'))
+                    ).count()
+        return {
+            'show_approvals_in_navbar': show_approvals_in_navbar,
+            'approvals_pending_count': approvals_pending_count
+        }
 
     # --- BLUEPRINT REGISTRATION ---
     

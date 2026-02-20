@@ -1,0 +1,250 @@
+{% extends "layout.html" %}
+{% block page_title %}Approvals{% endblock %}
+{% block content %}
+<div class="main-content">
+<div class="page-content">
+   <div class="container-fluid">
+   <div class="row">
+      <div class="col-12">
+         <div class="row">
+            <div class="col-lg-12">
+               <div class="card">
+                  <div class="card-header d-flex align-items-center">
+                     <!-- <h4 class="card-title mb-0">Department-Wide Projects</h4> -->
+                     <div class="ms-auto d-flex gap-2">
+
+                        <div class="d-flex flex-wrap gap-2">
+                           <!-- Search Bar -->
+                           <div style="width: 200px;">
+                              <input type="text" id="searchDeptProjects" class="form-control" placeholder="Type a keyword...">
+                          </div>
+                           <div style="width: 180px;">
+                              <select class="form-select" id="statusFilter">
+                                 <option value="all">Status: All</option>
+                                 <option value="Ongoing">Ongoing</option>
+                                 <option value="On Hold">On Hold</option>
+                                 <option value="Cancelled">Cancelled</option>
+                                 <option value="Completed">Completed</option>
+                              </select>
+                           </div>
+                           <div style="width: 180px;">
+                              <select class="form-select" id="priorityFilter">
+                                 <option value="all">Priority: All</option>
+                                 <option value="Low">Low</option>
+                                 <option value="Medium">Medium</option>
+                                 <option value="High">High</option>
+                              </select>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="card-body">
+                     <div id="table10-gridjs"></div>
+                     <!-- ORIGINAL TABLE (hidden but used by Grid.js) -->
+                     <table id="projectsApproval" class="d-none">
+                        <thead>
+                           <tr>
+                              <th style="width: 190px;">Task Name</th>
+                              <th>Sub Tasks</th>
+                              <th>Project Name</th>
+                              <th>Status</th>
+                              <th width="200px">Action</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {% if tasks_data %}
+                           {% for item in tasks_data %}
+                           {% set display_status = (item.task.task_status or 'Pending') %}
+                           <tr
+                               data-status="{% if display_status == 'Completed' %}Completed{% elif display_status == 'On Hold' %}On Hold{% else %}Ongoing{% endif %}"
+                               data-priority="{{ item.task.priority or 'High' }}"
+                               data-start-date="{{ item.deadline.start_date.strftime('%Y-%m-%d') if item.deadline and item.deadline.start_date else '' }}"
+                               data-end-date="{{ item.deadline.end_date.strftime('%Y-%m-%d') if item.deadline and item.deadline.end_date else '' }}"
+                           >
+                           <td>
+                              <a href="{{ url_for('project.task_details', id=item.task.task_id) }}" class="text-dark fw-medium">
+                                 {{ item.task.task_name or 'Unnamed Task' }}
+                              </a>
+                           </td>
+                           <td>
+                              {% if item.subtasks %}
+                              
+                              <ul class="list-unstyled mb-0 small">
+                                 {% for st in item.subtasks %}
+                                 <li class="d-flex align-items-center gap-1 flex-wrap">
+                                    {% if st.is_checked %}<i class="mdi mdi-check-circle text-success"></i>{% else %}<i class="mdi mdi-circle-outline text-muted"></i>{% endif %}
+                                    <span>{{ st.subtask_name or 'Unnamed' }}</span>
+                                 </li>
+                                 {% endfor %}
+                              </ul>
+                              {% else %}
+                              <span class="text-muted">—</span>
+                              {% endif %}
+                           </td>
+                           <td>
+                              {% if item.project %}
+                              <a href="{{ url_for('project.project_details', id=item.project.project_id) }}" class="text-muted">
+                                 {{ item.project.project_name or 'N/A' }}
+                              </a>
+                              {% else %}
+                              N/A
+                              {% endif %}
+                           </td>
+                           <td>
+                              {% if display_status == 'Completed' %}
+                              <span class="badge badge-soft-success font-size-12">Completed</span>
+                              {% elif display_status == 'On Hold' %}
+                              <span class="badge badge-soft-secondary font-size-12">On Hold</span>
+                              {% elif display_status == 'To be reviewed' or display_status == 'Pending' %}
+                              <span class="badge badge-soft-warning font-size-12">To be reviewed</span>
+                              {% elif display_status == 'Rejected' %}
+                              <span class="badge bg-soft-danger text-danger font-size-12">Rejected</span>
+                              {% elif display_status == 'Approved' %}
+                              <span class="badge badge-soft-success font-size-12">Approved</span>
+                              {% else %}
+                              <span class="badge badge-soft-warning font-size-12">Ongoing</span>
+                              {% endif %}
+                           </td>
+                           <td class="text-nowrap">
+                              {% if display_status == 'To be reviewed' or display_status == 'Pending' %}
+                                 <button type="button" class="btn btn-sm btn-success me-1" data-bs-toggle="modal" data-bs-target=".notes-modal-approve" title="Approve"
+                                    onclick="approveNoteModal('{{ item.task.generated_code or item.task.task_id }}', '...', '')">
+                                    <i class="mdi mdi-check"></i>
+                                 </button>
+                                 <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target=".notes-modal" title="Disapprove"
+                                    data-task-id="{{ item.task.task_id }}">
+                                    <i class="mdi mdi-close"></i>
+                                 </button>
+                              {% elif display_status == 'Ongoing' %}
+                                 <div class="dropdown">
+                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></button>
+                                    <div class="dropdown-menu dropdown-menu-end shadow">
+                                       <a class="dropdown-item" data-bs-toggle="modal" data-bs-target=".notes-modal" data-task-id="{{ item.task.task_id }}">Submit</a>
+                                       <a class="dropdown-item" href="{{ url_for('project.task_details', id=item.task.task_id) }}">Edit</a>
+                                       <a class="dropdown-item" data-action="hold" data-task-id="{{ item.task.task_id }}">Hold</a>
+                                       <a class="dropdown-item text-danger" data-action="delete" data-task-id="{{ item.task.task_id }}">Delete</a>
+                                    </div>
+                                 </div>
+                              {% elif display_status == 'Rejected' %}
+                                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#revertModal"
+                                    data-task-id="{{ item.task.task_id }}">
+                                    Revert
+                                 </button>
+                              {% elif display_status == 'On Hold' %}
+                                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target=".notes-modal"
+                                    data-task-id="{{ item.task.task_id }}">
+                                    Follow Up
+                                 </button>
+                              {% elif display_status == 'Approved' or display_status == 'Completed' %}
+                                 <small>
+                                    <p class="mb-0">Approved on : {{ item.task.updated_at.strftime('%m/%d/%Y %H:%M') if item.task.updated_at else 'N/A' }}</p>
+                                    <footer class="blockquote-footer mb-0">{{ item.manager.name if item.manager else 'N/A' }}</footer>
+                                 </small>
+                              {% else %}
+                                 <span class="text-muted">—</span>
+                              {% endif %}
+                           </td>
+                           </tr>
+                           {% endfor %}
+                           {% else %}
+                           <tr>
+                               <td colspan="5" class="text-center text-muted">No tasks assigned to you.</td>
+                           </tr>
+                           {% endif %}
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+   <!-- end row -->
+</div>
+
+
+<!-- Notes Modal -->
+<div class="modal fade notes-modal" data-bs-backdrop="static" id="note-modal" tabindex="-1" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title">Add Note</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+         </div>
+         <div class="modal-body">
+            <textarea id="notesInput" class="form-control" rows="4"
+               placeholder="Enter your note here..."></textarea>
+            <input type="hidden" id="activeNotesTarget">
+            <input type="hidden" id="actionType">
+         </div>
+         <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button class="btn btn-primary" onclick="saveNote()">Save Note</button>
+         </div>
+      </div>
+   </div>
+</div>
+
+<!-- Notes Preview -->
+<div class="modal fade" id="notes-modal-preview" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="preview-note-title">Sub-Task Notes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="preview-note-body" class="text-dark" style="white-space: pre-wrap;"></p>
+                <footer id="preview-note-footer" class="blockquote-footer mt-3"></footer>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade notes-modal-approve" data-bs-backdrop="static" id="notes-modal-approve" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="approve-note-title">Approve Note</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+          <p id="approve-note-body" class="text-dark" style="white-space: pre-wrap;"></p>
+          <footer id="approve-note-footer" class="blockquote-footer mt-3"></footer>
+      </div>
+      <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" onclick="saveNote()">Confirm Approval</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Revert modal -->
+<div class="modal fade" id="revertModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+  
+        <div class="modal-header">
+          <h5 class="modal-title">Revert Task</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+  
+        <div class="modal-body">
+          <p class="mb-2">
+            This will move the task back to <strong>“To be reviewed”</strong>.
+          </p>
+       </div>
+        <div class="modal-footer">
+          <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary">Confirm Revert</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
