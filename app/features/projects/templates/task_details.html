@@ -946,32 +946,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
 </script>
 
-<script>
-    // 1. Force the main window to the top on reload
-    if (window.performance && window.performance.navigation.type === 1) {
-        window.scrollTo(0, 0);
-    }
-
-    // 2. Target the specific Notes scroll container
-    document.addEventListener("DOMContentLoaded", function() {
-        // We look for the div that has the height 620px and overflow
-        const notesScrollArea = document.querySelector('[data-simplebar]');
-        
-    document.addEventListener("DOMContentLoaded", function() {
-        const notesScrollArea = document.querySelector('[data-simplebar]');
-        if (notesScrollArea) {
-            // This resets the scroll inside the Notes card specifically
-            notesScrollArea.scrollTop = 0;
-            
-            // If you are using the SimpleBar library, it needs this:
-            const simpleBarInstance = SimpleBar.instances.get(notesScrollArea);
-            if (simpleBarInstance) {
-                simpleBarInstance.getScrollElement().scrollTop = 0;
-            }
-        }
-    });
-</script>
-
 <script src="{{ url_for('project.static', filename='task.js') }}"></script>
 
 {% endblock content %}
