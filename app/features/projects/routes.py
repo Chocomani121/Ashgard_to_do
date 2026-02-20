@@ -580,16 +580,17 @@ def project_details(id=None):
             owner = assignees[0] if assignees else None  # legacy single owner for compatibility
             
             # Calculate task progress (completed subtasks / total subtasks)
+            # Completed = status == 'Approved' (canonical); is_checked kept for legacy
             subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).all()
             total_subtasks = len(subtasks)
-            completed_subtasks = len([st for st in subtasks if st.is_checked])
+            completed_subtasks = len([st for st in subtasks if st.status == 'Approved' or st.is_checked])
             progress = f"{completed_subtasks}/{total_subtasks}" if total_subtasks > 0 else "0/0"
-            
-            # Normalize task status
+
+            # Use actual task status (no auto-complete from subtasks; Mark Complete button is explicit)
             task_status = task.task_status or 'Ongoing'
             if task_status == 'Pending' or task_status == 'Cancelled':
                 task_status = 'Ongoing'
-            
+
             # Check if current user can edit/mark complete this task
             can_edit = _can_edit_task(task, current_user)
             
@@ -1084,6 +1085,9 @@ def create_subtask(id):
         status=status,
     )
     db.session.add(st)
+    # If task was Completed, adding a subtask makes it Ongoing again
+    if task.task_status == 'Completed':
+        task.task_status = 'Ongoing'
     try:
         db.session.commit()
         flash('Sub-task created.', 'success')
@@ -1126,16 +1130,11 @@ def update_subtask_status(task_id, sub_task_id):
     if status == 'Approved':
         from datetime import datetime as dt
         subtask.checked_timestamp = dt.utcnow()
-        # If all subtasks for this task are now Approved, mark the parent task as Completed
-        all_subtasks = SubTask.query.filter_by(parent_task_id=task_id).all()
-        if all_subtasks and all(st.status == 'Approved' for st in all_subtasks):
-            task.task_status = 'Completed'
+        subtask.is_checked = True
+        # Do NOT auto-complete task; use Mark Complete button explicitly
     try:
         db.session.commit()
-        if status == 'Approved' and task.task_status == 'Completed':
-            flash('Subtask approved. All subtasks complete — task marked as Completed.', 'success')
-        else:
-            flash('Subtask updated.', 'success')
+        flash('Subtask updated.', 'success')
     except Exception:
         db.session.rollback()
         flash('Failed to update subtask.', 'danger')
@@ -1724,99 +1723,189 @@ def update_subtask_status_approvals(task_id, sub_task_id):
     if status == 'Approved':
         from datetime import datetime as dt
         subtask.checked_timestamp = dt.utcnow()
-        # If all subtasks for this task are now Approved, mark the parent task as Completed
-        all_subtasks = SubTask.query.filter_by(parent_task_id=task_id).all()
-        if all_subtasks and all(st.status == 'Approved' for st in all_subtasks):
-            task.task_status = 'Completed'
+        subtask.is_checked = True
+        # Do NOT auto-complete task; use Mark Complete button explicitly
     try:
         db.session.commit()
-        if status == 'Approved' and task.task_status == 'Completed':
-            flash('Subtask approved. All subtasks complete — task marked as Completed.', 'success')
-        else:
-            flash('Subtask updated.', 'success')
+        flash('Subtask updated.', 'success')
     except Exception:
         db.session.rollback()
         flash('Failed to update subtask.', 'danger')
     return redirect(url_for('project.approvals'))
 
+@project_bp.route("/approvals/<int:task_id>/subtask/<int:sub_task_id>/note", methods=['POST'])
+@login_required
+def subtask_note_approvals(task_id, sub_task_id):
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    if not _can_act_on_subtask(subtask, task, current_user):
+        flash('You do not have permission to add a note to this subtask.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    note_body = (request.form.get('note_body') or '').strip()
+    action = (request.form.get('action') or '').strip().lower()  # submit, resubmit, follow_up
+    if not note_body:
+        flash('Note is required.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    pm_entry = ProjectMembers.query.filter_by(
+        project_id=task.project_id,
+        member_id=current_user.member_id
+    ).first()
+    p_members_id = pm_entry.p_members_id if pm_entry else None
+    # Submit for review: PM, subtask owner, or any task assignee may submit
+    if action == 'submit':
+        project = Project.query.get(task.project_id) if task.project_id else None
+        is_pm = project and current_user.member_id == project.project_manager
+        is_subtask_owner = subtask.p_members_id and pm_entry and subtask.p_members_id == pm_entry.p_members_id
+        is_task_assignee = False
+        if pm_entry:
+            if task.p_members_id == pm_entry.p_members_id:
+                is_task_assignee = True
+            else:
+                for ta in (task.assignees or []):
+                    if ta.p_members_id == pm_entry.p_members_id:
+                        is_task_assignee = True
+                        break
+        if not (is_pm or is_subtask_owner or is_task_assignee):
+            flash('Only the project manager, subtask owner, or a task assignee can submit for review.', 'danger')
+            return redirect(url_for('project.task_details', id=task_id))
+    new_note = Notes(
+        task_id=task_id,
+        sub_task_id=sub_task_id,
+        member_id=current_user.member_id,
+        p_members_id=p_members_id,
+        note_body=note_body,
+        generated_code=action or 'note'
+    )
+    db.session.add(new_note)
+    if action == 'submit':
+        subtask.status = 'To be reviewed'
+    elif action == 'resubmit':
+        subtask.status = 'To be reviewed'
+    elif action == 'follow_up':
+        subtask.status = 'Ongoing'
+    try:
+        db.session.commit()
+        if action == 'submit':
+            flash('Subtask submitted for review.', 'success')
+        elif action == 'resubmit':
+            flash('Re-submitted for review.', 'success')
+        else:
+            flash('Note saved.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Failed to save note.', 'danger')
+    return redirect(url_for('project.approvals', id=task_id))
 
 # Project Details Notes_tbl - Reply, Comment, Edit
 @project_bp.route("/task/<int:task_id>/add_note", methods=['POST'])
 @login_required
 def add_note(task_id):
-    # Ensure the task exists
+    # 1. Ensure the task exists
     task = Task.query.get_or_404(task_id)
     
-    # Get data from the form
+    # 2. Get data from the form
     title = request.form.get('note_title')
     content = request.form.get('note_content')
 
     if not content:
-        flash('Description is required', 'warning')
+        flash('Note content is required', 'warning')
         return redirect(url_for('project.task_details', id=task_id))
 
     try:
         new_note = Notes(
             task_id=task_id,
             member_id=current_user.member_id,
-            note_body=content,          # Matches your DB column 'note_body'
-            generated_code=title,       # Matches your DB column 'generated_code'
-            created_on=datetime.now(),  # Matches your DB column 'created_on'
-            pin_stat=0                  # Defaulting to unpinned
+            note_body=content,          # Ensure this matches your Model
+            generated_code=title,       # This stores your title
+            created_on=datetime.now(),
+            pin_stat=0
         )
         
         db.session.add(new_note)
         db.session.commit()
+        flash('Note added!', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Database Error: {str(e)}', 'danger')
 
-    # Redirect back to the task details page
+    # Redirect using 'id' because your task_details route likely expects 'id'
     return redirect(url_for('project.task_details', id=task_id))
 
-
+# Updated Reply Route
 @project_bp.route("/task/note/reply/<int:note_id>", methods=['POST'])
 @login_required
 def reply_note(note_id):
     body = request.form.get('reply_body')
     task_id = request.form.get('task_id')
     
-    new_reply = Notes(  
-        task_id=int(task_id),
-        member_id=current_user.member_id,
-        note_body=body,
-        reply_code=str(note_id)  # Store the parent ID here
-    )
-    
-    db.session.add(new_reply)
-    db.session.commit()
-    return redirect(request.referrer)
+    if not body or not task_id:
+        flash('Reply content is required', 'warning')
+        return redirect(request.referrer)
 
-@project_bp.route("/task_details/note/edit/<int:note_id>", methods=['POST'])
+    try:
+        new_reply = Notes(  
+            task_id=int(task_id),
+            member_id=current_user.member_id,
+            note_body=body,
+            reply_code=str(note_id),  # Parent Note ID
+            created_on=datetime.now(),
+            pin_stat=0
+        )
+        db.session.add(new_reply)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error: {str(e)}', 'danger')
+
+    return redirect(url_for('project.task_details', id=task_id))
+
+# @project_bp.route("/task_details/note/edit/<int:note_id>", methods=['POST'])
+# @login_required
+# def edit_note(note_id):
+#     note = Notes.query.get_or_404(note_id)
+    
+#     # Security Check
+#     if note.member_id != current_user.member_id:
+#         flash('Permission denied.', 'danger')
+#         return redirect(url_for('project.task_details', id=note.task_id))
+
+#     # Update Content
+#     note.note_title = request.form.get('note_title')
+#     note.note_body = request.form.get('note_body')
+    
+#     # UPDATE TO CURRENT TIME
+#     note.created_on = datetime.now() # This resets the time to 'now' on every save
+    
+#     try:
+#         db.session.commit()
+#         flash('Updated successfully!', 'success')
+#     except Exception:
+#         db.session.rollback()
+#         flash('Error updating note.', 'danger')
+    
+#     return redirect(url_for('project.task_details', id=note.task_id))
+
+@project_bp.route("/task/note/edit/<int:note_id>", methods=['POST'])
 @login_required
 def edit_note(note_id):
     note = Notes.query.get_or_404(note_id)
     
-    # Security Check
+    # Security check: only author can edit
     if note.member_id != current_user.member_id:
-        flash('Permission denied.', 'danger')
-        return redirect(url_for('project.task_details', id=note.task_id))
+        flash('Unauthorized', 'danger')
+        return redirect(request.referrer)
 
-    # Update Content
-    note.note_title = request.form.get('note_title')
-    note.note_body = request.form.get('note_body')
-    
-    # UPDATE TO CURRENT TIME
-    note.created_on = datetime.now() # This resets the time to 'now' on every save
+    note.generated_code = request.form.get('note_title')
+    note.note_body = request.form.get('note_content')
     
     try:
         db.session.commit()
-        flash('Updated successfully!', 'success')
-    except Exception:
+        flash('Note updated successfully', 'success')
+    except Exception as e:
         db.session.rollback()
-        flash('Error updating note.', 'danger')
-    
-    return redirect(url_for('project.task_details', id=note.task_id))
+        flash(f'Error: {str(e)}', 'danger')
+        
+    return redirect(request.referrer)
 
 @project_bp.route("/all_task")
 @login_required
@@ -1914,3 +2003,91 @@ def toggle_pin(note_id):
     
     # 5. Go back to where you were
     return redirect(request.referrer or url_for('project.projects'))
+
+
+@project_bp.route("/task/<int:task_id>/add_note", methods=['POST'])
+@login_required
+def add_task_note(task_id):
+    content = request.form.get('note_content')
+    if not content:
+        flash('Note content cannot be empty.', 'danger')
+        return redirect(url_for('project.task_details', task_id=task_id))
+
+    # Get the project_member_id for the current user in this project
+    task = Task.query.get_or_404(task_id)
+    project_member = ProjectMembers.query.filter_by(
+        project_id=task.project_id, 
+        member_id=current_user.member_id
+    ).first()
+
+    if not project_member:
+        flash('You must be a member of this project to add notes.', 'danger')
+        return redirect(url_for('project.task_details', task_id=task_id))
+
+    new_note = Notes(
+        task_id=task_id,
+        p_members_id=project_member.p_members_id,
+        note_content=content,
+        date_added=datetime.now()
+    )
+    
+    db.session.add(new_note)
+    db.session.commit()
+    flash('Note added successfully!', 'success')
+    return redirect(url_for('project.task_details', task_id=task_id))
+
+@project_bp.route("/task/note/<int:note_id>/reply", methods=['POST'])
+@login_required
+def add_reply(note_id):
+    parent_note = Notes.query.get_or_404(note_id)
+    content = request.form.get('reply_content')
+    
+    if not content:
+        flash('Reply cannot be empty.', 'danger')
+        return redirect(url_for('project.task_details', task_id=parent_note.task_id))
+
+    project_member = ProjectMembers.query.filter_by(
+        project_id=parent_note.task.project_id, 
+        member_id=current_user.member_id
+    ).first()
+
+    new_reply = Notes(
+        task_id=parent_note.task_id,
+        parent_note_id=note_id,
+        p_members_id=project_member.p_members_id,
+        note_content=content,
+        date_added=datetime.now()
+    )
+    
+    db.session.add(new_reply)
+    db.session.commit()
+    return redirect(url_for('project.task_details', task_id=parent_note.task_id))
+
+
+@project_bp.route("/task/<int:task_id>/submit_subtask", methods=['POST'])
+@login_required
+def submit_subtask_for_review(task_id):
+    sub_task_id = request.form.get('sub_task_id')
+    action_type = request.form.get('action_type')  # e.g., 'submit', 'approve', 'reject'
+    note_content = request.form.get('note_content')
+
+    subtask = SubTask.query.get_or_404(sub_task_id)
+    
+    # Update subtask status based on action
+    if action_type == 'submit':
+        subtask.status = 'Under Review'
+    elif action_type == 'approve':
+        subtask.status = 'Approved'
+        subtask.is_checked = True
+    elif action_type == 'reject':
+        subtask.status = 'Ongoing'
+        subtask.is_checked = False
+
+    # Optional: If you have a system for logging notes on subtask changes
+    if note_content:
+        # Example: Log the note in your Notes table or a specific SubTask log
+        pass
+
+    db.session.commit()
+    flash(f'Sub-task updated successfully!', 'success')
+    return redirect(url_for('project.task_details', task_id=task_id))

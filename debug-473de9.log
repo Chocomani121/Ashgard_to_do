@@ -1,0 +1,2 @@
+{"sessionId": "473de9", "location": "routes.py:project_details", "message": "Department debug", "data": {"manager_id": 8, "manager_dept_id": 8, "project_dept_id": null, "manager_department_name": "FCSIT11"}, "timestamp": 1771478645848}
+{"sessionId": "473de9", "location": "routes.py:task_details", "message": "Department debug", "data": {"manager_user_id": 8, "manager_dept_id": 8, "project_dept_id": null, "manager_department_name": "FCSIT11"}, "timestamp": 1771478650751}
