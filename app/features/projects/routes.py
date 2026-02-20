@@ -580,16 +580,17 @@ def project_details(id=None):
             owner = assignees[0] if assignees else None  # legacy single owner for compatibility
             
             # Calculate task progress (completed subtasks / total subtasks)
+            # Completed = status == 'Approved' (canonical); is_checked kept for legacy
             subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).all()
             total_subtasks = len(subtasks)
-            completed_subtasks = len([st for st in subtasks if st.is_checked])
+            completed_subtasks = len([st for st in subtasks if st.status == 'Approved' or st.is_checked])
             progress = f"{completed_subtasks}/{total_subtasks}" if total_subtasks > 0 else "0/0"
-            
-            # Normalize task status
+
+            # Use actual task status (no auto-complete from subtasks; Mark Complete button is explicit)
             task_status = task.task_status or 'Ongoing'
             if task_status == 'Pending' or task_status == 'Cancelled':
                 task_status = 'Ongoing'
-            
+
             # Check if current user can edit/mark complete this task
             can_edit = _can_edit_task(task, current_user)
             
@@ -1084,6 +1085,9 @@ def create_subtask(id):
         status=status,
     )
     db.session.add(st)
+    # If task was Completed, adding a subtask makes it Ongoing again
+    if task.task_status == 'Completed':
+        task.task_status = 'Ongoing'
     try:
         db.session.commit()
         flash('Sub-task created.', 'success')
@@ -1126,16 +1130,11 @@ def update_subtask_status(task_id, sub_task_id):
     if status == 'Approved':
         from datetime import datetime as dt
         subtask.checked_timestamp = dt.utcnow()
-        # If all subtasks for this task are now Approved, mark the parent task as Completed
-        all_subtasks = SubTask.query.filter_by(parent_task_id=task_id).all()
-        if all_subtasks and all(st.status == 'Approved' for st in all_subtasks):
-            task.task_status = 'Completed'
+        subtask.is_checked = True
+        # Do NOT auto-complete task; use Mark Complete button explicitly
     try:
         db.session.commit()
-        if status == 'Approved' and task.task_status == 'Completed':
-            flash('Subtask approved. All subtasks complete — task marked as Completed.', 'success')
-        else:
-            flash('Subtask updated.', 'success')
+        flash('Subtask updated.', 'success')
     except Exception:
         db.session.rollback()
         flash('Failed to update subtask.', 'danger')
@@ -1724,16 +1723,11 @@ def update_subtask_status_approvals(task_id, sub_task_id):
     if status == 'Approved':
         from datetime import datetime as dt
         subtask.checked_timestamp = dt.utcnow()
-        # If all subtasks for this task are now Approved, mark the parent task as Completed
-        all_subtasks = SubTask.query.filter_by(parent_task_id=task_id).all()
-        if all_subtasks and all(st.status == 'Approved' for st in all_subtasks):
-            task.task_status = 'Completed'
+        subtask.is_checked = True
+        # Do NOT auto-complete task; use Mark Complete button explicitly
     try:
         db.session.commit()
-        if status == 'Approved' and task.task_status == 'Completed':
-            flash('Subtask approved. All subtasks complete — task marked as Completed.', 'success')
-        else:
-            flash('Subtask updated.', 'success')
+        flash('Subtask updated.', 'success')
     except Exception:
         db.session.rollback()
         flash('Failed to update subtask.', 'danger')

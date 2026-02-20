@@ -249,14 +249,30 @@
                 </div>
             </div> {# End Row #}
 
-            <!-- {# --- EDIT MODAL FOR SUBTASK--- #} -->
-            <div class="modal fade" id="editNotesProjectModal" tabindex="-1" aria-hidden="true" style="z-index: 9999;">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content border-0 shadow-lg">    
-                        <form id="editNoteForm" method="POST">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Edit Content</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <!-- Edit Note Modal -->
+            <div class="modal fade" id="editNotesProjectModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow-lg">    
+                                <form id="editNoteForm" method="POST">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Edit Content</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3" id="editTitleContainer">
+                                            <label class="form-label font-weight-bold">Title</label>
+                                            <input type="text" name="note_title" id="EditNotesProjectTitle" class="form-control">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label font-weight-bold">Message</label>
+                                            <textarea name="note_body" id="EditNotesProjectDescription" class="form-control" rows="4" required></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer bg-light">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-primary px-4">Update</button>
+                                    </div>  
+                                </form>
                             </div>
                             <div class="modal-body">
                                 <div class="mb-3" id="editTitleContainer">
@@ -378,6 +394,17 @@
                                                         <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up">Follow Up</a></li>
                                                         <li><a class="dropdown-item subtask-status-link" href="#" data-url="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-status="Ongoing">Resume</a></li>
                                                         <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editSubtaskModal" data-edit-form-action="{{ url_for('project.edit_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Edit</a></li>
+                                                        <li><a class="dropdown-item text-danger subtask-delete-link" href="#" data-url="{{ url_for('project.delete_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-code="{{ st.generated_code }}">Delete</a></li>
+                                                    </ul>
+                                                </div>
+                                                {% elif st.is_owner %}
+                                                <div class="dropup">
+                                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>
+                                                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up – send note for PM">Follow Up</a></li>
+                                                        <li><a class="dropdown-item subtask-status-link" href="#" data-url="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-status="Ongoing">Resume</a></li>
+                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editSubtaskModal" data-edit-form-action="{{ url_for('project.edit_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Edit</a></li>
+                                                        <li><a class="dropdown-item text-danger subtask-delete-link" href="#" data-url="{{ url_for('project.delete_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-code="{{ st.generated_code }}">Delete</a></li>
                                                     </ul>
                                                 </div>
                                                 {% else %}
@@ -466,7 +493,36 @@
     </div>
 </div>
 
-<div class="modal fade" id="subtaskNoteModal" tabindex="-1" aria-hidden="true">
+<!-- Hidden form for delete task (submitted by JS after confirm) -->
+<form id="deleteTaskForm" method="POST" action="{{ url_for('project.delete_task', id=task.task_id) }}" class="d-none"></form>
+
+<!-- Notes Modal -->
+<div class="modal fade notes-modal" data-bs-backdrop="static" id="note-modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Note</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <textarea id="notesInput" class="form-control" rows="4"
+          placeholder="Enter your note here..."></textarea>
+
+        <input type="hidden" id="activeNotesTarget">
+        <input type="hidden" id="actionType">
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary" onclick="saveNote()">Save Note</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notes Preview -->
+<div class="modal fade" id="notes-modal-preview" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -642,38 +698,6 @@
                         <input type="hidden" name="status" id="subtaskStatusFormStatus" value="">
                         </form>
 
-                        <!-- Hidden form for subtask delete -->
-                        <form id="subtaskDeleteForm" method="POST" action="" class="d-none">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-                        </form>
-
-
-                    
-                    <div class="modal fade" id="addNotesProjectModal" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <form action="{{ url_for('project.add_note', task_id=task.task_id) }}" method="POST">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Sub-Task Action</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label class="form-label">Add a comment (Optional)</label>
-                                            <textarea name="note_content" class="form-control" rows="3"></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-primary"   >Confirm</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-
-
 <script>
 function openEditNoteModal(el) {
     var form = document.getElementById('editNoteForm');
@@ -800,52 +824,24 @@ document.addEventListener("DOMContentLoaded", function() {
             e.preventDefault();
             var url = delLink.getAttribute('data-url');
             var code = delLink.getAttribute('data-code') || 'this subtask';
-            if (url && confirm('Delete subtask ' + code + '?')) {
-                var form = document.getElementById('subtaskDeleteForm');
-                if (form) {
-                    form.action = url;
-                    form.submit();
+            if (url && typeof confirmDeleteSubtask === 'function') {
+                confirmDeleteSubtask(url, code);
+            } else if (url) {
+                if (confirm('Delete subtask ' + code + '?')) {
+                    var form = document.getElementById('subtaskDeleteForm');
+                    if (form) { form.action = url; form.submit(); }
                 }
             }
         }
     });
 });
 
-// function openEditNoteModal(noteId, title, body) {
-//     // 1. Set the form action dynamically to your edit route
-//     const form = document.querySelector('#editNoteModal form');
-//     form.action = `/project/task/note/edit/${noteId}`; // Adjust this path to match your route
-
-//     // 2. Fill the inputs
-//     document.getElementById('edit_note_title').value = title;
-//     document.getElementById('edit_note_body').value = body;
-
-//     // 3. Show the modal
-//     var editModal = new bootstrap.Modal(document.getElementById('editNoteModal'));
-//     editModal.show();
-// }
-
-function openEditNoteModal(noteId, title, body) {
-    // Select the form inside the modal
-    const form = document.querySelector('#editNoteModal form');
-    const titleInput = document.getElementById('edit_note_title');
-    const bodyInput = document.getElementById('edit_note_body');
-
-    if (form && titleInput && bodyInput) {
-        // Set the action URL - adjust this to your actual Flask route
-        form.action = `/task/note/edit/${noteId}`; 
-
-        // Fill the fields
-        titleInput.value = title;
-        bodyInput.value = body;
-
-        // Show the modal manually
-        var editModal = new bootstrap.Modal(document.getElementById('editNoteModal'));
-        editModal.show();
-    } else {
-        console.error("Edit modal elements not found in the DOM.");
-    }
-}
+// Ensure modal is moved to body to avoid backdrop issues
+document.addEventListener("DOMContentLoaded", function() {
+    var modal = document.getElementById('editNotesProjectModal');
+    if (modal) { document.body.appendChild(modal); }
+});
+</script>
 
 // 2. Task Completion Toggle
 document.getElementById('markCompleteBtn')?.addEventListener('click', function() {
@@ -855,9 +851,18 @@ document.getElementById('markCompleteBtn')?.addEventListener('click', function()
     }
 });
 
-// 3. Delete Confirmation
-function confirmDeleteTask(taskName) {
-    return confirm(`Are you sure you want to delete "${taskName}"? This action cannot be undone.`);
-}
+    document.addEventListener("DOMContentLoaded", function() {
+        const notesScrollArea = document.querySelector('[data-simplebar]');
+        if (notesScrollArea) {
+            // This resets the scroll inside the Notes card specifically
+            notesScrollArea.scrollTop = 0;
+            
+            // If you are using the SimpleBar library, it needs this:
+            const simpleBarInstance = SimpleBar.instances.get(notesScrollArea);
+            if (simpleBarInstance) {
+                simpleBarInstance.getScrollElement().scrollTop = 0;
+            }
+        }
+    });
 </script>
 {% endblock %}

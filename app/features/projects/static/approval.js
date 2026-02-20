@@ -103,8 +103,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (delLink) {
             e.preventDefault();
             var url = delLink.getAttribute('data-url');
-            var code = delLink.getAttribute('data-code') || '';
-            if (url && confirm('Delete sub-task ' + code + '?')) {
+            var code = delLink.getAttribute('data-code') || 'this subtask';
+            if (url && typeof confirmDeleteSubtask === 'function') {
+                confirmDeleteSubtask(url, code);
+            } else if (url && confirm('Delete sub-task ' + code + '?')) {
                 var form = document.getElementById('subtaskDeleteForm');
                 if (form) { form.action = url; form.submit(); }
             }
