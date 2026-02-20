@@ -925,8 +925,21 @@ def task_details(id=None):
         else:
             pm_entry = ProjectMembers.query.filter_by(project_id=task.project_id, member_id=current_user.member_id).first()
             is_project_member = pm_entry is not None
-    
-    # FIXED: Renamed can_edit_task_flag to can_edit_task to match your template
+    # Assigned to this task (via TaskAssignee or task.p_members_id) – required to see member subtask view
+    is_assigned_to_task = False
+    if task_assignees:
+        for u in task_assignees:
+            if u.member_id == current_user.member_id:
+                is_assigned_to_task = True
+                break
+    if not is_assigned_to_task and task.p_members_id:
+        pm_owner = ProjectMembers.query.get(task.p_members_id)
+        if pm_owner and pm_owner.member_id == current_user.member_id:
+            is_assigned_to_task = True
+    # Show member subtask block only if project member AND assigned to this task (PM always sees PM block)
+    can_see_member_subtask = is_project_member and not is_project_manager and is_assigned_to_task
+
+    # Check if user can edit/mark complete this task
     can_edit_task = _can_edit_task(task, current_user)
     
     # p_members_id of current assignees
