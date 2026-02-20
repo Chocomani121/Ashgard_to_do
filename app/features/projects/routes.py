@@ -1673,36 +1673,36 @@ def update_subtask_status_approvals(task_id, sub_task_id):
 @project_bp.route("/task/<int:task_id>/add_note", methods=['POST'])
 @login_required
 def add_note(task_id):
-    # Ensure the task exists
+    # 1. Ensure the task exists
     task = Task.query.get_or_404(task_id)
     
-    # Get data from the form
+    # 2. Get data from the form
     title = request.form.get('note_title')
     content = request.form.get('note_content')
 
     if not content:
-        flash('Description is required', 'warning')
+        flash('Note content is required', 'warning')
         return redirect(url_for('project.task_details', id=task_id))
 
     try:
         new_note = Notes(
             task_id=task_id,
             member_id=current_user.member_id,
-            note_body=content,          # Matches your DB column 'note_body'
-            generated_code=title,       # Matches your DB column 'generated_code'
-            created_on=datetime.now(),  # Matches your DB column 'created_on'
-            pin_stat=0                  # Defaulting to unpinned
+            note_body=content,          # Ensure this matches your Model
+            generated_code=title,       # This stores your title
+            created_on=datetime.now(),
+            pin_stat=0
         )
         
         db.session.add(new_note)
         db.session.commit()
+        flash('Note added!', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Database Error: {str(e)}', 'danger')
 
-    # Redirect back to the task details page
+    # Redirect using 'id' because your task_details route likely expects 'id'
     return redirect(url_for('project.task_details', id=task_id))
-
 
 # Updated Reply Route
 @project_bp.route("/task/note/reply/<int:note_id>", methods=['POST'])
