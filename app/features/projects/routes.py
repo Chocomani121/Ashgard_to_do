@@ -580,15 +580,18 @@ def project_details(id=None):
             owner = assignees[0] if assignees else None  # legacy single owner for compatibility
             
             # Calculate task progress (completed subtasks / total subtasks)
+            # Completed = status == 'Approved' (canonical); is_checked kept for legacy
             subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).all()
             total_subtasks = len(subtasks)
-            completed_subtasks = len([st for st in subtasks if st.is_checked])
+            completed_subtasks = len([st for st in subtasks if st.status == 'Approved' or st.is_checked])
             progress = f"{completed_subtasks}/{total_subtasks}" if total_subtasks > 0 else "0/0"
-            
-            # Normalize task status
+
+            # Task completion driven by subtask metrics: if all subtasks approved, task is Completed
             task_status = task.task_status or 'Ongoing'
             if task_status == 'Pending' or task_status == 'Cancelled':
                 task_status = 'Ongoing'
+            if total_subtasks > 0 and completed_subtasks == total_subtasks:
+                task_status = 'Completed'
             
             # Check if current user can edit/mark complete this task
             can_edit = _can_edit_task(task, current_user)
@@ -1126,6 +1129,7 @@ def update_subtask_status(task_id, sub_task_id):
     if status == 'Approved':
         from datetime import datetime as dt
         subtask.checked_timestamp = dt.utcnow()
+        subtask.is_checked = True
         # If all subtasks for this task are now Approved, mark the parent task as Completed
         all_subtasks = SubTask.query.filter_by(parent_task_id=task_id).all()
         if all_subtasks and all(st.status == 'Approved' for st in all_subtasks):
@@ -1724,6 +1728,7 @@ def update_subtask_status_approvals(task_id, sub_task_id):
     if status == 'Approved':
         from datetime import datetime as dt
         subtask.checked_timestamp = dt.utcnow()
+        subtask.is_checked = True
         # If all subtasks for this task are now Approved, mark the parent task as Completed
         all_subtasks = SubTask.query.filter_by(parent_task_id=task_id).all()
         if all_subtasks and all(st.status == 'Approved' for st in all_subtasks):
