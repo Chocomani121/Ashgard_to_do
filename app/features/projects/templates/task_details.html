@@ -12,6 +12,11 @@
                     <li class="breadcrumb-item active" aria-current="page">Task Details</li>
                 </ol>
             </nav>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
+                {% endif %}
+            {% endwith %}
 
             <div class="row align-items-stretch task-details-equal-row">
                 <!-- LEFT: Task details (col-6, equal height with Notes) -->
