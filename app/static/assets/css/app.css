@@ -6117,13 +6117,6 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
   white-space: normal;
 }
 
-/* For PM in Task Details – equal column spacing (7 columns); subtask table scrolls when many rows */
-#table6-gridjs .gridjs-wrapper {
-  overflow: auto !important;
-  max-height: 50vh;
-  -webkit-overflow-scrolling: touch;
-}
-
 /* 3-dots dropdowns: prevent clipping and show above table (all Grid.js tables, PM and members) */
 .gridjs-wrapper td.gridjs-td {
   overflow: visible !important;
@@ -6135,12 +6128,43 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
   overflow: visible;
 }
 
-/* Subtask table card: allow dropdown to escape (no overflow clip) */
-.subtask-table-card,
+/* Subtask table: align width with Task + Notes cards above; constrain to prevent overflow */
+.task-details-subtask-row .col-12 {
+  min-width: 0;
+  max-width: 100%;
+}
+.subtask-table-card {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden; /* prevent table from expanding card beyond Task+Notes row */
+}
 .subtask-table-card-body {
   overflow: visible !important;
+  min-width: 0; /* allow flex shrink */
 }
-.subtask-table-card .gridjs-container,
+/* For PM Task Details – subtask table: align with cards above, constrain width, scroll when needed */
+#table6-gridjs {
+  max-width: 100%;
+  width: 100%;
+  overflow: hidden; /* constrain GridJS; inner wrapper handles scroll */
+}
+#table6-gridjs .gridjs,
+#table6-gridjs .gridjs-head,
+#table6-gridjs .gridjs-wrapper {
+  max-width: 100%;
+}
+#table6-gridjs .gridjs-container {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100%;
+}
+#table6-gridjs .gridjs-wrapper {
+  overflow: auto !important;
+  max-width: 100%;
+  max-height: 50vh;
+  -webkit-overflow-scrolling: touch;
+}
 .subtask-table-card .gridjs-head {
   overflow: visible !important;
 }
@@ -6150,23 +6174,25 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
   width: 100%;
 }
 
+/* ID column: minimize width; others share remaining space */
 .projectsTableTaskDetailsPM .gridjs-th:nth-child(1),
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(1),
-.projectsTableTaskDetailsPM .gridjs-th:nth-child(2),
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(2),
-.projectsTableTaskDetailsPM .gridjs-th:nth-child(3),
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(3),
-.projectsTableTaskDetailsPM .gridjs-th:nth-child(4),
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(4),
-.projectsTableTaskDetailsPM .gridjs-th:nth-child(5),
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(5),
-.projectsTableTaskDetailsPM .gridjs-th:nth-child(6),
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(6),
-.projectsTableTaskDetailsPM .gridjs-th:nth-child(7),
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(7) {
-  width: 14.28%;
-  max-width: 14.28%;
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(1) {
+  width: 6%;
+  max-width: 85px;
+  min-width: 55px;
 }
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(2),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(2) { width: 18%; }
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(3),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(3) { width: 12%; }
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(4),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(4) { width: 10%; }
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(5),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(5) { width: 14%; } /* Timestamp: 2-line */
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(6),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(6) { width: 20%; } /* Notes: narrower */
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(7),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(7) { width: 18%; } /* Action: 3-line */
 
 /* Notes column: wrap text, no fixed width, optional inner scroll for long content */
 .projectsTableTaskDetailsPM .notes-preview-cell {
@@ -6195,7 +6221,21 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
   display: none !important;
 }
 
-/* Approved cell: single line to avoid overlap with Notes column */
+/* Timestamp cell (col 5): 2-line Created/Updated */
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(5),
+.subtask-timestamp-cell {
+  white-space: normal;
+  line-height: 1.4;
+}
+/* Action cell (col 7): allow 3-line approved text */
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(7) .subtask-approved-lines,
+.subtask-action-cell .subtask-approved-lines {
+  display: block;
+  white-space: normal;
+  line-height: 1.4;
+  font-size: 0.875rem;
+}
+/* Approved cell: single line fallback */
 .subtask-approved-cell {
   display: block;
   white-space: nowrap;

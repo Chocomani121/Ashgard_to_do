@@ -294,10 +294,10 @@
                 </div>
             </div>
 
-            <!-- Sub-Task Table -->
-            <div class="row mt-4">
+            <!-- Sub-Task Table: full width, aligns with Task + Notes row above -->
+            <div class="row mt-4 task-details-subtask-row">
                 <div class="col-12">
-                    <div class="card subtask-table-card">
+                    <div class="card subtask-table-card w-100">
                         <div class="card-header d-flex align-items-center">
                             <h4 class="card-title mb-0">Sub-Task [{{ subtask_list|length }}]{% if is_project_manager %} (Project Manager){% endif %}</h4>
                             {% if is_project_manager or is_project_member %}
@@ -327,7 +327,7 @@
                                 <tbody>
                                     {% for st in subtask_list %}
                                     <tr>
-                                        <td class="fw-semibold">{{ st.generated_code }}</td>
+                                        <td class="fw-semibold subtask-id-cell">{{ st.generated_code }}</td>
                                         <td class="fw-semibold">{{ st.subtask_name }}</td>
                                         <td>{{ st.owner_name }}</td>
                                         <td>
@@ -338,17 +338,18 @@
                                             {% elif st.status == 'Approved' %}<span class="badge bg-soft-success text-success">Approved</span>
                                             {% else %}<span class="badge bg-soft-primary text-primary">{{ st.status }}</span>{% endif %}
                                         </td>
-                                        <td>{% if st.checked_timestamp %}{{ st.checked_timestamp.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
+                                        <td class="small subtask-timestamp-cell">Created: {{ st.created_str }}<br>Updated: {{ st.updated_str if st.updated_str else '—' }}</td>
                                         <td class="notes-preview-cell">
-                                            {% if st.notes_preview and st.notes_preview != '—' %}
-                                            <div class="notes-preview-inner">
-                                                {{ st.notes_preview }}
-                                            </div>
+                                            {% if st.notes_full %}
+                                            <button type="button" class="btn btn-link btn-sm p-0 text-primary text-decoration-none subtask-notes-view-btn" data-bs-toggle="modal" data-bs-target="#subtaskNotesModal" data-subtask-code="{{ st.generated_code }}" data-subtask-name="{{ st.subtask_name|e }}" data-notes="{{ st.notes_full|tojson|e }}">
+                                                <span class="notes-preview-inner">{{ st.notes_preview }}</span>
+                                                <i class="mdi mdi-open-in-new ms-1 small"></i>
+                                            </button>
                                             {% else %}
                                             —
                                             {% endif %}
                                         </td>
-                                        <td class="text-nowrap">
+                                        <td class="subtask-action-cell">
                                             {% set can_act = is_project_manager or is_project_member %}
                                             {% if can_act %}
                                                 {% if st.status == 'Ongoing' %}
@@ -412,7 +413,7 @@
                                                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up – send note for PM">Follow Up</button>
                                                 {% endif %}
                                                 {% elif st.status == 'Approved' %}
-                                                Approved on {% if st.checked_timestamp %}{{ st.checked_timestamp.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %} — {{ (project.manager.name or project.manager.username) if project and project.manager else '—' }}                                                {% endif %}
+                                                <span class="subtask-approved-lines">Approved on: {{ st.approved_date }}<br>Time: {{ st.approved_time }}<br>({{ st.approved_by }})</span>{% endif %}
                                             {% endif %}
                                         </td>
                                     </tr>
@@ -594,6 +595,24 @@
 </div>
 
 <!-- Notes Preview -->
+<!-- SubTask Notes Modal (full notes from owner and reviewer) -->
+<div class="modal fade" id="subtaskNotesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="subtaskNotesSubtaskName"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="subtaskNotesModalBody">
+                <div class="subtask-notes-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="notes-modal-preview" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -770,7 +789,13 @@
                         <input type="hidden" name="status" id="subtaskStatusFormStatus" value="">
                         </form>
 
+<script type="application/json" id="subtask-notes-data">{{ subtask_notes_map|tojson }}</script>
 <script>
+(function() {
+    var el = document.getElementById('subtask-notes-data');
+    window.__SUBTASK_NOTES__ = el ? JSON.parse(el.textContent || '{}') : {};
+})();
+
 function openEditNoteModal(el) {
     var form = document.getElementById('editNoteForm');
     var titleInput = document.getElementById('EditNotesProjectTitle');
@@ -823,6 +848,10 @@ document.addEventListener("DOMContentLoaded", function() {
     if (editSubtaskModal) {
         document.body.appendChild(editSubtaskModal);
     }
+    var subtaskNotesModal = document.getElementById('subtaskNotesModal');
+    if (subtaskNotesModal) {
+        document.body.appendChild(subtaskNotesModal);
+    }
 
     // Subtask Note Modal: set form action and title when opened from a trigger
     var subtaskNoteModalEl = document.getElementById('subtaskNoteModal');
@@ -857,6 +886,37 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (submitBtn) submitBtn.textContent = 'Save';
                 if (helpEl) helpEl.textContent = '';
             }
+        });
+    }
+
+    // SubTask Notes Modal: populate from embedded data or trigger's data-notes when opened
+    var subtaskNotesModalEl = document.getElementById('subtaskNotesModal');
+    if (subtaskNotesModalEl) {
+        subtaskNotesModalEl.addEventListener('show.bs.modal', function(e) {
+            var trigger = e.relatedTarget;
+            if (!trigger) return;
+            var btn = trigger.classList && trigger.classList.contains('subtask-notes-view-btn') ? trigger : (trigger.closest && trigger.closest('.subtask-notes-view-btn'));
+            if (!btn) return;
+            var code = btn.dataset.subtaskCode || btn.getAttribute('data-subtask-code') || '';
+            var name = btn.dataset.subtaskName || btn.getAttribute('data-subtask-name') || '';
+            var titleEl = document.getElementById('subtaskNotesSubtaskName');
+            if (titleEl) titleEl.textContent = (code ? code + ': ' : '') + (name || 'Sub-Task');
+            var notes = [];
+            if (window.__SUBTASK_NOTES__ && code && window.__SUBTASK_NOTES__[code]) {
+                notes = window.__SUBTASK_NOTES__[code];
+            } else {
+                var notesJson = btn.dataset.notes || btn.getAttribute('data-notes') || '[]';
+                try { notes = JSON.parse(notesJson.replace(/&quot;/g, '"')); } catch (err) { notes = []; }
+            }
+            var html = '';
+            if (notes.length === 0) {
+                html = '<p class="text-muted mb-0">No notes for this sub-task.</p>';
+            } else {
+                notes.forEach(function(n) {
+                    html += '<div class="border rounded p-3 mb-3"><div class="mb-2"><strong>' + (n.author || 'Unknown') + '</strong></div><p class="text-muted mb-1 small">' + (n.created || '') + '</p><p class="mb-0" style="white-space: pre-wrap;">' + (n.body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p></div>';
+                });
+            }
+            document.getElementById('subtaskNotesModalBody').querySelector('.subtask-notes-list').innerHTML = html;
         });
     }
 
