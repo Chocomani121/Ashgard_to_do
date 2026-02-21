@@ -128,7 +128,7 @@ def department_projects():
         for user in users
     ]
 
-    return render_template('department.html', projects_data=projects_data, departments=departments, users_json=users_json, stats=stats, today=date.today())
+    return render_template('department.html', title="Department Projects", projects_data=projects_data, departments=departments, users_json=users_json, stats=stats, today=date.today())
 
 @project_bp.route("/")
 @project_bp.route("/projects") 
@@ -230,7 +230,7 @@ def projects():
         for user in users
     ]
     
-    return render_template('index.html', projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
+    return render_template('index.html', title="My Projects", projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
 
 @project_bp.route("/all_projects") 
 @login_required
@@ -317,7 +317,7 @@ def all_projects():
         for user in users
     ]
 
-    return render_template('all_projects.html', projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
+    return render_template('all_projects.html', title="All Projects", projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
 
 #My Tasks
 @project_bp.route("/my_tasks")
@@ -328,7 +328,7 @@ def my_tasks():
     my_p_members_ids = [pm.p_members_id for pm in my_pm_rows]
 
     if not my_p_members_ids:
-        return render_template('my_task.html', title="Tasks Info", tasks_data=[], today=date.today())
+        return render_template('my_task.html', title="My Tasks", tasks_data=[], today=date.today())
 
     # Task IDs where I'm an assignee (TaskAssignee table)
     task_ids_from_assignees = TaskAssignee.query.filter(
@@ -344,7 +344,7 @@ def my_tasks():
     ).order_by(Task.task_id.desc()).all()
 
     if not tasks:
-        return render_template('my_task.html', title="Tasks Info", tasks_data=[], today=date.today())
+        return render_template('my_task.html', title="My Tasks", tasks_data=[], today=date.today())
 
     # Bulk lookups to avoid N+1
     project_ids = list({t.project_id for t in tasks if t.project_id})
@@ -386,7 +386,7 @@ def my_tasks():
             'sub_total': st_total,
         })
 
-    return render_template('my_task.html', title="Tasks Info", tasks_data=tasks_data, today=date.today())
+    return render_template('my_task.html', title="My Tasks", tasks_data=tasks_data, today=date.today())
 
 #Department-Wide Tasks
 @project_bp.route("/dept_tasks")
@@ -475,7 +475,7 @@ def dept_tasks():
         for u in users
     ]
 
-    return render_template('dept_task.html', title="Tasks Info", tasks_data=tasks_data, stats=stats, users_json=users_json, departments=departments, today=date.today())
+    return render_template('dept_task.html', title="Department Tasks", tasks_data=tasks_data, stats=stats, users_json=users_json, departments=departments, today=date.today())
     
 @project_bp.route("/all_departments")
 @login_required
