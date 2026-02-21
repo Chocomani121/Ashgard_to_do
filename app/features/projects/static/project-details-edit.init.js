@@ -171,6 +171,8 @@ Purpose: Edit Members modal – show all users, prefill selected members, submit
         else alert("Please select at least one member.");
         return false;
       }
+      var btn = document.getElementById("btn-edit-members");
+      if (btn) showSubmitSpinner(btn);
       var container = document.getElementById("editMemberIdsContainer");
       if (!container) return;
       container.innerHTML = "";
@@ -188,18 +190,55 @@ Purpose: Edit Members modal – show all users, prefill selected members, submit
   });
 })();
 
-// Edit Project form (project_details): add spinner and text
+// --- Spinner logic for all btn-success form submissions ---
+function showSubmitSpinner(btn, loadingText) {
+  if (!btn) return;
+  var spinner = btn.querySelector(".spinner-border") || btn.querySelector("[id$='Spinner']");
+  var btnText = btn.querySelector(".btn-text") || btn.querySelector("[id$='BtnText']");
+  var text = loadingText || btn.getAttribute("data-loading-text") || " Saving...";
+  if (spinner) {
+    btn.disabled = true;
+    spinner.classList.remove("d-none");
+    if (btnText) btnText.textContent = text;
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
-  const editProjectForm = document.getElementById("editProjectForm");
-  if (!editProjectForm) return;
-  editProjectForm.addEventListener("submit", function (e) {
-    const btn = document.getElementById("btn-edit-project");
-    const spinner = document.getElementById("editProjectSpinner");
-    const btnText = document.getElementById("editProjectBtnText");
-    if (btn && spinner && btnText) {
-      btn.disabled = true;
-      spinner.classList.remove("d-none");
-      btnText.innerHTML = " Saving...";
-    }
-  });
+  // Edit Project form
+  var editProjectForm = document.getElementById("editProjectForm");
+  if (editProjectForm) {
+    editProjectForm.addEventListener("submit", function () {
+      var btn = document.getElementById("btn-edit-project");
+      if (btn) showSubmitSpinner(btn, " Saving...");
+    });
+  }
+
+  // Create Task form
+  var createTaskForm = document.getElementById("createTaskForm");
+  if (createTaskForm) {
+    createTaskForm.addEventListener("submit", function () {
+      var btn = document.getElementById("btn-create-task");
+      if (btn) showSubmitSpinner(btn, " Creating...");
+    });
+  }
+
+  // Edit Project Manager form
+  var editProjectManagerForm = document.querySelector("#editProjectManagerModal form");
+  if (editProjectManagerForm) {
+    editProjectManagerForm.addEventListener("submit", function () {
+      var btn = document.getElementById("btn-edit-project-manager");
+      if (btn) showSubmitSpinner(btn, " Saving...");
+    });
+  }
+
+  // Edit Members form: spinner shown in editProjectMembersForm validation handler above
+
+  // Edit Description form
+  var editDescriptionForm = document.querySelector("#editDescriptionModal form");
+  if (editDescriptionForm) {
+    editDescriptionForm.addEventListener("submit", function () {
+      var btn = document.getElementById("btn-edit-description");
+      if (btn) showSubmitSpinner(btn, " Saving...");
+    });
+  }
 });
