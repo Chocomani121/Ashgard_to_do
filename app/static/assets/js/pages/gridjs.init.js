@@ -748,6 +748,19 @@ if (table7Req && table7Res) {
     }).render(table7Res);
 }
 
+// Department table
+const table15Req = document.getElementById("projectsTableDept");
+const table15Res = document.getElementById("table15-gridjs");
+if (table15Req && table15Res) {
+    new gridjs.Grid({
+        from: table15Req,
+        pagination: { limit: 10 },
+        sort: true,
+        search: false,
+        className: { table: "table table-centered align-middle" }
+    }).render(table15Res);
+}
+
 // 8 my task table
 document.addEventListener('DOMContentLoaded', function() {
     let grid = null;
@@ -1474,7 +1487,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Initialize Grid.js - columns match approvals.html: Task Name, Project, Department, Project Manager, Priority, Status, Start Date, Deadline, Progress, Sub Tasks
             grid = new gridjs.Grid({
-                columns: ["Task Name", "Project", "Subtask", "Status", "Action"],
+                columns: ["Project", "Task", "Subtask","Subtask Notes", "Status", "Action"],
                 data: getFilteredData().map(row => row.cells),
                 pagination: { limit: 10 },
                 sort: true,

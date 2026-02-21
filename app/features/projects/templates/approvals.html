@@ -6,6 +6,11 @@
             <div class="main-content">
                 <div class="page-content">
                     <div class="container-fluid">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
+                        {% endif %}
+                    {% endwith %}
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="card">
@@ -72,14 +77,27 @@
                                                     data-category="{{ item.department.department_name if item.department else '' }}"
                                                 >
                                                     <td>
-                                                        <a href="{{ task_link }}" class="text-dark fw-medium">{{ item.task.task_name or 'Unnamed Task' }}</a>
-                                                    </td>
-                                                    <td>
+                                                        <div class="scrollable-cell">
                                                         {% if item.project %}
                                                         <a href="{{ url_for('project.project_details', id=item.project.project_id) }}" class="text-muted">{{ item.project.project_name or 'N/A' }}</a>
                                                         {% else %}N/A{% endif %}
+                                                        </div>
                                                     </td>
-                                                    <td>{{ st.subtask_name or 'Unnamed' }}</td>
+                                                    <td>
+                                                        <div class="scrollable-cell">
+                                                        <a href="{{ task_link }}" class="text-dark fw-medium">{{ item.task.task_name or 'Unnamed Task' }}</a>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="scrollable-cell">{{ st.subtask_name or 'Unnamed' }}</div>
+                                                    </td>
+                                                    <td>
+                                                        {% if st.notes_preview and st.notes_preview != '—' %}
+                                                        <div class="notes-preview-inner">{{ st.notes_preview }}</div>
+                                                        {% else %}
+                                                        —
+                                                        {% endif %}
+                                                    </td>
                                                     <td>
                                                         {# Subtask status badge by state #}
                                                         {% if st_status == 'Approved' or st_status == 'Completed' %}
@@ -102,12 +120,18 @@
                                                             data-status="Approved" data-subtask-name="{{ st.subtask_name or 'Unnamed' }}">
                                                             <i class="mdi mdi-check"></i>
                                                         </button>
-                                                        <button type="button" class="btn btn-sm btn-danger approve-reject-btn" title="Reject"
+                                                        <button type="button" class="btn btn-sm btn-danger me-1 approve-reject-btn" title="Reject"
                                                             data-bs-toggle="modal" data-bs-target="#approveRejectModal"
                                                             data-form-action="{{ url_for('project.update_subtask_status_approvals', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}"
                                                             data-status="Rejected" data-subtask-name="{{ st.subtask_name or 'Unnamed' }}">
                                                             <i class="mdi mdi-close"></i>
                                                         </button>
+                                                        <button type="button" class="btn btn-sm btn-secondary approve-reject-btn" title="Reject"
+                                                            data-bs-toggle="modal" data-bs-target="#approveRejectModal"
+                                                            data-form-action="{{ url_for('project.update_subtask_status_approvals', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}"
+                                                            data-status="On Hold" data-subtask-name="{{ st.subtask_name or 'Unnamed' }}">
+                                                            <i class="mdi mdi-hand-left"></i>
+                                                       </button>
                                                         {% elif st_status == 'Rejected' %}
                                                         <form method="POST" action="{{ url_for('project.update_subtask_status_approvals', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline me-1">
                                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
@@ -116,7 +140,7 @@
                                                         </form>
                                                         <!-- <a class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="resubmit" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Re-Submit">Re-Submit</a> -->
                                                         {% elif st_status == 'On Hold' %}
-                                                        <a class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up">Follow Up</a>
+                                                        <a class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note_approvals', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up">Follow Up</a>
                                                         <!-- <a class="btn btn-sm btn-light subtask-status-link" href="#" data-url="{{ url_for('project.update_subtask_status', task_id=item.task.task_id, sub_task_id=st.sub_task_id) }}" data-status="Ongoing">Resume</a> -->
                                                         {% elif st_status == 'Approved' or st_status == 'Completed' %}
                                                         <span class="small text-muted">Approved {% if st.checked_timestamp %}{{ st.checked_timestamp.strftime('%d/%m/%Y %H:%M') }}{% endif %}</span>
@@ -245,4 +269,5 @@
 
         <script src="{{ url_for('project.static', filename='approval.js') }}"></script>
         <script src="{{ url_for('project.static', filename='task.js') }}"></script>
+        <link rel="stylesheet" href="{{ url_for('project.static', filename='approval.css') }}">
    {% endblock content %}

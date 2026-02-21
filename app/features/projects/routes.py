@@ -128,7 +128,7 @@ def department_projects():
         for user in users
     ]
 
-    return render_template('department.html', projects_data=projects_data, departments=departments, users_json=users_json, stats=stats, today=date.today())
+    return render_template('department.html', title="Department Projects", projects_data=projects_data, departments=departments, users_json=users_json, stats=stats, today=date.today())
 
 @project_bp.route("/")
 @project_bp.route("/projects") 
@@ -230,7 +230,7 @@ def projects():
         for user in users
     ]
     
-    return render_template('index.html', projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
+    return render_template('index.html', title="My Projects", projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
 
 @project_bp.route("/all_projects") 
 @login_required
@@ -317,7 +317,7 @@ def all_projects():
         for user in users
     ]
 
-    return render_template('all_projects.html', projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
+    return render_template('all_projects.html', title="All Projects", projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
 
 #My Tasks
 @project_bp.route("/my_tasks")
@@ -328,7 +328,7 @@ def my_tasks():
     my_p_members_ids = [pm.p_members_id for pm in my_pm_rows]
 
     if not my_p_members_ids:
-        return render_template('my_task.html', title="Tasks Info", tasks_data=[], today=date.today())
+        return render_template('my_task.html', title="My Tasks", tasks_data=[], today=date.today())
 
     # Task IDs where I'm an assignee (TaskAssignee table)
     task_ids_from_assignees = TaskAssignee.query.filter(
@@ -344,7 +344,7 @@ def my_tasks():
     ).order_by(Task.task_id.desc()).all()
 
     if not tasks:
-        return render_template('my_task.html', title="Tasks Info", tasks_data=[], today=date.today())
+        return render_template('my_task.html', title="My Tasks", tasks_data=[], today=date.today())
 
     # Bulk lookups to avoid N+1
     project_ids = list({t.project_id for t in tasks if t.project_id})
@@ -386,7 +386,7 @@ def my_tasks():
             'sub_total': st_total,
         })
 
-    return render_template('my_task.html', title="Tasks Info", tasks_data=tasks_data, today=date.today())
+    return render_template('my_task.html', title="My Tasks", tasks_data=tasks_data, today=date.today())
 
 #Department-Wide Tasks
 @project_bp.route("/dept_tasks")
@@ -475,7 +475,7 @@ def dept_tasks():
         for u in users
     ]
 
-    return render_template('dept_task.html', title="Tasks Info", tasks_data=tasks_data, stats=stats, users_json=users_json, departments=departments, today=date.today())
+    return render_template('dept_task.html', title="Department Tasks", tasks_data=tasks_data, stats=stats, users_json=users_json, departments=departments, today=date.today())
     
 @project_bp.route("/all_departments")
 @login_required
@@ -580,16 +580,17 @@ def project_details(id=None):
             owner = assignees[0] if assignees else None  # legacy single owner for compatibility
             
             # Calculate task progress (completed subtasks / total subtasks)
+            # Completed = status == 'Approved' (canonical); is_checked kept for legacy
             subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).all()
             total_subtasks = len(subtasks)
-            completed_subtasks = len([st for st in subtasks if st.is_checked])
+            completed_subtasks = len([st for st in subtasks if st.status == 'Approved' or st.is_checked])
             progress = f"{completed_subtasks}/{total_subtasks}" if total_subtasks > 0 else "0/0"
-            
-            # Normalize task status
+
+            # Use actual task status (no auto-complete from subtasks; Mark Complete button is explicit)
             task_status = task.task_status or 'Ongoing'
             if task_status == 'Pending' or task_status == 'Cancelled':
                 task_status = 'Ongoing'
-            
+
             # Check if current user can edit/mark complete this task
             can_edit = _can_edit_task(task, current_user)
             
@@ -1084,6 +1085,9 @@ def create_subtask(id):
         status=status,
     )
     db.session.add(st)
+    # If task was Completed, adding a subtask makes it Ongoing again
+    if task.task_status == 'Completed':
+        task.task_status = 'Ongoing'
     try:
         db.session.commit()
         flash('Sub-task created.', 'success')
@@ -1126,16 +1130,11 @@ def update_subtask_status(task_id, sub_task_id):
     if status == 'Approved':
         from datetime import datetime as dt
         subtask.checked_timestamp = dt.utcnow()
-        # If all subtasks for this task are now Approved, mark the parent task as Completed
-        all_subtasks = SubTask.query.filter_by(parent_task_id=task_id).all()
-        if all_subtasks and all(st.status == 'Approved' for st in all_subtasks):
-            task.task_status = 'Completed'
+        subtask.is_checked = True
+        # Do NOT auto-complete task; use Mark Complete button explicitly
     try:
         db.session.commit()
-        if status == 'Approved' and task.task_status == 'Completed':
-            flash('Subtask approved. All subtasks complete — task marked as Completed.', 'success')
-        else:
-            flash('Subtask updated.', 'success')
+        flash('Subtask updated.', 'success')
     except Exception:
         db.session.rollback()
         flash('Failed to update subtask.', 'danger')
@@ -1655,6 +1654,13 @@ def approvals():
     for s in subtasks:
         subtasks_by_task[s.parent_task_id].append(s)
 
+    # Notes preview per subtask (bulk load to avoid N+1)
+    sub_note_ids = [s.sub_task_id for s in subtasks]
+    notes_by_sub = defaultdict(list)
+    if sub_note_ids:
+        for n in Notes.query.filter(Notes.sub_task_id.in_(sub_note_ids)).order_by(Notes.created_on.desc()).all():
+            notes_by_sub[n.sub_task_id].append(n.note_body or '')
+
     # Build list for template (no per-row queries)
     tasks_data = []
     for task in tasks:
@@ -1663,6 +1669,10 @@ def approvals():
         deadline = deadline_by_id.get(task.deadline_id) if task.deadline_id else None
         department = dept_by_id.get(project.department_id) if project and project.department_id else None
         st_list = subtasks_by_task.get(task.task_id, [])
+        # Attach notes_preview to each subtask for template
+        for st in st_list:
+            previews = notes_by_sub.get(st.sub_task_id, [])
+            st.notes_preview = previews[0] if previews and previews[0] else '—'
         st_total = len(st_list)
         st_done = sum(1 for s in st_list if s.is_checked)
         progress_pct = f"{st_done}/{st_total}" if st_total > 0 else "0/0"
@@ -1724,21 +1734,78 @@ def update_subtask_status_approvals(task_id, sub_task_id):
     if status == 'Approved':
         from datetime import datetime as dt
         subtask.checked_timestamp = dt.utcnow()
-        # If all subtasks for this task are now Approved, mark the parent task as Completed
-        all_subtasks = SubTask.query.filter_by(parent_task_id=task_id).all()
-        if all_subtasks and all(st.status == 'Approved' for st in all_subtasks):
-            task.task_status = 'Completed'
+        subtask.is_checked = True
+        # Do NOT auto-complete task; use Mark Complete button explicitly
     try:
         db.session.commit()
-        if status == 'Approved' and task.task_status == 'Completed':
-            flash('Subtask approved. All subtasks complete — task marked as Completed.', 'success')
-        else:
-            flash('Subtask updated.', 'success')
+        flash('Subtask updated.', 'success')
     except Exception:
         db.session.rollback()
         flash('Failed to update subtask.', 'danger')
     return redirect(url_for('project.approvals'))
 
+@project_bp.route("/approvals/<int:task_id>/subtask/<int:sub_task_id>/note", methods=['POST'])
+@login_required
+def subtask_note_approvals(task_id, sub_task_id):
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    if not _can_act_on_subtask(subtask, task, current_user):
+        flash('You do not have permission to add a note to this subtask.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    note_body = (request.form.get('note_body') or '').strip()
+    action = (request.form.get('action') or '').strip().lower()  # submit, resubmit, follow_up
+    if not note_body:
+        flash('Note is required.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    pm_entry = ProjectMembers.query.filter_by(
+        project_id=task.project_id,
+        member_id=current_user.member_id
+    ).first()
+    p_members_id = pm_entry.p_members_id if pm_entry else None
+    # Submit for review: PM, subtask owner, or any task assignee may submit
+    if action == 'submit':
+        project = Project.query.get(task.project_id) if task.project_id else None
+        is_pm = project and current_user.member_id == project.project_manager
+        is_subtask_owner = subtask.p_members_id and pm_entry and subtask.p_members_id == pm_entry.p_members_id
+        is_task_assignee = False
+        if pm_entry:
+            if task.p_members_id == pm_entry.p_members_id:
+                is_task_assignee = True
+            else:
+                for ta in (task.assignees or []):
+                    if ta.p_members_id == pm_entry.p_members_id:
+                        is_task_assignee = True
+                        break
+        if not (is_pm or is_subtask_owner or is_task_assignee):
+            flash('Only the project manager, subtask owner, or a task assignee can submit for review.', 'danger')
+            return redirect(url_for('project.task_details', id=task_id))
+    new_note = Notes(
+        task_id=task_id,
+        sub_task_id=sub_task_id,
+        member_id=current_user.member_id,
+        p_members_id=p_members_id,
+        note_body=note_body,
+        generated_code=action or 'note'
+    )
+    db.session.add(new_note)
+    if action == 'submit':
+        subtask.status = 'To be reviewed'
+    elif action == 'resubmit':
+        subtask.status = 'To be reviewed'
+    elif action == 'follow_up':
+        subtask.status = 'Ongoing'
+    try:
+        db.session.commit()
+        if action == 'submit':
+            flash('Subtask submitted for review.', 'success')
+        elif action == 'resubmit':
+            flash('Re-submitted for review.', 'success')
+        else:
+            flash('Note saved.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Failed to save note.', 'danger')
+    return redirect(url_for('project.approvals', id=task_id))
 
 # Project Details Notes_tbl - Reply, Comment, Edit
 @project_bp.route("/task/<int:task_id>/add_note", methods=['POST'])

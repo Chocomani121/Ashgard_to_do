@@ -334,6 +334,33 @@ function confirmDeleteTask(taskName) {
     });
 }
 
+// Delete SweetAlert for Subtask (submits hidden form)
+function confirmDeleteSubtask(url, code, formId) {
+    var form = document.getElementById(formId || 'subtaskDeleteForm');
+    if (!form || !url) return;
+    if (typeof Swal === "undefined") {
+        if (window.confirm("Delete subtask " + (code || '') + "?")) {
+            form.action = url;
+            form.submit();
+        }
+        return;
+    }
+    Swal.fire({
+        title: "Delete subtask?",
+        text: "Are you sure you want to delete " + (code || 'this subtask') + "? This cannot be undone.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#f34e4e",
+        cancelButtonColor: "#74788d",
+        confirmButtonText: "Yes, delete it"
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            form.action = url;
+            form.submit();
+        }
+    });
+}
+
 // Delete SweetAlert for Projects (redirects to dashboard after delete)
 function confirmDeleteProject(projectId, projectName) {
     if (typeof Swal === "undefined") {
