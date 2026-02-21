@@ -1101,6 +1101,23 @@ def create_subtask(id):
         status=status,
     )
     db.session.add(st)
+    db.session.flush()  # Get st.sub_task_id for notes
+    notes_text = (request.form.get('notes') or '').strip()
+    if notes_text:
+        pm_entry = ProjectMembers.query.filter_by(
+            project_id=task.project_id,
+            member_id=current_user.member_id
+        ).first()
+        p_members_id = pm_entry.p_members_id if pm_entry else None
+        new_note = Notes(
+            task_id=task.task_id,
+            sub_task_id=st.sub_task_id,
+            member_id=current_user.member_id,
+            p_members_id=p_members_id,
+            note_body=notes_text,
+            generated_code='create',
+        )
+        db.session.add(new_note)
     # If task was Completed, adding a subtask makes it Ongoing again
     if task.task_status == 'Completed':
         task.task_status = 'Ongoing'
@@ -1358,6 +1375,11 @@ def delete_task(id):
     project_id = task.project_id
     task_id = task.task_id
     try:
+        # Delete notes before subtasks (notes_tbl.sub_task_id references sub_task_list)
+        subtask_ids = [s.sub_task_id for s in SubTask.query.filter_by(parent_task_id=task_id).all()]
+        if subtask_ids:
+            Notes.query.filter(Notes.sub_task_id.in_(subtask_ids)).delete(synchronize_session=False)
+        Notes.query.filter_by(task_id=task_id).delete()
         try:
             TaskAssignee.query.filter_by(task_id=task_id).delete()
         except Exception:
@@ -1371,6 +1393,10 @@ def delete_task(id):
         if 'task_assignees' in str(e) or '1146' in str(e):
             db.session.rollback()
             try:
+                subtask_ids = [s.sub_task_id for s in SubTask.query.filter_by(parent_task_id=task_id).all()]
+                if subtask_ids:
+                    Notes.query.filter(Notes.sub_task_id.in_(subtask_ids)).delete(synchronize_session=False)
+                Notes.query.filter_by(task_id=task_id).delete()
                 SubTask.query.filter_by(parent_task_id=task_id).delete()
                 db.session.execute(text('DELETE FROM task_tbl WHERE task_id = :id'), {'id': task_id})
                 db.session.commit()
