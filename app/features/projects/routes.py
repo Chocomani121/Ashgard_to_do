@@ -1654,6 +1654,13 @@ def approvals():
     for s in subtasks:
         subtasks_by_task[s.parent_task_id].append(s)
 
+    # Notes preview per subtask (bulk load to avoid N+1)
+    sub_note_ids = [s.sub_task_id for s in subtasks]
+    notes_by_sub = defaultdict(list)
+    if sub_note_ids:
+        for n in Notes.query.filter(Notes.sub_task_id.in_(sub_note_ids)).order_by(Notes.created_on.desc()).all():
+            notes_by_sub[n.sub_task_id].append(n.note_body or '')
+
     # Build list for template (no per-row queries)
     tasks_data = []
     for task in tasks:
@@ -1662,6 +1669,10 @@ def approvals():
         deadline = deadline_by_id.get(task.deadline_id) if task.deadline_id else None
         department = dept_by_id.get(project.department_id) if project and project.department_id else None
         st_list = subtasks_by_task.get(task.task_id, [])
+        # Attach notes_preview to each subtask for template
+        for st in st_list:
+            previews = notes_by_sub.get(st.sub_task_id, [])
+            st.notes_preview = previews[0] if previews and previews[0] else '—'
         st_total = len(st_list)
         st_done = sum(1 for s in st_list if s.is_checked)
         progress_pct = f"{st_done}/{st_total}" if st_total > 0 else "0/0"
