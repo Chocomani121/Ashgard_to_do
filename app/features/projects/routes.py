@@ -1834,7 +1834,7 @@ def add_note(task_id):
         
         db.session.add(new_note)
         db.session.commit()
-        flash('Note added!', 'success')
+        flash('Note submitted!', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Database Error: {str(e)}', 'danger')
@@ -1896,16 +1896,26 @@ def reply_note(note_id):
     
 #     return redirect(url_for('project.task_details', id=note.task_id))
 
-@project_bp.route("/task/note/edit/<int:note_id>", methods=['POST'])
+@project_bp.route("/task/note/edit/<int:note_id>", methods=['GET', 'POST'])
 @login_required
 def edit_note(note_id):
     note = Notes.query.get_or_404(note_id)
     
+    # 1. GET: This fixes the 'undefined' error by sending data to the modal
+    if request.method == 'GET':
+        return jsonify({
+            'note_id': note.note_id,
+            'note_title': note.generated_code, # Your title is stored here
+            'note_content': note.note_body
+        })
+
+    # 2. POST: This handles the actual save/update
     # Security check: only author can edit
     if note.member_id != current_user.member_id:
         flash('Unauthorized', 'danger')
         return redirect(request.referrer)
 
+    # Update fields
     note.generated_code = request.form.get('note_title')
     note.note_body = request.form.get('note_content')
     
@@ -2102,3 +2112,29 @@ def submit_subtask_for_review(task_id):
     db.session.commit()
     flash(f'Sub-task updated successfully!', 'success')
     return redirect(url_for('project.task_details', task_id=task_id))
+
+# @project_bp.route("/get_note/<int:note_id>")
+# @login_required
+# def get_note(note_id):
+#     note = Notes.query.get_or_404(note_id)
+#     # The keys here MUST match your JavaScript data properties
+#     return jsonify({
+#         'note_id': note.note_id,
+#         'note_title': note.note_title,
+#         'note_content': note.note_body, # Mapping 'note_body' from DB to 'note_content' for the modal
+#         'success': True
+#     })
+
+# @project_bp.route("/update_note", methods=['POST'])
+# @login_required
+# def update_note():
+#     note_id = request.form.get('note_id')
+#     note = Notes.query.get_or_404(note_id)
+    
+#     note.note_title = request.form.get('note_title')
+#     note.note_body = request.form.get('note_content')
+#     note.date_updated = datetime.now()
+    
+#     db.session.commit()
+#     flash('Note updated!', 'success')
+#     return redirect(url_for('project.project_details', id=note.project_id))
