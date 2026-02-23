@@ -1487,7 +1487,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Initialize Grid.js - columns match approvals.html: Task Name, Project, Department, Project Manager, Priority, Status, Start Date, Deadline, Progress, Sub Tasks
             grid = new gridjs.Grid({
-                columns: ["Project", "Task", "Subtask","Subtask Notes", "Status", "Action"],
+                columns: ["Project", "Task", "Subtask","Notes", "Status", "Action"],
                 data: getFilteredData().map(row => row.cells),
                 pagination: { limit: 10 },
                 sort: true,
