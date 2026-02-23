@@ -1756,7 +1756,7 @@ def approvals_subtask_notes(task_id, sub_task_id):
         out.append({
             'note_body': n.note_body or '',
             'author_name': _user_display(n.member_id),
-            'created_on': n.created_on.strftime('%b %d, %Y') if n.created_on else '',
+            'created_on': n.created_on.strftime('%b %d, %Y %H:%M') if n.created_on else '',
             'generated_code': n.generated_code or '',
             'pin_stat': bool(n.pin_stat),
             'image_file': _avatar_file(n.member_id),
