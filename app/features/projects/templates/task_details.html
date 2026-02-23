@@ -187,7 +187,8 @@
                                                         </span>
                                                     </a>
                                                 </div>
-                                                <small class="text-muted">{{ note.created_on.strftime('%b %d, %Y') if note.created_on else '' }}</small>
+                                                <!-- date and time on note body content -->
+                                                <small class="text-muted">{{ note.created_on.strftime('%b %d, %Y %I:%M %p') if note.created_on else '' }}</small>
                                             </div>
                                             
                                             {# Note Content Box #}
@@ -208,17 +209,20 @@
                                                     <i class="mdi mdi-reply me-1"></i>Reply
                                                 </a>
                                                 
+                                                <!-- edit note button if the note is created by the current user -->
                                                 {% if note.author.member_id == current_user.member_id %}
                                                 <a href="javascript:void(0);" class="text-info small" 
                                                 onclick="openEditNoteModal(this)"
                                                 data-edit-url="{{ url_for('project.edit_note', note_id=note.notes_id) }}"
                                                 data-note-title="{{ (note.generated_code or '')|e }}"
                                                 data-note-body="{{ (note.note_body or '')|e }}">
-                                                    <i class="mdi mdi-pencil-outline me-1"></i>Edit
+                                                    <i class="mdi mdi-pencil-outline me-1"></i>
+                                                    Edit
                                                 </a>
                                                 {% endif %}
                                             </div>
 
+                                            <!-- reply form if the note is created by the current user -->
                                             {# Reply Form #}
                                             <div id="reply-form-{{ note.notes_id }}" class="mt-2 d-none">
                                                 <form class="note-reply-form" action="{{ url_for('project.reply_note', note_id=note.notes_id) }}" method="POST">
@@ -237,7 +241,8 @@
                                                     <div class="mb-2 p-2 rounded bg-soft-light border-bottom small">
                                                         <div class="d-flex justify-content-between">
                                                             <strong>{{ reply.author.name }}</strong>
-                                                            <small class="text-muted">{{ reply.created_on.strftime('%H:%M') }}</small>
+                                                            <!-- reply date and time on note body content -->
+                                                            <small class="text-muted">{{ reply.created_on.strftime('%b %d, %Y %I:%M %p') if reply.created_on else '' }}</small>
                                                         </div>
                                                         <p class="mb-0">{{ reply.note_body }}</p>
                                                     </div>
