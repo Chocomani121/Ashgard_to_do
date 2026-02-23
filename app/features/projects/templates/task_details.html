@@ -155,7 +155,7 @@
                                     <h5 class="card-title mb-0">Notes ({{ notes|length }})</h5>
                                 </div>
                                 <div class="flex-shrink-0">
-                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#taskNoteModal">
+                                    <button type="button" class="btn btn-primary btn-sm" id="addNoteOpenBtn" data-bs-toggle="modal" data-bs-target="#taskNoteModal">
                                         <i class="mdi mdi-plus me-1"></i> Add Note
                                     </button>
                                 </div>
@@ -176,12 +176,15 @@
                                             <div class="d-flex justify-content-between align-items-center mb-1">
                                                 <div>
                                                     <strong>{{ note.author.name if note.author else 'Unknown' }}</strong>
-                                                    <a href="{{ url_for('project.toggle_pin', note_id=note.notes_id) }}" class="ms-2">
-                                                        {% if note.pin_stat %}
+                                                    <!-- Settings toggle for pin and added spinners -->
+                                                    <a href="{{ url_for('project.toggle_pin', note_id=note.notes_id) }}" class="ms-2 note-pin-link" title="Toggle pin">
+                                                        <span class="pin-icon">
+                                                            {% if note.pin_stat %}
                                                             <i class="mdi mdi-pin text-warning font-size-16"></i>
-                                                        {% else %}
+                                                            {% else %}
                                                             <i class="mdi mdi-pin-outline text-muted font-size-14"></i>
-                                                        {% endif %}
+                                                            {% endif %}
+                                                        </span>
                                                     </a>
                                                 </div>
                                                 <small class="text-muted">{{ note.created_on.strftime('%b %d, %Y') if note.created_on else '' }}</small>
@@ -218,11 +221,11 @@
 
                                             {# Reply Form #}
                                             <div id="reply-form-{{ note.notes_id }}" class="mt-2 d-none">
-                                                <form action="{{ url_for('project.reply_note', note_id=note.notes_id) }}" method="POST">
+                                                <form class="note-reply-form" action="{{ url_for('project.reply_note', note_id=note.notes_id) }}" method="POST">
                                                     <input type="hidden" name="task_id" value="{{ task.task_id }}">
                                                     <div class="input-group input-group-sm">
                                                         <input type="text" name="reply_body" class="form-control" placeholder="Write a reply..." required>
-                                                        <button class="btn btn-primary btn-sm" type="submit">Post</button>
+                                                        <button class="btn btn-primary btn-sm note-reply-submit" type="submit"><span class="btn-text">Post</span></button>
                                                     </div>
                                                 </form>
                                             </div>
@@ -276,7 +279,7 @@
                                     </div>
                                     <div class="modal-footer bg-light">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-warning px-4">Update</button>
+                                        <button type="submit" class="btn btn-warning px-4" id="editNoteSubmitBtn"><span class="btn-text">Update</span></button>
                                     </div>  
                                 </form>
                             </div>
@@ -620,11 +623,11 @@
   </div>
 </div>
 
-<!-- Add Note Modal (Task)  IF MODAL ADD IS CLICKED THIS MODAL WILL OPEN -->
+<!-- Add Note Modal (Task)  IF MODAL ADD IS CLICKED THIS MODAL WILL OPEN id:NOTE-->
                     <div class="modal fade" id="taskNoteModal" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
-                                <form action="{{ url_for('project.add_note', task_id=task.task_id) }}" method="POST">
+                                <form id="taskNoteForm" action="{{ url_for('project.add_note', task_id=task.task_id) }}" method="POST">
                                     <div class="modal-header">
                                         <h5 class="modal-title">Add Note</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -641,7 +644,7 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-success">Submit</button>
+                                        <button type="submit" class="btn btn-success" id="addNoteSubmitBtn"><span class="btn-text">Submit</span></button>
                                     </div>
                                 </form>
                             </div>
@@ -839,6 +842,63 @@ document.addEventListener("DOMContentLoaded", function() {
     var editSubtaskModal = document.getElementById('editSubtaskModal');
     if (editSubtaskModal) {
         document.body.appendChild(editSubtaskModal);
+    }
+
+    // Notes: loading state on Add Note form Spinner
+    var taskNoteForm = document.getElementById('taskNoteForm');
+    if (taskNoteForm) {
+        taskNoteForm.addEventListener('submit', function() {
+            var btn = document.getElementById('addNoteSubmitBtn');
+            if (btn && !btn.disabled) {
+                btn.disabled = true;
+                var textEl = btn.querySelector('.btn-text');
+                if (textEl) textEl.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i> Submitting...';
+            }
+        });
+    }
+
+    // Notes: loading state on Reply forms Spinner
+    document.addEventListener('submit', function(e) {
+        var form = e.target;
+        if (form && form.classList && form.classList.contains('note-reply-form')) {
+            var btn = form.querySelector('.note-reply-submit');
+            if (btn && !btn.disabled) {
+                btn.disabled = true;
+                var textEl = btn.querySelector('.btn-text');
+                if (textEl) textEl.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i>';
+            }
+        }
+    });
+
+    // Notes: loading state on pin toggle link Spinner
+    document.addEventListener('click', function(e) {
+        var pinLink = e.target.closest('.note-pin-link');
+        if (pinLink && !pinLink.classList.contains('loading')) {
+            e.preventDefault();
+            pinLink.classList.add('loading');
+            var iconSpan = pinLink.querySelector('.pin-icon');
+            if (iconSpan) {
+                var originalHtml = iconSpan.innerHTML;
+                iconSpan.innerHTML = '<i class="mdi mdi-loading mdi-spin text-muted font-size-14"></i>';
+                pinLink.style.pointerEvents = 'none';
+                window.location.href = pinLink.getAttribute('href');
+            } else {
+                window.location.href = pinLink.getAttribute('href');
+            }
+        }
+    });
+
+    // Notes: loading state on Edit Note form (editNotesProjectModal) Spinner
+    var editNotesForm = document.querySelector('#editNotesProjectModal form');
+    if (editNotesForm) {
+        editNotesForm.addEventListener('submit', function() {
+            var btn = document.getElementById('editNoteSubmitBtn');
+            if (btn && !btn.disabled) {
+                btn.disabled = true;
+                var textEl = btn.querySelector('.btn-text');
+                if (textEl) textEl.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i> Updating...';
+            }
+        });
     }
 
     // Subtask Note Modal: set form action and title when opened from a trigger
