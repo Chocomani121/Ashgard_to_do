@@ -6256,7 +6256,7 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
 .task-details-card-equal {
   width: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: column; 
 }
 
 /* Both Task and Notes cards: equal fixed height per redline (taller boxes) */
