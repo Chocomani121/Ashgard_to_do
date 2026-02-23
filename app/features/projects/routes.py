@@ -1870,32 +1870,6 @@ def reply_note(note_id):
 
     return redirect(url_for('project.task_details', id=task_id))
 
-# @project_bp.route("/task_details/note/edit/<int:note_id>", methods=['POST'])
-# @login_required
-# def edit_note(note_id):
-#     note = Notes.query.get_or_404(note_id)
-    
-#     # Security Check
-#     if note.member_id != current_user.member_id:
-#         flash('Permission denied.', 'danger')
-#         return redirect(url_for('project.task_details', id=note.task_id))
-
-#     # Update Content
-#     note.note_title = request.form.get('note_title')
-#     note.note_body = request.form.get('note_body')
-    
-#     # UPDATE TO CURRENT TIME
-#     note.created_on = datetime.now() # This resets the time to 'now' on every save
-    
-#     try:
-#         db.session.commit()
-#         flash('Updated successfully!', 'success')
-#     except Exception:
-#         db.session.rollback()
-#         flash('Error updating note.', 'danger')
-    
-#     return redirect(url_for('project.task_details', id=note.task_id))
-
 @project_bp.route("/task/note/edit/<int:note_id>", methods=['GET', 'POST'])
 @login_required
 def edit_note(note_id):
