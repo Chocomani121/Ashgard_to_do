@@ -6346,3 +6346,9 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
   margin-left: auto;
   margin-right: auto;
 }
+
+/* Edit note and Add note modals: appear above subtask notes modal when opened from within it */
+#editNoteModal.modal,
+#subtaskAddNoteModal.modal {
+  z-index: 1085;
+}
