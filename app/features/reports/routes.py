@@ -1,6 +1,6 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from app.models import User, Report, ReportCC, Comment
+from app.models import User, Report, ReportCC, Comment, Project, Task, Deadlines, ProjectMembers, TaskAssignee, SubTask, Notes, Department
 from app import db, main 
 from datetime import datetime, date, time
 from sqlalchemy import or_, text
@@ -10,6 +10,25 @@ import json
 import random
 
 reports_bp = Blueprint('reports', __name__, template_folder='templates', static_folder='static', static_url_path='/reports/static')
+
+
+def _format_week_range(week_name):
+    """Convert week_name like '2/17/2026 - 2/23/2026' to 'February 17, 2026 – February 23, 2026'."""
+    if not week_name or not isinstance(week_name, str):
+        return week_name or '—'
+    try:
+        parts = week_name.split(' - ')
+        if len(parts) >= 2:
+            d1 = datetime.strptime(parts[0].strip(), '%m/%d/%Y')
+            d2 = datetime.strptime(parts[1].strip(), '%m/%d/%Y')
+            return f"{d1.strftime('%B %d, %Y')} – {d2.strftime('%B %d, %Y')}"
+        elif len(parts) == 1 and parts[0].strip():
+            d = datetime.strptime(parts[0].strip(), '%m/%d/%Y')
+            return d.strftime('%B %d, %Y')
+    except (ValueError, IndexError):
+        pass
+    return week_name
+
 
 # ---- Report routes ----
 def _report_to_dict(report):
@@ -232,6 +251,9 @@ def approve_report(report_id):
     except Exception as e:
         db.session.rollback()
         flash(f'Error: {str(e)}', 'danger')
+    next_url = request.form.get('next') or request.args.get('next')
+    if next_url and next_url.startswith('/'):
+        return redirect(next_url)
     return redirect(url_for('reports.reports'))
 
 
@@ -376,3 +398,223 @@ def edit_report(report_id):
         flash(f"Error updating report: {str(e)}", "danger")
 
     return redirect(url_for('reports.reports'))
+
+
+@reports_bp.route("/approvals")
+@login_required
+def approvals():
+    # PENDING reports where current user is reviewer + reports where user is CC
+    report_options = [
+        joinedload(Report.author).joinedload(User.dept_info),
+        joinedload(Report.reviewer_user),
+    ]
+    # 1. Pending reports where user is reviewer
+    reviewer_reports = (
+        Report.query
+        .options(*report_options)
+        .filter(
+            Report.reviewer_id == current_user.member_id,
+            Report.is_checked == False,
+        )
+        .order_by(Report.created_on.desc())
+        .all()
+    )
+    # 2. Reports where user is CC (exclude any already in reviewer_reports)
+    reviewer_report_ids = {r.report_id for r in reviewer_reports}
+    cc_report_ids = (
+        db.session.query(ReportCC.report_id)
+        .filter(ReportCC.member_id == current_user.member_id)
+        .all()
+    )
+    cc_report_ids = [r[0] for r in cc_report_ids if r[0] not in reviewer_report_ids]
+    cc_reports = (
+        Report.query.options(*report_options)
+        .filter(Report.report_id.in_(cc_report_ids))
+        .order_by(Report.created_on.desc())
+        .all()
+    ) if cc_report_ids else []
+    # Combine: reviewer first (with role), then CC (with role)
+    reports_with_role = [
+        {'report': r, 'role': 'reviewer', 'week_display': _format_week_range(r.week_name)}
+        for r in reviewer_reports
+    ]
+    reports_with_role += [
+        {'report': r, 'role': 'cc', 'week_display': _format_week_range(r.week_name)}
+        for r in cc_reports
+    ]
+
+    users = User.query.all()
+    departments = Department.query.all()
+    stats = {
+        'pending': len(reviewer_reports),
+        'high_priority': 0,
+        'completed': 0,
+        'on_hold': 0,
+    }
+    users_json = [
+        {'member_id': u.member_id, 'name': u.name or u.username, 'username': u.username, 'department_id': u.department_id}
+        for u in users
+    ]
+
+    return render_template(
+        'approvals.html',
+        title="Approvals",
+        reports_to_review=reports_with_role,
+        stats=stats,
+        users_json=users_json,
+        departments=departments,
+        today=date.today(),
+    )
+
+
+@reports_bp.route("/approvals/<int:task_id>/subtask/<int:sub_task_id>/notes", methods=['GET'])
+@login_required
+def approvals_subtask_notes(task_id, sub_task_id):
+    """API: Return notes for a subtask (used by approvals page modal)."""
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    if not _can_act_on_subtask(subtask, task, current_user):
+        return jsonify({'error': 'Permission denied'}), 403
+    all_notes = Notes.query.filter_by(task_id=task_id, sub_task_id=sub_task_id).order_by(
+        Notes.pin_stat.desc(), Notes.created_on.asc()
+    ).all()
+    main_notes = [n for n in all_notes if not n.reply_code]
+    replies_map = {}
+    for n in all_notes:
+        if n.reply_code:
+            try:
+                parent_id = int(n.reply_code)
+                if parent_id not in replies_map:
+                    replies_map[parent_id] = []
+                replies_map[parent_id].append(n)
+            except (ValueError, TypeError):
+                pass
+    member_ids = list({n.member_id for n in all_notes if n.member_id})
+    user_by_id = {u.member_id: u for u in User.query.filter(User.member_id.in_(member_ids)).all()} if member_ids else {}
+    def _user_display(mid):
+        u = user_by_id.get(mid)
+        return (u.name or u.username or 'Unknown') if u else 'Unknown'
+    def _avatar_file(mid):
+        u = user_by_id.get(mid)
+        return (u.image_file or 'default.jpg') if u else 'default.jpg'
+    out = []
+    for n in main_notes:
+        replies = replies_map.get(n.notes_id, [])
+        out.append({
+            'note_body': n.note_body or '',
+            'author_name': _user_display(n.member_id),
+            'created_on': n.created_on.strftime('%b %d, %Y %H:%M') if n.created_on else '',
+            'generated_code': n.generated_code or '',
+            'pin_stat': bool(n.pin_stat),
+            'image_file': _avatar_file(n.member_id),
+            'replies': [
+                {'author_name': _user_display(r.member_id), 'created_on': r.created_on.strftime('%H:%M') if r.created_on else '', 'note_body': r.note_body or ''}
+                for r in replies
+            ],
+        })
+    return jsonify({'notes': out, 'subtask_name': subtask.subtask_name or 'Subtask'})
+
+
+@reports_bp.route("/approvals/<int:task_id>/subtask/<int:sub_task_id>/status", methods=['POST'])
+@login_required
+def update_subtask_status_approvals(task_id, sub_task_id):
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    if not _can_act_on_subtask(subtask, task, current_user):
+        flash('You do not have permission to update this subtask.', 'danger')
+        return redirect(url_for('project.approvals'))
+    status = (request.form.get('status') or '').strip()
+    allowed = ('Ongoing', 'To be reviewed', 'Rejected', 'On Hold', 'Approved')
+    if status not in allowed:
+        flash('Invalid status.', 'danger')
+        return redirect(url_for('project.approvals'))
+    # Save note when approving/rejecting (from approvals page modal)
+    note_body = (request.form.get('note_body') or '').strip()
+    if note_body and status in ('Approved', 'Rejected'):
+        pm_entry = ProjectMembers.query.filter_by(project_id=task.project_id, member_id=current_user.member_id).first()
+        p_members_id = pm_entry.p_members_id if pm_entry else None
+        note = Notes(
+            task_id=task_id,
+            sub_task_id=sub_task_id,
+            member_id=current_user.member_id,
+            p_members_id=p_members_id,
+            note_body=note_body,
+            generated_code=status.lower()
+        )
+        db.session.add(note)
+    subtask.status = status
+    if status == 'Approved':
+        from datetime import datetime as dt
+        subtask.checked_timestamp = dt.utcnow()
+        subtask.is_checked = True
+        # Do NOT auto-complete task; use Mark Complete button explicitly
+    try:
+        db.session.commit()
+        flash('Subtask updated.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Failed to update subtask.', 'danger')
+    return redirect(url_for('project.approvals'))
+
+@reports_bp.route("/approvals/<int:task_id>/subtask/<int:sub_task_id>/note", methods=['POST'])
+@login_required
+def subtask_note_approvals(task_id, sub_task_id):
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    if not _can_act_on_subtask(subtask, task, current_user):
+        flash('You do not have permission to add a note to this subtask.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    note_body = (request.form.get('note_body') or '').strip()
+    action = (request.form.get('action') or '').strip().lower()  # submit, resubmit, follow_up
+    if not note_body:
+        flash('Note is required.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    pm_entry = ProjectMembers.query.filter_by(
+        project_id=task.project_id,
+        member_id=current_user.member_id
+    ).first()
+    p_members_id = pm_entry.p_members_id if pm_entry else None
+    # Submit for review: PM, subtask owner, or any task assignee may submit
+    if action == 'submit':
+        project = Project.query.get(task.project_id) if task.project_id else None
+        is_pm = project and current_user.member_id == project.project_manager
+        is_subtask_owner = subtask.p_members_id and pm_entry and subtask.p_members_id == pm_entry.p_members_id
+        is_task_assignee = False
+        if pm_entry:
+            if task.p_members_id == pm_entry.p_members_id:
+                is_task_assignee = True
+            else:
+                for ta in (task.assignees or []):
+                    if ta.p_members_id == pm_entry.p_members_id:
+                        is_task_assignee = True
+                        break
+        if not (is_pm or is_subtask_owner or is_task_assignee):
+            flash('Only the project manager, subtask owner, or a task assignee can submit for review.', 'danger')
+            return redirect(url_for('project.task_details', id=task_id))
+    new_note = Notes(
+        task_id=task_id,
+        sub_task_id=sub_task_id,
+        member_id=current_user.member_id,
+        p_members_id=p_members_id,
+        note_body=note_body,
+        generated_code=action or 'note'
+    )
+    db.session.add(new_note)
+    if action == 'submit':
+        subtask.status = 'To be reviewed'
+    elif action == 'resubmit':
+        subtask.status = 'To be reviewed'
+    elif action == 'follow_up':
+        subtask.status = 'Ongoing'
+    try:
+        db.session.commit()
+        if action == 'submit':
+            flash('Subtask submitted for review.', 'success')
+        elif action == 'resubmit':
+            flash('Re-submitted for review.', 'success')
+        else:
+            flash('Note saved.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Failed to save note.', 'danger')
+    return redirect(url_for('project.approvals', id=task_id))

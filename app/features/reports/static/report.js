@@ -692,6 +692,33 @@ document.addEventListener("DOMContentLoaded", function () {
               startReportCommentsPolling(report.report_id);
           }
       });
+
+      // If report_id in URL (e.g. from approvals page link), select that report
+      var urlParams = new URLSearchParams(window.location.search);
+      var openReportId = urlParams.get('report_id');
+      if (openReportId) {
+        var rid = parseInt(openReportId, 10);
+        if (rid && reportsData.some(function (r) { return r.report_id === rid; })) {
+          var pendingItem = document.querySelector('#pendingReportList .report-list-item[data-report-id="' + rid + '"]');
+          var reviewedItem = document.querySelector('#reviewedReportList .reviewed-report-list-item[data-report-id="' + rid + '"]');
+          var ccItem = document.querySelector('#ccReportList .cc-report-list-item[data-report-id="' + rid + '"]');
+          var tabLink, targetItem;
+          if (pendingItem) {
+            tabLink = document.querySelector('a[href="#Pending"]');
+            targetItem = pendingItem;
+          } else if (reviewedItem) {
+            tabLink = document.querySelector('a[href="#Reviewed"]');
+            targetItem = reviewedItem;
+          } else if (ccItem) {
+            tabLink = document.querySelector('a[href="#cc"]');
+            targetItem = ccItem;
+          }
+          if (tabLink && targetItem) {
+            tabLink.click();
+            setTimeout(function () { targetItem.click(); }, 100);
+          }
+        }
+      }
     }
 });
 

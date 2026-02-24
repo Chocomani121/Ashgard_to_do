@@ -1485,11 +1485,11 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
 
-            // Initialize Grid.js - columns match approvals.html: Task Name, Project, Department, Project Manager, Priority, Status, Start Date, Deadline, Progress, Sub Tasks
+            // Initialize Grid.js - columns match approvals.html: Report Owner, Week Range, Status
             grid = new gridjs.Grid({
-                columns: ["Project", "Task", "Subtask","Notes", "Status", "Action"],
+                columns: ["Report Owner", "Week Range", "Status"],
                 data: getFilteredData().map(row => row.cells),
-                pagination: { limit: 10 },
+                pagination: { limit: 15 },
                 sort: true,
                 search: false, // Disable built-in search, handle manually
                 className: {
