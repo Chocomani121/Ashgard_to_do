@@ -1357,6 +1357,7 @@ def delete_task(id):
     project_id = task.project_id
     task_id = task.task_id
     try:
+        Notes.query.filter_by(task_id=task_id).delete()
         try:
             TaskAssignee.query.filter_by(task_id=task_id).delete()
         except Exception:
@@ -1370,6 +1371,7 @@ def delete_task(id):
         if 'task_assignees' in str(e) or '1146' in str(e):
             db.session.rollback()
             try:
+                Notes.query.filter_by(task_id=task_id).delete()
                 SubTask.query.filter_by(parent_task_id=task_id).delete()
                 db.session.execute(text('DELETE FROM task_tbl WHERE task_id = :id'), {'id': task_id})
                 db.session.commit()
