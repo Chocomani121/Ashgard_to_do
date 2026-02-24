@@ -119,6 +119,11 @@ function confirmDeleteTask(taskName) {
         confirmButtonText: "Yes, delete it!"
     }).then(function (result) {
         if (result.isConfirmed) {
+            Swal.fire({
+                title: "Deleting...",
+                allowOutsideClick: false,
+                didOpen: function () { Swal.showLoading(); }
+            });
             form.submit();
         }
     });
@@ -139,3 +144,23 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
+
+// --- Spinner for all form submit buttons with .spinner-border ---
+function showSubmitSpinner(btn, loadingText) {
+  if (!btn || btn.disabled) return;
+  var spinner = btn.querySelector(".spinner-border");
+  var btnText = btn.querySelector(".btn-text");
+  var text = loadingText || btn.getAttribute("data-loading-text") || " Saving...";
+  if (spinner) {
+    btn.disabled = true;
+    spinner.classList.remove("d-none");
+    if (btnText) btnText.textContent = text;
+  }
+}
+
+document.addEventListener("submit", function (e) {
+  var form = e.target;
+  if (!form || form.tagName !== "FORM") return;
+  var btn = e.submitter || form.querySelector('button[type="submit"]');
+  if (btn) showSubmitSpinner(btn);
+}, true);
