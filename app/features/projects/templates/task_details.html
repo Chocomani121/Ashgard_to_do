@@ -7,9 +7,9 @@
             <!-- Breadcrumb -->
             <nav aria-label="breadcrumb" class="mb-3">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('project.project_details', id=task.project_id or 0) }}">Project's name</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('project.project_details', id=task.project_id or 0) }}">Task's name</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Task details</li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('project.projects') }}">My Projects</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('project.project_details', id=task.project_id or 0) }}">{{ project.project_name or 'Project' }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ task.task_name or 'Task' }}</li>
                 </ol>
             </nav>
             {% with messages = get_flashed_messages(with_categories=true) %}
