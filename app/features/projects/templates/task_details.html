@@ -287,7 +287,7 @@
                                     </div>
                                     <div class="modal-footer bg-light">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-primary px-4" data-loading-text=" Updating...">
+                                        <button type="submit" class="btn btn-warning px-4" id="editNoteSubmitBtn" data-loading-text=" Updating...">
                                             <span class="spinner-border spinner-border-sm d-none" role="status"></span>
                                             <span class="btn-text">Update</span>
                                         </button>
@@ -668,9 +668,9 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-primary" data-loading-text=" Adding...">
+                                        <button type="submit" class="btn btn-success" id="addNoteSubmitBtn" data-loading-text=" Adding...">
                                             <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                            <span class="btn-text">Add Note</span>
+                                            <span class="btn-text">Submit</span>
                                         </button>
                                     </div>
                                 </form>
@@ -1027,28 +1027,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 });
-
-function openEditNoteModal(noteId, title, body) {
-    const form = document.getElementById('editNoteForm');
-    // Point this to your edit route
-    form.action = `/project/edit_note/${noteId}`;
-
-    const titleInput = document.getElementById('EditNotesProjectTitle');
-    const titleContainer = document.getElementById('editTitleContainer');
-    
-    titleInput.value = title;
-    document.getElementById('EditNotesProjectDescription').value = body;
-
-    // Hide title field if editing a reply (replies usually don't have titles)
-    if (title === '') {
-        titleContainer.style.display = 'none';
-    } else {
-        titleContainer.style.display = 'block';
-    }
-
-    var editModal = new bootstrap.Modal(document.getElementById('editNotesProjectModal'));
-    editModal.show();
-}
 
 // Ensure modal is moved to body to avoid backdrop issues
 document.addEventListener("DOMContentLoaded", function() {
