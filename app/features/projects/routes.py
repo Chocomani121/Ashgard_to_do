@@ -142,7 +142,7 @@ def projects():
 
     # Only projects where user is manager or a project member
     projects = Project.query.filter(
-        or_(
+        or_(s
             Project.project_manager == current_user.member_id,
             Project.project_id.in_(member_project_ids)
         )
