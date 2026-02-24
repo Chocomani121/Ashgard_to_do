@@ -12,6 +12,11 @@
                     <li class="breadcrumb-item active" aria-current="page">Task Details</li>
                 </ol>
             </nav>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
+                {% endif %}
+            {% endwith %}
 
             <div class="row align-items-stretch task-details-equal-row">
                 <!-- LEFT: Task details (col-6, equal height with Notes) -->
@@ -150,14 +155,14 @@
                                     <h5 class="card-title mb-0">Notes ({{ notes|length }})</h5>
                                 </div>
                                 <div class="flex-shrink-0">
-                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#taskNoteModal">
+                                    <button type="button" class="btn btn-primary btn-sm" id="addNoteOpenBtn" data-bs-toggle="modal" data-bs-target="#taskNoteModal">
                                         <i class="mdi mdi-plus me-1"></i> Add Note
                                     </button>
                                 </div>
                             </div>
 
                             {# SCROLLABLE NOTES AREA #}
-                            <div class="mx-n4 px-4 flex-grow-1" data-simplebar style="height: 620px; overflow-y: auto;">
+                            <div class="mx-n4 px-4 flex-grow-1" data-simplebar style="height: 620px;">
                                 {% for note in notes %}
                                     <div class="d-flex mb-4 border-bottom pb-3">
                                         {# Avatar #}
@@ -171,15 +176,19 @@
                                             <div class="d-flex justify-content-between align-items-center mb-1">
                                                 <div>
                                                     <strong>{{ note.author.name if note.author else 'Unknown' }}</strong>
-                                                    <a href="{{ url_for('project.toggle_pin', note_id=note.notes_id) }}" class="ms-2">
-                                                        {% if note.pin_stat %}
+                                                    <!-- Settings toggle for pin and added spinners -->
+                                                    <a href="{{ url_for('project.toggle_pin', note_id=note.notes_id) }}" class="ms-2 note-pin-link" title="Toggle pin">
+                                                        <span class="pin-icon">
+                                                            {% if note.pin_stat %}
                                                             <i class="mdi mdi-pin text-warning font-size-16"></i>
-                                                        {% else %}
+                                                            {% else %}
                                                             <i class="mdi mdi-pin-outline text-muted font-size-14"></i>
-                                                        {% endif %}
+                                                            {% endif %}
+                                                        </span>
                                                     </a>
                                                 </div>
-                                                <small class="text-muted">{{ note.created_on.strftime('%b %d, %Y') if note.created_on else '' }}</small>
+                                                <!-- date and time on note body content -->
+                                                <small class="text-muted">{{ note.created_on.strftime('%b %d, %Y %I:%M %p') if note.created_on else '' }}</small>
                                             </div>
                                             
                                             {# Note Content Box #}
@@ -211,6 +220,7 @@
                                                 {% endif %}
                                             </div>
 
+                                            <!-- reply form if the note is created by the current user -->
                                             {# Reply Form #}
                                             <div id="reply-form-{{ note.notes_id }}" class="mt-2 d-none">
                                                 <form action="{{ url_for('project.reply_note', note_id=note.notes_id) }}" method="POST">
@@ -218,7 +228,10 @@
                                                     <input type="hidden" name="task_id" value="{{ task.task_id }}">
                                                     <div class="input-group input-group-sm">
                                                         <input type="text" name="reply_body" class="form-control" placeholder="Write a reply..." required>
-                                                        <button class="btn btn-primary btn-sm" type="submit">Post</button>
+                                                        <button class="btn btn-primary btn-sm" type="submit" data-loading-text=" Posting...">
+                                                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                                            <span class="btn-text">Post</span>
+                                                        </button>
                                                     </div>
                                                 </form>
                                             </div>
@@ -230,7 +243,8 @@
                                                     <div class="mb-2 p-2 rounded bg-soft-light border-bottom small">
                                                         <div class="d-flex justify-content-between">
                                                             <strong>{{ reply.author.name }}</strong>
-                                                            <small class="text-muted">{{ reply.created_on.strftime('%H:%M') }}</small>
+                                                            <!-- reply date and time on note body content -->
+                                                            <small class="text-muted">{{ reply.created_on.strftime('%b %d, %Y %I:%M %p') if reply.created_on else '' }}</small>
                                                         </div>
                                                         <p class="mb-0">{{ reply.note_body }}</p>
                                                     </div>
@@ -277,8 +291,6 @@
                             </div>
                         </form>
                     </div>
-                </div>
-            </div>
 
             <!-- Sub-Task Table: full width, aligns with Task + Notes row above -->
             <div class="row mt-4 task-details-subtask-row">
@@ -350,12 +362,18 @@
                                                 <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline me-1">
                                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
                                                     <input type="hidden" name="status" value="Approved">
-                                                    <button type="submit" class="btn btn-sm btn-success" title="Approve"><i class="mdi mdi-check"></i></button>
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Approve" data-loading-text=" Approving...">
+                                                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                                        <span class="btn-text"><i class="mdi mdi-check"></i></span>
+                                                    </button>
                                                 </form>
                                                 <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline">
                                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
                                                     <input type="hidden" name="status" value="Rejected">
-                                                    <button type="submit" class="btn btn-sm btn-danger" title="Reject"><i class="mdi mdi-close"></i></button>
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Reject" data-loading-text=" Rejecting...">
+                                                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                                        <span class="btn-text"><i class="mdi mdi-close"></i></span>
+                                                    </button>
                                                 </form>
                                                 {% else %}
                                                 <span class="text-muted small">Pending review</span>
@@ -365,7 +383,10 @@
                                                 <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline">
                                                     <input type="hidden" name="status" value="To be reviewed">
                                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-                                                    <button type="submit" class="btn btn-sm btn-primary">Revert</button>
+                                                    <button type="submit" class="btn btn-sm btn-primary" data-loading-text=" Reverting...">
+                                                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                                        <span class="btn-text">Revert</span>
+                                                    </button>
                                                 </form>
                                                 {% else %}
                                                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="resubmit" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Re-Submit – reason for resubmit (will appear in notes)">Re-Submit</button>
@@ -454,9 +475,10 @@
             <!-- Modal Footer -->
             <div class="modal-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="subTaskForm" class="btn btn-success">
-                    <i class="mdi mdi-check me-1"></i> Save Sub-Task
-                </button>
+                <button type="submit" form="subTaskForm" class="btn btn-success" data-loading-text=" Saving...">
+                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                    <span class="btn-text"><i class="mdi mdi-check me-1"></i> Save Sub-Task</span>
+                                </button>
             </div>
 
         </div>
@@ -541,7 +563,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="submit" class="btn btn-primary" data-loading-text=" Saving...">
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        <span class="btn-text">Save Changes</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -637,7 +662,7 @@
   </div>
 </div>
 
-<!-- Add Note Modal (Task) -->
+<!-- Add Note Modal (Task)  IF MODAL ADD IS CLICKED THIS MODAL WILL OPEN id:NOTE-->
                     <div class="modal fade" id="taskNoteModal" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
@@ -659,7 +684,10 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-primary">Add Note</button>
+                                        <button type="submit" class="btn btn-primary" data-loading-text=" Adding...">
+                                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                            <span class="btn-text">Add Note</span>
+                                        </button>
                                     </div>
                                 </form>
                             </div>
@@ -685,7 +713,10 @@
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-info">Update Note</button>
+                                    <button type="submit" class="btn btn-info" data-loading-text=" Updating...">
+                                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                        <span class="btn-text">Update Note</span>
+                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -729,7 +760,7 @@
 
                             <div class="modal-body">
                                 <p class="mb-2">
-                                This will move the task back to <strong>“To be reviewed”</strong>.
+                                This will move the task back to <strong>"To be reviewed"</strong>.
                                 </p>
 
                             <div class="modal-footer">
@@ -761,13 +792,15 @@
                                 </div>
                                 <div class="modal-footer">
                                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-primary" id="subtaskNoteSubmitBtn">Save</button>
+                                <button type="submit" class="btn btn-primary" id="subtaskNoteSubmitBtn" data-loading-text=" Saving...">
+                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                    <span class="btn-text">Save</span>
+                                </button>
                                 </div>
                             </form>
                             </div>
                         </div>
                     </div>
-
                         <!-- Edit Subtask Modal -->
                     <div class="modal fade" id="editSubtaskModal" tabindex="-1" data-bs-backdrop="static">
                         <div class="modal-dialog modal-dialog-centered">
@@ -786,7 +819,10 @@
                                 </div>
                                 <div class="modal-footer">
                                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-primary">Save</button>
+                                <button type="submit" class="btn btn-primary" data-loading-text=" Saving...">
+                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                    <span class="btn-text">Save</span>
+                                </button>
                                 </div>
                             </form>
                             </div>
@@ -800,6 +836,38 @@
                         </form>
 
 <script type="application/json" id="subtask-notes-data">{{ subtask_notes_map|tojson }}</script>
+                        <!-- Hidden form for subtask delete -->
+                        <form id="subtaskDeleteForm" method="POST" action="" class="d-none">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                        </form>
+
+                    <div class="modal fade" id="addNotesProjectModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <form action="{{ url_for('project.add_note', task_id=task.task_id) }}" method="POST">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Sub-Task Action</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Add a comment (Optional)</label>
+                                            <textarea name="note_content" class="form-control" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-primary" data-loading-text=" Confirming...">
+                                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                            <span class="btn-text">Confirm</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+
 <script>
 (function() {
     var el = document.getElementById('subtask-notes-data');
@@ -807,13 +875,13 @@
 })();
 
 function openEditNoteModal(el) {
-    var form = document.getElementById('editNoteForm');
+    var modalEl = document.getElementById('editNotesProjectModal');
+    var form = modalEl ? modalEl.querySelector('form') : null;
     var titleInput = document.getElementById('EditNotesProjectTitle');
     var bodyInput = document.getElementById('EditNotesProjectDescription');
     if (form && el) form.action = el.getAttribute('data-edit-url') || '';
     if (titleInput && el) titleInput.value = el.getAttribute('data-note-title') || '';
     if (bodyInput && el) bodyInput.value = el.getAttribute('data-note-body') || '';
-    var modalEl = document.getElementById('editNotesProjectModal');
     if (modalEl && typeof bootstrap !== 'undefined') {
         var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
@@ -871,6 +939,63 @@ document.addEventListener("DOMContentLoaded", function() {
         document.body.appendChild(subtaskAddNoteModalEl);
     }
 
+    // Notes: loading state on Add Note form Spinner
+    var taskNoteForm = document.getElementById('taskNoteForm');
+    if (taskNoteForm) {
+        taskNoteForm.addEventListener('submit', function() {
+            var btn = document.getElementById('addNoteSubmitBtn');
+            if (btn && !btn.disabled) {
+                btn.disabled = true;
+                var textEl = btn.querySelector('.btn-text');
+                if (textEl) textEl.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i> Submitting...';
+            }
+        });
+    }
+
+    // Notes: loading state on Reply forms Spinner
+    document.addEventListener('submit', function(e) {
+        var form = e.target;
+        if (form && form.classList && form.classList.contains('note-reply-form')) {
+            var btn = form.querySelector('.note-reply-submit');
+            if (btn && !btn.disabled) {
+                btn.disabled = true;
+                var textEl = btn.querySelector('.btn-text');
+                if (textEl) textEl.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i>';
+            }
+        }
+    });
+
+    // Notes: loading state on pin toggle link Spinner
+    document.addEventListener('click', function(e) {
+        var pinLink = e.target.closest('.note-pin-link');
+        if (pinLink && !pinLink.classList.contains('loading')) {
+            e.preventDefault();
+            pinLink.classList.add('loading');
+            var iconSpan = pinLink.querySelector('.pin-icon');
+            if (iconSpan) {
+                var originalHtml = iconSpan.innerHTML;
+                iconSpan.innerHTML = '<i class="mdi mdi-loading mdi-spin text-muted font-size-14"></i>';
+                pinLink.style.pointerEvents = 'none';
+                window.location.href = pinLink.getAttribute('href');
+            } else {
+                window.location.href = pinLink.getAttribute('href');
+            }
+        }
+    });
+
+    // Notes: loading state on Edit Note form (editNotesProjectModal) Spinner
+    var editNotesForm = document.querySelector('#editNotesProjectModal form');
+    if (editNotesForm) {
+        editNotesForm.addEventListener('submit', function() {
+            var btn = document.getElementById('editNoteSubmitBtn');
+            if (btn && !btn.disabled) {
+                btn.disabled = true;
+                var textEl = btn.querySelector('.btn-text');
+                if (textEl) textEl.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i> Updating...';
+            }
+        });
+    }
+
     // Subtask Note Modal: set form action and title when opened from a trigger
     var subtaskNoteModalEl = document.getElementById('subtaskNoteModal');
     if (subtaskNoteModalEl) {
@@ -893,15 +1018,19 @@ document.addEventListener("DOMContentLoaded", function() {
             var action = (trigger.dataset.noteAction || '').toLowerCase();
             if (action) actionInput.value = action;
             if (bodyInput) bodyInput.value = '';
+            var btnText = submitBtn ? submitBtn.querySelector('.btn-text') : null;
             if (action === 'submit') {
-                if (submitBtn) submitBtn.textContent = 'Submit';
+                if (btnText) btnText.textContent = 'Submit';
+                if (submitBtn) submitBtn.setAttribute('data-loading-text', ' Submitting...');
                 if (bodyInput) bodyInput.placeholder = 'Add a note and submit for review...';
                 if (helpEl) helpEl.textContent = 'Your note will be saved and the subtask will move to To be reviewed.';
             } else if (action === 'resubmit') {
-                if (submitBtn) submitBtn.textContent = 'Re-Submit';
+                if (btnText) btnText.textContent = 'Re-Submit';
+                if (submitBtn) submitBtn.setAttribute('data-loading-text', ' Re-Submitting...');
                 if (helpEl) helpEl.textContent = 'State the reason for resubmit; it will appear in subtask notes.';
             } else {
-                if (submitBtn) submitBtn.textContent = 'Save';
+                if (btnText) btnText.textContent = 'Save';
+                if (submitBtn) submitBtn.setAttribute('data-loading-text', ' Saving...');
                 if (helpEl) helpEl.textContent = '';
             }
         });
@@ -1104,6 +1233,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 });
+
 function openEditNoteModal(noteId, title, body) {
     const form = document.getElementById('editNoteForm');
     // Point this to your edit route
@@ -1140,6 +1270,23 @@ document.addEventListener("DOMContentLoaded", function() {
             notesContainer.scrollTop = 0;
         }
     };
+
+function editNote(noteId) {
+    fetch(`/project/get_note/${noteId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Ensure these IDs match the 'id' attribute in your HTML inputs
+                document.getElementById('editNoteId').value = data.note_id;
+                document.getElementById('editNoteTitle').value = data.note_title;
+                document.getElementById('editNoteContent').value = data.note_content;
+                
+                // Show the modal
+                $('#editNoteModal').modal('show');
+            }
+        })
+        .catch(error => console.error('Error fetching note:', error));
+}
 
 </script>
 

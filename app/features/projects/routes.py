@@ -128,7 +128,7 @@ def department_projects():
         for user in users
     ]
 
-    return render_template('department.html', projects_data=projects_data, departments=departments, users_json=users_json, stats=stats, today=date.today())
+    return render_template('department.html', title="Department Projects", projects_data=projects_data, departments=departments, users_json=users_json, stats=stats, today=date.today())
 
 @project_bp.route("/")
 @project_bp.route("/projects") 
@@ -230,7 +230,7 @@ def projects():
         for user in users
     ]
     
-    return render_template('index.html', projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
+    return render_template('index.html', title="My Projects", projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
 
 @project_bp.route("/all_projects") 
 @login_required
@@ -317,7 +317,7 @@ def all_projects():
         for user in users
     ]
 
-    return render_template('all_projects.html', projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
+    return render_template('all_projects.html', title="All Projects", projects_data=projects_data, users=users, users_json=users_json, stats=stats, today=date.today())
 
 #My Tasks
 @project_bp.route("/my_tasks")
@@ -328,7 +328,7 @@ def my_tasks():
     my_p_members_ids = [pm.p_members_id for pm in my_pm_rows]
 
     if not my_p_members_ids:
-        return render_template('my_task.html', title="Tasks Info", tasks_data=[], today=date.today())
+        return render_template('my_task.html', title="My Tasks", tasks_data=[], today=date.today())
 
     # Task IDs where I'm an assignee (TaskAssignee table)
     task_ids_from_assignees = TaskAssignee.query.filter(
@@ -344,7 +344,7 @@ def my_tasks():
     ).order_by(Task.task_id.desc()).all()
 
     if not tasks:
-        return render_template('my_task.html', title="Tasks Info", tasks_data=[], today=date.today())
+        return render_template('my_task.html', title="My Tasks", tasks_data=[], today=date.today())
 
     # Bulk lookups to avoid N+1
     project_ids = list({t.project_id for t in tasks if t.project_id})
@@ -386,7 +386,7 @@ def my_tasks():
             'sub_total': st_total,
         })
 
-    return render_template('my_task.html', title="Tasks Info", tasks_data=tasks_data, today=date.today())
+    return render_template('my_task.html', title="My Tasks", tasks_data=tasks_data, today=date.today())
 
 #Department-Wide Tasks
 @project_bp.route("/dept_tasks")
@@ -475,7 +475,7 @@ def dept_tasks():
         for u in users
     ]
 
-    return render_template('dept_task.html', title="Tasks Info", tasks_data=tasks_data, stats=stats, users_json=users_json, departments=departments, today=date.today())
+    return render_template('dept_task.html', title="Department Tasks", tasks_data=tasks_data, stats=stats, users_json=users_json, departments=departments, today=date.today())
     
 @project_bp.route("/all_departments")
 @login_required
@@ -1772,6 +1772,13 @@ def approvals():
     for s in subtasks:
         subtasks_by_task[s.parent_task_id].append(s)
 
+    # Notes preview per subtask (bulk load to avoid N+1)
+    sub_note_ids = [s.sub_task_id for s in subtasks]
+    notes_by_sub = defaultdict(list)
+    if sub_note_ids:
+        for n in Notes.query.filter(Notes.sub_task_id.in_(sub_note_ids)).order_by(Notes.created_on.desc()).all():
+            notes_by_sub[n.sub_task_id].append(n.note_body or '')
+
     # Build list for template (no per-row queries)
     tasks_data = []
     for task in tasks:
@@ -1780,6 +1787,10 @@ def approvals():
         deadline = deadline_by_id.get(task.deadline_id) if task.deadline_id else None
         department = dept_by_id.get(project.department_id) if project and project.department_id else None
         st_list = subtasks_by_task.get(task.task_id, [])
+        # Attach notes_preview to each subtask for template
+        for st in st_list:
+            previews = notes_by_sub.get(st.sub_task_id, [])
+            st.notes_preview = previews[0] if previews and previews[0] else '—'
         st_total = len(st_list)
         st_done = sum(1 for s in st_list if s.is_checked)
         progress_pct = f"{st_done}/{st_total}" if st_total > 0 else "0/0"
@@ -1809,7 +1820,56 @@ def approvals():
 
 
     return render_template('approvals.html', title="Approvals", tasks_data=tasks_data, stats=stats, users_json=users_json, departments=departments, today=date.today())
-    
+
+
+@project_bp.route("/approvals/<int:task_id>/subtask/<int:sub_task_id>/notes", methods=['GET'])
+@login_required
+def approvals_subtask_notes(task_id, sub_task_id):
+    """API: Return notes for a subtask (used by approvals page modal)."""
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    if not _can_act_on_subtask(subtask, task, current_user):
+        return jsonify({'error': 'Permission denied'}), 403
+    all_notes = Notes.query.filter_by(task_id=task_id, sub_task_id=sub_task_id).order_by(
+        Notes.pin_stat.desc(), Notes.created_on.asc()
+    ).all()
+    main_notes = [n for n in all_notes if not n.reply_code]
+    replies_map = {}
+    for n in all_notes:
+        if n.reply_code:
+            try:
+                parent_id = int(n.reply_code)
+                if parent_id not in replies_map:
+                    replies_map[parent_id] = []
+                replies_map[parent_id].append(n)
+            except (ValueError, TypeError):
+                pass
+    member_ids = list({n.member_id for n in all_notes if n.member_id})
+    user_by_id = {u.member_id: u for u in User.query.filter(User.member_id.in_(member_ids)).all()} if member_ids else {}
+    def _user_display(mid):
+        u = user_by_id.get(mid)
+        return (u.name or u.username or 'Unknown') if u else 'Unknown'
+    def _avatar_file(mid):
+        u = user_by_id.get(mid)
+        return (u.image_file or 'default.jpg') if u else 'default.jpg'
+    out = []
+    for n in main_notes:
+        replies = replies_map.get(n.notes_id, [])
+        out.append({
+            'note_body': n.note_body or '',
+            'author_name': _user_display(n.member_id),
+            'created_on': n.created_on.strftime('%b %d, %Y %H:%M') if n.created_on else '',
+            'generated_code': n.generated_code or '',
+            'pin_stat': bool(n.pin_stat),
+            'image_file': _avatar_file(n.member_id),
+            'replies': [
+                {'author_name': _user_display(r.member_id), 'created_on': r.created_on.strftime('%H:%M') if r.created_on else '', 'note_body': r.note_body or ''}
+                for r in replies
+            ],
+        })
+    return jsonify({'notes': out, 'subtask_name': subtask.subtask_name or 'Subtask'})
+
+
 @project_bp.route("/approvals/<int:task_id>/subtask/<int:sub_task_id>/status", methods=['POST'])
 @login_required
 def update_subtask_status_approvals(task_id, sub_task_id):
@@ -1942,7 +2002,7 @@ def add_note(task_id):
         
         db.session.add(new_note)
         db.session.commit()
-        flash('Note added!', 'success')
+        flash('Note submitted!', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Database Error: {str(e)}', 'danger')
@@ -1978,42 +2038,26 @@ def reply_note(note_id):
 
     return redirect(url_for('project.task_details', id=task_id))
 
-# @project_bp.route("/task_details/note/edit/<int:note_id>", methods=['POST'])
-# @login_required
-# def edit_note(note_id):
-#     note = Notes.query.get_or_404(note_id)
-    
-#     # Security Check
-#     if note.member_id != current_user.member_id:
-#         flash('Permission denied.', 'danger')
-#         return redirect(url_for('project.task_details', id=note.task_id))
-
-#     # Update Content
-#     note.note_title = request.form.get('note_title')
-#     note.note_body = request.form.get('note_body')
-    
-#     # UPDATE TO CURRENT TIME
-#     note.created_on = datetime.now() # This resets the time to 'now' on every save
-    
-#     try:
-#         db.session.commit()
-#         flash('Updated successfully!', 'success')
-#     except Exception:
-#         db.session.rollback()
-#         flash('Error updating note.', 'danger')
-    
-#     return redirect(url_for('project.task_details', id=note.task_id))
-
-@project_bp.route("/task/note/edit/<int:note_id>", methods=['POST'])
+@project_bp.route("/task/note/edit/<int:note_id>", methods=['GET', 'POST'])
 @login_required
 def edit_note(note_id):
     note = Notes.query.get_or_404(note_id)
     
+    # 1. GET: This fixes the 'undefined' error by sending data to the modal
+    if request.method == 'GET':
+        return jsonify({
+            'note_id': note.note_id,
+            'note_title': note.generated_code, # Your title is stored here
+            'note_content': note.note_body
+        })
+
+    # 2. POST: This handles the actual save/update
     # Security check: only author can edit
     if note.member_id != current_user.member_id:
         flash('Unauthorized', 'danger')
         return redirect(request.referrer)
 
+    # Update fields
     note.generated_code = request.form.get('note_title')
     body = request.form.get('note_content') or request.form.get('note_body')
     if body is not None:
@@ -2212,3 +2256,29 @@ def submit_subtask_for_review(task_id):
     db.session.commit()
     flash(f'Sub-task updated successfully!', 'success')
     return redirect(url_for('project.task_details', task_id=task_id))
+
+# @project_bp.route("/get_note/<int:note_id>")
+# @login_required
+# def get_note(note_id):
+#     note = Notes.query.get_or_404(note_id)
+#     # The keys here MUST match your JavaScript data properties
+#     return jsonify({
+#         'note_id': note.note_id,
+#         'note_title': note.note_title,
+#         'note_content': note.note_body, # Mapping 'note_body' from DB to 'note_content' for the modal
+#         'success': True
+#     })
+
+# @project_bp.route("/update_note", methods=['POST'])
+# @login_required
+# def update_note():
+#     note_id = request.form.get('note_id')
+#     note = Notes.query.get_or_404(note_id)
+    
+#     note.note_title = request.form.get('note_title')
+#     note.note_body = request.form.get('note_content')
+#     note.date_updated = datetime.now()
+    
+#     db.session.commit()
+#     flash('Note updated!', 'success')
+#     return redirect(url_for('project.project_details', id=note.project_id))

@@ -1,4 +1,42 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Notes cell click: open modal and load notes via API
+    document.addEventListener('click', function(e) {
+        var el = e.target.closest('.notes-preview-clickable');
+        if (!el) return;
+        e.preventDefault();
+        var taskId = el.getAttribute('data-task-id');
+        var subTaskId = el.getAttribute('data-sub-task-id');
+        var subtaskName = el.getAttribute('data-subtask-name') || 'Subtask';
+        if (!taskId || !subTaskId) return;
+        var apiBase = typeof window.APPROVALS_NOTES_API !== 'undefined' ? window.APPROVALS_NOTES_API : '/approvals/0/subtask/0/notes';
+        var url = apiBase.replace(/\/0\/subtask\/0\//, '/' + taskId + '/subtask/' + subTaskId + '/');
+        var titleEl = document.getElementById('subtaskNotesSubtaskName');
+        var listEl = document.querySelector('#subtaskNotesModalBody .subtask-notes-list');
+        if (titleEl) titleEl.textContent = 'Notes: ' + subtaskName;
+        if (listEl) listEl.innerHTML = '<div class="text-center py-4"><span class="spinner-border spinner-border-sm me-2"></span>Loading notes...</div>';
+        var modalEl = document.getElementById('subtaskNotesModal');
+        if (modalEl && typeof bootstrap !== 'undefined') {
+            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+        fetch(url, { headers: { 'Accept': 'application/json' } })
+            .then(function(r) { return r.ok ? r.json() : Promise.reject(new Error('Failed to load notes')); })
+            .then(function(data) {
+                if (!listEl) return;
+                if (!data.notes || data.notes.length === 0) {
+                    listEl.innerHTML = '<p class="text-muted mb-0">No notes yet.</p>';
+                    return;
+                }
+                var html = data.notes.map(function(n) {
+                    var badge = n.generated_code ? '<span class="badge badge-soft-secondary font-size-11 me-2">' + (n.generated_code.charAt(0).toUpperCase() + n.generated_code.slice(1)) + '</span>' : '';
+                    return '<div class="border-bottom pb-3 mb-3"><div class="d-flex justify-content-between align-items-start mb-1"><span class="fw-medium small">' + (n.author_name || 'Unknown') + ' ' + badge + '</span><span class="text-muted small">' + (n.created_on || '') + '</span></div><p class="mb-0 small">' + (n.note_body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</p></div>';}).join('');
+                listEl.innerHTML = html;
+            })
+            .catch(function() {
+                if (listEl) listEl.innerHTML = '<p class="text-danger mb-0">Failed to load notes.</p>';
+            });
+    });
+
     // Approve/Reject modal: set form action, status, title when opened
     var approveRejectModalEl = document.getElementById('approveRejectModal');
     if (approveRejectModalEl) {
