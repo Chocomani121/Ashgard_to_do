@@ -969,9 +969,9 @@ def task_details(id=None):
     elif project and project.department_id:
         manager_department = Department.query.get(project.department_id)
 
-    # Build subtask_list for template (SubTask with owner_name, notes_preview)
+    # Build subtask_list for template (SubTask with owner_name, notes_preview) - newest first
     from collections import defaultdict
-    subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).all()
+    subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).order_by(SubTask.created_on.desc()).all()
     p_member_ids = list({s.p_members_id for s in subtasks if s.p_members_id})
     pm_to_user = {}
     if p_member_ids:
@@ -1009,11 +1009,15 @@ def task_details(id=None):
             else:
                 remark, badge_class = None, None
             reply_url = url_for('project.reply_subtask_note', task_id=task.task_id, sub_task_id=n.sub_task_id, parent_note_id=n.notes_id)
+            edit_url = url_for('project.edit_note', note_id=n.notes_id)
+            is_author = n.member_id == current_user.member_id if current_user and current_user.member_id else False
             note_row = {
                 'notes_id': n.notes_id, 'author': author_name, 'role': role, 'body': n.note_body or '',
                 'created': n.created_on.strftime('%d/%m/%Y %H:%M') if n.created_on else '—',
                 'remark': remark, 'remark_badge_class': badge_class, 'member_id': n.member_id,
-                'reply_url': reply_url, 'reply_code': int(n.reply_code) if n.reply_code and str(n.reply_code).isdigit() else None
+                'reply_url': reply_url, 'edit_url': edit_url, 'is_author': is_author,
+                'reply_code': int(n.reply_code) if n.reply_code and str(n.reply_code).isdigit() else None,
+                'generated_code': n.generated_code or ''
             }
             notes_full_by_sub[n.sub_task_id].append(note_row)
             if n.reply_code:
@@ -1036,7 +1040,8 @@ def task_details(id=None):
     for st in subtasks:
         owner_name = pm_to_user.get(st.p_members_id, '—') if st.p_members_id else '—'
         previews = notes_by_sub.get(st.sub_task_id, [])
-        notes_preview = (previews[0][:80] + '…') if previews and previews[0] else '—'
+        latest = previews[-1] if previews else ''
+        notes_preview = (latest[:80] + '…') if latest else '—'
         is_owner = bool(st.p_members_id and current_user_p_members_id and st.p_members_id == current_user_p_members_id)
         created_str = st.created_on.strftime('%d/%m/%Y %H:%M') if st.created_on else '—'
         updated_ts = st.edited_on or st.checked_timestamp
