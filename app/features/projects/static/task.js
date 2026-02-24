@@ -78,6 +78,52 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+
+//Delete sweet Alert
+// Delete SweetAlert for Members
+function confirmDelete(memberName, memberId) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You are about to delete " + memberName + ". You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#51d28c",
+        cancelButtonColor: "#f34e4e",
+        confirmButtonText: "Yes, delete it!"
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            // Redirect to the Flask route you created
+            window.location.href = "/delete_member/" + memberId;
+        }
+    });
+}
+
+// Delete SweetAlert for Task (submits hidden form to delete_task route)
+function confirmDeleteTask(taskName) {
+    var form = document.getElementById("deleteTaskForm");
+    if (!form) return;
+    if (typeof Swal === "undefined") {
+        if (window.confirm("Are you sure you want to delete " + (taskName || "this task") + "? You won't be able to revert this!")) {
+            form.submit();
+        }
+        return;
+    }
+    Swal.fire({
+        title: "Are you sure you want to delete this task?",
+        // text: "You are about to delete " + (taskName || "this task") + ". You won't be able to revert this!",
+        text: "Please note that this action is permanent. All associated notes and subtasks will be permanently deleted along with this task and cannot be recovered.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#f34e4e",
+        cancelButtonColor: "#74788d",
+        confirmButtonText: "Yes, delete it!"
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            form.submit();
+        }
+    });
+}
+
 // Create Project form (projects): add spinner and text
 document.addEventListener("DOMContentLoaded", function () {
     const createProjectForm = document.getElementById("createTaskForm");

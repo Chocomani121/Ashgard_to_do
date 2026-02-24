@@ -229,7 +229,10 @@
                                                     <input type="hidden" name="task_id" value="{{ task.task_id }}">
                                                     <div class="input-group input-group-sm">
                                                         <input type="text" name="reply_body" class="form-control" placeholder="Write a reply..." required>
-                                                        <button class="btn btn-primary btn-sm note-reply-submit" type="submit"><span class="btn-text">Post</span></button>
+                                                        <button class="btn btn-primary btn-sm" type="submit" data-loading-text=" Posting...">
+                                                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                                            <span class="btn-text">Post</span>
+                                                        </button>
                                                     </div>
                                                 </form>
                                             </div>
@@ -284,7 +287,10 @@
                                     </div>
                                     <div class="modal-footer bg-light">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-warning px-4" id="editNoteSubmitBtn"><span class="btn-text">Update</span></button>
+                                        <button type="submit" class="btn btn-primary px-4" data-loading-text=" Updating...">
+                                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                            <span class="btn-text">Update</span>
+                                        </button>
                                     </div>  
                                 </form>
                             </div>
@@ -364,12 +370,18 @@
                                                 <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline me-1">
                                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
                                                     <input type="hidden" name="status" value="Approved">
-                                                    <button type="submit" class="btn btn-sm btn-success" title="Approve"><i class="mdi mdi-check"></i></button>
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Approve" data-loading-text=" Approving...">
+                                                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                                        <span class="btn-text"><i class="mdi mdi-check"></i></span>
+                                                    </button>
                                                 </form>
                                                 <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline">
                                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
                                                     <input type="hidden" name="status" value="Rejected">
-                                                    <button type="submit" class="btn btn-sm btn-danger" title="Reject"><i class="mdi mdi-close"></i></button>
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Reject" data-loading-text=" Rejecting...">
+                                                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                                        <span class="btn-text"><i class="mdi mdi-close"></i></span>
+                                                    </button>
                                                 </form>
                                                 {% else %}
                                                 <span class="text-muted small">Pending review</span>
@@ -379,7 +391,10 @@
                                                 <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline">
                                                     <input type="hidden" name="status" value="To be reviewed">
                                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-                                                    <button type="submit" class="btn btn-sm btn-primary">Revert</button>
+                                                    <button type="submit" class="btn btn-sm btn-primary" data-loading-text=" Reverting...">
+                                                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                                        <span class="btn-text">Revert</span>
+                                                    </button>
                                                 </form>
                                                 {% else %}
                                                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="resubmit" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Re-Submit – reason for resubmit (will appear in notes)">Re-Submit</button>
@@ -468,9 +483,10 @@
             <!-- Modal Footer -->
             <div class="modal-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="subTaskForm" class="btn btn-success">
-                    <i class="mdi mdi-check me-1"></i> Save Sub-Task
-                </button>
+                <button type="submit" form="subTaskForm" class="btn btn-success" data-loading-text=" Saving...">
+                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                    <span class="btn-text"><i class="mdi mdi-check me-1"></i> Save Sub-Task</span>
+                                </button>
             </div>
 
         </div>
@@ -555,7 +571,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="submit" class="btn btn-primary" data-loading-text=" Saving...">
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        <span class="btn-text">Save Changes</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -649,7 +668,10 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-success" id="addNoteSubmitBtn"><span class="btn-text">Submit</span></button>
+                                        <button type="submit" class="btn btn-primary" data-loading-text=" Adding...">
+                                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                            <span class="btn-text">Add Note</span>
+                                        </button>
                                     </div>
                                 </form>
                             </div>
@@ -678,7 +700,10 @@
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-info">Update Note</button>
+                                    <button type="submit" class="btn btn-info" data-loading-text=" Updating...">
+                                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                        <span class="btn-text">Update Note</span>
+                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -729,7 +754,10 @@
                                 </div>
                                 <div class="modal-footer">
                                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-primary" id="subtaskNoteSubmitBtn">Save</button>
+                                <button type="submit" class="btn btn-primary" id="subtaskNoteSubmitBtn" data-loading-text=" Saving...">
+                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                    <span class="btn-text">Save</span>
+                                </button>
                                 </div>
                             </form>
                             </div>
@@ -753,7 +781,10 @@
                                 </div>
                                 <div class="modal-footer">
                                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-primary">Save</button>
+                                <button type="submit" class="btn btn-primary" data-loading-text=" Saving...">
+                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                    <span class="btn-text">Save</span>
+                                </button>
                                 </div>
                             </form>
                             </div>
@@ -787,7 +818,10 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-primary">Confirm</button>
+                                        <button type="submit" class="btn btn-primary" data-loading-text=" Confirming...">
+                                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                            <span class="btn-text">Confirm</span>
+                                        </button>
                                     </div>
                                 </form>
                             </div>
@@ -928,15 +962,19 @@ document.addEventListener("DOMContentLoaded", function() {
             var action = (trigger.dataset.noteAction || '').toLowerCase();
             if (action) actionInput.value = action;
             if (bodyInput) bodyInput.value = '';
+            var btnText = submitBtn ? submitBtn.querySelector('.btn-text') : null;
             if (action === 'submit') {
-                if (submitBtn) submitBtn.textContent = 'Submit';
+                if (btnText) btnText.textContent = 'Submit';
+                if (submitBtn) submitBtn.setAttribute('data-loading-text', ' Submitting...');
                 if (bodyInput) bodyInput.placeholder = 'Add a note and submit for review...';
                 if (helpEl) helpEl.textContent = 'Your note will be saved and the subtask will move to To be reviewed.';
             } else if (action === 'resubmit') {
-                if (submitBtn) submitBtn.textContent = 'Re-Submit';
+                if (btnText) btnText.textContent = 'Re-Submit';
+                if (submitBtn) submitBtn.setAttribute('data-loading-text', ' Re-Submitting...');
                 if (helpEl) helpEl.textContent = 'State the reason for resubmit; it will appear in subtask notes.';
             } else {
-                if (submitBtn) submitBtn.textContent = 'Save';
+                if (btnText) btnText.textContent = 'Save';
+                if (submitBtn) submitBtn.setAttribute('data-loading-text', ' Saving...');
                 if (helpEl) helpEl.textContent = '';
             }
         });
@@ -989,6 +1027,29 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 });
+
+function openEditNoteModal(noteId, title, body) {
+    const form = document.getElementById('editNoteForm');
+    // Point this to your edit route
+    form.action = `/project/edit_note/${noteId}`;
+
+    const titleInput = document.getElementById('EditNotesProjectTitle');
+    const titleContainer = document.getElementById('editTitleContainer');
+    
+    titleInput.value = title;
+    document.getElementById('EditNotesProjectDescription').value = body;
+
+    // Hide title field if editing a reply (replies usually don't have titles)
+    if (title === '') {
+        titleContainer.style.display = 'none';
+    } else {
+        titleContainer.style.display = 'block';
+    }
+
+    var editModal = new bootstrap.Modal(document.getElementById('editNotesProjectModal'));
+    editModal.show();
+}
+
 // Ensure modal is moved to body to avoid backdrop issues
 document.addEventListener("DOMContentLoaded", function() {
     var modal = document.getElementById('editNotesProjectModal');
