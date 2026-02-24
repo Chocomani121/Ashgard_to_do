@@ -30,6 +30,25 @@ def _format_week_range(week_name):
     return week_name
 
 
+def _parse_week_dates(week_name):
+    """Parse week_name like '2/17/2026 - 2/23/2026' to (start_ymd, end_ymd) or (None, None)."""
+    if not week_name or not isinstance(week_name, str):
+        return (None, None)
+    try:
+        parts = week_name.split(' - ')
+        if len(parts) >= 2:
+            d1 = datetime.strptime(parts[0].strip(), '%m/%d/%Y')
+            d2 = datetime.strptime(parts[1].strip(), '%m/%d/%Y')
+            return (d1.strftime('%Y-%m-%d'), d2.strftime('%Y-%m-%d'))
+        elif len(parts) == 1 and parts[0].strip():
+            d = datetime.strptime(parts[0].strip(), '%m/%d/%Y')
+            ymd = d.strftime('%Y-%m-%d')
+            return (ymd, ymd)
+    except (ValueError, IndexError):
+        pass
+    return (None, None)
+
+
 # ---- Report routes ----
 def _report_to_dict(report):
 
@@ -402,7 +421,7 @@ def edit_report(report_id):
 
 @reports_bp.route("/approvals")
 @login_required
-def approvals():
+def review_reports():
     # PENDING reports where current user is reviewer + reports where user is CC
     report_options = [
         joinedload(Report.author).joinedload(User.dept_info),
@@ -434,14 +453,15 @@ def approvals():
         .all()
     ) if cc_report_ids else []
     # Combine: reviewer first (with role), then CC (with role)
-    reports_with_role = [
-        {'report': r, 'role': 'reviewer', 'week_display': _format_week_range(r.week_name)}
-        for r in reviewer_reports
-    ]
-    reports_with_role += [
-        {'report': r, 'role': 'cc', 'week_display': _format_week_range(r.week_name)}
-        for r in cc_reports
-    ]
+    def _item(r, role):
+        start, end = _parse_week_dates(r.week_name)
+        return {
+            'report': r, 'role': role,
+            'week_display': _format_week_range(r.week_name),
+            'week_start': start or '', 'week_end': end or '',
+        }
+    reports_with_role = [_item(r, 'reviewer') for r in reviewer_reports]
+    reports_with_role += [_item(r, 'cc') for r in cc_reports]
 
     users = User.query.all()
     departments = Department.query.all()
@@ -457,7 +477,7 @@ def approvals():
     ]
 
     return render_template(
-        'approvals.html',
+        'review_reports.html',
         title="Approvals",
         reports_to_review=reports_with_role,
         stats=stats,
@@ -554,7 +574,7 @@ def update_subtask_status_approvals(task_id, sub_task_id):
     except Exception:
         db.session.rollback()
         flash('Failed to update subtask.', 'danger')
-    return redirect(url_for('project.approvals'))
+    return redirect(url_for('project.review_reports'))
 
 @reports_bp.route("/approvals/<int:task_id>/subtask/<int:sub_task_id>/note", methods=['POST'])
 @login_required
@@ -617,4 +637,4 @@ def subtask_note_approvals(task_id, sub_task_id):
     except Exception:
         db.session.rollback()
         flash('Failed to save note.', 'danger')
-    return redirect(url_for('project.approvals', id=task_id))
+    return redirect(url_for('project.review_reports', id=task_id))

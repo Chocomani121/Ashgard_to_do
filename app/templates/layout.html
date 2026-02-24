@@ -112,7 +112,7 @@
                         </li> 
                         {% if current_user.is_authenticated and show_approvals_in_navbar %}
                         <li>
-                            <a href="{{ url_for('reports.approvals') }}"{% if approvals_pending_preview %} title="{{ approvals_pending_preview }}"{% endif %}>
+                            <a href="{{ url_for('reports.review_reports') }}"{% if approvals_pending_preview %} title="{{ approvals_pending_preview }}"{% endif %}>
                                 <i class="bx bx-list-check icon nav-icon"></i>
                                 <span class="menu-item ms-1" data-key="t-todo" >Review Reports</span>{% if approvals_pending_count %}<span class="badge bg-danger ms-1 ms-auto">{{ approvals_pending_count }}</span>{% endif %}
                             </a>    

@@ -1392,6 +1392,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const tableElement = document.getElementById('projectsApproval');
         const gridContainer = document.getElementById("table10-gridjs");
         const dropdownButton = document.getElementById('categorySelect');
+        const dateInputApproval = document.getElementById('datepicker-range-approval');
         const dropdownMenu = dropdownButton ? dropdownButton.closest('.btn-group')?.querySelectorAll('.dropdown-item') || [] : [];
         
         // Must have table and grid container; dropdown optional (approvals page has no category dropdown)
@@ -1487,13 +1488,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Initialize Grid.js - columns match approvals.html: Report Owner, Week Range, Status
             grid = new gridjs.Grid({
-                columns: ["Report Owner", "Week Range", "Status"],
+                columns: ["Report Owner", "Week Range", "Status", "Reviewer"],
                 data: getFilteredData().map(row => row.cells),
                 pagination: { limit: 15 },
                 sort: true,
                 search: false, // Disable built-in search, handle manually
                 className: {
                     table: 'table table-bordered'
+                },
+                style: {
+                    th: { 'background-color': '#f8f9fa', 'color': '#495057', 'text-align': 'center' },
+                    td: { 'text-align': 'center' }
                 }
             }).render(gridContainer);
             setTimeout(function() { if (typeof applyProgressBarWidths === 'function') applyProgressBarWidths(gridContainer); }, 100);
@@ -1552,7 +1557,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Initialize Flatpickr date range picker
-            const dateRangeInput = document.getElementById('datepicker-range-dept-approval');
+            const dateRangeInput = document.getElementById('datepicker-range-approval');
             if (dateRangeInput) {
                 // Wait for flatpickr to be available
                 const initDatePicker = () => {
