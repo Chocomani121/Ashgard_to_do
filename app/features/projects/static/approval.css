@@ -14,3 +14,29 @@
     font-size: 0.875rem;
     line-height: 1.4;
 }
+
+.notes-preview-clickable {
+    cursor: pointer;
+    padding: 0.25rem 0;
+}
+.notes-preview-clickable:hover {
+    color: var(--vz-primary, #405189);
+    text-decoration: underline;
+}
+
+/* Subtask notes modal: fixed size, scrollable body */
+.modal-notes-fixed {
+    max-width: 640px;
+    width: 640px;
+    max-height: 80vh;
+}
+.modal-notes-fixed .modal-content {
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+.modal-notes-fixed .modal-body {
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+}

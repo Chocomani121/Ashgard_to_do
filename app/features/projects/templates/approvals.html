@@ -25,8 +25,12 @@
                                             <div style="width: 180px;">
                                                 <select class="form-select" id="statusFilterApprovalProjects">
                                                     <option value="all">Status: All</option>
-                                                    <option value="To be reviewed">To be reviewed</option>
-                                                    <option value="On Hold">On Hold</option>
+           
+           
+                                                     <option value="To be reviewed">To be reviewed</option>
+                                           
+                                           
+                                                     <option value="On Hold">On Hold</option>
                                                     <option value="Rejected">Rejected</option>
                                                 </select>
                                             </div>
@@ -90,13 +94,18 @@
                                                     </td>
                                                     <td>
                                                         <div class="scrollable-cell">{{ st.subtask_name or 'Unnamed' }}</div>
-                                                    </td>
+                                                    </td>         
                                                     <td>
-                                                        {% if st.notes_preview and st.notes_preview != '—' %}
-                                                        <div class="notes-preview-inner">{{ st.notes_preview }}</div>
-                                                        {% else %}
-                                                        —
-                                                        {% endif %}
+                                                        <div class="notes-preview-clickable" role="button" tabindex="0"
+                                                            data-task-id="{{ item.task.task_id }}"
+                                                            data-sub-task-id="{{ st.sub_task_id }}"
+                                                            data-subtask-name="{{ st.subtask_name or 'Subtask' }}">
+                                                            {% if st.notes_preview and st.notes_preview != '—' %}
+                                                            <span class="notes-preview-inner">{{ st.notes_preview }}</span>
+                                                            {% else %}
+                                                            <span class="text-muted">—</span>
+                                                            {% endif %}
+                                                        </div>
                                                     </td>
                                                     <td>
                                                         {# Subtask status badge by state #}
@@ -177,6 +186,23 @@
 
         </div>
 
+        <div class="modal fade" id="subtaskNotesModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-notes-fixed">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="subtaskNotesSubtaskName"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="subtaskNotesModalBody">
+                        <div class="subtask-notes-list"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Approve / Reject Modal: add note before confirming -->
         <div class="modal fade" id="approveRejectModal" tabindex="-1" data-bs-backdrop="static">
             <div class="modal-dialog modal-dialog-centered">
@@ -201,33 +227,6 @@
                                 <span class="spinner-border spinner-border-sm me-1 d-none" id="approveRejectSpinner" role="status"></span>
                                 <span id="approveRejectBtnText">Confirm</span>
                             </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Subtask Note Modal (Submit / Re-Submit / Follow up) -->
-        <div class="modal fade" id="subtaskNoteModal" tabindex="-1" data-bs-backdrop="static">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="subtaskNoteModalTitle">Note</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <form id="subtaskNoteForm" method="POST" action="">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-                        <input type="hidden" name="action" id="subtaskNoteAction" value="">
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label" for="subtaskNoteBody">Note <span class="text-danger">*</span></label>
-                                <textarea name="note_body" id="subtaskNoteBody" class="form-control" rows="4" required placeholder="Enter your note..."></textarea>
-                                <small class="text-muted" id="subtaskNoteHelp"></small>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary" id="subtaskNoteSubmitBtn">Save</button>
                         </div>
                     </form>
                 </div>
@@ -267,7 +266,13 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
         </form>
 
+        <script>
+            window.APPROVALS_NOTES_API = "{{ url_for('project.approvals_subtask_notes', task_id=0, sub_task_id=0) }}";
+            window.AVATAR_BASE = "{{ url_for('static', filename='profile_pics/') }}";
+        </script>
         <script src="{{ url_for('project.static', filename='approval.js') }}"></script>
         <script src="{{ url_for('project.static', filename='task.js') }}"></script>
         <link rel="stylesheet" href="{{ url_for('project.static', filename='approval.css') }}">
+
+        
    {% endblock content %}

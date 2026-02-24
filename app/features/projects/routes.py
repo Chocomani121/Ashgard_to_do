@@ -966,9 +966,9 @@ def task_details(id=None):
     elif project and project.department_id:
         manager_department = Department.query.get(project.department_id)
 
-    # Build subtask_list for template (SubTask with owner_name, notes_preview)
+    # Build subtask_list for template (SubTask with owner_name, notes_preview); newest first
     from collections import defaultdict
-    subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).all()
+    subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).order_by(SubTask.sub_task_id.desc()).all()
     p_member_ids = list({s.p_members_id for s in subtasks if s.p_members_id})
     pm_to_user = {}
     if p_member_ids:
@@ -979,23 +979,24 @@ def task_details(id=None):
                     pm_to_user[pm.p_members_id] = u.name or u.username
     sub_note_ids = [s.sub_task_id for s in subtasks]
     notes_by_sub = defaultdict(list)
+    notes_full_by_sub = defaultdict(list)
     if sub_note_ids:
-        for n in Notes.query.filter(Notes.sub_task_id.in_(sub_note_ids)).order_by(Notes.created_on.desc()).all():
+        sub_notes = Notes.query.filter(Notes.sub_task_id.in_(sub_note_ids)).order_by(Notes.created_on.asc()).all()
+        note_author_ids = list({n.member_id for n in sub_notes if n.member_id})
+        note_authors = {u.member_id: (u.name or u.username) for u in User.query.filter(User.member_id.in_(note_author_ids)).all()} if note_author_ids else {}
+        for n in sub_notes:
+            author_name = note_authors.get(n.member_id, 'Unknown')
             notes_by_sub[n.sub_task_id].append(n.note_body or '')
-    subtask_list = []
-    for st in subtasks:
-        owner_name = pm_to_user.get(st.p_members_id, '—') if st.p_members_id else '—'
-        previews = notes_by_sub.get(st.sub_task_id, [])
-        notes_preview = (previews[0][:80] + '…') if previews and previews[0] else '—'
-        subtask_list.append(type('SubtaskRow', (), {
-            'sub_task_id': st.sub_task_id, 'generated_code': st.generated_code or '—',
-            'subtask_name': st.subtask_name or '—', 'owner_name': owner_name,
-            'status': st.status or 'Ongoing', 'checked_timestamp': st.checked_timestamp,
-            'notes_preview': notes_preview
-        })())
+            st_match = next((s for s in subtasks if s.sub_task_id == n.sub_task_id), None)
+            is_owner_note = st_match and st_match.p_members_id and n.p_members_id == st_match.p_members_id
+            role = 'Owner' if is_owner_note else 'Reviewer'
+            notes_full_by_sub[n.sub_task_id].append({
+                'author': author_name, 'role': role, 'body': n.note_body or '',
+                'created': n.created_on.strftime('%d/%m/%Y %H:%M') if n.created_on else '—'
+            })
+
     task_assignees_for_subtask = [m for m in task_project_members if m['p_members_id'] in assignee_p_members_ids]
 
-    # Current user's p_members_id (for member-owned subtask actions: Resume, Edit on On Hold)
     current_user_pm = ProjectMembers.query.filter_by(
         project_id=task.project_id, member_id=current_user.member_id
     ).first() if task.project_id else None
@@ -1007,12 +1008,26 @@ def task_details(id=None):
         previews = notes_by_sub.get(st.sub_task_id, [])
         notes_preview = (previews[0][:80] + '…') if previews and previews[0] else '—'
         is_owner = bool(st.p_members_id and current_user_p_members_id and st.p_members_id == current_user_p_members_id)
+        created_str = st.created_on.strftime('%d/%m/%Y %H:%M') if st.created_on else '—'
+        updated_ts = st.edited_on or (st.checked_timestamp if st.status == 'Approved' else None)
+        updated_str = updated_ts.strftime('%d/%m/%Y %H:%M') if updated_ts else None
+        timestamp_display = f"Created: {created_str}" + (f" | Updated: {updated_str}" if updated_str else "")
+        approved_date = st.checked_timestamp.strftime('%d/%m/%Y') if st.checked_timestamp else '—'
+        approved_time = st.checked_timestamp.strftime('%H:%M') if st.checked_timestamp else '—'
+        approved_by = (project.manager.name or project.manager.username) if project and project.manager else '—'
+        notes_full = notes_full_by_sub.get(st.sub_task_id, [])
         subtask_list.append(type('SubtaskRow', (), {
             'sub_task_id': st.sub_task_id, 'generated_code': st.generated_code or '—',
             'subtask_name': st.subtask_name or '—', 'owner_name': owner_name,
             'status': st.status or 'Ongoing', 'checked_timestamp': st.checked_timestamp,
-            'notes_preview': notes_preview, 'is_owner': is_owner
+            'notes_preview': notes_preview, 'is_owner': is_owner,
+            'created_on': st.created_on, 'edited_on': st.edited_on,
+            'timestamp_display': timestamp_display, 'notes_full': notes_full,
+            'created_str': created_str, 'updated_str': updated_str,
+            'approved_date': approved_date, 'approved_time': approved_time, 'approved_by': approved_by,
         })())
+
+    subtask_notes_map = {st.generated_code or '': st.notes_full for st in subtask_list}
 
     return render_template('task_details.html',
         task=task,
@@ -1028,6 +1043,7 @@ def task_details(id=None):
         manager_department=manager_department,
         subtask_list=subtask_list,
         task_assignees_for_subtask=task_assignees_for_subtask,
+        subtask_notes_map=subtask_notes_map,
     )
 
 
@@ -1702,7 +1718,56 @@ def approvals():
 
 
     return render_template('approvals.html', title="Approvals", tasks_data=tasks_data, stats=stats, users_json=users_json, departments=departments, today=date.today())
-    
+
+
+@project_bp.route("/approvals/<int:task_id>/subtask/<int:sub_task_id>/notes", methods=['GET'])
+@login_required
+def approvals_subtask_notes(task_id, sub_task_id):
+    """API: Return notes for a subtask (used by approvals page modal)."""
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    if not _can_act_on_subtask(subtask, task, current_user):
+        return jsonify({'error': 'Permission denied'}), 403
+    all_notes = Notes.query.filter_by(task_id=task_id, sub_task_id=sub_task_id).order_by(
+        Notes.pin_stat.desc(), Notes.created_on.asc()
+    ).all()
+    main_notes = [n for n in all_notes if not n.reply_code]
+    replies_map = {}
+    for n in all_notes:
+        if n.reply_code:
+            try:
+                parent_id = int(n.reply_code)
+                if parent_id not in replies_map:
+                    replies_map[parent_id] = []
+                replies_map[parent_id].append(n)
+            except (ValueError, TypeError):
+                pass
+    member_ids = list({n.member_id for n in all_notes if n.member_id})
+    user_by_id = {u.member_id: u for u in User.query.filter(User.member_id.in_(member_ids)).all()} if member_ids else {}
+    def _user_display(mid):
+        u = user_by_id.get(mid)
+        return (u.name or u.username or 'Unknown') if u else 'Unknown'
+    def _avatar_file(mid):
+        u = user_by_id.get(mid)
+        return (u.image_file or 'default.jpg') if u else 'default.jpg'
+    out = []
+    for n in main_notes:
+        replies = replies_map.get(n.notes_id, [])
+        out.append({
+            'note_body': n.note_body or '',
+            'author_name': _user_display(n.member_id),
+            'created_on': n.created_on.strftime('%b %d, %Y %H:%M') if n.created_on else '',
+            'generated_code': n.generated_code or '',
+            'pin_stat': bool(n.pin_stat),
+            'image_file': _avatar_file(n.member_id),
+            'replies': [
+                {'author_name': _user_display(r.member_id), 'created_on': r.created_on.strftime('%H:%M') if r.created_on else '', 'note_body': r.note_body or ''}
+                for r in replies
+            ],
+        })
+    return jsonify({'notes': out, 'subtask_name': subtask.subtask_name or 'Subtask'})
+
+
 @project_bp.route("/approvals/<int:task_id>/subtask/<int:sub_task_id>/status", methods=['POST'])
 @login_required
 def update_subtask_status_approvals(task_id, sub_task_id):
