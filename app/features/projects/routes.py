@@ -813,11 +813,14 @@ def delete_project(id):
         flash('Only the project manager can perform this action.', 'danger')
         return redirect(url_for('project.projects'))
     try:
-        ProjectMembers.query.filter_by(project_id=project.project_id).delete()
-        tasks = Task.query.filter_by(project_id=project.project_id).all()
-        for task in tasks:
-            SubTask.query.filter_by(parent_task_id=task.task_id).delete()
+        task_ids = [t.task_id for t in Task.query.filter_by(project_id=project.project_id).all()]
+        if task_ids:
+            Notes.query.filter(Notes.task_id.in_(task_ids)).delete(synchronize_session=False)
+            for task_id in task_ids:
+                SubTask.query.filter_by(parent_task_id=task_id).delete()
+            TaskAssignee.query.filter(TaskAssignee.task_id.in_(task_ids)).delete(synchronize_session=False)
         Task.query.filter_by(project_id=project.project_id).delete()
+        ProjectMembers.query.filter_by(project_id=project.project_id).delete()
         deadlines_id = project.deadlines_id
         db.session.delete(project)
         if deadlines_id:
@@ -1038,12 +1041,12 @@ def task_details(id=None):
         notes_preview = (previews[0][:80] + '…') if previews and previews[0] else '—'
         is_owner = bool(st.p_members_id and current_user_p_members_id and st.p_members_id == current_user_p_members_id)
         created_str = st.created_on.strftime('%d/%m/%Y %H:%M') if st.created_on else '—'
-        updated_ts = st.edited_on or (st.checked_timestamp if st.status == 'Approved' else None)
+        updated_ts = st.edited_on or st.checked_timestamp
         updated_str = updated_ts.strftime('%d/%m/%Y %H:%M') if updated_ts else None
         timestamp_display = f"Created: {created_str}" + (f" | Updated: {updated_str}" if updated_str else "")
-        approved_date = st.checked_timestamp.strftime('%d/%m/%Y') if st.checked_timestamp else '—'
-        approved_time = st.checked_timestamp.strftime('%H:%M') if st.checked_timestamp else '—'
-        approved_by = (project.manager.name or project.manager.username) if project and project.manager else '—'
+        done_date = st.checked_timestamp.strftime('%d/%m/%Y') if st.checked_timestamp else '—'
+        done_time = st.checked_timestamp.strftime('%H:%M') if st.checked_timestamp else '—'
+        is_done = st.is_checked or (st.status or '').lower() in ('approved', 'done')
         main_notes = subtask_main_notes.get(st.sub_task_id, [])
         replies_map = dict(subtask_replies_map.get(st.sub_task_id, {}))
         def build_note_tree(notes_list, rmap):
@@ -1057,12 +1060,13 @@ def task_details(id=None):
         subtask_list.append(type('SubtaskRow', (), {
             'sub_task_id': st.sub_task_id, 'generated_code': st.generated_code or '—',
             'subtask_name': st.subtask_name or '—', 'owner_name': owner_name,
-            'status': st.status or 'Ongoing', 'checked_timestamp': st.checked_timestamp,
+            'status': 'Done' if is_done else 'Ongoing', 'is_done': is_done,
+            'checked_timestamp': st.checked_timestamp,
             'notes_preview': notes_preview, 'is_owner': is_owner,
             'created_on': st.created_on, 'edited_on': st.edited_on,
             'timestamp_display': timestamp_display, 'notes_full': notes_full,
             'created_str': created_str, 'updated_str': updated_str,
-            'approved_date': approved_date, 'approved_time': approved_time, 'approved_by': approved_by,
+            'done_date': done_date, 'done_time': done_time,
         })())
 
     subtask_notes_map = {st.generated_code or '': st.notes_full for st in subtask_list}
@@ -1193,16 +1197,16 @@ def update_subtask_status(task_id, sub_task_id):
         flash('You do not have permission to update this subtask.', 'danger')
         return redirect(url_for('project.task_details', id=task_id))
     status = (request.form.get('status') or '').strip()
-    allowed = ('Ongoing', 'To be reviewed', 'Rejected', 'On Hold', 'Approved')
-    if status not in allowed:
+    if status not in ('Ongoing', 'Done'):
         flash('Invalid status.', 'danger')
         return redirect(url_for('project.task_details', id=task_id))
     subtask.status = status
-    if status == 'Approved':
-        from datetime import datetime as dt
-        subtask.checked_timestamp = dt.utcnow()
+    subtask.edited_on = datetime.now()
+    if status == 'Done':
+        subtask.checked_timestamp = datetime.now()
         subtask.is_checked = True
-        # Do NOT auto-complete task; use Mark Complete button explicitly
+    else:
+        subtask.is_checked = False
     try:
         db.session.commit()
         flash('Subtask updated.', 'success')

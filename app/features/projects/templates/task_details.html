@@ -331,12 +331,8 @@
                                         <td class="fw-semibold">{{ st.subtask_name }}</td>
                                         <td>{{ st.owner_name }}</td>
                                         <td>
-                                            {% if st.status == 'Ongoing' %}<span class="badge bg-soft-primary text-primary">Ongoing</span>
-                                            {% elif st.status == 'To be reviewed' %}<span class="badge bg-soft-warning text-warning">To be reviewed</span>
-                                            {% elif st.status == 'Rejected' %}<span class="badge bg-soft-danger text-danger">Rejected</span>
-                                            {% elif st.status == 'On Hold' %}<span class="badge bg-soft-secondary text-secondary">On Hold</span>
-                                            {% elif st.status == 'Approved' %}<span class="badge bg-soft-success text-success">Approved</span>
-                                            {% else %}<span class="badge bg-soft-primary text-primary">{{ st.status }}</span>{% endif %}
+                                            {% if st.is_done %}<span class="badge bg-soft-success text-success">Done</span>
+                                            {% else %}<span class="badge bg-soft-primary text-primary">Ongoing</span>{% endif %}
                                         </td>
                                         <td class="small subtask-timestamp-cell">Created: {{ st.created_str }}<br>Updated: {{ st.updated_str if st.updated_str else '—' }}</td>
                                         <td class="notes-preview-cell">
@@ -348,77 +344,39 @@
                                         <td class="subtask-action-cell">
                                             {% set can_act = is_project_manager or is_project_member %}
                                             {% if can_act %}
-                                                {% if st.status == 'Ongoing' %}
-                                                {# PM and member: same actions — dropup so menu opens upward and is not clipped #}
-                                                <div class="dropup">
-                                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>
-                                                    <ul class="dropdown-menu dropdown-menu-end shadow">
-                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="submit" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Submit for review">Submit</a></li>
-                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editSubtaskModal" data-edit-form-action="{{ url_for('project.edit_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Edit</a></li>
-                                                        <li><a class="dropdown-item subtask-status-link" href="#" data-url="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-status="On Hold">Hold</a></li>
-                                                        <li><a class="dropdown-item text-danger subtask-delete-link" href="#" data-url="{{ url_for('project.delete_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-code="{{ st.generated_code }}">Delete</a></li>
-                                                    </ul>
-                                                </div>
-                                                {% elif st.status == 'To be reviewed' %}
-                                                {% if is_project_manager %}
+                                                {% if st.is_done %}
                                                 <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline me-1">
                                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-                                                    <input type="hidden" name="status" value="Approved">
-                                                    <button type="submit" class="btn btn-sm btn-success" title="Approve" data-loading-text=" Approving...">
+                                                    <input type="hidden" name="status" value="Ongoing">
+                                                    <button type="submit" class="btn btn-sm btn-primary" title="Mark Ongoing" data-loading-text=" Updating...">
                                                         <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                                        <span class="btn-text"><i class="mdi mdi-check"></i></span>
-                                                    </button>
-                                                </form>
-                                                <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline">
-                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-                                                    <input type="hidden" name="status" value="Rejected">
-                                                    <button type="submit" class="btn btn-sm btn-danger" title="Reject" data-loading-text=" Rejecting...">
-                                                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                                        <span class="btn-text"><i class="mdi mdi-close"></i></span>
+                                                        <span class="btn-text">Mark Ongoing</span>
                                                     </button>
                                                 </form>
                                                 {% else %}
-                                                <span class="text-muted small">Pending review</span>
-                                                {% endif %}
-                                                {% elif st.status == 'Rejected' %}
-                                                {% if is_project_manager %}
-                                                <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline">
-                                                    <input type="hidden" name="status" value="To be reviewed">
+                                                <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline me-1">
                                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-                                                    <button type="submit" class="btn btn-sm btn-primary" data-loading-text=" Reverting...">
+                                                    <input type="hidden" name="status" value="Done">
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Mark as Done" data-loading-text=" Updating...">
                                                         <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                                        <span class="btn-text">Revert</span>
+                                                        <span class="btn-text"><i class="mdi mdi-check me-1"></i>Mark as Done</span>
                                                     </button>
                                                 </form>
-                                                {% else %}
-                                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="resubmit" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Re-Submit – reason for resubmit (will appear in notes)">Re-Submit</button>
                                                 {% endif %}
-                                                {% elif st.status == 'On Hold' %}
-                                                {% if is_project_manager %}
-                                                <div class="dropup">
+                                                <div class="dropup d-inline">
                                                     <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>
                                                     <ul class="dropdown-menu dropdown-menu-end shadow">
-                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up">Follow Up</a></li>
-                                                        <li><a class="dropdown-item subtask-status-link" href="#" data-url="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-status="Ongoing">Resume</a></li>
                                                         <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editSubtaskModal" data-edit-form-action="{{ url_for('project.edit_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Edit</a></li>
                                                         <li><a class="dropdown-item text-danger subtask-delete-link" href="#" data-url="{{ url_for('project.delete_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-code="{{ st.generated_code }}">Delete</a></li>
                                                     </ul>
                                                 </div>
-                                                {% elif st.is_owner %}
-                                                <div class="dropup">
-                                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>
-                                                    <ul class="dropdown-menu dropdown-menu-end shadow">
-                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up – send note for PM">Follow Up</a></li>
-                                                        <li><a class="dropdown-item subtask-status-link" href="#" data-url="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-status="Ongoing">Resume</a></li>
-                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editSubtaskModal" data-edit-form-action="{{ url_for('project.edit_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Edit</a></li>
-                                                        <li><a class="dropdown-item text-danger subtask-delete-link" href="#" data-url="{{ url_for('project.delete_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-code="{{ st.generated_code }}">Delete</a></li>
-                                                    </ul>
-                                                </div>
-                                                {% else %}
-                                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up – send note for PM">Follow Up</button>
+                                                {% if st.is_done and st.done_date %}
+                                                <div class="subtask-done-timestamp small text-muted mt-1">Done: {{ st.done_date }} {{ st.done_time }}</div>
                                                 {% endif %}
-                                                {% elif st.status == 'Approved' %}
-                                                <span class="subtask-approved-lines">Approved on: {{ st.approved_date }}<br>Time: {{ st.approved_time }}<br>({{ st.approved_by }})</span>{% endif %}
+                                            {% else %}
+                                                {% if st.is_done and st.done_date %}
+                                                <span class="subtask-done-timestamp small text-muted">Done: {{ st.done_date }} {{ st.done_time }}</span>
+                                                {% endif %}
                                             {% endif %}
                                         </td>
                                     </tr>

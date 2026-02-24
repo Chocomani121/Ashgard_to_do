@@ -6227,9 +6227,9 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
   white-space: normal;
   line-height: 1.4;
 }
-/* Action cell (col 7): allow 3-line approved text */
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(7) .subtask-approved-lines,
-.subtask-action-cell .subtask-approved-lines {
+/* Action cell (col 7): allow multi-line done timestamp */
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(7) .subtask-done-timestamp,
+.subtask-action-cell .subtask-done-timestamp {
   display: block;
   white-space: normal;
   line-height: 1.4;

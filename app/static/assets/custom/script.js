@@ -281,20 +281,21 @@ function confirmDeleteSubtask(url, code, formId) {
 
 // Delete SweetAlert for Projects (redirects to dashboard after delete)
 function confirmDeleteProject(projectId, projectName) {
+    var msg = "This will permanently delete the project \"" + (projectName || "this project") + "\" and all of its tasks, sub-tasks, notes, and team members. This cannot be undone.";
     if (typeof Swal === "undefined") {
-        if (window.confirm("Are you sure you want to delete " + (projectName || "this project") + "? You won't be able to revert this!")) {
+        if (window.confirm(msg)) {
             window.location.href = "/project_details/" + projectId + "/delete";
         }
         return;
     }
     Swal.fire({
         title: "Are you sure?",
-        text: "You are about to delete " + (projectName || "this project") + ". You won't be able to revert this!",
+        text: msg,
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#51d28c",
-        cancelButtonColor: "#f34e4e",
-        confirmButtonText: "Yes, delete it!"
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, delete everything"
     }).then(function (result) {
         if (result.isConfirmed) {
             window.location.href = "/project_details/" + projectId + "/delete";
