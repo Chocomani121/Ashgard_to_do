@@ -1279,6 +1279,42 @@ def subtask_note(task_id, sub_task_id):
     return redirect(url_for('project.task_details', id=task_id))
 
 
+@project_bp.route("/task_details/<int:task_id>/subtask/<int:sub_task_id>/note/reply/<int:parent_note_id>", methods=['POST'])
+@login_required
+def reply_subtask_note(task_id, sub_task_id, parent_note_id):
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    if not _can_act_on_subtask(subtask, task, current_user):
+        flash('You do not have permission to add a note to this subtask.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    body = (request.form.get('reply_body') or '').strip()
+    if not body:
+        flash('Reply content is required.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    parent = Notes.query.filter_by(notes_id=parent_note_id, sub_task_id=sub_task_id).first_or_404()
+    pm_entry = ProjectMembers.query.filter_by(
+        project_id=task.project_id, member_id=current_user.member_id
+    ).first()
+    p_members_id = pm_entry.p_members_id if pm_entry else None
+    new_note = Notes(
+        task_id=task_id,
+        sub_task_id=sub_task_id,
+        member_id=current_user.member_id,
+        p_members_id=p_members_id,
+        note_body=body,
+        reply_code=str(parent_note_id),
+        generated_code='reply',
+    )
+    db.session.add(new_note)
+    try:
+        db.session.commit()
+        flash('Reply saved.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Failed to save reply.', 'danger')
+    return redirect(url_for('project.task_details', id=task_id))
+
+
 @project_bp.route("/task_details/<int:task_id>/subtask/<int:sub_task_id>/edit", methods=['POST'])
 @login_required
 def edit_subtask(task_id, sub_task_id):

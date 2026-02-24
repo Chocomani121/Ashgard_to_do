@@ -18,7 +18,7 @@
                 {% endif %}
             {% endwith %}
 
-            <div class="row align-items-stretch task-details-equal-row">
+            <div class="row align-items-stretch g-4 task-details-equal-row mb-4">
                 <!-- LEFT: Task details (col-6, equal height with Notes) -->
                 <div class="col-6 d-flex">
                     <div class="card mb-4 flex-grow-1 d-flex flex-column task-details-card-equal">
@@ -296,11 +296,9 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Sub-Task Table -->
-            <div class="row mt-4">
+            <!-- Sub-Task Table (same row/col-12 grid as Task+Notes above for alignment) -->
+            <div class="row mt-4 g-4 task-details-subtask-row">
                 <div class="col-12">
                     <div class="card subtask-table-card">
                         <div class="card-header d-flex align-items-center">
@@ -398,6 +396,7 @@
                         </div>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
     </div>
