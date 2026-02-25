@@ -304,8 +304,8 @@
             <div class="row mt-4 g-4 task-details-subtask-row">
                 <div class="col-12">
                     <div class="card subtask-table-card">
-                        <div class="card-header d-flex align-items-center">
-                            <h4 class="card-title mb-0">Sub-Task [{{ subtask_list|length }}]{% if is_project_manager %} (Project Manager){% endif %}</h4>
+                        <div class="card-header d-flex align-items-center flex-wrap gap-2">
+                            <h4 class="card-title mb-0">Sub-Task [{{ subtask_list|length }}]</h4>
                             {% if is_project_manager or is_project_member %}
                             <div class="ms-auto">
                                 <button class="btn btn-primary btn-rounded" data-bs-toggle="modal" data-bs-target=".create-task">
@@ -316,7 +316,7 @@
                         </div>
 
                         <div class="card-body subtask-table-card-body">
-                            <div id="table6-gridjs" class="projectsTableTaskDetailsPM {% if not is_project_member %}subtask-view-only{% endif %}"></div>
+                            <div id="table6-gridjs" class="projectsTableTaskDetailsPM subtask-id-col-hidden {% if not is_project_member %}subtask-view-only{% endif %}"></div>
 
                             <table id="projectsTableTaskDetailsPM" class="table d-none">
                                 <thead>

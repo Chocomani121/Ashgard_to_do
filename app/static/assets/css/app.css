@@ -6214,6 +6214,11 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
 .subtask-notes-list .note-edit-toggle:hover {
   color: var(--bs-body-color) !important;
 }
+/* Sub-task table: hide ID column */
+#table6-gridjs.subtask-id-col-hidden .gridjs-th:nth-child(1),
+#table6-gridjs.subtask-id-col-hidden .gridjs-td:nth-child(1) {
+  display: none !important;
+}
 .projectsTableTaskDetailsPM .notes-preview-inner {
   max-height: 120px;
   overflow-y: auto;
