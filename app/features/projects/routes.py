@@ -1000,7 +1000,9 @@ def task_details(id=None):
     if sub_note_ids:
         sub_notes = Notes.query.filter(Notes.sub_task_id.in_(sub_note_ids)).order_by(Notes.created_on.asc()).all()
         note_author_ids = list({n.member_id for n in sub_notes if n.member_id})
-        note_authors = {u.member_id: (u.name or u.username) for u in User.query.filter(User.member_id.in_(note_author_ids)).all()} if note_author_ids else {}
+        note_author_users = {u.member_id: u for u in User.query.filter(User.member_id.in_(note_author_ids)).all()} if note_author_ids else {}
+        note_authors = {mid: (u.name or u.username) for mid, u in note_author_users.items()}
+        note_author_images = {mid: (u.image_file or 'default.jpg') for mid, u in note_author_users.items()}
         for n in sub_notes:
             author_name = note_authors.get(n.member_id, 'Unknown')
             notes_by_sub[n.sub_task_id].append(n.note_body or '')
@@ -1024,7 +1026,8 @@ def task_details(id=None):
             edit_url = url_for('project.edit_note', note_id=n.notes_id)
             is_author = n.member_id == current_user.member_id if current_user and current_user.member_id else False
             note_row = {
-                'notes_id': n.notes_id, 'author': author_name, 'role': role, 'body': n.note_body or '',
+                'notes_id': n.notes_id, 'author': author_name, 'author_image': note_author_images.get(n.member_id, 'default.jpg'),
+                'role': role, 'body': n.note_body or '',
                 'created': n.created_on.strftime('%d/%m/%Y %H:%M') if n.created_on else '—',
                 'remark': remark, 'remark_badge_class': badge_class, 'member_id': n.member_id,
                 'reply_url': reply_url, 'edit_url': edit_url, 'is_author': is_author,
