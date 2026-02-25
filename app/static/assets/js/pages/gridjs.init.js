@@ -1792,7 +1792,11 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('companyWideModalDepartment').textContent = report.department_name || '—';
             document.getElementById('companyWideModalCreated').textContent = report.created_on || '—';
             var mStatus = document.getElementById('companyWideModalStatus');
-            if (mStatus) mStatus.textContent = report.is_checked ? 'Reviewed' : 'Pending';
+            if (mStatus) {
+              var label = report.is_checked ? 'Reviewed' : 'Pending';
+              var cls = report.is_checked ? 'badge bg-secondary bg-opacity-75 px-2 py-1' : 'badge bg-danger bg-opacity-75 px-2 py-1';
+              mStatus.innerHTML = '<span class="' + cls + '">' + label + '</span>';
+            }
             document.getElementById('companyWideModalBody').innerHTML = report.report_content || '';
 
             document.getElementById('companyWideModalReportId').value = report.report_id;
