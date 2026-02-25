@@ -6128,42 +6128,40 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
   overflow: visible;
 }
 
-/* Subtask table: align width with Task + Notes cards above; constrain to prevent overflow */
-.task-details-subtask-row .col-12 {
-  min-width: 0;
-  max-width: 100%;
-}
+/* Subtask table: same left/right edges as Task+Notes (now in same row) */
 .subtask-table-card {
   width: 100%;
-  max-width: 100%;
   box-sizing: border-box;
-  overflow-x: hidden; /* prevent table from expanding card beyond Task+Notes row */
 }
 .subtask-table-card-body {
   overflow: visible !important;
-  min-width: 0; /* allow flex shrink */
-}
-/* For PM Task Details – subtask table: align with cards above, constrain width, scroll when needed */
-#table6-gridjs {
-  max-width: 100%;
+  min-width: 0;
   width: 100%;
-  overflow: hidden; /* constrain GridJS; inner wrapper handles scroll */
+}
+/* Subtask GridJS table: fill full width of card body */
+#table6-gridjs {
+  width: 100% !important;
+  max-width: 100%;
+  overflow: hidden;
 }
 #table6-gridjs .gridjs,
 #table6-gridjs .gridjs-head,
-#table6-gridjs .gridjs-wrapper {
+#table6-gridjs .gridjs-wrapper,
+#table6-gridjs .gridjs-container {
+  width: 100% !important;
   max-width: 100%;
 }
 #table6-gridjs .gridjs-container {
   display: block !important;
-  width: 100% !important;
-  max-width: 100%;
 }
 #table6-gridjs .gridjs-wrapper {
+  width: 100% !important;
   overflow: auto !important;
-  max-width: 100%;
   max-height: 50vh;
   -webkit-overflow-scrolling: touch;
+}
+#table6-gridjs .gridjs-table {
+  min-width: 100%;
 }
 .subtask-table-card .gridjs-head {
   overflow: visible !important;
@@ -6213,6 +6211,11 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
 }
 .subtask-notes-list .note-edit-toggle:hover {
   color: var(--bs-body-color) !important;
+}
+/* Subtask table: hide ID column (no button, always hidden) */
+#table6-gridjs.subtask-id-col-hidden .gridjs-th:nth-child(1),
+#table6-gridjs.subtask-id-col-hidden .gridjs-td:nth-child(1) {
+  display: none !important;
 }
 .projectsTableTaskDetailsPM .notes-preview-inner {
   max-height: 120px;
@@ -6267,6 +6270,15 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
 .task-details-equal-row {
   display: flex;
   flex-wrap: nowrap;
+}
+/* Main row: allow wrap so subtask col-12 wraps below Task+Notes */
+.task-details-main-row {
+  flex-wrap: wrap;
+}
+.task-details-subtask-col {
+  flex: 0 0 100%;
+  max-width: 100%;
+  margin-top: 1rem; /* visual separation from Task+Notes */
 }
 .task-details-equal-row > .col-6 {
   display: flex;
