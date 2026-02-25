@@ -270,11 +270,16 @@ function confirmDeleteSubtask(url, code, formId) {
         showCancelButton: true,
         confirmButtonColor: "#f34e4e",
         cancelButtonColor: "#74788d",
-        confirmButtonText: "Yes, delete it",
-        preConfirm: function () {
+        confirmButtonText: "Yes, delete it"
+    }).then(function (result) {
+        if (result.isConfirmed) {
             form.action = url;
+            Swal.fire({
+                title: "Deleting...",
+                allowOutsideClick: false,
+                didOpen: function () { Swal.showLoading(); }
+            });
             form.submit();
-            return new Promise(function () {}); // Keeps loader until page navigates
         }
     });
 }
