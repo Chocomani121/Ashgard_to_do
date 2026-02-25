@@ -862,12 +862,15 @@ def task_details(id=None):
         flash('Task not found', 'error')
         return redirect(url_for('project.projects'))
     
-    # All notes for this task (no sub_task_id filter - show all)
-    all_notes = Notes.query.filter_by(task_id=task.task_id).order_by(
+    # Task-level notes only (right-hand Notes box): exclude subtask notes so they don't repeat
+    all_notes = Notes.query.filter(
+        Notes.task_id == task.task_id,
+        Notes.sub_task_id.is_(None)
+    ).order_by(
         Notes.pin_stat.desc(),
         Notes.created_on.desc()
     ).all()
-    
+
     main_notes = [n for n in all_notes if not n.reply_code]
 
     replies_map = {}

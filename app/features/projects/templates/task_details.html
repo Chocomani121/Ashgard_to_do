@@ -842,10 +842,10 @@ document.addEventListener("DOMContentLoaded", function() {
     function esc(s) { return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
     function escHtml(s) { return esc(s).replace(/\n/g, "<br>"); }
     function renderNote(n, indent) {
-        var actions = "<div class=\"mt-2\"><a href=\"#\" class=\"text-primary small me-3 note-reply-toggle\" data-note-id=\"" + (n.notes_id || "") + "\"><i class=\"mdi mdi-reply me-1\"></i>Reply</a>";
+        var actions = "<div class=\"mt-2\"><a href=\"#\" class=\"text-primary small me-3 subtask-note-reply-toggle\" data-note-id=\"" + (n.notes_id || "") + "\"><i class=\"mdi mdi-reply me-1\"></i>Reply</a>";
         if (n.is_author) actions += " <a href=\"#\" class=\"text-muted small note-edit-toggle\" data-notes-id=\"" + (n.notes_id || "") + "\" data-edit-url=\"" + esc(n.edit_url || "") + "\" data-note-title=\"" + esc(n.generated_code || "") + "\" data-note-body=\"" + esc(n.body || "") + "\"><i class=\"mdi mdi-pencil-outline me-1\"></i>Edit</a>";
         actions += "</div>";
-        var replyForm = "<div id=\"reply-form-" + (n.notes_id || "") + "\" class=\"mt-2 d-none\"><form class=\"note-reply-form\" action=\"" + esc(n.reply_url || "") + "\" method=\"POST\"><input type=\"hidden\" name=\"csrf_token\" value=\"" + esc(csrfToken) + "\"><div class=\"input-group input-group-sm\"><input type=\"text\" name=\"reply_body\" class=\"form-control\" placeholder=\"Write a reply...\" required><button class=\"btn btn-primary btn-sm note-reply-submit\" type=\"submit\" data-loading-text=\" Replying...\"><span class=\"btn-text\">Reply</span></button></div></form></div>";
+        var replyForm = "<div id=\"subtask-reply-form-" + (n.notes_id || "") + "\" class=\"mt-2 d-none\"><form class=\"subtask-note-reply-form\" action=\"" + esc(n.reply_url || "") + "\" method=\"POST\"><input type=\"hidden\" name=\"csrf_token\" value=\"" + esc(csrfToken) + "\"><div class=\"input-group input-group-sm\"><input type=\"text\" name=\"reply_body\" class=\"form-control\" placeholder=\"Write a reply...\" required><button class=\"btn btn-primary btn-sm note-reply-submit\" type=\"submit\" data-loading-text=\" Replying...\"><span class=\"btn-text\">Reply</span></button></div></form></div>";
         var viewHtml = "<div class=\"note-view\"><div class=\"d-flex justify-content-between align-items-start mb-1\"><span class=\"fw-medium small\">" + esc(n.author || "Unknown") + "</span><span class=\"text-muted small\">" + esc(n.created || "") + "</span></div><p class=\"note-body mb-0 small\" style=\"white-space: pre-wrap;\">" + escHtml(n.body || "") + "</p>" + actions + replyForm + "</div>";
         var editHtml = "<div class=\"note-edit d-none\"><textarea class=\"form-control form-control-sm mb-2\" rows=\"3\">" + esc(n.body || "") + "</textarea><button type=\"button\" class=\"btn btn-primary btn-sm me-1 note-inline-save\">Save</button><button type=\"button\" class=\"btn btn-secondary btn-sm note-inline-cancel\">Cancel</button></div>";
         var html = "<div class=\"note-block mb-3" + (indent ? " border-start ps-3" : "") + "\" data-notes-id=\"" + (n.notes_id || "") + "\" data-edit-url=\"" + esc(n.edit_url || "") + "\" data-note-title=\"" + esc(n.generated_code || "") + "\">" + viewHtml + editHtml + "</div>";
@@ -919,14 +919,22 @@ document.addEventListener("DOMContentLoaded", function() {
             bootstrap.Modal.getOrCreateInstance(addModal).show();
         }
     });
-    // Reply toggle and Edit link inside subtask notes modal (event delegation)
+    // Reply toggle and Edit link inside subtask notes modal (event delegation) – use subtask-specific IDs so task notes and subtask notes stay separate
     document.addEventListener("click", function(e) {
-        var replyTog = e.target.closest(".note-reply-toggle");
+        var replyTog = e.target.closest(".subtask-note-reply-toggle");
         if (replyTog) {
             e.preventDefault();
-            var fid = "reply-form-" + (replyTog.getAttribute("data-note-id") || "");
+            var fid = "subtask-reply-form-" + (replyTog.getAttribute("data-note-id") || "");
             var formEl = document.getElementById(fid);
             if (formEl) formEl.classList.toggle("d-none");
+            return;
+        }
+        var replyTogTask = e.target.closest(".note-reply-toggle");
+        if (replyTogTask) {
+            e.preventDefault();
+            var fidTask = "reply-form-" + (replyTogTask.getAttribute("data-note-id") || "");
+            var formElTask = document.getElementById(fidTask);
+            if (formElTask) formElTask.classList.toggle("d-none");
             return;
         }
         var editTog = e.target.closest(".note-edit-toggle");
@@ -1033,10 +1041,10 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Notes: loading state on Reply forms Spinner
+    // Notes: loading state on Reply forms (task notes and subtask notes)
     document.addEventListener('submit', function(e) {
         var form = e.target;
-        if (form && form.classList && form.classList.contains('note-reply-form')) {
+        if (form && (form.classList.contains('note-reply-form') || form.classList.contains('subtask-note-reply-form'))) {
             var btn = form.querySelector('.note-reply-submit');
             if (btn && !btn.disabled) {
                 btn.disabled = true;
