@@ -813,11 +813,14 @@ def delete_project(id):
         flash('Only the project manager can perform this action.', 'danger')
         return redirect(url_for('project.projects'))
     try:
-        ProjectMembers.query.filter_by(project_id=project.project_id).delete()
-        tasks = Task.query.filter_by(project_id=project.project_id).all()
-        for task in tasks:
-            SubTask.query.filter_by(parent_task_id=task.task_id).delete()
+        task_ids = [t.task_id for t in Task.query.filter_by(project_id=project.project_id).all()]
+        if task_ids:
+            Notes.query.filter(Notes.task_id.in_(task_ids)).delete(synchronize_session=False)
+            for task_id in task_ids:
+                SubTask.query.filter_by(parent_task_id=task_id).delete()
+            TaskAssignee.query.filter(TaskAssignee.task_id.in_(task_ids)).delete(synchronize_session=False)
         Task.query.filter_by(project_id=project.project_id).delete()
+        ProjectMembers.query.filter_by(project_id=project.project_id).delete()
         deadlines_id = project.deadlines_id
         db.session.delete(project)
         if deadlines_id:
@@ -966,9 +969,9 @@ def task_details(id=None):
     elif project and project.department_id:
         manager_department = Department.query.get(project.department_id)
 
-    # Build subtask_list for template (SubTask with owner_name, notes_preview)
+    # Build subtask_list for template (SubTask with owner_name, notes_preview) - newest first
     from collections import defaultdict
-    subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).all()
+    subtasks = SubTask.query.filter_by(parent_task_id=task.task_id).order_by(SubTask.created_on.desc()).all()
     p_member_ids = list({s.p_members_id for s in subtasks if s.p_members_id})
     pm_to_user = {}
     if p_member_ids:
@@ -979,23 +982,55 @@ def task_details(id=None):
                     pm_to_user[pm.p_members_id] = u.name or u.username
     sub_note_ids = [s.sub_task_id for s in subtasks]
     notes_by_sub = defaultdict(list)
+    notes_full_by_sub = defaultdict(list)
+    subtask_main_notes = defaultdict(list)
+    subtask_replies_map = defaultdict(lambda: defaultdict(list))
     if sub_note_ids:
-        for n in Notes.query.filter(Notes.sub_task_id.in_(sub_note_ids)).order_by(Notes.created_on.desc()).all():
+        sub_notes = Notes.query.filter(Notes.sub_task_id.in_(sub_note_ids)).order_by(Notes.created_on.asc()).all()
+        note_author_ids = list({n.member_id for n in sub_notes if n.member_id})
+        note_authors = {u.member_id: (u.name or u.username) for u in User.query.filter(User.member_id.in_(note_author_ids)).all()} if note_author_ids else {}
+        for n in sub_notes:
+            author_name = note_authors.get(n.member_id, 'Unknown')
             notes_by_sub[n.sub_task_id].append(n.note_body or '')
-    subtask_list = []
-    for st in subtasks:
-        owner_name = pm_to_user.get(st.p_members_id, '—') if st.p_members_id else '—'
-        previews = notes_by_sub.get(st.sub_task_id, [])
-        notes_preview = (previews[0][:80] + '…') if previews and previews[0] else '—'
-        subtask_list.append(type('SubtaskRow', (), {
-            'sub_task_id': st.sub_task_id, 'generated_code': st.generated_code or '—',
-            'subtask_name': st.subtask_name or '—', 'owner_name': owner_name,
-            'status': st.status or 'Ongoing', 'checked_timestamp': st.checked_timestamp,
-            'notes_preview': notes_preview
-        })())
+            st_match = next((s for s in subtasks if s.sub_task_id == n.sub_task_id), None)
+            is_owner_note = st_match and st_match.p_members_id and n.p_members_id == st_match.p_members_id
+            role = 'Owner' if is_owner_note else 'Reviewer'
+            remark_lower = (n.generated_code or 'note').lower().replace(' ', '_')
+            if remark_lower in ('submit', 'resubmit', 'to_be_reviewed'):
+                remark, badge_class = 'To be reviewed', 'bg-soft-warning text-warning'
+            elif remark_lower in ('rejected',):
+                remark, badge_class = 'Rejected', 'bg-soft-danger text-danger'
+            elif remark_lower in ('ongoing', 'follow_up', 'follow up'):
+                remark, badge_class = 'Ongoing', 'bg-soft-primary text-primary'
+            elif remark_lower in ('on_hold',):
+                remark, badge_class = 'On Hold', 'bg-soft-secondary text-secondary'
+            elif remark_lower in ('approved',):
+                remark, badge_class = 'Approved', 'bg-soft-success text-success'
+            else:
+                remark, badge_class = None, None
+            reply_url = url_for('project.reply_subtask_note', task_id=task.task_id, sub_task_id=n.sub_task_id, parent_note_id=n.notes_id)
+            edit_url = url_for('project.edit_note', note_id=n.notes_id)
+            is_author = n.member_id == current_user.member_id if current_user and current_user.member_id else False
+            note_row = {
+                'notes_id': n.notes_id, 'author': author_name, 'role': role, 'body': n.note_body or '',
+                'created': n.created_on.strftime('%d/%m/%Y %H:%M') if n.created_on else '—',
+                'remark': remark, 'remark_badge_class': badge_class, 'member_id': n.member_id,
+                'reply_url': reply_url, 'edit_url': edit_url, 'is_author': is_author,
+                'reply_code': int(n.reply_code) if n.reply_code and str(n.reply_code).isdigit() else None,
+                'generated_code': n.generated_code or ''
+            }
+            notes_full_by_sub[n.sub_task_id].append(note_row)
+            if n.reply_code:
+                try:
+                    parent_id = int(n.reply_code)
+                    subtask_replies_map[n.sub_task_id][parent_id].append(note_row)
+                except (ValueError, TypeError):
+                    subtask_main_notes[n.sub_task_id].append(note_row)
+            else:
+                subtask_main_notes[n.sub_task_id].append(note_row)
+
     task_assignees_for_subtask = [m for m in task_project_members if m['p_members_id'] in assignee_p_members_ids]
 
-    # Current user's p_members_id (for member-owned subtask actions: Resume, Edit on On Hold)
     current_user_pm = ProjectMembers.query.filter_by(
         project_id=task.project_id, member_id=current_user.member_id
     ).first() if task.project_id else None
@@ -1005,14 +1040,39 @@ def task_details(id=None):
     for st in subtasks:
         owner_name = pm_to_user.get(st.p_members_id, '—') if st.p_members_id else '—'
         previews = notes_by_sub.get(st.sub_task_id, [])
-        notes_preview = (previews[0][:80] + '…') if previews and previews[0] else '—'
+        latest = previews[-1] if previews else ''
+        notes_preview = (latest[:80] + '…') if latest else '—'
         is_owner = bool(st.p_members_id and current_user_p_members_id and st.p_members_id == current_user_p_members_id)
+        created_str = st.created_on.strftime('%d/%m/%Y %H:%M') if st.created_on else '—'
+        updated_ts = st.edited_on or st.checked_timestamp
+        updated_str = updated_ts.strftime('%d/%m/%Y %H:%M') if updated_ts else None
+        timestamp_display = f"Created: {created_str}" + (f" | Updated: {updated_str}" if updated_str else "")
+        done_date = st.checked_timestamp.strftime('%d/%m/%Y') if st.checked_timestamp else '—'
+        done_time = st.checked_timestamp.strftime('%H:%M') if st.checked_timestamp else '—'
+        is_done = st.is_checked or (st.status or '').lower() in ('approved', 'done')
+        main_notes = subtask_main_notes.get(st.sub_task_id, [])
+        replies_map = dict(subtask_replies_map.get(st.sub_task_id, {}))
+        def build_note_tree(notes_list, rmap):
+            def add_children(note):
+                kids = rmap.get(note['notes_id'], [])
+                note['children'] = [add_children(k) for k in kids]
+                return note
+            return [add_children(n) for n in notes_list]
+        notes_tree = build_note_tree(main_notes, replies_map)
+        notes_full = {'tree': notes_tree, 'main': main_notes, 'replies': replies_map}
         subtask_list.append(type('SubtaskRow', (), {
             'sub_task_id': st.sub_task_id, 'generated_code': st.generated_code or '—',
             'subtask_name': st.subtask_name or '—', 'owner_name': owner_name,
-            'status': st.status or 'Ongoing', 'checked_timestamp': st.checked_timestamp,
-            'notes_preview': notes_preview, 'is_owner': is_owner
+            'status': 'Done' if is_done else 'Ongoing', 'is_done': is_done,
+            'checked_timestamp': st.checked_timestamp,
+            'notes_preview': notes_preview, 'is_owner': is_owner,
+            'created_on': st.created_on, 'edited_on': st.edited_on,
+            'timestamp_display': timestamp_display, 'notes_full': notes_full,
+            'created_str': created_str, 'updated_str': updated_str,
+            'done_date': done_date, 'done_time': done_time,
         })())
+
+    subtask_notes_map = {st.generated_code or '': st.notes_full for st in subtask_list}
 
     return render_template('task_details.html',
         task=task,
@@ -1028,6 +1088,7 @@ def task_details(id=None):
         manager_department=manager_department,
         subtask_list=subtask_list,
         task_assignees_for_subtask=task_assignees_for_subtask,
+        subtask_notes_map=subtask_notes_map,
     )
 
 
@@ -1122,16 +1183,16 @@ def update_subtask_status(task_id, sub_task_id):
         flash('You do not have permission to update this subtask.', 'danger')
         return redirect(url_for('project.task_details', id=task_id))
     status = (request.form.get('status') or '').strip()
-    allowed = ('Ongoing', 'To be reviewed', 'Rejected', 'On Hold', 'Approved')
-    if status not in allowed:
+    if status not in ('Ongoing', 'Done'):
         flash('Invalid status.', 'danger')
         return redirect(url_for('project.task_details', id=task_id))
     subtask.status = status
-    if status == 'Approved':
-        from datetime import datetime as dt
-        subtask.checked_timestamp = dt.utcnow()
+    subtask.edited_on = datetime.now()
+    if status == 'Done':
+        subtask.checked_timestamp = datetime.now()
         subtask.is_checked = True
-        # Do NOT auto-complete task; use Mark Complete button explicitly
+    else:
+        subtask.is_checked = False
     try:
         db.session.commit()
         flash('Subtask updated.', 'success')
@@ -1220,6 +1281,42 @@ def subtask_note(task_id, sub_task_id):
     except Exception:
         db.session.rollback()
         flash('Failed to save note.', 'danger')
+    return redirect(url_for('project.task_details', id=task_id))
+
+
+@project_bp.route("/task_details/<int:task_id>/subtask/<int:sub_task_id>/note/reply/<int:parent_note_id>", methods=['POST'])
+@login_required
+def reply_subtask_note(task_id, sub_task_id, parent_note_id):
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    if not _can_act_on_subtask(subtask, task, current_user):
+        flash('You do not have permission to add a note to this subtask.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    body = (request.form.get('reply_body') or '').strip()
+    if not body:
+        flash('Reply content is required.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    parent = Notes.query.filter_by(notes_id=parent_note_id, sub_task_id=sub_task_id).first_or_404()
+    pm_entry = ProjectMembers.query.filter_by(
+        project_id=task.project_id, member_id=current_user.member_id
+    ).first()
+    p_members_id = pm_entry.p_members_id if pm_entry else None
+    new_note = Notes(
+        task_id=task_id,
+        sub_task_id=sub_task_id,
+        member_id=current_user.member_id,
+        p_members_id=p_members_id,
+        note_body=body,
+        reply_code=str(parent_note_id),
+        generated_code='reply',
+    )
+    db.session.add(new_note)
+    try:
+        db.session.commit()
+        flash('Reply saved.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Failed to save reply.', 'danger')
     return redirect(url_for('project.task_details', id=task_id))
 
 
