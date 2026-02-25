@@ -1061,10 +1061,10 @@ def task_details(id=None):
         done_date = st.checked_timestamp.strftime('%d/%m/%Y') if st.checked_timestamp else '—'
         done_time = st.checked_timestamp.strftime('%H:%M') if st.checked_timestamp else '—'
         is_done = st.is_checked or (st.status or '').lower() in ('approved', 'done')
-        main_notes = subtask_main_notes.get(st.sub_task_id, [])
+        st_main_notes = subtask_main_notes.get(st.sub_task_id, [])
         # Display newest main note first so modal matches the table preview (latest note)
-        main_notes = list(reversed(main_notes))
-        replies_map = dict(subtask_replies_map.get(st.sub_task_id, {}))
+        st_main_notes = list(reversed(st_main_notes))
+        st_replies_map = dict(subtask_replies_map.get(st.sub_task_id, {}))
         def build_note_tree(notes_list, rmap):
             def add_children(note):
                 kids = rmap.get(note['notes_id'], [])
