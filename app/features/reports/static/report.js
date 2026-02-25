@@ -599,6 +599,8 @@ document.addEventListener("DOMContentLoaded", function () {
                       if (mDept) mDept.textContent = report.department_name || "";
                       var mCreated = document.getElementById("companyWideModalCreated");
                       if (mCreated) mCreated.textContent = report.created_on || "";
+                      var mStatus = document.getElementById("companyWideModalStatus");
+                      if (mStatus) mStatus.textContent = report.is_checked ? "Reviewed" : "Pending";
                       var mBody = document.getElementById("companyWideModalBody");
                       if (mBody) mBody.innerHTML = report.report_content || "";
                       var bsModal = new bootstrap.Modal(modal);
