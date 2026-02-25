@@ -22,6 +22,15 @@ def _generate_task_code():
     raise ValueError('Could not generate unique task code')
 
 
+def _generate_subtask_code(task_id):
+    """Return a unique subtask code in the form ST#### (e.g. ST4721). ST + 4 random digits."""
+    for _ in range(100):
+        code = 'ST{:04d}'.format(random.randint(0, 9999))
+        if not SubTask.query.filter_by(parent_task_id=task_id, generated_code=code).first():
+            return code
+    raise ValueError('Could not generate unique subtask code')
+
+
 def _can_edit_task(task, user):
     """Check if user can edit or mark complete a task.
     Returns True if user is project manager OR assigned to the task."""
@@ -1039,9 +1048,11 @@ def task_details(id=None):
     subtask_list = []
     for st in subtasks:
         owner_name = pm_to_user.get(st.p_members_id, '—') if st.p_members_id else '—'
-        previews = notes_by_sub.get(st.sub_task_id, [])
-        latest = previews[-1] if previews else ''
-        notes_preview = (latest[:80] + '…') if latest else '—'
+        # Use latest main note for preview
+        main_notes_for_preview = subtask_main_notes.get(st.sub_task_id, [])
+        latest_main = main_notes_for_preview[-1] if main_notes_for_preview else None
+        latest_body = latest_main.get('body', '') if latest_main else ''
+        notes_preview = (latest_body[:80] + '…') if latest_body else '—'
         is_owner = bool(st.p_members_id and current_user_p_members_id and st.p_members_id == current_user_p_members_id)
         created_str = st.created_on.strftime('%d/%m/%Y %H:%M') if st.created_on else '—'
         updated_ts = st.edited_on or st.checked_timestamp
@@ -1050,8 +1061,10 @@ def task_details(id=None):
         done_date = st.checked_timestamp.strftime('%d/%m/%Y') if st.checked_timestamp else '—'
         done_time = st.checked_timestamp.strftime('%H:%M') if st.checked_timestamp else '—'
         is_done = st.is_checked or (st.status or '').lower() in ('approved', 'done')
-        st_main_notes = subtask_main_notes.get(st.sub_task_id, [])
-        st_replies_map = dict(subtask_replies_map.get(st.sub_task_id, {}))
+        main_notes = subtask_main_notes.get(st.sub_task_id, [])
+        # Display newest main note first so modal matches the table preview (latest note)
+        main_notes = list(reversed(main_notes))
+        replies_map = dict(subtask_replies_map.get(st.sub_task_id, {}))
         def build_note_tree(notes_list, rmap):
             def add_children(note):
                 kids = rmap.get(note['notes_id'], [])
@@ -1135,8 +1148,7 @@ def create_subtask(id):
     # New subtasks default to Ongoing (status field removed from form)
     status = 'Ongoing'
 
-    count = SubTask.query.filter_by(parent_task_id=task.task_id).count()
-    generated_code = f"ST{task.task_id}-{count + 1}"
+    generated_code = _generate_subtask_code(task.task_id)
 
     st = SubTask(
         parent_task_id=task.task_id,
@@ -1146,6 +1158,26 @@ def create_subtask(id):
         status=status,
     )
     db.session.add(st)
+    db.session.flush()  # get sub_task_id before creating note
+
+    # If notes provided, create a Notes record for this subtask (shows in table on first load)
+    note_body = (request.form.get('notes') or '').strip()
+    if note_body:
+        pm_entry = ProjectMembers.query.filter_by(
+            project_id=task.project_id,
+            member_id=current_user.member_id
+        ).first()
+        p_members_id = pm_entry.p_members_id if pm_entry else None
+        new_note = Notes(
+            task_id=task.task_id,
+            sub_task_id=st.sub_task_id,
+            member_id=current_user.member_id,
+            p_members_id=p_members_id,
+            note_body=note_body,
+            generated_code='note',
+        )
+        db.session.add(new_note)
+
     # If task was Completed, adding a subtask makes it Ongoing again
     if task.task_status == 'Completed':
         task.task_status = 'Ongoing'
