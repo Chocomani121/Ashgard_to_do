@@ -1470,6 +1470,11 @@ def delete_task(id):
     project_id = task.project_id
     task_id = task.task_id
     try:
+        # Delete notes before subtasks (notes_tbl.sub_task_id references sub_task_list)
+        subtask_ids = [s.sub_task_id for s in SubTask.query.filter_by(parent_task_id=task_id).all()]
+        if subtask_ids:
+            Notes.query.filter(Notes.sub_task_id.in_(subtask_ids)).delete(synchronize_session=False)
+        Notes.query.filter_by(task_id=task_id).delete()
         try:
             TaskAssignee.query.filter_by(task_id=task_id).delete()
         except Exception:
