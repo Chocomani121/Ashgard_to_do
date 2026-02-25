@@ -6188,17 +6188,31 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
 .projectsTableTaskDetailsPM .gridjs-th:nth-child(4),
 .projectsTableTaskDetailsPM .gridjs-td:nth-child(4) { width: 10%; }
 .projectsTableTaskDetailsPM .gridjs-th:nth-child(5),
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(5) { width: 14%; } /* Timestamp: 2-line */
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(5) { width: 18%; min-width: 140px; } /* Timestamp: 2 lines only */
 .projectsTableTaskDetailsPM .gridjs-th:nth-child(6),
 .projectsTableTaskDetailsPM .gridjs-td:nth-child(6) { width: 20%; } /* Notes: narrower */
 .projectsTableTaskDetailsPM .gridjs-th:nth-child(7),
 .projectsTableTaskDetailsPM .gridjs-td:nth-child(7) { width: 18%; } /* Action: 3-line */
 
-/* Notes column: wrap text, no fixed width, optional inner scroll for long content */
+/* Notes column: wrap text, clickable to open notes modal */
 .projectsTableTaskDetailsPM .notes-preview-cell {
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: normal;
+}
+.projectsTableTaskDetailsPM .notes-preview-clickable {
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+.projectsTableTaskDetailsPM .notes-preview-clickable:hover {
+  color: var(--vz-primary, #405189);
+  text-decoration: underline;
+}
+.projectsTableTaskDetailsPM .add-note-in-cell:hover {
+  text-decoration: underline;
+}
+.subtask-notes-list .note-edit-toggle:hover {
+  color: var(--bs-body-color) !important;
 }
 .projectsTableTaskDetailsPM .notes-preview-inner {
   max-height: 120px;
@@ -6224,12 +6238,16 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
 /* Timestamp cell (col 5): 2-line Created/Updated */
 .projectsTableTaskDetailsPM .gridjs-td:nth-child(5),
 .subtask-timestamp-cell {
-  white-space: normal;
   line-height: 1.4;
 }
-/* Action cell (col 7): allow 3-line approved text */
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(7) .subtask-approved-lines,
-.subtask-action-cell .subtask-approved-lines {
+.projectsTableTaskDetailsPM .subtask-timestamp-cell .text-nowrap,
+.subtask-timestamp-cell .text-nowrap {
+  display: block;
+  white-space: nowrap;
+}
+/* Action cell (col 7): allow multi-line done timestamp */
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(7) .subtask-done-timestamp,
+.subtask-action-cell .subtask-done-timestamp {
   display: block;
   white-space: normal;
   line-height: 1.4;

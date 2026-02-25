@@ -65,30 +65,47 @@ def create_app():
         response.headers["Expires"] = "0"
         return response
     # --- CONTEXT PROCESSOR FOR APPROVALS ---
-    
+
     @flask_app.context_processor
     def inject_show_approvals():
         from flask_login import current_user
-        from app.models import Project, Task, SubTask
+        from app.models import Report, ReportCC
+        from sqlalchemy.orm import joinedload
         show_approvals_in_navbar = False
         approvals_pending_count = 0
+        approvals_pending_preview = ''
         if current_user.is_authenticated:
-            pm_project_ids = [p.project_id for p in Project.query.filter_by(
-                project_manager=current_user.member_id
-            ).with_entities(Project.project_id).all()]
-            if pm_project_ids:
+            # Reports pending your approval (as reviewer)
+            pending_reports = Report.query.options(
+                joinedload(Report.author)
+            ).filter(
+                Report.reviewer_id == current_user.member_id,
+                Report.is_checked == False
+            ).all()
+            approvals_pending_count = len(pending_reports)
+            # Reports where you are CC'd
+            cc_count = ReportCC.query.filter(
+                ReportCC.member_id == current_user.member_id
+            ).count()
+            if approvals_pending_count > 0 or cc_count > 0:
                 show_approvals_in_navbar = True
-                task_ids = [t.task_id for t in Task.query.filter(
-                    Task.project_id.in_(pm_project_ids)
-                ).with_entities(Task.task_id).all()]
-                if task_ids:
-                    approvals_pending_count = SubTask.query.filter(
-                        SubTask.parent_task_id.in_(task_ids),
-                        SubTask.status.in_(('To be reviewed', 'On Hold', 'Rejected'))
-                    ).count()
+            # Build preview: "Pending from: John, Jane"
+            if pending_reports:
+                author_names = []
+                seen = set()
+                for r in pending_reports:
+                    if r.author:
+                        name = r.author.name or r.author.username or 'Unknown'
+                        if name not in seen:
+                            seen.add(name)
+                            author_names.append(name)
+                approvals_pending_preview = 'Pending from: ' + ', '.join(author_names[:5])
+                if len(author_names) > 5:
+                    approvals_pending_preview += '...'
         return {
             'show_approvals_in_navbar': show_approvals_in_navbar,
-            'approvals_pending_count': approvals_pending_count
+            'approvals_pending_count': approvals_pending_count,
+            'approvals_pending_preview': approvals_pending_preview
         }
 
     # --- BLUEPRINT REGISTRATION ---

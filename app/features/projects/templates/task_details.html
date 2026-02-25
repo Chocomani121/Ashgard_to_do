@@ -18,7 +18,7 @@
                 {% endif %}
             {% endwith %}
 
-            <div class="row align-items-stretch task-details-equal-row">
+            <div class="row align-items-stretch g-4 task-details-equal-row mb-4">
                 <!-- LEFT: Task details (col-6, equal height with Notes) -->
                 <div class="col-6 d-flex">
                     <div class="card mb-4 flex-grow-1 d-flex flex-column task-details-card-equal">
@@ -197,10 +197,10 @@
                                                     <span class="badge bg-warning text-dark mb-2"><i class="mdi mdi-pin me-1"></i>PINNED</span>
                                                 {% endif %}
                                                 
-                                                {% if note.generated_code and not note.reply_code %}
+                                                {% if note.generated_code %}
                                                     <h6 class="text-primary small mb-1">{{ note.generated_code }}</h6>
                                                 {% endif %}
-                                                <p class="mb-0 text-dark" style="white-space: pre-wrap;">{{ note.note_body or '' }}</p>
+                                                <p class="mb-0 text-dark" style="white-space: pre-wrap;">{{ note.note_body }}</p>
                                             </div>
 
                                             {# Actions #}
@@ -209,13 +209,15 @@
                                                     <i class="mdi mdi-reply me-1"></i>Reply
                                                 </a>
                                                 
-                                                {% if note.author and note.author.member_id == current_user.member_id %}
+                                                <!-- edit note button if the note is created by the current user -->
+                                                {% if note.author.member_id == current_user.member_id %}
                                                 <a href="javascript:void(0);" class="text-info small" 
                                                 onclick="openEditNoteModal(this)"
                                                 data-edit-url="{{ url_for('project.edit_note', note_id=note.notes_id) }}"
                                                 data-note-title="{{ (note.generated_code or '')|e }}"
                                                 data-note-body="{{ (note.note_body or '')|e }}">
-                                                    <i class="mdi mdi-pencil-outline me-1"></i>Edit
+                                                    <i class="mdi mdi-pencil-outline me-1"></i>
+                                                    Edit
                                                 </a>
                                                 {% endif %}
                                             </div>
@@ -223,8 +225,7 @@
                                             <!-- reply form if the note is created by the current user -->
                                             {# Reply Form #}
                                             <div id="reply-form-{{ note.notes_id }}" class="mt-2 d-none">
-                                                <form action="{{ url_for('project.reply_note', note_id=note.notes_id) }}" method="POST">
-                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                                                <form class="note-reply-form" action="{{ url_for('project.reply_note', note_id=note.notes_id) }}" method="POST">
                                                     <input type="hidden" name="task_id" value="{{ task.task_id }}">
                                                     <div class="input-group input-group-sm">
                                                         <input type="text" name="reply_body" class="form-control" placeholder="Write a reply..." required>
@@ -267,37 +268,42 @@
 
             <!-- Edit Note Modal -->
             <div class="modal fade" id="editNotesProjectModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content border-0 shadow-lg">
-                        <form id="editNoteForm" method="POST">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Edit Content</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow-lg">    
+                                <form id="editNoteForm" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Edit Content</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3" id="editTitleContainer">
+                                            <label class="form-label font-weight-bold">Title</label>
+                                            <input type="text" name="note_title" id="EditNotesProjectTitle" class="form-control">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label font-weight-bold">Message</label>
+                                            <textarea name="note_content" id="EditNotesProjectDescription" class="form-control" rows="4" required></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer bg-light">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-warning px-4" id="editNoteSubmitBtn" data-loading-text=" Updating...">
+                                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                            <span class="btn-text">Update</span>
+                                        </button>
+                                    </div>  
+                                </form>
                             </div>
-                            <div class="modal-body">
-                                <div class="mb-3" id="editTitleContainer">
-                                    <label class="form-label font-weight-bold">Title</label>
-                                    <input type="text" name="note_title" id="EditNotesProjectTitle" class="form-control">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label font-weight-bold">Message</label>
-                                    <textarea name="note_body" id="EditNotesProjectDescription" class="form-control" rows="4" required></textarea>
-                                </div>
-                            </div>
-                            <div class="modal-footer bg-light">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-primary px-4">Update</button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Sub-Task Table: full width, aligns with Task + Notes row above -->
-            <div class="row mt-4 task-details-subtask-row">
+            <!-- Sub-Task Table (same row/col-12 grid as Task+Notes above for alignment) -->
+            <div class="row mt-4 g-4 task-details-subtask-row">
                 <div class="col-12">
-                    <div class="card subtask-table-card w-100">
+                    <div class="card subtask-table-card">
                         <div class="card-header d-flex align-items-center">
                             <h4 class="card-title mb-0">Sub-Task [{{ subtask_list|length }}]{% if is_project_manager %} (Project Manager){% endif %}</h4>
                             {% if is_project_manager or is_project_member %}
@@ -327,98 +333,63 @@
                                 <tbody>
                                     {% for st in subtask_list %}
                                     <tr>
-                                        <td class="fw-semibold subtask-id-cell">{{ st.generated_code }}</td>
+                                        <td class="fw-semibold">{{ st.generated_code }}</td>
                                         <td class="fw-semibold">{{ st.subtask_name }}</td>
                                         <td>{{ st.owner_name }}</td>
                                         <td>
-                                            {% if st.status == 'Ongoing' %}<span class="badge bg-soft-primary text-primary">Ongoing</span>
-                                            {% elif st.status == 'To be reviewed' %}<span class="badge bg-soft-warning text-warning">To be reviewed</span>
-                                            {% elif st.status == 'Rejected' %}<span class="badge bg-soft-danger text-danger">Rejected</span>
-                                            {% elif st.status == 'On Hold' %}<span class="badge bg-soft-secondary text-secondary">On Hold</span>
-                                            {% elif st.status == 'Approved' %}<span class="badge bg-soft-success text-success">Approved</span>
-                                            {% else %}<span class="badge bg-soft-primary text-primary">{{ st.status }}</span>{% endif %}
+                                            {% if st.is_done %}<span class="badge bg-soft-success text-success">Done</span>
+                                            {% else %}<span class="badge bg-soft-primary text-primary">Ongoing</span>{% endif %}
                                         </td>
-                                        <td class="small subtask-timestamp-cell">Created: {{ st.created_str }}<br>Updated: {{ st.updated_str if st.updated_str else '—' }}</td>
+                                        <td class="subtask-timestamp-cell">
+                                            <span class="d-block text-nowrap">Created: {{ st.created_str }}</span>
+                                            <span class="d-block text-nowrap">Updated: {{ st.updated_str if st.updated_str else '—' }}</span>
+                                        </td>
                                         <td class="notes-preview-cell">
-                                            <button type="button" class="btn btn-link btn-sm p-0 text-primary text-decoration-none subtask-notes-view-btn" data-bs-toggle="modal" data-bs-target="#subtaskNotesModal" data-subtask-code="{{ st.generated_code }}" data-subtask-name="{{ st.subtask_name|e }}" data-task-id="{{ task.task_id }}" data-subtask-id="{{ st.sub_task_id }}" data-notes="{{ st.notes_full|tojson|e }}">
-                                                <span class="notes-preview-inner">{{ st.notes_preview if st.notes_preview != '—' else 'View / Add notes' }}</span>
-                                                <i class="mdi mdi-open-in-new ms-1 small"></i>
-                                            </button>
+                                            {% if st.notes_preview and st.notes_preview != '—' %}
+                                            <div class="notes-preview-clickable" role="button" tabindex="0" title="View notes"
+                                                data-generated-code="{{ st.generated_code or '' }}"
+                                                data-sub-task-id="{{ st.sub_task_id }}"
+                                                data-subtask-name="{{ st.subtask_name or 'Subtask' }}">
+                                                <span class="notes-preview-inner text-primary">{{ st.notes_preview }}</span>
+                                            </div>
+                                            {% else %}
+                                            <a href="javascript:void(0)" class="text-primary add-note-in-cell" role="button" tabindex="0" title="Add note"
+                                                data-bs-toggle="modal" data-bs-target="#subtaskNoteModal"
+                                                data-note-action="add" data-subtask-id="{{ st.sub_task_id }}"
+                                                data-modal-title="Add Note – {{ st.subtask_name or 'Subtask' }}">
+                                                <i class="mdi mdi-note-plus-outline me-1"></i>Add Note
+                                            </a>
+                                            {% endif %}
                                         </td>
-                                        <td class="subtask-action-cell">
+                                        <td class="text-nowrap">
                                             {% set can_act = is_project_manager or is_project_member %}
                                             {% if can_act %}
-                                                {% if st.status == 'Ongoing' %}
-                                                {# PM and member: same actions — dropup so menu opens upward and is not clipped #}
-                                                <div class="dropup">
-                                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>
-                                                    <ul class="dropdown-menu dropdown-menu-end shadow">
-                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="submit" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Submit for review">Submit</a></li>
-                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editSubtaskModal" data-edit-form-action="{{ url_for('project.edit_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Edit</a></li>
-                                                        <li><a class="dropdown-item subtask-status-link" href="#" data-url="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-status="On Hold">Hold</a></li>
-                                                        <li><a class="dropdown-item text-danger subtask-delete-link" href="#" data-url="{{ url_for('project.delete_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-code="{{ st.generated_code }}">Delete</a></li>
-                                                    </ul>
-                                                </div>
-                                                {% elif st.status == 'To be reviewed' %}
-                                                {% if is_project_manager %}
+                                                {% if st.is_done %}
                                                 <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline me-1">
                                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-                                                    <input type="hidden" name="status" value="Approved">
-                                                    <button type="submit" class="btn btn-sm btn-success" title="Approve" data-loading-text=" Approving...">
+                                                    <input type="hidden" name="status" value="Ongoing">
+                                                    <button type="submit" class="btn btn-sm btn-primary" title="Mark Ongoing" data-loading-text=" Updating...">
                                                         <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                                        <span class="btn-text"><i class="mdi mdi-check"></i></span>
-                                                    </button>
-                                                </form>
-                                                <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline">
-                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-                                                    <input type="hidden" name="status" value="Rejected">
-                                                    <button type="submit" class="btn btn-sm btn-danger" title="Reject" data-loading-text=" Rejecting...">
-                                                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                                        <span class="btn-text"><i class="mdi mdi-close"></i></span>
+                                                        <span class="btn-text">Mark Ongoing</span>
                                                     </button>
                                                 </form>
                                                 {% else %}
-                                                <span class="text-muted small">Pending review</span>
-                                                {% endif %}
-                                                {% elif st.status == 'Rejected' %}
-                                                {% if is_project_manager %}
-                                                <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline">
-                                                    <input type="hidden" name="status" value="To be reviewed">
+                                                <form method="POST" action="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" class="d-inline me-1">
                                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-                                                    <button type="submit" class="btn btn-sm btn-primary" data-loading-text=" Reverting...">
+                                                    <input type="hidden" name="status" value="Done">
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Mark as Done" data-loading-text=" Updating...">
                                                         <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                                        <span class="btn-text">Revert</span>
+                                                        <span class="btn-text"><i class="mdi mdi-check me-1"></i>Mark as Done</span>
                                                     </button>
                                                 </form>
-                                                {% else %}
-                                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="resubmit" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Re-Submit – reason for resubmit (will appear in notes)">Re-Submit</button>
                                                 {% endif %}
-                                                {% elif st.status == 'On Hold' %}
-                                                {% if is_project_manager %}
-                                                <div class="dropup">
+                                                <div class="dropup d-inline">
                                                     <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>
                                                     <ul class="dropdown-menu dropdown-menu-end shadow">
-                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up">Follow Up</a></li>
-                                                        <li><a class="dropdown-item subtask-status-link" href="#" data-url="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-status="Ongoing">Resume</a></li>
                                                         <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editSubtaskModal" data-edit-form-action="{{ url_for('project.edit_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Edit</a></li>
                                                         <li><a class="dropdown-item text-danger subtask-delete-link" href="#" data-url="{{ url_for('project.delete_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-code="{{ st.generated_code }}">Delete</a></li>
                                                     </ul>
                                                 </div>
-                                                {% elif st.is_owner %}
-                                                <div class="dropup">
-                                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>
-                                                    <ul class="dropdown-menu dropdown-menu-end shadow">
-                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up – send note for PM">Follow Up</a></li>
-                                                        <li><a class="dropdown-item subtask-status-link" href="#" data-url="{{ url_for('project.update_subtask_status', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-status="Ongoing">Resume</a></li>
-                                                        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editSubtaskModal" data-edit-form-action="{{ url_for('project.edit_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Edit</a></li>
-                                                        <li><a class="dropdown-item text-danger subtask-delete-link" href="#" data-url="{{ url_for('project.delete_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-code="{{ st.generated_code }}">Delete</a></li>
-                                                    </ul>
-                                                </div>
-                                                {% else %}
-                                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#subtaskNoteModal" data-note-action="follow_up" data-subtask-id="{{ st.sub_task_id }}" data-note-form-action="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-modal-title="Follow Up – send note for PM">Follow Up</button>
-                                                {% endif %}
-                                                {% elif st.status == 'Approved' %}
-                                                <span class="subtask-approved-lines">Approved on: {{ st.approved_date }}<br>Time: {{ st.approved_time }}<br>({{ st.approved_by }})</span>{% endif %}
                                             {% endif %}
                                         </td>
                                     </tr>
@@ -432,6 +403,7 @@
                         </div>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
     </div>
@@ -604,29 +576,6 @@
 </div>
 
 <!-- Notes Preview -->
-<!-- SubTask Notes Modal (full notes with Add Note, Reply, remark tags) -->
-<div class="modal fade" id="subtaskNotesModal" tabindex="-1" aria-hidden="true" data-current-member-id="{% if current_user and current_user.member_id %}{{ current_user.member_id }}{% else %}0{% endif %}" data-edit-note-url="{{ url_for('project.edit_note', note_id=0) }}" data-subtask-note-url="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=0) }}">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header d-flex align-items-center justify-content-between">
-                <h5 class="modal-title mb-0" id="subtaskNotesSubtaskName"></h5>
-                <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-primary btn-sm" id="subtaskNotesAddNoteBtn">
-                        <i class="mdi mdi-plus me-1"></i> Add Note
-                    </button>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-            </div>
-            <div class="modal-body" id="subtaskNotesModalBody">
-                <div class="subtask-notes-list" data-simplebar style="max-height: 450px; overflow-y: auto;"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="modal fade" id="notes-modal-preview" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -668,8 +617,7 @@
                     <div class="modal fade" id="taskNoteModal" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
-                                <form action="{{ url_for('project.add_note', task_id=task.task_id) }}" method="POST">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                                <form id="taskNoteForm" action="{{ url_for('project.add_note', task_id=task.task_id) }}" method="POST">
                                     <div class="modal-header">
                                         <h5 class="modal-title">Add Note</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -686,9 +634,9 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-primary" data-loading-text=" Adding...">
+                                        <button type="submit" class="btn btn-success" id="addNoteSubmitBtn" data-loading-text=" Adding...">
                                             <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                            <span class="btn-text">Add Note</span>
+                                            <span class="btn-text">Submit</span>
                                         </button>
                                     </div>
                                 </form>
@@ -702,12 +650,15 @@
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <form action="" method="POST" id="editNoteForm">
-                                <input type="hidden" name="note_title" id="edit_note_title" value="">
                                 <div class="modal-header">
                                     <h5 class="modal-title">Edit Note</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Title/Code</label>
+                                        <input type="text" name="note_title" id="edit_note_title" class="form-control">
+                                    </div>
                                     <div class="mb-3">
                                         <label class="form-label">Note Content</label>
                                         <textarea name="note_content" id="edit_note_body" class="form-control" rows="4" required></textarea>
@@ -719,31 +670,6 @@
                                         <span class="spinner-border spinner-border-sm d-none" role="status"></span>
                                         <span class="btn-text">Update Note</span>
                                     </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal fade" id="subtaskAddNoteModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <form method="POST" action="" id="subtaskAddNoteFormEl">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-                                <input type="hidden" name="action" value="note">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Add Note</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label class="form-label">Note</label>
-                                        <textarea name="note_body" class="form-control" rows="4" placeholder="Write a note..." required></textarea>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-primary">Add Note</button>
                                 </div>
                             </form>
                         </div>
@@ -773,7 +699,30 @@
                         </div>
                     </div>
 
-                    <!-- Subtask Note Modal (Submit / Re-Submit / Follow up) -->
+                    <!-- Subtask Notes View Modal (view all notes, Reply, Edit, Add Note) -->
+                    <div class="modal fade" id="subtaskNotesModal" tabindex="-1" aria-hidden="true" data-sub-task-id="" data-subtask-name="">
+                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header d-flex align-items-center justify-content-between">
+                                    <h5 class="modal-title mb-0" id="subtaskNotesModalTitle">Sub-Task Notes</h5>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <button type="button" class="btn btn-primary btn-sm" id="subtaskNotesAddNoteBtn" title="Add Note">
+                                            <i class="mdi mdi-plus me-1"></i> Add Note
+                                        </button>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                </div>
+                                <div class="modal-body" id="subtaskNotesModalBody">
+                                    <div class="subtask-notes-list"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subtask Note Modal (Add Note / Submit / Re-Submit / Follow up) -->
                     <div class="modal fade" id="subtaskNoteModal" tabindex="-1" data-bs-backdrop="static" data-note-url-template="{{ url_for('project.subtask_note', task_id=task.task_id, sub_task_id=0) }}">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
@@ -837,7 +786,6 @@
                         <input type="hidden" name="status" id="subtaskStatusFormStatus" value="">
                         </form>
 
-<script type="application/json" id="subtask-notes-data">{{ subtask_notes_map|tojson }}</script>
                         <!-- Hidden form for subtask delete -->
                         <form id="subtaskDeleteForm" method="POST" action="" class="d-none">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
@@ -870,12 +818,9 @@
                     </div>
 
 
+<script type="application/json" id="subtask-notes-data">{{ subtask_notes_map|tojson }}</script>
+<input type="hidden" id="subtask-notes-csrf" value="{{ csrf_token() if csrf_token is defined else '' }}">
 <script>
-(function() {
-    var el = document.getElementById('subtask-notes-data');
-    window.__SUBTASK_NOTES__ = el ? JSON.parse(el.textContent || '{}') : {};
-})();
-
 function openEditNoteModal(el) {
     var modalEl = document.getElementById('editNotesProjectModal');
     var form = modalEl ? modalEl.querySelector('form') : null;
@@ -890,6 +835,148 @@ function openEditNoteModal(el) {
     }
 }
 document.addEventListener("DOMContentLoaded", function() {
+    // Notes cell click: open subtask notes modal with Reply, Edit, Add Note
+    var csrfEl = document.getElementById("subtask-notes-csrf");
+    var csrfToken = csrfEl ? csrfEl.value : "";
+    var noteUrlTemplate = document.getElementById("subtaskNoteModal") ? (document.getElementById("subtaskNoteModal").getAttribute("data-note-url-template") || "") : "";
+    function esc(s) { return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+    function escHtml(s) { return esc(s).replace(/\n/g, "<br>"); }
+    function renderNote(n, indent) {
+        var actions = "<div class=\"mt-2\"><a href=\"#\" class=\"text-primary small me-3 note-reply-toggle\" data-note-id=\"" + (n.notes_id || "") + "\"><i class=\"mdi mdi-reply me-1\"></i>Reply</a>";
+        if (n.is_author) actions += " <a href=\"#\" class=\"text-muted small note-edit-toggle\" data-notes-id=\"" + (n.notes_id || "") + "\" data-edit-url=\"" + esc(n.edit_url || "") + "\" data-note-title=\"" + esc(n.generated_code || "") + "\" data-note-body=\"" + esc(n.body || "") + "\"><i class=\"mdi mdi-pencil-outline me-1\"></i>Edit</a>";
+        actions += "</div>";
+        var replyForm = "<div id=\"reply-form-" + (n.notes_id || "") + "\" class=\"mt-2 d-none\"><form class=\"note-reply-form\" action=\"" + esc(n.reply_url || "") + "\" method=\"POST\"><input type=\"hidden\" name=\"csrf_token\" value=\"" + esc(csrfToken) + "\"><div class=\"input-group input-group-sm\"><input type=\"text\" name=\"reply_body\" class=\"form-control\" placeholder=\"Write a reply...\" required><button class=\"btn btn-primary btn-sm note-reply-submit\" type=\"submit\" data-loading-text=\" Replying...\"><span class=\"btn-text\">Reply</span></button></div></form></div>";
+        var viewHtml = "<div class=\"note-view\"><div class=\"d-flex justify-content-between align-items-start mb-1\"><span class=\"fw-medium small\">" + esc(n.author || "Unknown") + "</span><span class=\"text-muted small\">" + esc(n.created || "") + "</span></div><p class=\"note-body mb-0 small\" style=\"white-space: pre-wrap;\">" + escHtml(n.body || "") + "</p>" + actions + replyForm + "</div>";
+        var editHtml = "<div class=\"note-edit d-none\"><textarea class=\"form-control form-control-sm mb-2\" rows=\"3\">" + esc(n.body || "") + "</textarea><button type=\"button\" class=\"btn btn-primary btn-sm me-1 note-inline-save\">Save</button><button type=\"button\" class=\"btn btn-secondary btn-sm note-inline-cancel\">Cancel</button></div>";
+        var html = "<div class=\"note-block mb-3" + (indent ? " border-start ps-3" : "") + "\" data-notes-id=\"" + (n.notes_id || "") + "\" data-edit-url=\"" + esc(n.edit_url || "") + "\" data-note-title=\"" + esc(n.generated_code || "") + "\">" + viewHtml + editHtml + "</div>";
+        return html;
+    }
+    function renderNotesRec(notes, replies, indent) {
+        var out = [];
+        for (var i = 0; i < notes.length; i++) {
+            var n = notes[i];
+            out.push(renderNote(n, indent));
+            var kids = (n.notes_id != null ? replies[String(n.notes_id)] : []) || [];
+            if (kids.length) out.push(renderNotesRec(kids, replies, true));
+        }
+        return out.join("");
+    }
+    document.addEventListener("click", function(e) {
+        var el = e.target.closest(".notes-preview-clickable");
+        if (!el) return;
+        e.preventDefault();
+        var code = el.getAttribute("data-generated-code") || "";
+        var subTaskId = el.getAttribute("data-sub-task-id") || "";
+        var name = el.getAttribute("data-subtask-name") || "Subtask";
+        var modalEl = document.getElementById("subtaskNotesModal");
+        if (modalEl) {
+            modalEl.setAttribute("data-sub-task-id", subTaskId);
+            modalEl.setAttribute("data-subtask-name", name);
+        }
+        var titleEl = document.getElementById("subtaskNotesModalTitle");
+        var listEl = document.querySelector("#subtaskNotesModalBody .subtask-notes-list");
+        if (titleEl) titleEl.textContent = (code ? code + ": " : "") + name;
+        if (!listEl) return;
+        var dataEl = document.getElementById("subtask-notes-data");
+        var notesMap = {};
+        if (dataEl && dataEl.textContent) { try { notesMap = JSON.parse(dataEl.textContent); } catch (err) {} }
+        var notesFull = notesMap[code] || {};
+        var main = notesFull.main || [];
+        var replies = notesFull.replies || {};
+        if (main.length === 0) {
+            listEl.innerHTML = "<p class=\"text-muted mb-0\">No notes yet.</p>";
+        } else {
+            listEl.innerHTML = renderNotesRec(main, replies, false);
+        }
+        if (modalEl && typeof bootstrap !== "undefined") {
+            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        }
+    });
+    // Add Note button in subtask notes modal: open subtaskNoteModal
+    document.getElementById("subtaskNotesAddNoteBtn") && document.getElementById("subtaskNotesAddNoteBtn").addEventListener("click", function() {
+        var modalEl = document.getElementById("subtaskNotesModal");
+        var subTaskId = modalEl ? modalEl.getAttribute("data-sub-task-id") : "";
+        var name = modalEl ? modalEl.getAttribute("data-subtask-name") : "Subtask";
+        if (!subTaskId || !noteUrlTemplate) return;
+        var url = noteUrlTemplate.replace("/subtask/0/", "/subtask/" + subTaskId + "/");
+        var form = document.getElementById("subtaskNoteForm");
+        var titleEl = document.getElementById("subtaskNoteModalTitle");
+        var actionInput = document.getElementById("subtaskNoteAction");
+        var bodyInput = document.getElementById("subtaskNoteBody");
+        var helpEl = document.getElementById("subtaskNoteHelp");
+        var submitBtn = document.getElementById("subtaskNoteModal") && document.getElementById("subtaskNoteModal").querySelector("#subtaskNoteSubmitBtn");
+        var btnText = submitBtn ? submitBtn.querySelector(".btn-text") : null;
+        if (form) form.action = url;
+        if (titleEl) titleEl.textContent = "Add Note – " + name;
+        if (actionInput) actionInput.value = "add";
+        if (bodyInput) bodyInput.value = "";
+        if (helpEl) helpEl.textContent = "";
+        if (btnText) btnText.textContent = "Save";
+        var addModal = document.getElementById("subtaskNoteModal");
+        if (addModal && typeof bootstrap !== "undefined") {
+            var v = bootstrap.Modal.getOrCreateInstance(document.getElementById("subtaskNotesModal"));
+            v.hide();
+            bootstrap.Modal.getOrCreateInstance(addModal).show();
+        }
+    });
+    // Reply toggle and Edit link inside subtask notes modal (event delegation)
+    document.addEventListener("click", function(e) {
+        var replyTog = e.target.closest(".note-reply-toggle");
+        if (replyTog) {
+            e.preventDefault();
+            var fid = "reply-form-" + (replyTog.getAttribute("data-note-id") || "");
+            var formEl = document.getElementById(fid);
+            if (formEl) formEl.classList.toggle("d-none");
+            return;
+        }
+        var editTog = e.target.closest(".note-edit-toggle");
+        if (editTog) {
+            e.preventDefault();
+            var block = editTog.closest(".note-block");
+            if (!block) return;
+            var viewEl = block.querySelector(".note-view");
+            var editEl = block.querySelector(".note-edit");
+            var textarea = editEl ? editEl.querySelector("textarea") : null;
+            if (viewEl && editEl && textarea) {
+                textarea.value = editTog.getAttribute("data-note-body") || "";
+                viewEl.classList.add("d-none");
+                editEl.classList.remove("d-none");
+                textarea.focus();
+            }
+            return;
+        }
+        var saveBtn = e.target.closest(".note-inline-save");
+        if (saveBtn) {
+            e.preventDefault();
+            var block = saveBtn.closest(".note-block");
+            if (!block) return;
+            var editUrl = block.getAttribute("data-edit-url");
+            var title = block.getAttribute("data-note-title") || "";
+            var textarea = block.querySelector(".note-edit textarea");
+            if (!editUrl || !textarea) return;
+            var body = textarea.value;
+            saveBtn.disabled = true;
+            var formData = new FormData();
+            formData.append("csrf_token", csrfToken);
+            formData.append("note_title", title);
+            formData.append("note_content", body);
+            fetch(editUrl, { method: "POST", body: formData })
+                .then(function(r) { saveBtn.disabled = false; if (r.ok) window.location.reload(); })
+                .catch(function() { saveBtn.disabled = false; });
+            return;
+        }
+        var cancelBtn = e.target.closest(".note-inline-cancel");
+        if (cancelBtn) {
+            e.preventDefault();
+            var block = cancelBtn.closest(".note-block");
+            if (!block) return;
+            var viewEl = block.querySelector(".note-view");
+            var editEl = block.querySelector(".note-edit");
+            if (viewEl && editEl) { viewEl.classList.remove("d-none"); editEl.classList.add("d-none"); }
+            return;
+        }
+    });
+
     // Subtask table 3-dots: fixed positioning + flip so full menu is visible (not clipped)
     function initSubtaskTableDropdowns() {
         var container = document.getElementById('table6-gridjs');
@@ -924,21 +1011,13 @@ document.addEventListener("DOMContentLoaded", function() {
     if (subtaskNoteModal) {
         document.body.appendChild(subtaskNoteModal);
     }
-    var editSubtaskModal = document.getElementById('editSubtaskModal');
-    if (editSubtaskModal) {
-        document.body.appendChild(editSubtaskModal);
-    }
     var subtaskNotesModal = document.getElementById('subtaskNotesModal');
     if (subtaskNotesModal) {
         document.body.appendChild(subtaskNotesModal);
     }
-    var editNoteModalEl = document.getElementById('editNoteModal');
-    if (editNoteModalEl) {
-        document.body.appendChild(editNoteModalEl);
-    }
-    var subtaskAddNoteModalEl = document.getElementById('subtaskAddNoteModal');
-    if (subtaskAddNoteModalEl) {
-        document.body.appendChild(subtaskAddNoteModalEl);
+    var editSubtaskModal = document.getElementById('editSubtaskModal');
+    if (editSubtaskModal) {
+        document.body.appendChild(editSubtaskModal);
     }
 
     // Notes: loading state on Add Note form Spinner
@@ -1038,156 +1117,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // SubTask Notes Modal: populate from embedded data or trigger's data-notes when opened
-    var subtaskNotesModalEl = document.getElementById('subtaskNotesModal');
-    var currentMemberId = parseInt(subtaskNotesModalEl ? (subtaskNotesModalEl.getAttribute('data-current-member-id') || '0') : '0', 10);
-    if (subtaskNotesModalEl) {
-        subtaskNotesModalEl.addEventListener('show.bs.modal', function(e) {
-            var trigger = e.relatedTarget;
-            if (!trigger) return;
-            var btn = trigger.classList && trigger.classList.contains('subtask-notes-view-btn') ? trigger : (trigger.closest && trigger.closest('.subtask-notes-view-btn'));
-            if (!btn) return;
-            var code = btn.dataset.subtaskCode || btn.getAttribute('data-subtask-code') || '';
-            var name = btn.dataset.subtaskName || btn.getAttribute('data-subtask-name') || '';
-            var taskId = btn.dataset.taskId || btn.getAttribute('data-task-id') || '';
-            var subtaskId = btn.dataset.subtaskId || btn.getAttribute('data-subtask-id') || '';
-            var titleEl = document.getElementById('subtaskNotesSubtaskName');
-            if (titleEl) titleEl.textContent = (code ? code + ': ' : '') + (name || 'Sub-Task');
-            var notesData = { main: [], replies: {} };
-            if (window.__SUBTASK_NOTES__ && code && window.__SUBTASK_NOTES__[code]) {
-                notesData = window.__SUBTASK_NOTES__[code];
-            } else {
-                var notesJson = btn.dataset.notes || btn.getAttribute('data-notes') || '{}';
-                try {
-                    var parsed = JSON.parse(notesJson.replace(/&quot;/g, '"'));
-                    notesData = parsed.main !== undefined ? parsed : { main: Array.isArray(parsed) ? parsed : [], replies: parsed.replies || {} };
-                } catch (err) { notesData = { main: [], replies: {} }; }
-            }
-            var modalEl = document.getElementById('subtaskNotesModal');
-            var noteUrlBase = modalEl ? (modalEl.getAttribute('data-subtask-note-url') || '') : '';
-            var addNoteUrl = (noteUrlBase && subtaskId) ? noteUrlBase.replace(/\/subtask\/\d+\//, '/subtask/' + subtaskId + '/') : '';
-            if (modalEl) {
-                modalEl.setAttribute('data-current-subtask-id', subtaskId || '');
-                modalEl.setAttribute('data-add-note-url', addNoteUrl || '');
-            }
-            var tree = notesData.tree || [];
-            var main = notesData.main || [];
-            var replies = notesData.replies || {};
-            var html = '';
-            function renderNote(n, depth) {
-                var indent = depth > 0 ? ' ms-3 border-start border-3 ps-3' : '';
-                var safeBody = (n.body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                var canEdit = n.member_id && currentMemberId && n.member_id == currentMemberId;
-                var badgeClass = n.remark_badge_class || 'bg-soft-secondary text-secondary';
-                var out = '<div class="d-flex mb-3 subtask-note-item' + indent + '" data-notes-id="' + (n.notes_id || '') + '">';
-                out += '<div class="flex-grow-1"><div class="d-flex justify-content-between align-items-center mb-1">';
-                out += '<div><strong>' + (n.author || 'Unknown') + '</strong>';
-                if (n.remark) out += ' <span class="badge ' + (badgeClass || 'bg-soft-secondary text-secondary') + ' ms-2">' + n.remark + '</span>';
-                out += '</div>';
-                out += '<small class="text-muted">' + (n.created || '') + '</small></div>';
-                out += '<p class="mb-2" style="white-space: pre-wrap;">' + safeBody + '</p>';
-                out += '<div class="mt-1"><a href="javascript:void(0);" class="text-primary small me-3 subtask-note-reply-link">Reply</a>';
-                if (canEdit) {
-                    out += '<a href="javascript:void(0);" class="text-info small subtask-note-edit-link" data-notes-id="' + (n.notes_id || '') + '" data-note-body="' + safeBody.replace(/"/g, '&quot;') + '" data-note-remark="' + (n.remark || '').replace(/"/g, '&quot;') + '">Edit</a>';
-                }
-                out += '</div>';
-                var replyAction = (n.reply_url || '#').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-                out += '<div class="subtask-reply-form mt-2 d-none" data-parent-id="' + (n.notes_id || '') + '"><form method="POST" action="' + replyAction + '">';
-                out += '<input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else "" }}">';
-                out += '<div class="input-group input-group-sm"><input type="text" name="reply_body" class="form-control" placeholder="Write a reply..." required><button class="btn btn-primary btn-sm" type="submit">Reply</button></div></form></div>';
-                out += '<div class="mt-2 subtask-replies">';
-                (n.children || []).forEach(function(c) { out += renderNote(c, depth + 1); });
-                out += '</div></div></div>';
-                return out;
-            }
-            if (tree.length > 0) {
-                tree.forEach(function(n) { html += renderNote(n, 0); });
-            } else if (main.length > 0) {
-                main.forEach(function(n) {
-                    var safeBody = (n.body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    var canEdit = n.member_id && currentMemberId && n.member_id == currentMemberId;
-                    html += '<div class="d-flex mb-4 border-bottom pb-3 subtask-note-item" data-notes-id="' + (n.notes_id || '') + '">';
-                    html += '<div class="flex-grow-1"><div class="d-flex justify-content-between align-items-center mb-1">';
-                    html += '<div><strong>' + (n.author || 'Unknown') + '</strong>';
-                    if (n.remark) html += ' <span class="badge ' + (n.remark_badge_class || 'bg-soft-secondary text-secondary') + ' ms-2">' + n.remark + '</span>';
-                    html += '</div>';
-                    html += '<small class="text-muted">' + (n.created || '') + '</small></div>';
-                    html += '<p class="mb-2" style="white-space: pre-wrap;">' + safeBody + '</p>';
-                    html += '<div class="mt-1"><a href="javascript:void(0);" class="text-primary small me-3 subtask-note-reply-link">Reply</a>';
-                    if (canEdit) {
-                        html += '<a href="javascript:void(0);" class="text-info small subtask-note-edit-link" data-notes-id="' + (n.notes_id || '') + '" data-note-body="' + safeBody.replace(/"/g, '&quot;') + '" data-note-remark="' + (n.remark || '').replace(/"/g, '&quot;') + '">Edit</a>';
-                    }
-                    html += '</div>';
-                    var replyAction = (n.reply_url || '#').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-                    html += '<div class="subtask-reply-form mt-2 d-none" data-parent-id="' + (n.notes_id || '') + '"><form method="POST" action="' + replyAction + '">';
-                    html += '<input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else "" }}">';
-                    html += '<div class="input-group input-group-sm"><input type="text" name="reply_body" class="form-control" placeholder="Write a reply..." required><button class="btn btn-primary btn-sm" type="submit">Reply</button></div></form></div>';
-                    html += '<div class="mt-2 subtask-replies" data-parent-id="' + (n.notes_id || '') + '">';
-                    (replies[n.notes_id] || []).forEach(function(r) {
-                        var rBody = (r.body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                        html += '<div class="mb-2 p-2 rounded bg-light border-start border-3 ps-3 small"><div class="d-flex justify-content-between align-items-center"><div><strong>' + (r.author || 'Unknown') + '</strong>';
-                        if (r.remark) html += ' <span class="badge ' + (r.remark_badge_class || 'bg-soft-secondary text-secondary') + ' ms-1">' + r.remark + '</span>';
-                        html += '</div><small class="text-muted">' + (r.created || '') + '</small></div><p class="mb-0">' + rBody + '</p></div>';
-                    });
-                    html += '</div></div></div>';
-                });
-            }
-            if (html === '') {
-                html = '<p class="text-muted mb-0">No notes for this sub-task. Click &quot;+ Add Note&quot; to add one.</p>';
-            }
-            document.getElementById('subtaskNotesModalBody').querySelector('.subtask-notes-list').innerHTML = html;
-        });
-    }
-    document.getElementById('subtaskNotesAddNoteBtn')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        var modalEl = document.getElementById('subtaskNotesModal');
-        var addForm = document.getElementById('subtaskAddNoteFormEl');
-        var addNoteUrl = modalEl ? (modalEl.getAttribute('data-add-note-url') || '') : '';
-        if (addForm && addNoteUrl) {
-            addForm.action = addNoteUrl;
-        } else if (addForm) {
-            var noteUrlBase = modalEl ? (modalEl.getAttribute('data-subtask-note-url') || '') : '';
-            var subtaskId = modalEl ? (modalEl.getAttribute('data-current-subtask-id') || '') : '';
-            if (noteUrlBase && subtaskId) {
-                addForm.action = noteUrlBase.replace(/\/subtask\/\d+\//, '/subtask/' + subtaskId + '/');
-            }
-        }
-        var textarea = addForm ? addForm.querySelector('textarea[name="note_body"]') : null;
-        if (textarea) textarea.value = '';
-        var addModal = document.getElementById('subtaskAddNoteModal');
-        if (addModal && typeof bootstrap !== 'undefined') {
-            new bootstrap.Modal(addModal).show();
-        }
-    });
-    document.addEventListener('click', function(e) {
-        var replyLink = e.target.closest('.subtask-note-reply-link');
-        if (replyLink) {
-            e.preventDefault();
-            var item = replyLink.closest('.subtask-note-item');
-            var form = item ? item.querySelector('.subtask-reply-form') : null;
-            if (form) form.classList.toggle('d-none');
-        }
-        var editLink = e.target.closest('.subtask-note-edit-link');
-        if (editLink) {
-            e.preventDefault();
-            var notesId = editLink.getAttribute('data-notes-id');
-            var body = (editLink.getAttribute('data-note-body') || '').replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-            var remark = (editLink.getAttribute('data-note-remark') || '').replace(/&quot;/g, '"');
-            var editModalEl = document.getElementById('editNoteModal');
-            var form = editModalEl ? editModalEl.querySelector('form') : null;
-            if (form && notesId) {
-                var editUrlEl = document.getElementById('subtaskNotesModal');
-                form.action = (editUrlEl ? (editUrlEl.getAttribute('data-edit-note-url') || '') : '').replace(/0$/, notesId);
-                var titleInput = document.getElementById('edit_note_title');
-                var bodyInput = document.getElementById('edit_note_body');
-                if (titleInput) titleInput.value = remark;
-                if (bodyInput) bodyInput.value = body;
-                var editModal = new bootstrap.Modal(editModalEl);
-                editModal.show();
-            }
-        }
-    });
-
     // Edit Subtask Modal: set form action and name when opened
     var editSubtaskModalEl = document.getElementById('editSubtaskModal');
     if (editSubtaskModalEl) {
@@ -1235,28 +1164,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 });
-
-function openEditNoteModal(noteId, title, body) {
-    const form = document.getElementById('editNoteForm');
-    // Point this to your edit route
-    form.action = `/project/edit_note/${noteId}`;
-
-    const titleInput = document.getElementById('EditNotesProjectTitle');
-    const titleContainer = document.getElementById('editTitleContainer');
-    
-    titleInput.value = title;
-    document.getElementById('EditNotesProjectDescription').value = body;
-
-    // Hide title field if editing a reply (replies usually don't have titles)
-    if (title === '') {
-        titleContainer.style.display = 'none';
-    } else {
-        titleContainer.style.display = 'block';
-    }
-
-    var editModal = new bootstrap.Modal(document.getElementById('editNotesProjectModal'));
-    editModal.show();
-}
 
 // Ensure modal is moved to body to avoid backdrop issues
 document.addEventListener("DOMContentLoaded", function() {

@@ -1392,6 +1392,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const tableElement = document.getElementById('projectsApproval');
         const gridContainer = document.getElementById("table10-gridjs");
         const dropdownButton = document.getElementById('categorySelect');
+        const dateInputApproval = document.getElementById('datepicker-range-approval');
         const dropdownMenu = dropdownButton ? dropdownButton.closest('.btn-group')?.querySelectorAll('.dropdown-item') || [] : [];
         
         // Must have table and grid container; dropdown optional (approvals page has no category dropdown)
@@ -1485,15 +1486,19 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
 
-            // Initialize Grid.js - columns match approvals.html: Task Name, Project, Department, Project Manager, Priority, Status, Start Date, Deadline, Progress, Sub Tasks
+            // Initialize Grid.js - columns match approvals.html: Report Owner, Week Range, Status
             grid = new gridjs.Grid({
-                columns: ["Project", "Task", "Subtask","Notes", "Status", "Action"],
+                columns: ["Report Owner", "Week Range", "Status", "Reviewer"],
                 data: getFilteredData().map(row => row.cells),
-                pagination: { limit: 10 },
+                pagination: { limit: 15 },
                 sort: true,
                 search: false, // Disable built-in search, handle manually
                 className: {
                     table: 'table table-bordered'
+                },
+                style: {
+                    th: { 'background-color': '#f8f9fa', 'color': '#495057', 'text-align': 'center' },
+                    td: { 'text-align': 'center' }
                 }
             }).render(gridContainer);
             setTimeout(function() { if (typeof applyProgressBarWidths === 'function') applyProgressBarWidths(gridContainer); }, 100);
@@ -1552,7 +1557,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Initialize Flatpickr date range picker
-            const dateRangeInput = document.getElementById('datepicker-range-dept-approval');
+            const dateRangeInput = document.getElementById('datepicker-range-approval');
             if (dateRangeInput) {
                 // Wait for flatpickr to be available
                 const initDatePicker = () => {
@@ -1711,12 +1716,70 @@ document.addEventListener('DOMContentLoaded', function() {
         grid.updateConfig({ data: filtered.map(rowToGridData) }).forceRender();
     }
 
-    // 4. Delegate click on name link -> open report modal
+    // 4. Company-wide report modal: open, comment, reply, edit
     const reportsDataEl = document.getElementById('reports-data');
     if (reportsDataEl && typeof bootstrap !== 'undefined') {
         const reportsData = JSON.parse(reportsDataEl.textContent);
         const modalEl = document.getElementById('companyWideReportModal');
         const bsModal = modalEl ? new bootstrap.Modal(modalEl) : null;
+
+        function renderModalComments(reportData) {
+            var listEl = document.getElementById('companyWideModalCommentsList');
+            var emptyEl = document.getElementById('companyWideModalCommentsEmpty');
+            var comments = (reportData && reportData.comments) || [];
+            var topLevel = [], repliesByParent = {};
+            comments.forEach(function(c) {
+                var pid = c.parent_comment_id;
+                if (pid == null || pid === '') topLevel.push(c);
+                else { if (!repliesByParent[pid]) repliesByParent[pid] = []; repliesByParent[pid].push(c); }
+            });
+            var curMemberId = null;
+            try { var cuEl = document.getElementById('current-user-member-id'); if (cuEl && cuEl.textContent) curMemberId = parseInt(cuEl.textContent, 10); } catch (e) {}
+            function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+            function cardHtml(c, isReply) {
+                var imgSrc = '/static/profile_pics/' + (c.author_image || 'default.jpg');
+                var isOwn = curMemberId != null && c.member_id === curMemberId;
+                var authorEsc = esc(c.author_name || 'Unknown');
+                var bodyEsc = esc(c.comment_body);
+                var replyLink = '<a href="javascript:void(0)" class="company-wide-modal-reply-link small text-primary text-decoration-none" data-comment-id="' + (c.comment_id || '') + '" data-author-name="' + authorEsc + '">Reply</a>';
+                var editLink = isOwn ? '<a href="javascript:void(0)" class="company-wide-modal-edit-link small text-primary text-decoration-none ms-2" data-comment-id="' + (c.comment_id || '') + '" data-comment-body="' + bodyEsc + '">Edit</a>' : '';
+                return '<div class="d-flex gap-2"><img src="' + imgSrc + '" alt="" class="rounded-circle flex-shrink-0" style="width:' + (isReply ? 28 : 32) + 'px;height:' + (isReply ? 28 : 32) + 'px;object-fit:cover" onerror="this.src=\'/static/profile_pics/default.jpg\'"><div class="flex-grow-1" style="min-width:0"><div class="d-flex justify-content-between align-items-start"><span class="fw-semibold small">' + (c.author_name || 'Unknown') + '</span><small class="text-muted">' + (c.created_at || '') + '</small></div><div class="small text-secondary report-comment-body">' + (c.comment_body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div><div class="mt-1">' + replyLink + editLink + '</div></div></div>';
+            }
+            function appendReplies(container, parentId, depth) {
+                var replies = repliesByParent[parentId] || [];
+                replies.forEach(function(r) {
+                    var wrap = document.createElement('div');
+                    wrap.className = 'company-wide-modal-reply-wrapper border-bottom pb-2 mb-2';
+                    wrap.style.marginLeft = (depth > 0 ? 24 : 40) + 'px';
+                    wrap.style.paddingLeft = '12px';
+                    wrap.style.borderLeft = '2px solid #dee2e6';
+                    wrap.style.marginTop = '4px';
+                    wrap.setAttribute('data-comment-id', r.comment_id);
+                    wrap.innerHTML = cardHtml(r, true);
+                    container.appendChild(wrap);
+                    appendReplies(wrap, r.comment_id, depth + 1);
+                });
+            }
+            if (listEl) {
+                listEl.innerHTML = '';
+                if (topLevel.length === 0) {
+                    listEl.style.display = 'none';
+                    if (emptyEl) emptyEl.style.display = 'block';
+                } else {
+                    listEl.style.display = 'block';
+                    if (emptyEl) emptyEl.style.display = 'none';
+                    topLevel.forEach(function(c) {
+                        var card = document.createElement('div');
+                        card.className = 'company-wide-modal-comment-card border-bottom pb-2 mb-2';
+                        card.setAttribute('data-comment-id', c.comment_id);
+                        card.innerHTML = cardHtml(c, false);
+                        listEl.appendChild(card);
+                        appendReplies(listEl, c.comment_id, 0);
+                    });
+                }
+            }
+        }
+
         containerEl.addEventListener('click', function(e) {
             const link = e.target.closest('.company-wide-report-name-link');
             if (!link || !bsModal) return;
@@ -1728,8 +1791,134 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('companyWideModalCC').textContent = report.cc_names || '—';
             document.getElementById('companyWideModalDepartment').textContent = report.department_name || '—';
             document.getElementById('companyWideModalCreated').textContent = report.created_on || '—';
+            var mStatus = document.getElementById('companyWideModalStatus');
+            if (mStatus) mStatus.textContent = report.is_checked ? 'Reviewed' : 'Pending';
             document.getElementById('companyWideModalBody').innerHTML = report.report_content || '';
+
+            document.getElementById('companyWideModalReportId').value = report.report_id;
+            document.getElementById('companyWideModalParentCommentId').value = '';
+            var replyingTo = document.getElementById('companyWideModalReplyingTo');
+            if (replyingTo) replyingTo.style.display = 'none';
+            document.getElementById('companyWideModalCommentInput').value = '';
+            renderModalComments(report);
             bsModal.show();
+        });
+
+        if (modalEl) {
+            modalEl.addEventListener('click', function(e) {
+                var replyLink = e.target.closest('.company-wide-modal-reply-link');
+                if (replyLink) {
+                    e.preventDefault();
+                    var cid = replyLink.getAttribute('data-comment-id');
+                    var author = replyLink.getAttribute('data-author-name') || '';
+                    document.getElementById('companyWideModalParentCommentId').value = cid || '';
+                    var replyingToEl = document.getElementById('companyWideModalReplyingTo');
+                    var nameSpan = document.getElementById('companyWideModalReplyingToName');
+                    if (replyingToEl) { if (nameSpan) nameSpan.textContent = author; replyingToEl.style.display = 'block'; }
+                    document.getElementById('companyWideModalCommentInput').focus();
+                }
+                var editLink = e.target.closest('.company-wide-modal-edit-link');
+                if (editLink) {
+                    e.preventDefault();
+                    var cid = editLink.getAttribute('data-comment-id');
+                    var body = (editLink.getAttribute('data-comment-body') || '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+                    var card = editLink.closest('.company-wide-modal-comment-card, .company-wide-modal-reply-wrapper');
+                    var bodyDiv = card ? card.querySelector('.report-comment-body') : null;
+                    if (!bodyDiv) return;
+                    var reportId = document.getElementById('companyWideModalReportId').value;
+                    var origHtml = bodyDiv.innerHTML;
+                    bodyDiv.innerHTML = '<textarea class="form-control form-control-sm mb-1" rows="2" style="resize:none">' + (body.replace(/</g, '&lt;').replace(/>/g, '&gt;')) + '</textarea><div><button type="button" class="btn btn-sm btn-primary company-wide-modal-edit-save" data-comment-id="' + cid + '">Save</button> <button type="button" class="btn btn-sm btn-secondary company-wide-modal-edit-cancel">Cancel</button></div>';
+                    var cancelBtn = bodyDiv.querySelector('.company-wide-modal-edit-cancel');
+                    if (cancelBtn) cancelBtn.onclick = function() { bodyDiv.innerHTML = origHtml; };
+                    var saveBtn = bodyDiv.querySelector('.company-wide-modal-edit-save');
+                    if (saveBtn) saveBtn.onclick = function() {
+                        var newBody = (bodyDiv.querySelector('textarea').value || '').trim();
+                        if (!newBody) return;
+                        saveBtn.disabled = true;
+                        var xhr = new XMLHttpRequest();
+                        xhr.open('PATCH', '/reports/' + reportId + '/comments/' + cid);
+                        xhr.setRequestHeader('Content-Type', 'application/json');
+                        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                        xhr.onload = function() {
+                            if (xhr.status === 200) {
+                                try {
+                                    var res = JSON.parse(xhr.responseText);
+                                    if (res && res.success) {
+                                        bodyDiv.innerHTML = (res.comment_body || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                                        var idx = reportsData.findIndex(function(r) { return r.report_id == reportId; });
+                                        if (idx >= 0 && reportsData[idx].comments) {
+                                            var cc = reportsData[idx].comments.find(function(c) { return c.comment_id == cid; });
+                                            if (cc) cc.comment_body = res.comment_body;
+                                        }
+                                    }
+                                } catch (err) {}
+                            }
+                        };
+                        xhr.send(JSON.stringify({ comment_body: newBody }));
+                    };
+                }
+            });
+        }
+
+        var cancelReply = document.getElementById('companyWideModalCancelReply');
+        if (cancelReply) cancelReply.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('companyWideModalParentCommentId').value = '';
+            document.getElementById('companyWideModalReplyingTo').style.display = 'none';
+        });
+
+        var submitBtn = document.getElementById('companyWideModalCommentSubmit');
+        if (submitBtn) submitBtn.addEventListener('click', function() {
+            var reportId = document.getElementById('companyWideModalReportId').value;
+            var parentId = document.getElementById('companyWideModalParentCommentId').value;
+            var input = document.getElementById('companyWideModalCommentInput');
+            var spinner = document.getElementById('companyWideModalCommentSpinner');
+            var btnText = document.getElementById('companyWideModalCommentBtnText');
+            var body = (input && input.value || '').trim();
+            if (!reportId || !body) { if (!body) alert('Please write a comment.'); return; }
+            submitBtn.disabled = true;
+            if (spinner) spinner.classList.remove('d-none');
+            if (btnText) btnText.textContent = 'Sending...';
+            var payload = { comment_body: body };
+            if (parentId) payload.parent_comment_id = parseInt(parentId, 10);
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/reports/' + reportId + '/comment');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.onload = function() {
+                submitBtn.disabled = false;
+                if (spinner) spinner.classList.add('d-none');
+                if (btnText) btnText.textContent = 'Send';
+                if (xhr.status === 200) {
+                    try {
+                        var res = JSON.parse(xhr.responseText);
+                        if (res && res.success) {
+                            input.value = '';
+                            document.getElementById('companyWideModalParentCommentId').value = '';
+                            document.getElementById('companyWideModalReplyingTo').style.display = 'none';
+                            var refreshXhr = new XMLHttpRequest();
+                            refreshXhr.open('GET', '/reports/' + reportId);
+                            refreshXhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                            refreshXhr.onload = function() {
+                                if (refreshXhr.status === 200) {
+                                    try {
+                                        var updated = JSON.parse(refreshXhr.responseText);
+                                        var idx = reportsData.findIndex(function(r) { return r.report_id == reportId; });
+                                        if (idx >= 0) reportsData[idx] = updated;
+                                        renderModalComments(updated);
+                                    } catch (err) {}
+                                }
+                            };
+                            refreshXhr.send();
+                            if (typeof alertify !== 'undefined') alertify.success('Comment added.'); else alert('Comment added.');
+                        }
+                    } catch (err) {}
+                } else {
+                    if (typeof alertify !== 'undefined') alertify.error('Failed to add comment.'); else alert('Failed to add comment.');
+                }
+            };
+            xhr.onerror = function() { submitBtn.disabled = false; if (spinner) spinner.classList.add('d-none'); if (btnText) btnText.textContent = 'Send'; };
+            xhr.send(JSON.stringify(payload));
         });
     }
 
