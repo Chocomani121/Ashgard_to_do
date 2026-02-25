@@ -210,7 +210,7 @@
                                                 </a>
                                                 
                                                 <!-- edit note button if the note is created by the current user -->
-                                                {% if note.author.member_id == current_user.member_id %}
+                                                {% if note.author and note.author.member_id == current_user.member_id %}
                                                 <a href="javascript:void(0);" class="text-info small" 
                                                 onclick="openEditNoteModal(this)"
                                                 data-edit-url="{{ url_for('project.edit_note', note_id=note.notes_id) }}"
@@ -243,7 +243,7 @@
                                                 {% for reply in replies_map[note.notes_id] %}
                                                     <div class="mb-2 p-2 rounded bg-soft-light border-bottom small">
                                                         <div class="d-flex justify-content-between">
-                                                            <strong>{{ reply.author.name }}</strong>
+                                                            <strong>{{ reply.author.name if reply.author else 'Unknown' }}</strong>
                                                             <!-- reply date and time on note body content -->
                                                             <small class="text-muted">{{ reply.created_on.strftime('%b %d, %Y %I:%M %p') if reply.created_on else '' }}</small>
                                                         </div>

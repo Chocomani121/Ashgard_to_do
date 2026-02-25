@@ -853,9 +853,9 @@ def task_details(id=None):
         flash('Task not found', 'error')
         return redirect(url_for('project.projects'))
     
-    # MODIFIED: Changed .asc() to .desc() to show newest notes first
+    # All notes for this task (no sub_task_id filter - show all)
     all_notes = Notes.query.filter_by(task_id=task.task_id).order_by(
-        Notes.pin_stat.desc(), 
+        Notes.pin_stat.desc(),
         Notes.created_on.desc()
     ).all()
     
@@ -1050,16 +1050,16 @@ def task_details(id=None):
         done_date = st.checked_timestamp.strftime('%d/%m/%Y') if st.checked_timestamp else '—'
         done_time = st.checked_timestamp.strftime('%H:%M') if st.checked_timestamp else '—'
         is_done = st.is_checked or (st.status or '').lower() in ('approved', 'done')
-        main_notes = subtask_main_notes.get(st.sub_task_id, [])
-        replies_map = dict(subtask_replies_map.get(st.sub_task_id, {}))
+        st_main_notes = subtask_main_notes.get(st.sub_task_id, [])
+        st_replies_map = dict(subtask_replies_map.get(st.sub_task_id, {}))
         def build_note_tree(notes_list, rmap):
             def add_children(note):
                 kids = rmap.get(note['notes_id'], [])
                 note['children'] = [add_children(k) for k in kids]
                 return note
             return [add_children(n) for n in notes_list]
-        notes_tree = build_note_tree(main_notes, replies_map)
-        notes_full = {'tree': notes_tree, 'main': main_notes, 'replies': replies_map}
+        notes_tree = build_note_tree(st_main_notes, st_replies_map)
+        notes_full = {'tree': notes_tree, 'main': st_main_notes, 'replies': st_replies_map}
         subtask_list.append(type('SubtaskRow', (), {
             'sub_task_id': st.sub_task_id, 'generated_code': st.generated_code or '—',
             'subtask_name': st.subtask_name or '—', 'owner_name': owner_name,
@@ -1779,8 +1779,8 @@ def edit_note(note_id):
     # 1. GET: This fixes the 'undefined' error by sending data to the modal
     if request.method == 'GET':
         return jsonify({
-            'note_id': note.note_id,
-            'note_title': note.generated_code, # Your title is stored here
+            'note_id': note.notes_id,
+            'note_title': note.generated_code,  # Your title is stored here
             'note_content': note.note_body
         })
 
@@ -1900,37 +1900,6 @@ def toggle_pin(note_id):
     # 5. Go back to where you were
     return redirect(request.referrer or url_for('project.projects'))
 
-
-@project_bp.route("/task/<int:task_id>/add_note", methods=['POST'])
-@login_required
-def add_task_note(task_id):
-    content = request.form.get('note_content')
-    if not content:
-        flash('Note content cannot be empty.', 'danger')
-        return redirect(url_for('project.task_details', task_id=task_id))
-
-    # Get the project_member_id for the current user in this project
-    task = Task.query.get_or_404(task_id)
-    project_member = ProjectMembers.query.filter_by(
-        project_id=task.project_id, 
-        member_id=current_user.member_id
-    ).first()
-
-    if not project_member:
-        flash('You must be a member of this project to add notes.', 'danger')
-        return redirect(url_for('project.task_details', task_id=task_id))
-
-    new_note = Notes(
-        task_id=task_id,
-        p_members_id=project_member.p_members_id,
-        note_content=content,
-        date_added=datetime.now()
-    )
-    
-    db.session.add(new_note)
-    db.session.commit()
-    flash('Note added successfully!', 'success')
-    return redirect(url_for('project.task_details', task_id=task_id))
 
 @project_bp.route("/task/note/<int:note_id>/reply", methods=['POST'])
 @login_required
