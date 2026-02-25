@@ -368,42 +368,7 @@
                         </div>
                     </div>
                 </div>
-            </div> {# End Row #}
-
-            <!-- Edit Note Modal -->
-            <div class="modal fade" id="editNotesProjectModal" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content border-0 shadow-lg">    
-                                <form id="editNoteForm" method="POST">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Edit Content</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="mb-3" id="editTitleContainer">
-                                            <label class="form-label font-weight-bold">Title</label>
-                                            <input type="text" name="note_title" id="EditNotesProjectTitle" class="form-control">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label font-weight-bold">Message</label>
-                                            <textarea name="note_content" id="EditNotesProjectDescription" class="form-control" rows="4" required></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer bg-light">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-warning px-4" id="editNoteSubmitBtn" data-loading-text=" Updating...">
-                                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                            <span class="btn-text">Update</span>
-                                        </button>
-                                    </div>  
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
-
             </div>
         </div>
     </div>
