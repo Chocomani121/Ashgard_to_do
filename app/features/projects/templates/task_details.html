@@ -161,20 +161,9 @@
                                 </div>
                             </div>
 
-                            {# SCROLLABLE NOTES AREA #}
+                            <!-- replies and notes area -->
                             {% macro render_note_or_reply(note, is_reply=false) %}
                                 <div class="d-flex mb-3 {{ 'ps-2' if is_reply else '' }}">
-                                    {% if not is_reply %}
-                                    <div class="flex-shrink-0 me-3">
-                                        <img src="{{ url_for('static', filename='profile_pics/' + (note.author.image_file if note.author and note.author.image_file else 'default.jpg')) }}" 
-                                            alt="" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #fff;">
-                                    </div>
-                                    {% else %}
-                                    <div class="flex-shrink-0 me-2 mt-1">
-                                        <img src="{{ url_for('static', filename='profile_pics/' + (note.author.image_file if note.author and note.author.image_file else 'default.jpg')) }}" 
-                                            alt="" class="rounded-circle" style="width: 28px; height: 28px; object-fit: cover; border: 1px solid #dee2e6;">
-                                    </div>
-                                    {% endif %}
                                     <div class="flex-grow-1 min-width-0">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
                                             <div>
@@ -251,7 +240,8 @@
                         </div> {# End Card Body #}
                     </div> {# End Card #}
                 </div>
-
+                <!-- end replies and notes area -->
+                 
                 <!-- Sub-Task Table: full-width in same row for identical left/right edges -->
                 <div class="col-12 task-details-subtask-col">
                     <div class="card subtask-table-card">
