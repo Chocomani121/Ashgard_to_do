@@ -108,6 +108,15 @@ def create_app():
             'approvals_pending_preview': approvals_pending_preview
         }
 
+    @flask_app.context_processor
+    def inject_show_member_admin():
+        from flask_login import current_user
+        show_member_admin_in_navbar = False
+        if current_user.is_authenticated and current_user.account_type == 'admin':
+            show_member_admin_in_navbar = True
+        return {
+            'show_member_admin_in_navbar': show_member_admin_in_navbar
+        }
     # --- BLUEPRINT REGISTRATION ---
     
     # 1. Import the Blueprint objects first
