@@ -1029,6 +1029,7 @@ def task_details(id=None):
                 'notes_id': n.notes_id, 'author': author_name, 'author_image': note_author_images.get(n.member_id, 'default.jpg'),
                 'role': role, 'body': n.note_body or '',
                 'created': n.created_on.strftime('%d/%m/%Y %H:%M') if n.created_on else '—',
+                'edited': n.edited_on.strftime('%d/%m/%Y %H:%M') if n.edited_on else None,
                 'remark': remark, 'remark_badge_class': badge_class, 'member_id': n.member_id,
                 'reply_url': reply_url, 'edit_url': edit_url, 'is_author': is_author,
                 'reply_code': int(n.reply_code) if n.reply_code and str(n.reply_code).isdigit() else None,
@@ -1836,7 +1837,8 @@ def edit_note(note_id):
     # Update fields
     note.generated_code = request.form.get('note_title')
     note.note_body = request.form.get('note_content')
-    
+    note.edited_on = datetime.now()
+
     try:
         db.session.commit()
         flash('Note updated successfully', 'success')
