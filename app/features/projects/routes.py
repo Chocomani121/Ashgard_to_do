@@ -862,12 +862,15 @@ def task_details(id=None):
         flash('Task not found', 'error')
         return redirect(url_for('project.projects'))
     
-    # All notes for this task (no sub_task_id filter - show all)
-    all_notes = Notes.query.filter_by(task_id=task.task_id).order_by(
+    # Task-level notes only (right-hand Notes box): exclude subtask notes so they don't repeat
+    all_notes = Notes.query.filter(
+        Notes.task_id == task.task_id,
+        Notes.sub_task_id.is_(None)
+    ).order_by(
         Notes.pin_stat.desc(),
         Notes.created_on.desc()
     ).all()
-    
+
     main_notes = [n for n in all_notes if not n.reply_code]
 
     replies_map = {}
@@ -997,7 +1000,9 @@ def task_details(id=None):
     if sub_note_ids:
         sub_notes = Notes.query.filter(Notes.sub_task_id.in_(sub_note_ids)).order_by(Notes.created_on.asc()).all()
         note_author_ids = list({n.member_id for n in sub_notes if n.member_id})
-        note_authors = {u.member_id: (u.name or u.username) for u in User.query.filter(User.member_id.in_(note_author_ids)).all()} if note_author_ids else {}
+        note_author_users = {u.member_id: u for u in User.query.filter(User.member_id.in_(note_author_ids)).all()} if note_author_ids else {}
+        note_authors = {mid: (u.name or u.username) for mid, u in note_author_users.items()}
+        note_author_images = {mid: (u.image_file or 'default.jpg') for mid, u in note_author_users.items()}
         for n in sub_notes:
             author_name = note_authors.get(n.member_id, 'Unknown')
             notes_by_sub[n.sub_task_id].append(n.note_body or '')
@@ -1021,7 +1026,8 @@ def task_details(id=None):
             edit_url = url_for('project.edit_note', note_id=n.notes_id)
             is_author = n.member_id == current_user.member_id if current_user and current_user.member_id else False
             note_row = {
-                'notes_id': n.notes_id, 'author': author_name, 'role': role, 'body': n.note_body or '',
+                'notes_id': n.notes_id, 'author': author_name, 'author_image': note_author_images.get(n.member_id, 'default.jpg'),
+                'role': role, 'body': n.note_body or '',
                 'created': n.created_on.strftime('%d/%m/%Y %H:%M') if n.created_on else '—',
                 'remark': remark, 'remark_badge_class': badge_class, 'member_id': n.member_id,
                 'reply_url': reply_url, 'edit_url': edit_url, 'is_author': is_author,
@@ -1058,7 +1064,7 @@ def task_details(id=None):
         updated_ts = st.edited_on or st.checked_timestamp
         updated_str = updated_ts.strftime('%d/%m/%Y %H:%M') if updated_ts else None
         timestamp_display = f"Created: {created_str}" + (f" | Updated: {updated_str}" if updated_str else "")
-        done_date = st.checked_timestamp.strftime('%d/%m/%Y') if st.checked_timestamp else '—'
+        done_date = st.checked_timestamp.strftime('%d/%m/%Y') if st.checked_timestamp else  '—'
         done_time = st.checked_timestamp.strftime('%H:%M') if st.checked_timestamp else '—'
         is_done = st.is_checked or (st.status or '').lower() in ('approved', 'done')
         st_main_notes = subtask_main_notes.get(st.sub_task_id, [])

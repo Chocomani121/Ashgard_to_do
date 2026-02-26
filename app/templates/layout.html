@@ -133,12 +133,14 @@
                                 <span class="menu-item" data-key="t-departments">Departments</span>
                             </a>
                         </li>
+                        {% if current_user.is_authenticated and show_member_admin_in_navbar %}
                         <li>
                             <a href="{{ url_for('main.members') }}" >
                                 <i class="bx bx-group icon nav-icon"></i>
                                 <span class="menu-item" data-key="t-todo">Members</span>
                             </a>
                         </li>
+                        {% endif %}
                     </ul>
                 </div>
                 </div>
