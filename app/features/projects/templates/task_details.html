@@ -660,11 +660,6 @@
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                                 <div class="modal-body flex-grow-1 overflow-auto p-0" id="subtaskNotesModalBody">
-                                    <div class="px-3 pt-2 pb-1 border-bottom">
-                                        <h6 class="text-muted small fw-bold text-uppercase mb-0">
-                                            <i class="mdi mdi-comment-text-outline me-1"></i> Comments
-                                        </h6>
-                                    </div>
                                     <div class="subtask-notes-list list-group list-group-flush px-3 py-2"></div>
                                     <div id="subtaskNotesEmpty" class="text-muted small py-3 text-center" style="display: none;">No comments yet.</div>
                                 </div>
@@ -802,7 +797,8 @@ document.addEventListener("DOMContentLoaded", function() {
         var actions = "<a href=\"#\" class=\"subtask-note-reply-toggle text-primary small text-decoration-none me-2\" data-note-id=\"" + (n.notes_id || "") + "\">Reply</a>";
         if (n.is_author) actions += "<a href=\"#\" class=\"note-edit-toggle text-primary small text-decoration-none\" data-notes-id=\"" + (n.notes_id || "") + "\" data-edit-url=\"" + esc(n.edit_url || "") + "\" data-note-title=\"" + esc(n.generated_code || "") + "\" data-note-body=\"" + esc(n.body || "") + "\">Edit</a>";
         var replyForm = "<div id=\"subtask-reply-form-" + (n.notes_id || "") + "\" class=\"mt-2 d-none\"><form class=\"subtask-note-reply-form\" action=\"" + esc(n.reply_url || "") + "\" method=\"POST\"><input type=\"hidden\" name=\"csrf_token\" value=\"" + esc(csrfToken) + "\"><div class=\"input-group input-group-sm\"><input type=\"text\" name=\"reply_body\" class=\"form-control\" placeholder=\"Write a reply...\" required><button class=\"btn btn-primary btn-sm note-reply-submit\" type=\"submit\" data-loading-text=\" Replying...\"><span class=\"btn-text\">Reply</span></button></div></form></div>";
-        var viewHtml = "<div class=\"note-view\"><div class=\"d-flex justify-content-between align-items-start mb-1\"><span class=\"fw-bold small\">" + esc(n.author || "Unknown") + "</span><small class=\"text-muted\">" + esc(n.created || "") + "</small></div><div class=\"small " + (isReply ? "text-muted" : "text-secondary") + " report-comment-body mb-1\" style=\"white-space: pre-wrap;\">" + escHtml(n.body || "") + "</div><div class=\"mt-1\">" + actions + "</div>" + replyForm + "</div>";
+        var tsHtml = "<small class=\"text-muted\">" + (n.edited ? "(edited) " + esc(n.edited) : esc(n.created || "")) + "</small>";
+        var viewHtml = "<div class=\"note-view\"><div class=\"d-flex justify-content-between align-items-start mb-1\"><span class=\"fw-bold small\">" + esc(n.author || "Unknown") + "</span>" + tsHtml + "</div><div class=\"small " + (isReply ? "text-muted" : "text-secondary") + " report-comment-body mb-1\" style=\"white-space: pre-wrap;\">" + escHtml(n.body || "") + "</div><div class=\"mt-1\">" + actions + "</div>" + replyForm + "</div>";
         var editHtml = "<div class=\"note-edit d-none\"><textarea class=\"form-control form-control-sm mb-2\" rows=\"3\">" + esc(n.body || "") + "</textarea><button type=\"button\" class=\"btn btn-primary btn-sm me-1 note-inline-save\">Save</button><button type=\"button\" class=\"btn btn-secondary btn-sm note-inline-cancel\">Cancel</button></div>";
         return "<div class=\"note-block list-group-item list-group-item-action border-0 py-2 d-flex gap-2 subtask-note-card" + (isReply ? " subtask-note-reply" : "") + "\" data-notes-id=\"" + (n.notes_id || "") + "\" data-edit-url=\"" + esc(n.edit_url || "") + "\" data-note-title=\"" + esc(n.generated_code || "") + "\">" +
             "<img src=\"" + esc(imgSrc) + "\" alt=\"\" class=\"rounded-circle border flex-shrink-0\" style=\"width:" + size + "px;height:" + size + "px;object-fit:cover\" onerror=\"this.src='" + profilePicBase + "default.jpg';this.onerror=null;\">" +
@@ -933,14 +929,17 @@ document.addEventListener("DOMContentLoaded", function() {
             var textarea = block.querySelector(".note-edit textarea");
             if (!editUrl || !textarea) return;
             var body = textarea.value;
+            var origHtml = saveBtn.innerHTML;
             saveBtn.disabled = true;
+            saveBtn.innerHTML = "<span class=\"spinner-border spinner-border-sm me-1\" role=\"status\"></span>Saving...";
             var formData = new FormData();
             formData.append("csrf_token", csrfToken);
             formData.append("note_title", title);
             formData.append("note_content", body);
+            var restore = function() { saveBtn.disabled = false; saveBtn.innerHTML = origHtml; };
             fetch(editUrl, { method: "POST", body: formData })
-                .then(function(r) { saveBtn.disabled = false; if (r.ok) window.location.reload(); })
-                .catch(function() { saveBtn.disabled = false; });
+                .then(function(r) { if (r.ok) window.location.reload(); else restore(); })
+                .catch(restore);
             return;
         }
         var cancelBtn = e.target.closest(".note-inline-cancel");
