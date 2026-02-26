@@ -607,10 +607,11 @@
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <div class="mb-3">
+                                    <!-- ! Commented this out you can re-edit title once it was already posted! -->
+                                    <!-- <div class="mb-3">
                                         <label class="form-label">Title/Code</label>
                                         <input type="text" name="note_title" id="edit_note_title" class="form-control">
-                                    </div>
+                                    </div> -->
                                     <div class="mb-3">
                                         <label class="form-label">Note Content</label>
                                         <textarea name="note_content" id="edit_note_body" class="form-control" rows="4" required></textarea>
@@ -618,7 +619,7 @@
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-info" data-loading-text=" Updating...">
+                                    <button type="submit" class="btn btn-warning" data-loading-text=" Updating...">
                                         <span class="spinner-border spinner-border-sm d-none" role="status"></span>
                                         <span class="btn-text">Update Note</span>
                                     </button>
@@ -775,13 +776,16 @@
 <input type="hidden" id="subtask-notes-csrf" value="{{ csrf_token() if csrf_token is defined else '' }}">
 <script>
 function openEditNoteModal(el) {
-    var modalEl = document.getElementById('editNotesProjectModal');
-    var form = modalEl ? modalEl.querySelector('form') : null;
-    var titleInput = document.getElementById('EditNotesProjectTitle');
-    var bodyInput = document.getElementById('EditNotesProjectDescription');
-    if (form && el) form.action = el.getAttribute('data-edit-url') || '';
-    if (titleInput && el) titleInput.value = el.getAttribute('data-note-title') || '';
-    if (bodyInput && el) bodyInput.value = el.getAttribute('data-note-body') || '';
+    if (!el) return;
+    var modalEl = document.getElementById('editNoteModal');
+    var form = document.getElementById('editNoteForm');
+    var titleInput = document.getElementById('edit_note_title');
+    var bodyInput = document.getElementById('edit_note_body');
+    var editUrl = el.getAttribute('data-edit-url') || '';
+    if (!editUrl || editUrl === '#' || editUrl.indexOf('javascript:') === 0) return;
+    if (form) form.action = editUrl;
+    if (titleInput) titleInput.value = el.getAttribute('data-note-title') || '';
+    if (bodyInput) bodyInput.value = el.getAttribute('data-note-body') || '';
     if (modalEl && typeof bootstrap !== 'undefined') {
         var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
@@ -1042,11 +1046,11 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // Notes: loading state on Edit Note form (editNotesProjectModal) Spinner
-    var editNotesForm = document.querySelector('#editNotesProjectModal form');
-    if (editNotesForm) {
-        editNotesForm.addEventListener('submit', function() {
-            var btn = document.getElementById('editNoteSubmitBtn');
+    // Notes: loading state on Edit Note form (editNoteModal) Spinner
+    var editNoteFormEl = document.getElementById('editNoteForm');
+    if (editNoteFormEl) {
+        editNoteFormEl.addEventListener('submit', function() {
+            var btn = editNoteFormEl.querySelector('button[type="submit"]');
             if (btn && !btn.disabled) {
                 btn.disabled = true;
                 var textEl = btn.querySelector('.btn-text');
@@ -1143,9 +1147,9 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-// Ensure modal is moved to body to avoid backdrop issues
+// Ensure edit note modal is moved to body to avoid backdrop issues
 document.addEventListener("DOMContentLoaded", function() {
-    var modal = document.getElementById('editNotesProjectModal');
+    var modal = document.getElementById('editNoteModal');
     if (modal) { document.body.appendChild(modal); }
 });
 
