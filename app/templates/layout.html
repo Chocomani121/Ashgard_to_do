@@ -125,22 +125,22 @@
                                 <span class="menu-item ms-1" data-key="t-todo" >Review Reports</span>{% if approvals_pending_count %}<span class="badge bg-danger ms-1 ms-auto">{{ approvals_pending_count }}</span>{% endif %}
                             </a> 
                         </li> 
-                        {% endif %}                      
+                        {% endif %}                    
                         <li class="menu-title" data-key="t-applications">General</li>
+                        {% if current_user.is_authenticated and show_member_admin_in_navbar %}  
                         <li>
                             <a href="{{ url_for('department.all_departments') }}" >
                                 <i class="bx bx-home-alt icon nav-icon"></i> 
                                 <span class="menu-item" data-key="t-departments">Departments</span>
                             </a>
                         </li>
-                        {% if current_user.is_authenticated and show_member_admin_in_navbar %}
+                        {% endif %}
                         <li>
                             <a href="{{ url_for('main.members') }}" >
                                 <i class="bx bx-group icon nav-icon"></i>
                                 <span class="menu-item" data-key="t-todo">Members</span>
                             </a>
                         </li>
-                        {% endif %}
                     </ul>
                 </div>
                 </div>
