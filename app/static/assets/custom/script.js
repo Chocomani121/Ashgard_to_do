@@ -86,46 +86,6 @@ if (ownerList && ownerInput && ownerSearch) {
     renderSelected();
 }
 
-// Search – only if this page has the owner/CC block
-if (ownerSearch) {
-    ownerSearch.addEventListener("input", e => {
-        renderOwners(e.target.value);
-    });
-}
-
-// Clear – only if this page has the block
-var clearOwnersBtn = document.getElementById("clearOwners");
-if (clearOwnersBtn) {
-    clearOwnersBtn.onclick = () => {
-        selectedOwners = [];
-        renderSelected();
-        renderOwners();
-    };
-}
-
-// Search – only if this page has the owner/CC block
-if (ownerSearch) {
-    ownerSearch.addEventListener("input", e => {
-        renderOwners(e.target.value);
-    });
-}
-
-// Clear – only if this page has the block
-var clearOwnersBtn = document.getElementById("clearOwners");
-if (clearOwnersBtn) {
-    clearOwnersBtn.onclick = () => {
-        selectedOwners = [];
-        renderSelected();
-        renderOwners();
-    };
-}
-
-// Init – only when both list and input exist (e.g. task/member page with CC dropdown)
-if (ownerList && ownerInput) {
-    renderOwners();
-    renderSelected();
-}
-
 // Create Task form (project_details): set owner_id from Assign Members; validate start/end date
 document.addEventListener("DOMContentLoaded", function() {
     var createTaskForm = document.getElementById("createTaskForm");
@@ -290,45 +250,35 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-//Delete sweet Alert
-// Delete SweetAlert for Members
-function confirmDelete(memberName, memberId) {
-    Swal.fire({
-        title: "Are you sure?",
-        text: "You are about to delete " + memberName + ". You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#51d28c",
-        cancelButtonColor: "#f34e4e",
-        confirmButtonText: "Yes, delete it!"
-    }).then(function (result) {
-        if (result.isConfirmed) {
-            // Redirect to the Flask route you created
-            window.location.href = "/delete_member/" + memberId;
-        }
-    });
-}
 
-// Delete SweetAlert for Task (submits hidden form to delete_task route)
-function confirmDeleteTask(taskName) {
-    var form = document.getElementById("deleteTaskForm");
-    if (!form) return;
+
+// Delete SweetAlert for Subtask (submits hidden form)
+function confirmDeleteSubtask(url, code, formId) {
+    var form = document.getElementById(formId || 'subtaskDeleteForm');
+    if (!form || !url) return;
     if (typeof Swal === "undefined") {
-        if (window.confirm("Are you sure you want to delete " + (taskName || "this task") + "? You won't be able to revert this!")) {
+        if (window.confirm("Delete subtask " + (code || '') + "?")) {
+            form.action = url;
             form.submit();
         }
         return;
     }
     Swal.fire({
-        title: "Are you sure?",
-        text: "You are about to delete " + (taskName || "this task") + ". You won't be able to revert this!",
+        title: "Delete subtask?",
+        text: "Are you sure you want to delete " + (code || 'this subtask') + "? This cannot be undone.",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#51d28c",
-        cancelButtonColor: "#f34e4e",
-        confirmButtonText: "Yes, delete it!"
+        confirmButtonColor: "#f34e4e",
+        cancelButtonColor: "#74788d",
+        confirmButtonText: "Yes, delete it"
     }).then(function (result) {
         if (result.isConfirmed) {
+            form.action = url;
+            Swal.fire({
+                title: "Deleting...",
+                allowOutsideClick: false,
+                didOpen: function () { Swal.showLoading(); }
+            });
             form.submit();
         }
     });
@@ -336,20 +286,21 @@ function confirmDeleteTask(taskName) {
 
 // Delete SweetAlert for Projects (redirects to dashboard after delete)
 function confirmDeleteProject(projectId, projectName) {
+    var msg = "This will permanently delete the project \"" + (projectName || "this project") + "\" and all of its tasks, sub-tasks, notes, and team members. This cannot be undone.";
     if (typeof Swal === "undefined") {
-        if (window.confirm("Are you sure you want to delete " + (projectName || "this project") + "? You won't be able to revert this!")) {
+        if (window.confirm(msg)) {
             window.location.href = "/project_details/" + projectId + "/delete";
         }
         return;
     }
     Swal.fire({
         title: "Are you sure?",
-        text: "You are about to delete " + (projectName || "this project") + ". You won't be able to revert this!",
+        text: msg,
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#51d28c",
-        cancelButtonColor: "#f34e4e",
-        confirmButtonText: "Yes, delete it!"
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, delete everything"
     }).then(function (result) {
         if (result.isConfirmed) {
             window.location.href = "/project_details/" + projectId + "/delete";

@@ -3,3 +3,9 @@
     text-align: left!important;
     font-weight: bold;
   }
+
+
+#table10-gridjs td:first-child {
+    text-align: left!important;
+    font-weight: bold;
+  } 

@@ -64,7 +64,59 @@ def create_app():
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
         return response
+    # --- CONTEXT PROCESSOR FOR APPROVALS ---
 
+    @flask_app.context_processor
+    def inject_show_approvals():
+        from flask_login import current_user
+        from app.models import Report, ReportCC
+        from sqlalchemy.orm import joinedload
+        show_approvals_in_navbar = False
+        approvals_pending_count = 0
+        approvals_pending_preview = ''
+        if current_user.is_authenticated:
+            # Reports pending your approval (as reviewer)
+            pending_reports = Report.query.options(
+                joinedload(Report.author)
+            ).filter(
+                Report.reviewer_id == current_user.member_id,
+                Report.is_checked == False
+            ).all()
+            approvals_pending_count = len(pending_reports)
+            # Reports where you are CC'd
+            cc_count = ReportCC.query.filter(
+                ReportCC.member_id == current_user.member_id
+            ).count()
+            if approvals_pending_count > 0 or cc_count > 0:
+                show_approvals_in_navbar = True
+            # Build preview: "Pending from: John, Jane"
+            if pending_reports:
+                author_names = []
+                seen = set()
+                for r in pending_reports:
+                    if r.author:
+                        name = r.author.name or r.author.username or 'Unknown'
+                        if name not in seen:
+                            seen.add(name)
+                            author_names.append(name)
+                approvals_pending_preview = 'Pending from: ' + ', '.join(author_names[:5])
+                if len(author_names) > 5:
+                    approvals_pending_preview += '...'
+        return {
+            'show_approvals_in_navbar': show_approvals_in_navbar,
+            'approvals_pending_count': approvals_pending_count,
+            'approvals_pending_preview': approvals_pending_preview
+        }
+
+    @flask_app.context_processor
+    def inject_show_member_admin():
+        from flask_login import current_user
+        show_member_admin_in_navbar = False
+        if current_user.is_authenticated and current_user.account_type == 'admin':
+            show_member_admin_in_navbar = True
+        return {
+            'show_member_admin_in_navbar': show_member_admin_in_navbar
+        }
     # --- BLUEPRINT REGISTRATION ---
     
     # 1. Import the Blueprint objects first

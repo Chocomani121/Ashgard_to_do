@@ -6117,34 +6117,268 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
   white-space: normal;
 }
 
-/* For PM in Task Details */
+/* 3-dots dropdowns: prevent clipping and show above table (all Grid.js tables, PM and members) */
+.gridjs-wrapper td.gridjs-td {
+  overflow: visible !important;
+}
+.gridjs-wrapper .dropdown-menu {
+  z-index: 1060 !important;
+  position: absolute;
+  max-height: none;
+  overflow: visible;
+}
+
+/* Subtask table: same left/right edges as Task+Notes (now in same row) */
+.subtask-table-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+.subtask-table-card-body {
+  overflow: visible !important;
+  min-width: 0;
+  width: 100%;
+}
+/* Subtask GridJS table: fill full width of card body */
+#table6-gridjs {
+  width: 100% !important;
+  max-width: 100%;
+  overflow: hidden;
+}
+#table6-gridjs .gridjs,
+#table6-gridjs .gridjs-head,
+#table6-gridjs .gridjs-wrapper,
+#table6-gridjs .gridjs-container {
+  width: 100% !important;
+  max-width: 100%;
+}
+#table6-gridjs .gridjs-container {
+  display: block !important;
+}
+#table6-gridjs .gridjs-wrapper {
+  width: 100% !important;
+  overflow: auto !important;
+  max-height: 50vh;
+  -webkit-overflow-scrolling: touch;
+}
+#table6-gridjs .gridjs-table {
+  min-width: 100%;
+}
+.subtask-table-card .gridjs-head {
+  overflow: visible !important;
+}
+
+.projectsTableTaskDetailsPM .gridjs-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* ID column: minimize width; others share remaining space */
 .projectsTableTaskDetailsPM .gridjs-th:nth-child(1),
 .projectsTableTaskDetailsPM .gridjs-td:nth-child(1) {
-  width: 60px;
-  max-width: 60px;
+  width: 6%;
+  max-width: 85px;
+  min-width: 55px;
 }
-
 .projectsTableTaskDetailsPM .gridjs-th:nth-child(2),
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(2) {
-  width: 180px;
-  max-width: 180px;
-}
-
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(2) { width: 18%; }
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(3),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(3) { width: 12%; }
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(4),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(4) { width: 10%; }
+.projectsTableTaskDetailsPM .gridjs-th:nth-child(5),
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(5) { width: 18%; min-width: 140px; } /* Timestamp: 2 lines only */
 .projectsTableTaskDetailsPM .gridjs-th:nth-child(6),
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(6) {
-  width: 400px;
-  max-width: 400px;
-}
-
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(6) { width: 20%; } /* Notes: narrower */
 .projectsTableTaskDetailsPM .gridjs-th:nth-child(7),
-.projectsTableTaskDetailsPM .gridjs-td:nth-child(7) {
-  width: 120px;
-  max-width: 120px;
-}
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(7) { width: 18%; } /* Action: 3-line */
 
-/* Scrollable Notes column */
+/* Notes column: wrap text, clickable to open notes modal */
+.projectsTableTaskDetailsPM .notes-preview-cell {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+.projectsTableTaskDetailsPM .notes-preview-clickable {
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+.projectsTableTaskDetailsPM .notes-preview-clickable:hover {
+  color: var(--vz-primary, #405189);
+  text-decoration: underline;
+}
+.projectsTableTaskDetailsPM .add-note-in-cell:hover {
+  text-decoration: underline;
+}
+.subtask-notes-list .note-edit-toggle:hover {
+  color: var(--bs-body-color) !important;
+}
+/* Subtask table: hide ID column (no button, always hidden) */
+#table6-gridjs.subtask-id-col-hidden .gridjs-th:nth-child(1),
+#table6-gridjs.subtask-id-col-hidden .gridjs-td:nth-child(1) {
+  display: none !important;
+}
+.projectsTableTaskDetailsPM .notes-preview-inner {
+  max-height: 120px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: normal;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
 .projectsTableTaskDetailsPM td.notes-cell {
   max-height: 120px;
   overflow-y: auto;
   white-space: normal;
+}
+
+/* View-only: hide Action column for non–project members */
+.subtask-view-only .gridjs-th:last-child,
+.subtask-view-only .gridjs-td:last-child {
+  display: none !important;
+}
+
+/* Timestamp cell (col 5): 2-line Created/Updated */
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(5),
+.subtask-timestamp-cell {
+  line-height: 1.4;
+}
+.projectsTableTaskDetailsPM .subtask-timestamp-cell .text-nowrap,
+.subtask-timestamp-cell .text-nowrap {
+  display: block;
+  white-space: nowrap;
+}
+/* Action cell (col 7): allow multi-line done timestamp */
+.projectsTableTaskDetailsPM .gridjs-td:nth-child(7) .subtask-done-timestamp,
+.subtask-action-cell .subtask-done-timestamp {
+  display: block;
+  white-space: normal;
+  line-height: 1.4;
+  font-size: 0.875rem;
+}
+/* Approved cell: single line fallback */
+.subtask-approved-cell {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.875rem;
+  max-width: 100%;
+}
+
+/* Task Details page: col-6 layout; only Notes card has fixed height + internal scroll */
+.task-details-equal-row {
+  display: flex;
+  flex-wrap: nowrap;
+}
+/* Main row: allow wrap so subtask col-12 wraps below Task+Notes */
+.task-details-main-row {
+  flex-wrap: wrap;
+}
+.task-details-subtask-col {
+  flex: 0 0 100%;
+  max-width: 100%;
+  margin-top: 1rem; /* visual separation from Task+Notes */
+}
+.task-details-equal-row > .col-6 {
+  display: flex;
+}
+.task-details-card-equal {
+  width: 100%;
+  display: flex;
+  flex-direction: column; 
+}
+
+/* Both Task and Notes cards: equal fixed height per redline (taller boxes) */
+.task-details-equal-row .col-6 .task-details-card-equal {
+  height: 560px;
+  max-height: 80vh;
+  min-height: 480px;
+  overflow: hidden;
+}
+.task-details-equal-row .col-6 .task-details-card-equal .card-body {
+  min-height: 0;
+  flex: 1 1 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.task-details-equal-row .col-6 .task-details-card-equal .card-body .task-notes-scroll {
+  min-height: 0;
+}
+/* Don't collapse Task card description - use class min-height instead */
+.task-details-equal-row .col-6 .task-details-card-equal .card-body .flex-grow-1:not(.task-details-description-scroll) {
+  min-height: 0;
+}
+/*  ONLY this area scrolls */
+.task-details-description-scroll {
+  min-height: 5rem;
+  flex: 1 1 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Notes list: scroll inside Notes card; scrollbar visible */
+.task-notes-scroll {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+}
+.task-notes-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.task-notes-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+.task-notes-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+}
+.task-notes-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+/* Prevent horizontal scroll: constrain width and wrap long note content */
+.task-notes-scroll {
+  overflow-x: hidden !important;
+  max-width: 100%;
+}
+.task-detail-note {
+  min-width: 0;
+  max-width: 100%;
+}
+.task-detail-note-body,
+.task-notes-scroll .p-2.bg-light p,
+.task-notes-scroll .text-dark,
+.task-detail-note-replies p {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+/* Project Details: Description box – fixed height, scrollable (per second screenshot) */
+.project-description-box {
+  max-height: 260px;
+}
+
+/* Project Details: left card height aligns with right column */
+.project-details-row .col-xl-7 .project-details-overview-card {
+  min-height: 100%;
+}
+.project-details-status-chart .apex-charts {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Edit note and Add note modals: appear above subtask notes modal when opened from within it */
+#editNoteModal.modal,
+#subtaskAddNoteModal.modal {
+  z-index: 1085;
 }
