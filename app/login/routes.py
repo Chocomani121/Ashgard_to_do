@@ -17,7 +17,7 @@ auth_bp = Blueprint('auth', __name__, template_folder='templates', static_folder
 def send_reset_email(user):
     token = user.get_reset_token()
     msg = Message('Password Reset Request', sender='noreply@ashgard-todo.com', recipients=[user.email])
-    reset_url = url_for('auth.reset_token', token=token, _external=True)
+    reset_url = url_for('users.reset_token', token=token, _external=True)
     msg.body = f"To reset your password, visit: {reset_url}"
     mail.send(msg)
 
@@ -59,7 +59,7 @@ def logout():
 @auth_bp.route("/reset_password", methods=['GET', 'POST'])
 def reset_request():
     if current_user.is_authenticated:
-        return redirect(url_for('auth.projects'))
+        return redirect(url_for('project.projects'))
     form = RequestResetForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -67,4 +67,4 @@ def reset_request():
             send_reset_email(user)
         flash('An email has been sent.', 'info')
         return redirect(url_for('auth.login'))
-    return render_template('auth/auth-recoverpw.html', title='Reset Password', form=form)
+    return render_template('auth-recoverpw.html', title='Reset Password', form=form)
