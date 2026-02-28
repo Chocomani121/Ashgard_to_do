@@ -500,6 +500,21 @@ document.addEventListener("DOMContentLoaded", function () {
             if (createdEl) createdEl.textContent = report.created_on || "";
             var bodyEl = document.getElementById("reviewedDetailBody");
             if (bodyEl) bodyEl.innerHTML = report.report_content || "";
+            // Set currentActiveReportId so confirmReportDelete works
+            var reportIdField = document.getElementById("currentActiveReportId");
+            if (reportIdField) reportIdField.value = report.report_id;
+            // Show Delete button only for report author
+            var reviewedActionsEl = document.getElementById("reviewedDetailActions");
+            var reviewedAuthorActions = document.getElementById("reviewedDetailActionsAuthor");
+            if (reviewedActionsEl && reviewedAuthorActions) {
+                reviewedAuthorActions.style.display = "none";
+                if (report.is_author) {
+                    reviewedActionsEl.style.display = "block";
+                    reviewedAuthorActions.style.display = "block";
+                } else {
+                    reviewedActionsEl.style.display = "none";
+                }
+            }
             var sharedCommentSection = document.getElementById("sharedCommentSection");
             var reviewedDetailCol = document.querySelector("#reviewedDetailContent").closest(".col-md-8");
             if (sharedCommentSection && reviewedDetailCol) {
@@ -648,6 +663,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 stopReportCommentsPolling();
                 sharedCommentSection = document.getElementById("sharedCommentSection");
                 if (sharedCommentSection) sharedCommentSection.style.display = "none";
+                var reviewedActionsEl = document.getElementById("reviewedDetailActions");
+                if (reviewedActionsEl) reviewedActionsEl.style.display = "none";
                 return;
               }
               reportId = parseInt(activeItemRev.getAttribute('data-report-id'), 10);
@@ -657,6 +674,19 @@ document.addEventListener("DOMContentLoaded", function () {
               content = document.getElementById("reviewedDetailContent");
               if (placeholder) placeholder.style.display = "none";
               if (content) content.style.display = "block";
+              var reportIdField = document.getElementById("currentActiveReportId");
+              if (reportIdField) reportIdField.value = report.report_id;
+              var reviewedActionsEl = document.getElementById("reviewedDetailActions");
+              var reviewedAuthorActions = document.getElementById("reviewedDetailActionsAuthor");
+              if (reviewedActionsEl && reviewedAuthorActions) {
+                reviewedAuthorActions.style.display = "none";
+                if (report.is_author) {
+                  reviewedActionsEl.style.display = "block";
+                  reviewedAuthorActions.style.display = "block";
+                } else {
+                  reviewedActionsEl.style.display = "none";
+                }
+              }
               sharedCommentSection = document.getElementById("sharedCommentSection");
               var reviewedDetailCol = document.querySelector("#reviewedDetailContent").closest(".col-md-8");
               if (sharedCommentSection && reviewedDetailCol) {
@@ -1070,7 +1100,7 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 
 // Delete report
-function confirmReportDelete() {
+function confirmReportDelete(btn) {
     var reportId = document.getElementById("currentActiveReportId").value;
     
     if (!reportId) return;
@@ -1085,7 +1115,13 @@ function confirmReportDelete() {
         confirmButtonText: "Yes, delete it!"
     }).then(function (result) {
         if (result.isConfirmed) {
-            // No prefix needed because your blueprint has no url_prefix
+            if (btn) {
+                btn.disabled = true;
+                var spinner = btn.querySelector('.spinner-border');
+                var textSpan = btn.querySelector('.delete-btn-text');
+                if (spinner) spinner.classList.remove('d-none');
+                if (textSpan) textSpan.textContent = 'Deleting...';
+            }
             window.location.href = "/reports/delete/" + reportId;
         }
     });
