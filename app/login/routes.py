@@ -49,7 +49,7 @@ def register():
         db.session.commit()
         flash('Account created!', 'success')
         return redirect(url_for('auth.login'))
-    return render_template('auth/auth-register.html', title='Register', form=form)
+    return render_template('auth-register.html', title='Register', form=form)
 
 @auth_bp.route("/logout")
 def logout():
@@ -67,4 +67,4 @@ def reset_request():
             send_reset_email(user)
         flash('An email has been sent.', 'info')
         return redirect(url_for('auth.login'))
-    return render_template('auth/auth-recoverpw.html', title='Reset Password', form=form)
+    return render_template('auth-recoverpw.html', title='Reset Password', form=form)
