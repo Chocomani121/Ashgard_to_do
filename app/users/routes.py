@@ -87,7 +87,7 @@ def profile():
 def delete_member(member_id):
     if current_user.account_type != 'admin':
         flash('Unauthorized.', 'danger_error')
-        return redirect(url_for('users.members'))
+        return redirect(url_for('main.members'))
     
     member = User.query.get_or_404(member_id)
 
@@ -95,7 +95,7 @@ def delete_member(member_id):
     db.session.commit()
 
     flash('Member deleted.', 'delete_success')
-    return redirect(url_for('users.members'))
+    return redirect(url_for('main.members'))
 
 @users.route("/reset_password/<token>", methods=['GET', 'POST'])
 def reset_token(token):
@@ -105,7 +105,7 @@ def reset_token(token):
     user = User.verify_reset_token(token)
     if user is None:
         flash('That is an invalid or expired token', 'warning')
-        return redirect(url_for('users.reset_request'))
+        return redirect(url_for('auth.reset_request'))
 
     form = ResetPasswordForm()
     if form.validate_on_submit():
@@ -124,7 +124,7 @@ def reset_token(token):
 def update_member(member_id):
     if current_user.account_type != 'admin':
         flash('Unauthorized!', 'danger_error')
-        return redirect(url_for('users.members'))
+        return redirect(url_for('main.members'))
         
     member = User.query.get_or_404(member_id)
     
@@ -134,12 +134,12 @@ def update_member(member_id):
     existing_user = User.query.filter(User.username == new_username, User.member_id != member_id).first()
     if existing_user:
         flash('The username is already taken!', 'modal_error')
-        return redirect(url_for('users.members'))
+        return redirect(url_for('main.members'))
 
     existing_email = User.query.filter(User.email == new_email, User.member_id != member_id).first()
     if existing_email:
         flash('The email is already in use!', 'modal_error')
-        return redirect(url_for('users.members'))
+        return redirect(url_for('main.members'))
 
     member.name = request.form.get('name')
     member.username = new_username
@@ -151,4 +151,4 @@ def update_member(member_id):
 
     db.session.commit()
     flash(f'Updated {member.name}!', 'update_success')
-    return redirect(url_for('users.members'))
+    return redirect(url_for('main.members'))
