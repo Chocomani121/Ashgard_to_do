@@ -24,7 +24,7 @@ def send_reset_email(user):
 @auth_bp.route("/login", methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('auth.projects'))
+        return redirect(url_for('project.projects'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
