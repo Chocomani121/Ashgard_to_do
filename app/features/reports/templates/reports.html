@@ -182,8 +182,9 @@
                                                                     <button type="button" 
                                                                             id="deleteReportBtn"
                                                                             class="btn btn-outline-danger btn-sm px-4" 
-                                                                            onclick="confirmReportDelete()">
-                                                                        Delete        
+                                                                            onclick="confirmReportDelete(this)">
+                                                                        <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
+                                                                        <span class="delete-btn-text">Delete</span>
                                                                     </button>  
                                                                     <button type="button" 
                                                                             class="btn btn-outline-warning btn-sm px-4" 
@@ -288,12 +289,24 @@
                                                                     </td>
                                                                 </tr>
                                                             </table>
+                                                            <div id="reviewedDetailActions" class="d-flex py-2 gap-2 justify-content-center" style="display: none;">
+                                                                <div id="reviewedDetailActionsAuthor" style="display: none;">
+                                                                    <button type="button" 
+                                                                            id="deleteReviewedReportBtn"
+                                                                            class="btn btn-outline-danger btn-sm px-4" 
+                                                                            onclick="confirmReportDelete(this)">
+                                                                            <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
+                                                                            <span class="delete-btn-text">Delete</span>
+                                                                    </button>  
+                                                                </div>
+                                                            </div>
 
                                                         </div>
                                                      
                                                     </div>
                                                 </div>
                                 
+                                                
                                             </div>
                                         </div>
                                         
