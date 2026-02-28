@@ -49,7 +49,7 @@ def register():
         db.session.commit()
         flash('Account created!', 'success')
         return redirect(url_for('auth.login'))
-    return render_template('auth/auth-register.html', title='Register', form=form)
+    return render_template('auth-register.html', title='Register', form=form)
 
 @auth_bp.route("/logout")
 def logout():
