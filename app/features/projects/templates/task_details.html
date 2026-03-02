@@ -268,7 +268,6 @@
 
                         <div class="card-body subtask-table-card-body">
                             <div id="table6-gridjs" class="projectsTableTaskDetailsPM subtask-id-col-hidden {% if not is_project_member %}subtask-view-only{% endif %}"></div>
-                            <div id="table6-gridjs" class="projectsTableTaskDetailsPM subtask-id-col-hidden {% if not is_project_member %}subtask-view-only{% endif %}"></div>
 
                             <table id="projectsTableTaskDetailsPM" class="table d-none">
                                 <thead>
@@ -299,6 +298,7 @@
                                         <td class="notes-preview-cell">
                                             {% if st.notes_preview and st.notes_preview != '—' %}
                                             <div class="notes-preview-clickable" role="button" tabindex="0" title="View notes"
+                                                data-task-id="{{ task.task_id }}"
                                                 data-generated-code="{{ st.generated_code or '' }}"
                                                 data-sub-task-id="{{ st.sub_task_id }}"
                                                 data-subtask-name="{{ st.subtask_name or 'Subtask' }}">
@@ -652,8 +652,8 @@
                         </div>
                     </div>
 
-                    <!-- Subtask Notes View Modal (Report-style: COMMENTS header, threaded notes, Add comment at bottom) -->
-                    <div class="modal fade" id="subtaskNotesModal" tabindex="-1" aria-hidden="true" data-sub-task-id="" data-subtask-name="">
+                    <!-- Subtask Notes View Modal (Report-style: threaded notes, Add note at bottom) -->
+                    <div class="modal fade" id="subtaskNotesModal" tabindex="-1" aria-hidden="true" data-task-id="" data-sub-task-id="" data-subtask-name="" data-generated-code="">
                         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
                             <div class="modal-content d-flex flex-column" style="max-height: 85vh;">
                                 <div class="modal-header d-flex align-items-center justify-content-between py-2">
@@ -665,7 +665,17 @@
                                     <div id="subtaskNotesEmpty" class="text-muted small py-3 text-center" style="display: none;">No comments yet.</div>
                                 </div>
                                 <div class="p-3 bg-light border-top">
-                                    <div class="subtask-comment-placeholder form-control border-0 shadow-sm rounded py-2 px-3" role="button" tabindex="0" style="resize: none; background-color: #efefef; min-height: 38px; cursor: text;" title="Click to add a comment">Add a comment...</div>
+                                    <form id="subtaskInlineAddNoteForm" class="subtask-inline-add-note-form">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                                        <input type="hidden" name="action" value="add">
+                                        <div class="d-flex gap-2 align-items-end">
+                                            <textarea name="note_body" class="form-control flex-grow-1" rows="1" placeholder="Add a note..." required style="resize: none; height: 38px; overflow-y: auto;"></textarea>
+                                            <button type="submit" class="btn btn-primary flex-shrink-0" id="subtaskInlineAddNoteBtn">
+                                                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                                <span class="btn-text">Add</span>
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -750,7 +760,7 @@
                                     </div>
                                     <div class="modal-body">
                                         <div class="mb-3">
-                                            <label class="form-label">Add a comment (Optional)</label>
+                                            <label class="form-label">Add a note (Optional)</label>
                                             <textarea name="note_content" class="form-control" rows="3"></textarea>
                                         </div>
                                     </div>
@@ -769,6 +779,7 @@
 
 <script type="application/json" id="subtask-notes-data">{{ subtask_notes_map|tojson }}</script>
 <input type="hidden" id="subtask-notes-csrf" value="{{ csrf_token() if csrf_token is defined else '' }}">
+<input type="hidden" id="currentTaskId" value="{{ task.task_id if task and task.task_id else '' }}">
 <script>
 function openEditNoteModal(el) {
     if (!el) return;
@@ -799,7 +810,10 @@ document.addEventListener("DOMContentLoaded", function() {
         var imgSrc = profilePicBase + imgFile;
         var size = isReply ? 28 : 32;
         var actions = "<a href=\"#\" class=\"subtask-note-reply-toggle text-primary small text-decoration-none me-2\" data-note-id=\"" + (n.notes_id || "") + "\">Reply</a>";
-        if (n.is_author) actions += "<a href=\"#\" class=\"note-edit-toggle text-primary small text-decoration-none\" data-notes-id=\"" + (n.notes_id || "") + "\" data-edit-url=\"" + esc(n.edit_url || "") + "\" data-note-title=\"" + esc(n.generated_code || "") + "\" data-note-body=\"" + esc(n.body || "") + "\">Edit</a>";
+        if (n.is_author) {
+            actions += "<a href=\"#\" class=\"note-edit-toggle subtask-note-edit-link small text-decoration-none me-2\" data-notes-id=\"" + (n.notes_id || "") + "\" data-edit-url=\"" + esc(n.edit_url || "") + "\" data-note-title=\"" + esc(n.generated_code || "") + "\" data-note-body=\"" + esc(n.body || "") + "\">Edit</a>";
+            actions += "<a href=\"#\" class=\"subtask-note-delete-link small text-decoration-none\" data-delete-url=\"" + esc(n.delete_url || "") + "\" data-is-reply=\"" + (isReply ? "1" : "0") + "\">Delete</a>";
+        }
         var replyForm = "<div id=\"subtask-reply-form-" + (n.notes_id || "") + "\" class=\"mt-2 d-none\"><form class=\"subtask-note-reply-form\" action=\"" + esc(n.reply_url || "") + "\" method=\"POST\"><input type=\"hidden\" name=\"csrf_token\" value=\"" + esc(csrfToken) + "\"><div class=\"input-group input-group-sm\"><input type=\"text\" name=\"reply_body\" class=\"form-control\" placeholder=\"Write a reply...\" required><button class=\"btn btn-primary btn-sm note-reply-submit\" type=\"submit\" data-loading-text=\" Replying...\"><span class=\"btn-text\">Reply</span></button></div></form></div>";
         var tsHtml = "<small class=\"text-muted\">" + (n.edited ? "(edited) " + esc(n.edited) : esc(n.created || "")) + "</small>";
         var viewHtml = "<div class=\"note-view\"><div class=\"d-flex justify-content-between align-items-start mb-1\"><span class=\"fw-bold small\">" + esc(n.author || "Unknown") + "</span>" + tsHtml + "</div><div class=\"small " + (isReply ? "text-muted" : "text-secondary") + " report-comment-body mb-1\" style=\"white-space: pre-wrap;\">" + escHtml(n.body || "") + "</div><div class=\"mt-1\">" + actions + "</div>" + replyForm + "</div>";
@@ -823,15 +837,52 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         return out.join("");
     }
+    var ajaxHeaders = { "X-Requested-With": "XMLHttpRequest" };
+    function refreshSubtaskNotesModalContent(scrollToNoteId) {
+        var modalEl = document.getElementById("subtaskNotesModal");
+        var listEl = document.querySelector("#subtaskNotesModalBody .subtask-notes-list");
+        var bodyEl = document.querySelector("#subtaskNotesModalBody");
+        var emptyEl = document.getElementById("subtaskNotesEmpty");
+        if (!modalEl || !listEl) return;
+        var taskId = modalEl.getAttribute("data-task-id");
+        var subTaskId = modalEl.getAttribute("data-sub-task-id");
+        if (!taskId || !subTaskId) return;
+        var url = "/task_details/" + taskId + "/subtask/" + subTaskId + "/notes";
+        fetch(url, { headers: { "Accept": "application/json" } })
+            .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
+            .then(function(data) {
+                var main = data.main || [];
+                var replies = data.replies || {};
+                if (main.length === 0) {
+                    listEl.innerHTML = "";
+                    if (emptyEl) emptyEl.style.display = "block";
+                } else {
+                    listEl.innerHTML = renderNotesRec(main, replies, 0);
+                    if (emptyEl) emptyEl.style.display = "none";
+                }
+                if (scrollToNoteId) {
+                    if (scrollToNoteId === "bottom" && bodyEl) {
+                        bodyEl.scrollTop = bodyEl.scrollHeight;
+                    } else {
+                        var target = listEl.querySelector('[data-notes-id="' + scrollToNoteId + '"]');
+                        if (target) target.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                    }
+                }
+            })
+            .catch(function() {});
+    }
     document.addEventListener("click", function(e) {
         var el = e.target.closest(".notes-preview-clickable");
         if (!el) return;
         e.preventDefault();
+        var taskId = el.getAttribute("data-task-id") || "";
         var code = el.getAttribute("data-generated-code") || "";
         var subTaskId = el.getAttribute("data-sub-task-id") || "";
         var name = el.getAttribute("data-subtask-name") || "Subtask";
         var modalEl = document.getElementById("subtaskNotesModal");
         if (modalEl) {
+            modalEl.setAttribute("data-task-id", taskId);
+            modalEl.setAttribute("data-generated-code", code);
             modalEl.setAttribute("data-sub-task-id", subTaskId);
             modalEl.setAttribute("data-subtask-name", name);
         }
@@ -857,38 +908,65 @@ document.addEventListener("DOMContentLoaded", function() {
             bootstrap.Modal.getOrCreateInstance(modalEl).show();
         }
     });
-    function openSubtaskAddNoteModal() {
-        var modalEl = document.getElementById("subtaskNotesModal");
-        var subTaskId = modalEl ? modalEl.getAttribute("data-sub-task-id") : "";
-        var name = modalEl ? modalEl.getAttribute("data-subtask-name") : "Subtask";
-        if (!subTaskId || !noteUrlTemplate) return;
-        var url = noteUrlTemplate.replace("/subtask/0/", "/subtask/" + subTaskId + "/");
-        var form = document.getElementById("subtaskNoteForm");
-        var titleEl = document.getElementById("subtaskNoteModalTitle");
-        var actionInput = document.getElementById("subtaskNoteAction");
-        var bodyInput = document.getElementById("subtaskNoteBody");
-        var helpEl = document.getElementById("subtaskNoteHelp");
-        var submitBtn = document.getElementById("subtaskNoteModal") && document.getElementById("subtaskNoteModal").querySelector("#subtaskNoteSubmitBtn");
-        var btnText = submitBtn ? submitBtn.querySelector(".btn-text") : null;
-        if (form) form.action = url;
-        if (titleEl) titleEl.textContent = "Add Note – " + name;
-        if (actionInput) actionInput.value = "add";
-        if (bodyInput) bodyInput.value = "";
-        if (helpEl) helpEl.textContent = "";
-        if (btnText) btnText.textContent = "Save";
-        var addModal = document.getElementById("subtaskNoteModal");
-        if (addModal && typeof bootstrap !== "undefined") {
-            var v = bootstrap.Modal.getOrCreateInstance(document.getElementById("subtaskNotesModal"));
-            v.hide();
-            bootstrap.Modal.getOrCreateInstance(addModal).show();
-        }
-    }
-    document.addEventListener("click", function(e) {
-        if (e.target.closest(".subtask-comment-placeholder")) {
+    // Inline add note form (no separate modal – type and submit directly)
+    var inlineAddForm = document.getElementById("subtaskInlineAddNoteForm");
+    if (inlineAddForm) {
+        inlineAddForm.addEventListener("submit", function(e) {
             e.preventDefault();
-            openSubtaskAddNoteModal();
-        }
-    });
+            var notesModal = document.getElementById("subtaskNotesModal");
+            var taskId = notesModal ? notesModal.getAttribute("data-task-id") : "";
+            var subTaskId = notesModal ? notesModal.getAttribute("data-sub-task-id") : "";
+            if (!taskId) {
+                var taskIdEl = document.getElementById("currentTaskId");
+                if (taskIdEl) taskId = taskIdEl.value || "";
+            }
+            if (!taskId || !subTaskId) return;
+            var url = "/task_details/" + taskId + "/subtask/" + subTaskId + "/note";
+            var bodyInput = inlineAddForm.querySelector('textarea[name="note_body"]');
+            var body = bodyInput ? (bodyInput.value || "").trim() : "";
+            if (!body) return;
+            var btn = document.getElementById("subtaskInlineAddNoteBtn");
+            if (btn) {
+                btn.disabled = true;
+                var sp = btn.querySelector(".spinner-border");
+                var bt = btn.querySelector(".btn-text");
+                if (sp) sp.classList.remove("d-none");
+                if (bt) bt.textContent = "Adding...";
+            }
+            var formData = new FormData(inlineAddForm);
+            formData.set("note_body", body);
+            fetch(url, { method: "POST", body: formData, headers: ajaxHeaders })
+                .then(function(r) {
+                    if (r.ok) return r.json().then(function(d) {
+                        if (d && d.success) {
+                            refreshSubtaskNotesModalContent("bottom");
+                            if (bodyInput) bodyInput.value = "";
+                        } else {
+                            if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: (d && d.error) || "Failed to add note." });
+                            else alert((d && d.error) || "Failed to add note.");
+                        }
+                    });
+                    else {
+                        refreshSubtaskNotesModalContent();
+                        r.json().then(function(errD) { var m = (errD && errD.error) || "Failed to add note."; if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: m }); else alert(m); }).catch(function() { if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: "Failed to add note." }); else alert("Failed to add note."); });
+                    }
+                })
+                .catch(function() {
+                    refreshSubtaskNotesModalContent();
+                    if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: "Network error. Please try again." });
+                    else alert("Network error. Please try again.");
+                })
+                .finally(function() {
+                    if (btn) {
+                        btn.disabled = false;
+                        var sp = btn.querySelector(".spinner-border");
+                        var bt = btn.querySelector(".btn-text");
+                        if (sp) sp.classList.add("d-none");
+                        if (bt) bt.textContent = "Add";
+                    }
+                });
+        });
+    }
     // Reply toggle and Edit link inside subtask notes modal (event delegation) – use subtask-specific IDs so task notes and subtask notes stay separate
     document.addEventListener("click", function(e) {
         var replyTog = e.target.closest(".subtask-note-reply-toggle");
@@ -941,9 +1019,31 @@ document.addEventListener("DOMContentLoaded", function() {
             formData.append("note_title", title);
             formData.append("note_content", body);
             var restore = function() { saveBtn.disabled = false; saveBtn.innerHTML = origHtml; };
-            fetch(editUrl, { method: "POST", body: formData })
-                .then(function(r) { if (r.ok) window.location.reload(); else restore(); })
-                .catch(restore);
+            var scrollToId = block.getAttribute("data-notes-id") || null;
+            fetch(editUrl, { method: "POST", body: formData, headers: ajaxHeaders })
+                .then(function(r) {
+                    if (r.ok) return r.json().then(function(d) {
+                        if (d && d.success) {
+                            refreshSubtaskNotesModalContent(scrollToId);
+                        } else {
+                            restore();
+                            refreshSubtaskNotesModalContent(scrollToId);
+                            if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: (d && d.error) || "Failed to save changes." });
+                            else alert((d && d.error) || "Failed to save changes.");
+                        }
+                    });
+                    else {
+                        restore();
+                        refreshSubtaskNotesModalContent(scrollToId);
+                        r.json().then(function(errD) { var m = (errD && errD.error) || "Failed to save changes."; if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: m }); else alert(m); }).catch(function() { if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: "Failed to save changes." }); else alert("Failed to save changes."); });
+                    }
+                })
+                .catch(function() {
+                    restore();
+                    refreshSubtaskNotesModalContent(scrollToId);
+                    if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: "Network error. Please try again." });
+                    else alert("Network error. Please try again.");
+                });
             return;
         }
         var cancelBtn = e.target.closest(".note-inline-cancel");
@@ -954,6 +1054,63 @@ document.addEventListener("DOMContentLoaded", function() {
             var viewEl = block.querySelector(".note-view");
             var editEl = block.querySelector(".note-edit");
             if (viewEl && editEl) { viewEl.classList.remove("d-none"); editEl.classList.add("d-none"); }
+            return;
+        }
+        var deleteLink = e.target.closest(".subtask-note-delete-link");
+        if (deleteLink) {
+            e.preventDefault();
+            var deleteUrl = deleteLink.getAttribute("data-delete-url");
+            if (!deleteUrl) return;
+            var scrollToId = null;
+            var card = deleteLink.closest(".subtask-note-card");
+            if (card && deleteLink.getAttribute("data-is-reply") === "1") {
+                var wrapper = card.closest(".subtask-note-reply-wrapper");
+                var parentCard = wrapper ? wrapper.previousElementSibling : null;
+                if (parentCard) scrollToId = parentCard.getAttribute("data-notes-id");
+            }
+            var doDelete = function() {
+                var formData = new FormData();
+                formData.append("csrf_token", csrfToken);
+                fetch(deleteUrl, { method: "POST", body: formData, headers: ajaxHeaders })
+                    .then(function(r) {
+                        if (r.ok) return r.json().then(function(d) {
+                            if (d && d.success) {
+                                refreshSubtaskNotesModalContent(scrollToId);
+                            } else {
+                                refreshSubtaskNotesModalContent(scrollToId);
+                                if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: (d && d.error) || "Failed to delete." });
+                                else alert((d && d.error) || "Failed to delete.");
+                            }
+                        });
+                        else {
+                            refreshSubtaskNotesModalContent(scrollToId);
+                            r.json().then(function(errD) { var m = (errD && errD.error) || "Failed to delete."; if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: m }); else alert(m); }).catch(function() { if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: "Failed to delete." }); else alert("Failed to delete."); });
+                        }
+                    })
+                    .catch(function() {
+                        refreshSubtaskNotesModalContent(scrollToId);
+                        if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: "Network error. Please try again." });
+                        else alert("Network error. Please try again.");
+                    });
+            };
+            var isReply = deleteLink.getAttribute("data-is-reply") === "1";
+            var title = isReply ? "Delete this reply?" : "Delete this note?";
+            var text = isReply ? "" : "Any replies will also be deleted.";
+            if (typeof Swal !== "undefined") {
+                Swal.fire({
+                    title: title,
+                    text: text || undefined,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#f34e4e",
+                    cancelButtonColor: "#74788d",
+                    confirmButtonText: "Yes, delete it!"
+                }).then(function(result) {
+                    if (result.isConfirmed) doDelete();
+                });
+            } else {
+                if (confirm(title + (text ? " " + text : ""))) doDelete();
+            }
             return;
         }
     });
@@ -1014,10 +1171,131 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Notes: loading state on Reply forms (task notes and subtask notes)
+    // Subtask Note form: AJAX submit for subtask notes (notes_tbl with sub_task_id)
+    // Handle reply forms FIRST (before id check) so they don't fall through to normal submit
     document.addEventListener('submit', function(e) {
         var form = e.target;
-        if (form && (form.classList.contains('note-reply-form') || form.classList.contains('subtask-note-reply-form'))) {
+        if (form && form.classList.contains('subtask-note-reply-form')) {
+            e.preventDefault();
+            var parentCard = form.closest(".subtask-note-card");
+            var scrollToId = parentCard ? parentCard.getAttribute("data-notes-id") : null;
+            var btn = form.querySelector('.note-reply-submit');
+            var textEl = btn ? btn.querySelector('.btn-text') : null;
+            var origText = textEl ? textEl.innerHTML : '';
+            if (btn) { btn.disabled = true; if (textEl) textEl.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i>'; }
+            var formData = new FormData(form);
+            fetch(form.action, { method: "POST", body: formData, headers: ajaxHeaders })
+                .then(function(r) {
+                    if (r.ok) return r.json().then(function(d) {
+                        if (btn) { btn.disabled = false; if (textEl) textEl.innerHTML = origText; }
+                        if (d && d.success) {
+                            refreshSubtaskNotesModalContent(scrollToId);
+                            var replyFormEl = form.parentElement;
+                            if (replyFormEl) replyFormEl.classList.add('d-none');
+                            var replyInput = form.querySelector('input[name="reply_body"]');
+                            if (replyInput) replyInput.value = '';
+                        } else {
+                            refreshSubtaskNotesModalContent(scrollToId);
+                            if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: (d && d.error) || "Failed to save reply." });
+                            else alert((d && d.error) || "Failed to save reply.");
+                        }
+                    });
+                    else {
+                        if (btn) { btn.disabled = false; if (textEl) textEl.innerHTML = origText; }
+                        refreshSubtaskNotesModalContent(scrollToId);
+                        r.json().then(function(errD) { var m = (errD && errD.error) || "Failed to save reply."; if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: m }); else alert(m); }).catch(function() { if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: "Failed to save reply." }); else alert("Failed to save reply."); });
+                    }
+                })
+                .catch(function() {
+                    if (btn) { btn.disabled = false; if (textEl) textEl.innerHTML = origText; }
+                    refreshSubtaskNotesModalContent(scrollToId);
+                    if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: "Network error. Please try again." });
+                    else alert("Network error. Please try again.");
+                });
+            return;
+        }
+        if (form && form.id !== 'subtaskNoteForm') return;
+        var formAction = (form && form.action) || '';
+        var isSubtaskNoteUrl = /\/task_details\/\d+\/subtask\/\d+\/note$/.test(formAction.replace(/^https?:\/\/[^/]+/, ''));
+        if (!isSubtaskNoteUrl) return;
+        e.preventDefault();
+        var submitBtn = form.querySelector('button[type="submit"]');
+        var notesModal = document.getElementById('subtaskNotesModal');
+        var notesModalHasContext = notesModal && notesModal.getAttribute('data-task-id') && notesModal.getAttribute('data-sub-task-id');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            var sp = submitBtn.querySelector('.spinner-border');
+            var bt = submitBtn.querySelector('.btn-text');
+            if (sp) sp.classList.remove('d-none');
+            if (bt) bt.textContent = (submitBtn.getAttribute('data-loading-text') || ' Saving...').trim();
+        }
+        var formData = new FormData(form);
+        fetch(formAction, { method: 'POST', body: formData, headers: ajaxHeaders })
+                .then(function(r) {
+                    if (r.ok) return r.json().then(function(d) {
+                        var addModal = document.getElementById('subtaskNoteModal');
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            var sp = submitBtn.querySelector('.spinner-border');
+                            var bt = submitBtn.querySelector('.btn-text');
+                            if (sp) sp.classList.add('d-none');
+                            if (bt) bt.textContent = 'Save';
+                        }
+                        if (d && d.success) {
+                            if (notesModalHasContext && notesModal) {
+                                if (addModal && typeof bootstrap !== 'undefined') bootstrap.Modal.getOrCreateInstance(addModal).hide();
+                                refreshSubtaskNotesModalContent("bottom");
+                                if (typeof bootstrap !== 'undefined') bootstrap.Modal.getOrCreateInstance(notesModal).show();
+                                form.reset();
+                                var bodyInput = document.getElementById('subtaskNoteBody');
+                                if (bodyInput) bodyInput.value = '';
+                            } else {
+                                window.location.reload();
+                            }
+                        } else {
+                            if (notesModalHasContext && notesModal) {
+                                if (addModal && typeof bootstrap !== 'undefined') bootstrap.Modal.getOrCreateInstance(addModal).hide();
+                                refreshSubtaskNotesModalContent();
+                                if (typeof bootstrap !== 'undefined') bootstrap.Modal.getOrCreateInstance(notesModal).show();
+                                if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: (d && d.error) || "Failed to save note." });
+                                else alert((d && d.error) || "Failed to save note.");
+                            } else window.location.reload();
+                        }
+                    });
+                    else if (notesModalHasContext && notesModal) {
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            var sp = submitBtn.querySelector('.spinner-border');
+                            var bt = submitBtn.querySelector('.btn-text');
+                            if (sp) sp.classList.add('d-none');
+                            if (bt) bt.textContent = 'Save';
+                        }
+                        var addModal = document.getElementById('subtaskNoteModal');
+                        if (addModal && typeof bootstrap !== 'undefined') bootstrap.Modal.getOrCreateInstance(addModal).hide();
+                        refreshSubtaskNotesModalContent();
+                        if (typeof bootstrap !== 'undefined') bootstrap.Modal.getOrCreateInstance(notesModal).show();
+                        r.json().then(function(d) { if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: (d && d.error) || "Failed to save note." }); else alert((d && d.error) || "Failed to save note."); }).catch(function() { if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: "Failed to save note." }); else alert("Failed to save note."); });
+                    } else window.location.reload();
+                })
+                .catch(function() {
+                    if (notesModalHasContext && notesModal) {
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            var sp = submitBtn.querySelector('.spinner-border');
+                            var bt = submitBtn.querySelector('.btn-text');
+                            if (sp) sp.classList.add('d-none');
+                            if (bt) bt.textContent = 'Save';
+                        }
+                        var addModal = document.getElementById('subtaskNoteModal');
+                        if (addModal && typeof bootstrap !== 'undefined') bootstrap.Modal.getOrCreateInstance(addModal).hide();
+                        refreshSubtaskNotesModalContent();
+                        if (typeof bootstrap !== 'undefined') bootstrap.Modal.getOrCreateInstance(notesModal).show();
+                        if (typeof Swal !== "undefined") Swal.fire({ icon: "error", title: "Error", text: "Network error. Please try again." });
+                        else alert("Network error. Please try again.");
+                    } else window.location.reload();
+                });
+            return;
+        if (form && form.classList.contains('note-reply-form')) {
             var btn = form.querySelector('.note-reply-submit');
             if (btn && !btn.disabled) {
                 btn.disabled = true;
@@ -1063,8 +1341,8 @@ document.addEventListener("DOMContentLoaded", function() {
     if (subtaskNoteModalEl) {
         subtaskNoteModalEl.addEventListener('show.bs.modal', function(e) {
             var trigger = e.relatedTarget;
-            if (!trigger) return;
             var form = document.getElementById('subtaskNoteForm');
+            if (!trigger) return;
             var titleEl = document.getElementById('subtaskNoteModalTitle');
             var actionInput = document.getElementById('subtaskNoteAction');
             var bodyInput = document.getElementById('subtaskNoteBody');
