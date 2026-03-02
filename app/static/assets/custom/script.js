@@ -253,11 +253,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 // Delete SweetAlert for Subtask (submits hidden form)
-function confirmDeleteSubtask(url, code, formId) {
+function confirmDeleteSubtask(url, name, formId) {
     var form = document.getElementById(formId || 'subtaskDeleteForm');
     if (!form || !url) return;
     if (typeof Swal === "undefined") {
-        if (window.confirm("Delete subtask " + (code || '') + "?")) {
+        if (window.confirm("Delete subtask " + (name || '') + "?")) {
             form.action = url;
             form.submit();
         }
@@ -265,7 +265,7 @@ function confirmDeleteSubtask(url, code, formId) {
     }
     Swal.fire({
         title: "Delete subtask?",
-        text: "Are you sure you want to delete " + (code || 'this subtask') + "? This cannot be undone.",
+        html: "Are you sure you want to delete <strong>" + (name || 'this subtask') + "</strong>? This cannot be undone.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#f34e4e",
@@ -286,7 +286,9 @@ function confirmDeleteSubtask(url, code, formId) {
 
 // Delete SweetAlert for Projects (redirects to dashboard after delete)
 function confirmDeleteProject(projectId, projectName) {
-    var msg = "This will permanently delete the project \"" + (projectName || "this project") + "\" and all of its tasks, sub-tasks, notes, and team members. This cannot be undone.";
+    var projectLabel = projectName || "this project";
+    var msg = "This will permanently delete the project \"" + projectLabel + "\" and all of its tasks, sub-tasks, notes, and team members. This cannot be undone.";
+    var msgHtml = "This will permanently delete the project <strong>\"" + projectLabel + "\"</strong> and all of its tasks, sub-tasks, notes, and team members. This cannot be undone.";
     if (typeof Swal === "undefined") {
         if (window.confirm(msg)) {
             window.location.href = "/project_details/" + projectId + "/delete";
@@ -295,7 +297,7 @@ function confirmDeleteProject(projectId, projectName) {
     }
     Swal.fire({
         title: "Are you sure?",
-        text: msg,
+        html: msgHtml,
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#d33",
