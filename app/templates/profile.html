@@ -73,7 +73,7 @@
 
                                                 <div class="mt-3 border-bottom pb-3">
                                                     <h5 class="fw-light mb-3">Change Password</h5>
-                                                    <form method="POST" action="{{ url_for('users.change_password') }}">
+                                                    <form method="POST" action="{{ url_for('users.change_password') }}" id="changePasswordForm">
                                                         {{ change_password_form.hidden_tag() }}
                                                         <div class="row g-2">
                                                             <div class="col-12 col-md-4">
@@ -83,7 +83,10 @@
                                                                 {{ change_password_form.confirm_password(class="form-control", placeholder="Confirm password") }}
                                                             </div>
                                                             <div class="col-12 col-md-auto">
-                                                                {{ change_password_form.submit(class="btn btn-primary") }}
+                                                                <button type="submit" class="btn btn-danger" id="changePasswordBtn">
+                                                                    <span class="spinner-border spinner-border-sm d-none" id="changePasswordSpinner" role="status" aria-hidden="true"></span>
+                                                                    <span id="changePasswordText">Change Password</span>
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </form>
@@ -609,18 +612,47 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-    const form = document.querySelector("#editProfileForm");
-    if (!form) return;
-    form.addEventListener("submit", function() {
-        const btn = form.querySelector("#profileSubmitBtn");
-        const spinner = form.querySelector("#profileSubmitSpinner");
-        const text = form.querySelector("#profileSubmitText");
-        if (btn && spinner && text) {
-            btn.disabled = true;
-            spinner.classList.remove("d-none");
-            text.textContent = " Saving...";
+        const editForm = document.querySelector("#editProfileForm");
+        if (editForm) {
+            editForm.addEventListener("submit", function() {
+                const btn = editForm.querySelector("#profileSubmitBtn");
+                const spinner = editForm.querySelector("#profileSubmitSpinner");
+                const text = editForm.querySelector("#profileSubmitText");
+                if (btn && spinner && text) {
+                    btn.disabled = true;
+                    spinner.classList.remove("d-none");
+                    text.textContent = " Saving...";
+                }
+            });
+        }
+
+        const changePwForm = document.querySelector("#changePasswordForm");
+        if (changePwForm && typeof Swal !== "undefined") {
+            changePwForm.addEventListener("submit", function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: "Update password?",
+                    text: "Are you sure you want to update your password?",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonColor: "#28b765",
+                    cancelButtonColor: "#6c757d",
+                    confirmButtonText: "Yes, update it"
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        const btn = document.getElementById("changePasswordBtn");
+                        const spinner = document.getElementById("changePasswordSpinner");
+                        const textEl = document.getElementById("changePasswordText");
+                        if (btn && spinner && textEl) {
+                            btn.disabled = true;
+                            spinner.classList.remove("d-none");
+                            textEl.textContent = " Updating...";
+                        }
+                        changePwForm.submit();
+                    }
+                });
+            });
         }
     });
-});
-    </script>
+</script>
     {% endblock content %}
