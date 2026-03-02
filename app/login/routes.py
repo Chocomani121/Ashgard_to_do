@@ -1,4 +1,4 @@
-from flask import render_template, url_for, flash, redirect, request, Blueprint, current_app
+from flask import render_template, url_for, flash, redirect, request, Blueprint, current_app, jsonify
 from app import db, bcrypt, mail
 from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm, UpdateAccountForm
 from app.models import User, Department, Notes, Task, Project
@@ -65,6 +65,6 @@ def reset_request():
         user = User.query.filter_by(email=form.email.data).first()
         if user:
             send_reset_email(user)
-        flash('An email has been sent.', 'info')
-        return redirect(url_for('auth.login'))
+        flash('An email has been sent. Please check your email for instructions to reset your password.', 'success')
+        return redirect(url_for('auth.reset_request'))
     return render_template('auth-recoverpw.html', title='Reset Password', form=form)
