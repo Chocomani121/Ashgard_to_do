@@ -84,6 +84,6 @@ class ProjectForm(FlaskForm):
 
 class TaskForm(FlaskForm):
     task_name = StringField('Task Name', validators=[DataRequired()])
-    description = TextAreaField('Description')
+    description = TextAreaField   ('Description')
     priority = SelectField('Priority', choices=[('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High')])
     submit = SubmitField('Add Task')
