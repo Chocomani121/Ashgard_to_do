@@ -72,17 +72,21 @@
                                                 </div>
 
                                                 <div class="mt-3 border-bottom pb-3">
-                                                    <h5 class="fw-light mb-3">Reset Password</h5>
-                                                    <div class="row g-2 align-items-end">
-                                                        <div class="col">
-                                                            <input type="password" class="form-control" placeholder="Enter new password">
+                                                    <h5 class="fw-light mb-3">Change Password</h5>
+                                                    <form method="POST" action="{{ url_for('users.change_password') }}">
+                                                        {{ change_password_form.hidden_tag() }}
+                                                        <div class="row g-2">
+                                                            <div class="col-12 col-md-4">
+                                                                {{ change_password_form.new_password(class="form-control", placeholder="New password") }}
+                                                            </div>
+                                                            <div class="col-12 col-md-4">
+                                                                {{ change_password_form.confirm_password(class="form-control", placeholder="Confirm password") }}
+                                                            </div>
+                                                            <div class="col-12 col-md-auto">
+                                                                {{ change_password_form.submit(class="btn btn-primary") }}
+                                                            </div>
                                                         </div>
-                                                        <div class="col-auto">
-                                                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">
-                                                                <i class="bx bx-lock-alt me-2"></i>Reset Password
-                                                            </button>
-                                                        </div>
-                                                    </div>
+                                                    </form>
                                                 </div>
 
                                             <!-- Temporary hidden card for admin requests-->

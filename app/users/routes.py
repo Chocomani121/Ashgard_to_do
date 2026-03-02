@@ -1,6 +1,6 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint, current_app
 from app import db, bcrypt, mail
-from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm, UpdateAccountForm
+from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm, UpdateAccountForm, ChangePasswordForm
 from app.models import User, Department, Notes, Task
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
@@ -76,9 +76,23 @@ def profile():
         form.username.data = current_user.username
         form.email.data = current_user.email
         form.department.data = current_user.department_id
-        # We don't set form.department because you want it to be static text
-        
-    return render_template('profile.html', form=form, dept_name=dept_name, departments=departments)
+
+    change_password_form = ChangePasswordForm()
+    return render_template('profile.html', form=form, change_password_form=change_password_form, dept_name=dept_name, departments=departments)
+
+@users.route("/profile/change_password", methods=['POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        current_user.password = bcrypt.generate_password_hash(form.new_password.data).decode('utf-8')
+        db.session.commit()
+        flash('Your password has been updated.', 'success')
+    else:
+        for field, errors in form.errors.items():
+            for err in errors:
+                flash(err, 'danger')
+    return redirect(url_for('users.profile'))
 
 # --- MEMBERS LIST (PAGINATED) ---
 
@@ -152,3 +166,13 @@ def update_member(member_id):
     db.session.commit()
     flash(f'Updated {member.name}!', 'update_success')
     return redirect(url_for('main.members'))
+@users.route("/reset_password", methods=['GET', 'POST'])
+def reset_password():
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        current_user.password = hashed_password
+        db.session.commit()
+        flash('Your password has been updated! You are now able to log in', 'success')
+        return redirect(url_for('users.profile'))
+    return render_template('profile.html', title='Reset Password', form=form)
