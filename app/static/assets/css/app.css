@@ -6209,6 +6209,19 @@ body[data-layout-mode="dark"] .gallery-box .box-content {
 .projectsTableTaskDetailsPM .add-note-in-cell:hover {
   text-decoration: underline;
 }
+/* Subtask notes: Edit grey, Delete faint red */
+.subtask-notes-list .subtask-note-edit-link {
+  color: #6c757d !important;
+}
+.subtask-notes-list .subtask-note-edit-link:hover {
+  color: #495057 !important;
+}
+.subtask-notes-list .subtask-note-delete-link {
+  color: #c9a0a0 !important;
+}
+.subtask-notes-list .subtask-note-delete-link:hover {
+  color: #b07d7d !important;
+}
 .subtask-notes-list .note-edit-toggle:hover {
   color: var(--bs-body-color) !important;
 }
