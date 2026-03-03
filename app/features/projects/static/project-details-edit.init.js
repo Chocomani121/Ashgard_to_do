@@ -241,4 +241,22 @@ document.addEventListener("DOMContentLoaded", function () {
       if (btn) showSubmitSpinner(btn, " Saving...");
     });
   }
+
+   // Delete task button (project details tasks table) - use event delegation for GridJS-rendered table
+  var tasksContainer = document.getElementById("project-tasks-table-gridjs");
+  (tasksContainer || document).addEventListener("click", function (e) {
+    var btn = e.target.closest(".delete-task-btn");
+    if (!btn) return;
+    e.preventDefault();
+    var form = document.getElementById("deleteTaskForm");
+    if (!form) return;
+    var url = btn.getAttribute("data-delete-url");
+    var taskName = btn.getAttribute("data-task-name") || "this task";
+    if (url) form.action = url;
+    if (typeof confirmDeleteTask === "function") {
+      confirmDeleteTask(taskName);
+    } else if (window.confirm("Are you sure you want to delete " + taskName + "? This cannot be undone.")) {
+      form.submit();
+    }
+  });
 });

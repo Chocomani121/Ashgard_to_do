@@ -255,6 +255,7 @@
                                                                 {{ task_info.progress }}
                                                             </td>
                                                             <td>
+                                                                <div class="d-flex flex-wrap align-items-center gap-1">
                                                                 {% if task_info.can_edit %}
                                                                     {% if task_info.status != 'Completed' %}
                                                                     <button type="button" class="btn btn-sm btn-outline-primary mark-complete-btn" data-task-id="{{ task_info.task.task_id }}">
@@ -270,6 +271,13 @@
                                                                     <span class="text-muted small">View only</span>
                                                                     {% endif %}
                                                                 {% endif %}
+                                                                <!-- deleting task button -->
+                                                                {% if task_info.can_delete %}
+                                                                    <button type="button" class="btn btn-sm btn-outline-danger delete-task-btn" data-task-id="{{ task_info.task.task_id }}" data-task-name="{{ task_info.task.task_name|e }}" data-delete-url="{{ url_for('project.delete_task', id=task_info.task.task_id) }}">
+                                                                        <i class="mdi mdi-delete-outline"></i> Delete
+                                                                    </button>
+                                                                {% endif %}
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                         {% else %}
@@ -526,6 +534,11 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- Hidden form for delete task (used by delete-task-btn on project details) -->
+    <form id="deleteTaskForm" method="POST" action="" class="d-none">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+    </form>
 
     <script type="application/json" id="project-assigned-members-for-task">{{ task_assignable_members|tojson }}</script>
     <script type="application/json" id="edit-project-users-data">{{ users_json|tojson }}</script>
