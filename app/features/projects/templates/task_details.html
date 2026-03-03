@@ -1071,6 +1071,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (parentCard) scrollToId = parentCard.getAttribute("data-notes-id");
             }
             var doDelete = function() {
+                deleteLink.innerHTML = "<span class=\"spinner-border spinner-border-sm me-1\" role=\"status\"></span>Deleting...";
+                deleteLink.style.pointerEvents = "none";
+                deleteLink.classList.add("text-muted");
                 var formData = new FormData();
                 formData.append("csrf_token", csrfToken);
                 fetch(deleteUrl, { method: "POST", body: formData, headers: ajaxHeaders })
