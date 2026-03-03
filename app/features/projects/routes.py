@@ -602,14 +602,17 @@ def project_details(id=None):
 
             # Check if current user can edit/mark complete this task
             can_edit = _can_edit_task(task, current_user)
-            
+            # Only project manager can delete tasks
+            can_delete = project and current_user.member_id == project.project_manager
+
             tasks.append({
                 'task': task,
                 'owner': owner,
                 'assignees': assignees,
                 'progress': progress,
                 'status': task_status,
-                'can_edit': can_edit
+                'can_edit': can_edit,
+                'can_delete': can_delete
             })
     
     users = User.query.all()
@@ -1248,6 +1251,14 @@ def delete_subtask(task_id, sub_task_id):
     subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
     if not _can_act_on_subtask(subtask, task, current_user):
         flash('You do not have permission to delete this subtask.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    # Only the subtask owner can delete it
+    if not subtask.p_members_id:
+        flash('Only the subtask owner can delete it.', 'danger')
+        return redirect(url_for('project.task_details', id=task_id))
+    pm = ProjectMembers.query.get(subtask.p_members_id)
+    if not pm or pm.member_id != current_user.member_id:
+        flash('Only the subtask owner can delete it.', 'danger')
         return redirect(url_for('project.task_details', id=task_id))
     try:
         db.session.delete(subtask)
