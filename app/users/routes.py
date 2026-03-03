@@ -1,6 +1,6 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint, current_app
 from app import db, bcrypt, mail
-from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm, UpdateAccountForm
+from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm, UpdateAccountForm, ChangePasswordForm
 from app.models import User, Department, Notes, Task
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
@@ -76,9 +76,23 @@ def profile():
         form.username.data = current_user.username
         form.email.data = current_user.email
         form.department.data = current_user.department_id
-        # We don't set form.department because you want it to be static text
-        
-    return render_template('profile.html', form=form, dept_name=dept_name, departments=departments)
+
+    change_password_form = ChangePasswordForm()
+    return render_template('profile.html', form=form, change_password_form=change_password_form, dept_name=dept_name, departments=departments)
+
+@users.route("/profile/change_password", methods=['POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        current_user.password = bcrypt.generate_password_hash(form.new_password.data).decode('utf-8')
+        db.session.commit()
+        flash('Your password has been updated.', 'success')
+    else:
+        for field, errors in form.errors.items():
+            for err in errors:
+                flash(err, 'danger')
+    return redirect(url_for('users.profile'))
 
 # --- MEMBERS LIST (PAGINATED) ---
 
@@ -87,7 +101,7 @@ def profile():
 def delete_member(member_id):
     if current_user.account_type != 'admin':
         flash('Unauthorized.', 'danger_error')
-        return redirect(url_for('users.members'))
+        return redirect(url_for('main.members'))
     
     member = User.query.get_or_404(member_id)
 
@@ -95,7 +109,7 @@ def delete_member(member_id):
     db.session.commit()
 
     flash('Member deleted.', 'delete_success')
-    return redirect(url_for('users.members'))
+    return redirect(url_for('main.members'))
 
 @users.route("/reset_password/<token>", methods=['GET', 'POST'])
 def reset_token(token):
@@ -105,7 +119,7 @@ def reset_token(token):
     user = User.verify_reset_token(token)
     if user is None:
         flash('That is an invalid or expired token', 'warning')
-        return redirect(url_for('users.reset_request'))
+        return redirect(url_for('auth.reset_request'))
 
     form = ResetPasswordForm()
     if form.validate_on_submit():
@@ -124,7 +138,7 @@ def reset_token(token):
 def update_member(member_id):
     if current_user.account_type != 'admin':
         flash('Unauthorized!', 'danger_error')
-        return redirect(url_for('users.members'))
+        return redirect(url_for('main.members'))
         
     member = User.query.get_or_404(member_id)
     
@@ -134,12 +148,12 @@ def update_member(member_id):
     existing_user = User.query.filter(User.username == new_username, User.member_id != member_id).first()
     if existing_user:
         flash('The username is already taken!', 'modal_error')
-        return redirect(url_for('users.members'))
+        return redirect(url_for('main.members'))
 
     existing_email = User.query.filter(User.email == new_email, User.member_id != member_id).first()
     if existing_email:
         flash('The email is already in use!', 'modal_error')
-        return redirect(url_for('users.members'))
+        return redirect(url_for('main.members'))
 
     member.name = request.form.get('name')
     member.username = new_username
@@ -151,4 +165,14 @@ def update_member(member_id):
 
     db.session.commit()
     flash(f'Updated {member.name}!', 'update_success')
-    return redirect(url_for('users.members'))
+    return redirect(url_for('main.members'))
+@users.route("/reset_password", methods=['GET', 'POST'])
+def reset_password():
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        current_user.password = hashed_password
+        db.session.commit()
+        flash('Your password has been updated! You are now able to log in', 'success')
+        return redirect(url_for('users.profile'))
+    return render_template('profile.html', title='Reset Password', form=form)

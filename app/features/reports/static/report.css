@@ -9,3 +9,9 @@
     text-align: left!important;
     font-weight: bold;
   } 
+
+  .report-comment-body {
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+  }

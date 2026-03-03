@@ -36,7 +36,6 @@ class UpdateAccountForm(FlaskForm):
                         validators=[Length(max=100)])
     picture = FileField('Update Profile Picture', 
                         validators=[FileAllowed(['jpg', 'png'])])
-    
     submit = SubmitField('Update Details')
 
     def validate_username(self, username):
@@ -71,6 +70,12 @@ class ResetPasswordForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Reset Password')
 
+class ChangePasswordForm(FlaskForm):
+    """Used in profile - logged-in user updates password."""
+    new_password = PasswordField('New Password', validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('new_password')])
+    submit = SubmitField('Change Password')
+
 class ProjectForm(FlaskForm):
     client_name = StringField('Client Name', validators=[DataRequired()])
     start_date = DateField('Start Date', validators=[DataRequired()])
@@ -79,6 +84,6 @@ class ProjectForm(FlaskForm):
 
 class TaskForm(FlaskForm):
     task_name = StringField('Task Name', validators=[DataRequired()])
-    description = TextAreaField('Description')
+    description = TextAreaField   ('Description')
     priority = SelectField('Priority', choices=[('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High')])
     submit = SubmitField('Add Task')

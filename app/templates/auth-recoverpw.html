@@ -10,11 +10,19 @@
     <link href="{{ url_for('static', filename='assets/css/bootstrap.min.css') }}" id="bootstrap-style" rel="stylesheet" type="text/css" />
     <link href="{{ url_for('static', filename='assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ url_for('static', filename='assets/css/app.min.css') }}" id="app-style" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='assets/libs/alertifyjs/build/css/alertify.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='assets/css/app.css') }}" id="app-style" rel="stylesheet" type="text/css" />
+
 </head>
 
 <body>
     <div class="authentication-bg min-vh-100">
         <div class="container-fluid">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              <script type="application/json" id="flashed-messages">{{ messages | tojson }}</script>
+            {% endif %}
+            {% endwith %}
             <div class="row min-vh-100">
 
                 <div class="col-md-6 d-none d-md-flex justify-content-center align-items-center bg-dark text-white">
@@ -33,17 +41,6 @@
                                     <h5>Reset Password</h5>
                                     <p class="text-muted">Enter your email to receive reset instructions.</p>
                                 </div>
-
-                                {% with messages = get_flashed_messages(with_categories=true) %}
-                                  {% if messages %}
-                                    {% for category, message in messages %}
-                                      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                        {{ message }}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                      </div>
-                                    {% endfor %}
-                                  {% endif %}
-                                {% endwith %}
 
                                 <div class="p-2 mt-4">
                                     <form method="POST" action="">
@@ -87,5 +84,18 @@
     </div>
 
     <script src="{{ url_for('static', filename='assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/libs/alertifyjs/build/alertify.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/js/pages/notification.init.js') }}"></script>
+
+    <script>
+        (function() {
+          var el = document.getElementById("flashed-messages");
+          if (el) {
+            setTimeout(function() {
+              window.location.href = "{{ url_for('auth.login') }}";
+            }, 2500);
+          }
+        })();
+        </script>
 </body>
 </html>

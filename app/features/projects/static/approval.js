@@ -149,10 +149,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (delLink) {
             e.preventDefault();
             var url = delLink.getAttribute('data-url');
-            var code = delLink.getAttribute('data-code') || 'this subtask';
+            var name = delLink.getAttribute('data-subtask-name') || 'this subtask';
             if (url && typeof confirmDeleteSubtask === 'function') {
-                confirmDeleteSubtask(url, code);
-            } else if (url && confirm('Delete sub-task ' + code + '?')) {
+                confirmDeleteSubtask(url, name);
+            } else if (url && confirm('Delete sub-task ' + name + '?')) {
                 var form = document.getElementById('subtaskDeleteForm');
                 if (form) { form.action = url; form.submit(); }
             }

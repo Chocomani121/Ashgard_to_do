@@ -42,7 +42,8 @@ def _can_edit_task(task, user):
 @login_required
 def members():
     users = User.query.all()
-    return render_template('members.html', title="Members", members=users, total_users=len(users))
+    departments = Department.query.all()
+    return render_template('members.html', title="Members", members=users, total_users=len(users), departments=departments)
 
 @main.route("/profile")
 @login_required

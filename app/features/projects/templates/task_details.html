@@ -339,7 +339,9 @@
                                                     <button class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-vertical"></i></button>
                                                     <ul class="dropdown-menu dropdown-menu-end shadow">
                                                         <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editSubtaskModal" data-edit-form-action="{{ url_for('project.edit_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Edit</a></li>
-                                                        <li><a class="dropdown-item text-danger subtask-delete-link" href="#" data-url="{{ url_for('project.delete_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-code="{{ st.generated_code }}">Delete</a></li>
+                                                        {% if st.is_owner %}
+                                                        <li><a class="dropdown-item text-danger subtask-delete-link" href="#" data-url="{{ url_for('project.delete_subtask', task_id=task.task_id, sub_task_id=st.sub_task_id) }}" data-subtask-name="{{ st.subtask_name|e }}">Delete</a></li>
+                                                        {% endif %}
                                                     </ul>
                                                 </div>
                                             {% endif %}
@@ -1411,11 +1413,11 @@ document.addEventListener("DOMContentLoaded", function() {
         if (delLink) {
             e.preventDefault();
             var url = delLink.getAttribute('data-url');
-            var code = delLink.getAttribute('data-code') || 'this subtask';
+            var name = delLink.getAttribute('data-subtask-name') || 'this subtask';
             if (url && typeof confirmDeleteSubtask === 'function') {
-                confirmDeleteSubtask(url, code);
+                confirmDeleteSubtask(url, name);
             } else if (url) {
-                if (confirm('Delete subtask ' + code + '?')) {
+                if (confirm('Delete subtask ' + name + '?')) {
                     var form = document.getElementById('subtaskDeleteForm');
                     if (form) { form.action = url; form.submit(); }
                 }
