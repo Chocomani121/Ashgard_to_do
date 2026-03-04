@@ -21,3 +21,5 @@ jobs:
             git pull origin production
             source venv/bin/activate
             pip install -r requirements.txt
+            # Restarting the app ensures the new code is loaded
+            sudo systemctl restart ashgard_todo
