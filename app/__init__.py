@@ -7,8 +7,21 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_migrate import Migrate
+from celery import Celery, Task
 
 load_dotenv()
+
+def celery_init_app(app: Flask) -> Celery:
+    class FlaskTask(Task):
+        def __call__(self, *args: object, **kwargs: object) -> object:
+            with app.app_context():
+                return self.run(*args, **kwargs)
+
+    celery_app = Celery(app.name, task_cls=FlaskTask)
+    celery_app.config_from_object(app.config["CELERY"])
+    celery_app.set_default()
+    app.extensions["celery"] = celery_app
+    return celery_app
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -28,18 +41,33 @@ def create_app():
     flask_app.config["CACHE_DIR"] = "flask_cache"
     flask_app.config["CACHE_DEFAULT_TIMEOUT"] = 300
 
-    # --- DATABASE CONFIG ---
-    user = os.getenv("DB_USER")
-    raw_password = str(os.getenv("DB_PASSWORD", "")) 
-    password = urllib.parse.quote_plus(raw_password)
-    host = os.getenv("DB_HOST")
-    
-    db_port = os.getenv("DB_PORT")
-    port = int(db_port) if db_port and db_port.isdigit() else 16751 
-    
-    db_name = os.getenv("DB_NAME")
+    # --- DATABASE CONFIG (LIVE)---
+    user            = os.getenv("DB_USER")
+    raw_password    = str(os.getenv("DB_PASSWORD", "")) 
+    password        = urllib.parse.quote_plus(raw_password)
+    host            = os.getenv("DB_HOST")
+    db_port         = os.getenv("DB_PORT")
+    port            = int(db_port) if db_port and db_port.isdigit() else 16751 
+    db_name         = os.getenv("DB_NAME")
+    # LIVE - slave
+    remote_url      = f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}"
 
-    flask_app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}"
+
+    # --- DATABASE CONFIG (LOCAL)---
+    l_user            = os.getenv("L_DB_USER")
+    l_raw_password    = str(os.getenv("L_DB_PASSWORD", "")) 
+    l_password        = urllib.parse.quote_plus(l_raw_password)
+    l_host            = os.getenv("L_DB_HOST")
+    l_db_port         = os.getenv("L_DB_PORT")
+    l_port            = int(db_port) if db_port and db_port.isdigit() else 86 
+    l_db_name         = os.getenv("L_DB_NAME")
+    # LOCAL - master
+    local_url         = f"mysql://{l_user}:{l_password}@{l_host}/{l_db_name}"
+
+
+    flask_app.config["SQLALCHEMY_DATABASE_URI"] = local_url
+
+
     flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     flask_app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
