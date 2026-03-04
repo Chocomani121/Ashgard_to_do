@@ -18,9 +18,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            cd ~/ashgard_todo
-            git pull origin production
-            source venv/bin/activate
-            pip install -r requirements.txt
-            # Restarting the app ensures the new code is loaded
-            systemctl --user restart ashgard_todo || sudo systemctl restart ashgard_todo
+           cd ~/ashgard_todo
+           git pull origin production
+           source venv/bin/activate
+           pip install -r requirements.txt
+           sudo systemctl restart ashgard_todo
