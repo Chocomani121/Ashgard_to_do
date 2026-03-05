@@ -54,6 +54,8 @@ def register():
 @auth_bp.route("/logout")
 def logout():
     logout_user()
+    if request.args.get('inactivity') == '1' and current_app.config.get("SESSION_TIMEOUT_MINUTES"):
+        flash('Logged out due to inactivity. Please log in again.', 'warning')
     return redirect(url_for('auth.login'))
 
 @auth_bp.route("/reset_password", methods=['GET', 'POST'])
