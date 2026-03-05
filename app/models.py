@@ -212,3 +212,24 @@ class Comment(db.Model):
         cascade="all, delete-orphan",
         lazy=True
     )
+
+
+# --- NOTIFICATIONS ---
+
+class Notification(db.Model):
+    """Stores notifications for reports (cc), tasks, subtasks, notes, due dates, deletions, completions, updates."""
+    __tablename__ = 'notification_tbl'
+    notif_id        = db.Column(db.Integer, primary_key=True)
+    recipient_id    = db.Column(db.Integer, db.ForeignKey('members.member_id'), nullable=False)  # Who receives it
+    sender_id       = db.Column(db.Integer, db.ForeignKey('members.member_id'), nullable=True)   # Who triggered it
+    reference_id    = db.Column(db.Integer, nullable=False)   # ID of related record
+    reference_table = db.Column(db.String(100), nullable=False)  # task_tbl, sub_task_list, notes_tbl, report_tbl, deadlines_tbl
+    module          = db.Column(db.String(50), nullable=False)   # project, task, subtask, note, report, deadline
+    event_type      = db.Column(db.String(50), nullable=False)   # created, updated, deleted, completed, cc, due_soon, comment
+    message         = db.Column(db.Text, nullable=False)         # Rendered message text
+    is_read         = db.Column(db.Boolean, default=False)       # 0=unread, 1=read
+    read_at         = db.Column(db.DateTime(timezone=True), nullable=True)  # When opened
+    created_at      = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+
+    recipient = db.relationship('User', foreign_keys=[recipient_id], backref='notifications_received', lazy=True)
+    sender    = db.relationship('User', foreign_keys=[sender_id], backref='notifications_sent', lazy=True)
