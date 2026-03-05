@@ -34,12 +34,10 @@
                                 </div>
                                 
                                     <div class="p-2 mt-4">
-                                     {% with messages = get_flashed_messages(with_categories=true, category_filter=["login_errors"]) %}
+                                     {% with messages = get_flashed_messages(with_categories=true, category_filter=["login_errors", "warning"]) %}
                                             {% if messages %}
                                                 {% for category, message in messages %}
-                                                    <div class="text-danger small mb-2 text-center">
-                                                        {{ message }}
-                                                    </div>
+                                                    <div class="alert alert-{{ 'danger' if category == 'login_errors' else 'warning' }} small mb-2 text-center">{{ message }}</div>
                                                 {% endfor %}
                                             {% endif %}
                                         {% endwith %}
