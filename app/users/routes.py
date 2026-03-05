@@ -176,3 +176,9 @@ def reset_password():
         flash('Your password has been updated! You are now able to log in', 'success')
         return redirect(url_for('users.profile'))
     return render_template('profile.html', title='Reset Password', form=form)
+
+
+@users.route("/notifications")
+@login_required
+def notifications():
+    return render_template('notifications.html', title='Notifications')
