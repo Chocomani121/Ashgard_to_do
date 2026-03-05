@@ -72,6 +72,12 @@ def create_app():
     flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     flask_app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
+    
+    # --- CELERY config ---
+    flask_app.config["CELERY"] = {"broker_url":"redis://localhost:6379", "result_backend":"redis://localhost:6379", "task_ignore_result":True}
+
+
+
     # --- MAIL CONFIG ---
     flask_app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.googlemail.com")
     m_port = os.getenv("MAIL_PORT")
@@ -82,7 +88,7 @@ def create_app():
     flask_app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 
     # --- SESSION TIMEOUT (minutes). Set to 0 to disable. ---
-    timeout = 30
+    timeout = 2
     flask_app.config["SESSION_TIMEOUT_MINUTES"] = timeout
     flask_app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=timeout) if timeout else timedelta(days=31)
 
@@ -91,6 +97,8 @@ def create_app():
     login_manager.init_app(flask_app)
     mail.init_app(flask_app)
     migrate.init_app(flask_app, db)
+    celery_init_app(flask_app)
+
 
     @flask_app.after_request
     def add_header(response):
