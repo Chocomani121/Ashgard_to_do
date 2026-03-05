@@ -1027,6 +1027,7 @@ def task_details(id=None):
                 remark, badge_class = None, None
             reply_url = url_for('project.reply_subtask_note', task_id=task.task_id, sub_task_id=n.sub_task_id, parent_note_id=n.notes_id)
             edit_url = url_for('project.edit_note', note_id=n.notes_id)
+            delete_url = url_for('project.delete_note', note_id=n.notes_id)
             is_author = n.member_id == current_user.member_id if current_user and current_user.member_id else False
             note_row = {
                 'notes_id': n.notes_id, 'author': author_name, 'author_image': note_author_images.get(n.member_id, 'default.jpg'),
@@ -1034,7 +1035,7 @@ def task_details(id=None):
                 'created': n.created_on.strftime('%d/%m/%Y %H:%M') if n.created_on else '—',
                 'edited': n.edited_on.strftime('%d/%m/%Y %H:%M') if n.edited_on else None,
                 'remark': remark, 'remark_badge_class': badge_class, 'member_id': n.member_id,
-                'reply_url': reply_url, 'edit_url': edit_url, 'is_author': is_author,
+                'reply_url': reply_url, 'edit_url': edit_url, 'delete_url': delete_url, 'is_author': is_author,
                 'reply_code': int(n.reply_code) if n.reply_code and str(n.reply_code).isdigit() else None,
                 'generated_code': n.generated_code or ''
             }
@@ -1270,17 +1271,95 @@ def delete_subtask(task_id, sub_task_id):
     return redirect(url_for('project.task_details', id=task_id))
 
 
+def _build_subtask_notes_full(task_id, sub_task_id):
+    """Build notes_full {main, replies} for a single subtask. Used by task_details and notes JSON API."""
+    from collections import defaultdict
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first()
+    if not subtask:
+        return {'main': [], 'replies': {}}
+    sub_notes = Notes.query.filter_by(sub_task_id=sub_task_id).order_by(Notes.created_on.asc()).all()
+    if not sub_notes:
+        return {'main': [], 'replies': {}}
+    note_author_ids = list({n.member_id for n in sub_notes if n.member_id})
+    note_author_users = {u.member_id: u for u in User.query.filter(User.member_id.in_(note_author_ids)).all()} if note_author_ids else {}
+    note_authors = {mid: (u.name or u.username) for mid, u in note_author_users.items()}
+    note_author_images = {mid: (u.image_file or 'default.jpg') for mid, u in note_author_users.items()}
+    subtask_main_notes = []
+    subtask_replies_map = defaultdict(list)
+    for n in sub_notes:
+        st_match = subtask
+        is_owner_note = st_match and st_match.p_members_id and n.p_members_id == st_match.p_members_id
+        role = 'Owner' if is_owner_note else 'Reviewer'
+        remark_lower = (n.generated_code or 'note').lower().replace(' ', '_')
+        if remark_lower in ('submit', 'resubmit', 'to_be_reviewed'):
+            remark, badge_class = 'To be reviewed', 'bg-soft-warning text-warning'
+        elif remark_lower in ('rejected',):
+            remark, badge_class = 'Rejected', 'bg-soft-danger text-danger'
+        elif remark_lower in ('ongoing', 'follow_up', 'follow up'):
+            remark, badge_class = 'Ongoing', 'bg-soft-primary text-primary'
+        elif remark_lower in ('on_hold',):
+            remark, badge_class = 'On Hold', 'bg-soft-secondary text-secondary'
+        elif remark_lower in ('approved',):
+            remark, badge_class = 'Approved', 'bg-soft-success text-success'
+        else:
+            remark, badge_class = None, None
+        reply_url = url_for('project.reply_subtask_note', task_id=task_id, sub_task_id=n.sub_task_id, parent_note_id=n.notes_id)
+        edit_url = url_for('project.edit_note', note_id=n.notes_id)
+        delete_url = url_for('project.delete_note', note_id=n.notes_id)
+        is_author = n.member_id == current_user.member_id if current_user and current_user.member_id else False
+        note_row = {
+            'notes_id': n.notes_id, 'author': note_authors.get(n.member_id, 'Unknown'),
+            'author_image': note_author_images.get(n.member_id, 'default.jpg'),
+            'role': role, 'body': n.note_body or '',
+            'created': n.created_on.strftime('%d/%m/%Y %H:%M') if n.created_on else '—',
+            'edited': n.edited_on.strftime('%d/%m/%Y %H:%M') if n.edited_on else None,
+            'remark': remark, 'remark_badge_class': badge_class, 'member_id': n.member_id,
+            'reply_url': reply_url, 'edit_url': edit_url, 'delete_url': delete_url, 'is_author': is_author,
+            'reply_code': int(n.reply_code) if n.reply_code and str(n.reply_code).isdigit() else None,
+            'generated_code': n.generated_code or ''
+        }
+        if n.reply_code:
+            try:
+                parent_id = int(n.reply_code)
+                subtask_replies_map[parent_id].append(note_row)
+            except (ValueError, TypeError):
+                subtask_main_notes.append(note_row)
+        else:
+            subtask_main_notes.append(note_row)
+    st_main_notes = list(reversed(subtask_main_notes))
+    st_replies_map = dict(subtask_replies_map)
+    return {'main': st_main_notes, 'replies': st_replies_map}
+
+
+@project_bp.route("/task_details/<int:task_id>/subtask/<int:sub_task_id>/notes", methods=['GET'])
+@login_required
+def subtask_notes_json(task_id, sub_task_id):
+    """Return subtask notes as JSON for AJAX refresh (keep modal open)."""
+    task = Task.query.get_or_404(task_id)
+    subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
+    notes_full = _build_subtask_notes_full(task_id, sub_task_id)
+    return jsonify(notes_full)
+
+
+def _is_ajax():
+    return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+
 @project_bp.route("/task_details/<int:task_id>/subtask/<int:sub_task_id>/note", methods=['POST'])
 @login_required
 def subtask_note(task_id, sub_task_id):
     task = Task.query.get_or_404(task_id)
     subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
     if not _can_act_on_subtask(subtask, task, current_user):
+        if _is_ajax():
+            return jsonify({'success': False, 'error': 'Permission denied'}), 403
         flash('You do not have permission to add a note to this subtask.', 'danger')
         return redirect(url_for('project.task_details', id=task_id))
     note_body = (request.form.get('note_body') or '').strip()
-    action = (request.form.get('action') or '').strip().lower()  # submit, resubmit, follow_up
+    action = (request.form.get('action') or '').strip().lower()  # submit, resubmit, follow_up, add
     if not note_body:
+        if _is_ajax():
+            return jsonify({'success': False, 'error': 'Note is required'}), 400
         flash('Note is required.', 'danger')
         return redirect(url_for('project.task_details', id=task_id))
     pm_entry = ProjectMembers.query.filter_by(
@@ -1303,6 +1382,8 @@ def subtask_note(task_id, sub_task_id):
                         is_task_assignee = True
                         break
         if not (is_pm or is_subtask_owner or is_task_assignee):
+            if _is_ajax():
+                return jsonify({'success': False, 'error': 'Only PM, subtask owner, or task assignee can submit'}), 403
             flash('Only the project manager, subtask owner, or a task assignee can submit for review.', 'danger')
             return redirect(url_for('project.task_details', id=task_id))
     new_note = Notes(
@@ -1331,6 +1412,8 @@ def subtask_note(task_id, sub_task_id):
     except Exception:
         db.session.rollback()
         flash('Failed to save note.', 'danger')
+    if _is_ajax():
+        return jsonify({'success': True})
     return redirect(url_for('project.task_details', id=task_id))
 
 
@@ -1340,10 +1423,14 @@ def reply_subtask_note(task_id, sub_task_id, parent_note_id):
     task = Task.query.get_or_404(task_id)
     subtask = SubTask.query.filter_by(sub_task_id=sub_task_id, parent_task_id=task_id).first_or_404()
     if not _can_act_on_subtask(subtask, task, current_user):
+        if _is_ajax():
+            return jsonify({'success': False, 'error': 'Permission denied'}), 403
         flash('You do not have permission to add a note to this subtask.', 'danger')
         return redirect(url_for('project.task_details', id=task_id))
     body = (request.form.get('reply_body') or '').strip()
     if not body:
+        if _is_ajax():
+            return jsonify({'success': False, 'error': 'Reply content is required'}), 400
         flash('Reply content is required.', 'danger')
         return redirect(url_for('project.task_details', id=task_id))
     parent = Notes.query.filter_by(notes_id=parent_note_id, sub_task_id=sub_task_id).first_or_404()
@@ -1366,7 +1453,11 @@ def reply_subtask_note(task_id, sub_task_id, parent_note_id):
         flash('Reply saved.', 'success')
     except Exception:
         db.session.rollback()
+        if _is_ajax():
+            return jsonify({'success': False, 'error': 'Failed to save reply'}), 500
         flash('Failed to save reply.', 'danger')
+    if _is_ajax():
+        return jsonify({'success': True})
     return redirect(url_for('project.task_details', id=task_id))
 
 
@@ -1842,6 +1933,8 @@ def edit_note(note_id):
     # 2. POST: This handles the actual save/update
     # Security check: only author can edit
     if note.member_id != current_user.member_id:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'error': 'Unauthorized'}), 403
         flash('Unauthorized', 'danger')
         return redirect(request.referrer)
 
@@ -1855,9 +1948,46 @@ def edit_note(note_id):
         flash('Note updated successfully', 'success')
     except Exception as e:
         db.session.rollback()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'error': str(e)}), 500
         flash(f'Error: {str(e)}', 'danger')
-        
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'success': True})
     return redirect(request.referrer)
+
+
+def _delete_note_and_replies(note_id):
+    """Recursively delete a note and all its reply descendants."""
+    replies = Notes.query.filter(Notes.reply_code == str(note_id)).all()
+    for r in replies:
+        _delete_note_and_replies(r.notes_id)
+    note = Notes.query.get(note_id)
+    if note:
+        db.session.delete(note)
+
+
+@project_bp.route("/task/note/delete/<int:note_id>", methods=['POST'])
+@login_required
+def delete_note(note_id):
+    note = Notes.query.get_or_404(note_id)
+    if note.member_id != current_user.member_id:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+        flash('Unauthorized', 'danger')
+        return redirect(request.referrer or url_for('project.projects'))
+    try:
+        _delete_note_and_replies(note_id)
+        db.session.commit()
+        flash('Note deleted', 'success')
+    except Exception as e:
+        db.session.rollback()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'error': 'Failed to delete note'}), 500
+        flash('Failed to delete note', 'danger')
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'success': True})
+    return redirect(request.referrer or url_for('project.projects'))
+
 
 @project_bp.route("/all_task")
 @login_required
