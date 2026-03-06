@@ -12,6 +12,8 @@ from celery import Celery, Task
 
 load_dotenv()
 
+
+# --- Celery App code---
 def celery_init_app(app: Flask) -> Celery:
     class FlaskTask(Task):
         def __call__(self, *args: object, **kwargs: object) -> object:
@@ -24,15 +26,18 @@ def celery_init_app(app: Flask) -> Celery:
     app.extensions["celery"] = celery_app
     return celery_app
 
-db = SQLAlchemy()
-bcrypt = Bcrypt()
-login_manager = LoginManager()
+
+
+db              = SQLAlchemy()
+bcrypt          = Bcrypt()
+login_manager   = LoginManager()
+mail            = Mail()
+migrate         = Migrate()
+
 # Changed from 'users.login' to 'auth.login'
-login_manager.login_view = 'auth.login'
+login_manager.login_view             = 'auth.login'
 login_manager.login_message_category = 'info'
-login_manager.login_message = None
-mail = Mail()
-migrate = Migrate()
+login_manager.login_message          = None
 
 def create_app():
     # Renamed to flask_app to avoid "AttributeError: module 'app' has no attribute..."
@@ -88,7 +93,7 @@ def create_app():
     flask_app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 
     # --- SESSION TIMEOUT (minutes). Set to 0 to disable. ---
-    timeout = 2
+    timeout = 30
     flask_app.config["SESSION_TIMEOUT_MINUTES"] = timeout
     flask_app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=timeout) if timeout else timedelta(days=31)
 
