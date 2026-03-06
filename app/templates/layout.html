@@ -294,5 +294,16 @@
         <script src="{{ url_for('static', filename='assets/libs/nouislider/nouislider.min.js')}}"></script>
         <script src="{{url_for('static', filename='assets/libs/wnumb/wNumb.min.js')}}"></script>
 
+        {% if current_user.is_authenticated and config.SESSION_TIMEOUT_MINUTES %}
+        <script>
+        (function(){
+          var t = {{ config.SESSION_TIMEOUT_MINUTES * 60 * 1000 }}, id;
+          function reset(){ clearTimeout(id); id = setTimeout(function(){ location.href="{{ url_for('auth.logout') }}?inactivity=1"; }, t); }
+          ['mousedown','mousemove','keydown','scroll','touchstart'].forEach(function(e){ document.addEventListener(e, reset); });
+          reset();
+        })();
+        </script>
+        {% endif %}
+
     </body>
 </html>

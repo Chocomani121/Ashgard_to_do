@@ -221,7 +221,7 @@ def projects():
             pass  # Skip if priority column doesn't exist
     
     stats = {
-        'pending': len([p for p in projects if p.project_status and p.project_status.lower() == 'pending']),
+        'ongoing': len([p for p in projects if p.project_status and p.project_status.lower() == 'ongoing']),
         'high_priority': high_priority_count,  # Only count projects with High priority
         'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
         'on_hold': len([p for p in projects if p.project_status and p.project_status.lower() == 'on hold'])

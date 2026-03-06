@@ -1,5 +1,6 @@
 import os
 import urllib.parse
+from datetime import timedelta
 from dotenv import load_dotenv
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -52,6 +53,11 @@ def create_app():
     flask_app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
     flask_app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 
+    # --- SESSION TIMEOUT (minutes). Set to 0 to disable. ---
+    timeout = 30
+    flask_app.config["SESSION_TIMEOUT_MINUTES"] = timeout
+    flask_app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=timeout) if timeout else timedelta(days=31)
+
     db.init_app(flask_app)
     bcrypt.init_app(flask_app)
     login_manager.init_app(flask_app)
@@ -64,6 +70,21 @@ def create_app():
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
         return response
+
+    @flask_app.before_request
+    def session_timeout():
+        from flask import session
+        if flask_app.config["SESSION_TIMEOUT_MINUTES"]:
+            session.permanent = True
+            session.modified = True
+
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        from flask import flash, redirect, url_for
+        if flask_app.config["SESSION_TIMEOUT_MINUTES"]:
+            flash('Logged out due to inactivity. Please log in again.', 'warning')
+        return redirect(url_for('auth.login'))
+
     # --- CONTEXT PROCESSOR FOR APPROVALS ---
 
     @flask_app.context_processor
