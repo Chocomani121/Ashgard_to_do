@@ -188,6 +188,7 @@ def create_app():
     from app.features.reports.routes import reports_bp  as reports_blueprint
     from app.features.projects.routes import project_bp as project_blueprint
     from app.features.department.routes import department_bp as department_blueprint
+    from app.test import test_bp
 
     # 2. IMPORTANT: Import routes BEFORE registering the blueprint 
     # This prevents the "AssertionError: The setup method 'route' can no longer be called"
@@ -200,5 +201,6 @@ def create_app():
     flask_app.register_blueprint(reports_blueprint)
     flask_app.register_blueprint(project_blueprint)
     flask_app.register_blueprint(department_blueprint)
+    flask_app.register_blueprint(test_bp)
 
     return flask_app
