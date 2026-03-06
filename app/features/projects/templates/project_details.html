@@ -54,7 +54,7 @@
                                     <div class="row mb-3 g-3 flex-shrink-0">
                                         <div class="col-md-4">
                                             <div class="text-muted small">Priority</div>
-                                            <div class="mt-1">{% if project.priority == 'High' %}<span class="badge bg-soft-danger text-danger fs-5 px-4 py-1">High</span>{% elif project.priority == 'Medium' %}<span class="badge bg-soft-warning text-warning fs-5">Medium</span>{% elif project.priority == 'Low' %}<span class="badge bg-soft-info text-info fs-5">Low</span>{% else %}<span class="badge bg-soft-danger text-danger fs-5">{{ project.priority or 'High' }}</span>{% endif %}</div>
+                                            <div class="mt-1 text-center">{% if project.priority == 'High' %}<div class="alert bg-soft-danger text-danger px-2 py-1 fs-5 mb-0 fw-semibold fw-semibold">High</div>{% elif project.priority == 'Medium' %}<div class="alert bg-soft-warning text-warning px-2 py-1 fs-5 mb-0 fw-semibold fw-semibold">Medium</div>{% elif project.priority == 'Low' %}<div class="alert bg-soft-info text-info px-2 py-1 fs-5 mb-0 fw-semibold fw-semibold">Low</div>{% else %}<div class="alert bg-soft-danger text-danger px-2 py-1 fs-5 mb-0 fw-semibold fw-semibold">{{ project.priority or 'High' }}</div>{% endif %}</div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="text-muted small">Client</div>
@@ -72,13 +72,13 @@
                                                 {% set all_tasks_completed = task_total and task_completed_count == task_total %}
                                                 {% set display_status = 'Completed' if all_tasks_completed else ('Ongoing' if (project.project_status == 'Pending' or not project.project_status or project.project_status == 'Cancelled') else project.project_status) %}
                                                 {% if display_status == 'Ongoing' %}
-                                                <span class="badge badge-soft-warning font-size-12">Ongoing</span>
+                                                <span class="badge badge-soft-warning fs-5">Ongoing</span>
                                                 {% elif display_status == 'Completed' %}
-                                                <span class="badge badge-soft-success font-size-12">Completed</span>
+                                                <span class="badge badge-soft-success fs-5">Completed</span>
                                                 {% elif display_status == 'On Hold' %}
-                                                <span class="badge badge-soft-secondary font-size-12">On Hold</span>
+                                                <span class="badge badge-soft-secondary fs-5">On Hold</span>
                                                 {% else %}
-                                                <span class="badge badge-soft-warning font-size-12">Ongoing</span>
+                                                <span class="badge badge-soft-warning fs-5">Ongoing</span>
                                                 {% endif %}
                                             </div>
                                         </div>
