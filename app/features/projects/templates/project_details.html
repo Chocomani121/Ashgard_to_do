@@ -62,9 +62,25 @@
                                         <div class="col-md-4">
                                             <div class="text-muted small">Department</div>
                                             <strong class="d-block mt-1">{{ manager_department.department_name if manager_department else '—' }}</strong>
-                                        </div>
+                                        </div>                                   
                                     </div>
                                     <div class="row mb-3 g-3 flex-shrink-0">
+                                        <div class="col-md-4">
+                                            <div class="text-muted small">Status</div>
+                                            <div class="mt-1">
+                                                {% set all_tasks_completed = task_total and task_completed_count == task_total %}
+                                                {% set display_status = 'Completed' if all_tasks_completed else ('Ongoing' if (project.project_status == 'Pending' or not project.project_status or project.project_status == 'Cancelled') else project.project_status) %}
+                                                {% if display_status == 'Ongoing' %}
+                                                <span class="badge badge-soft-warning font-size-12">Ongoing</span>
+                                                {% elif display_status == 'Completed' %}
+                                                <span class="badge badge-soft-success font-size-12">Completed</span>
+                                                {% elif display_status == 'On Hold' %}
+                                                <span class="badge badge-soft-secondary font-size-12">On Hold</span>
+                                                {% else %}
+                                                <span class="badge badge-soft-warning font-size-12">Ongoing</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
                                         <div class="col-md-4">
                                             <div class="text-muted small">Start date</div>
                                             <strong class="d-block mt-1">{% if deadline and deadline.start_date %}{{ deadline.start_date.strftime('%B %d, %Y') }}{% else %}N/A{% endif %}</strong>
