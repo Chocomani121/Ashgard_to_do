@@ -1,0 +1,25 @@
+name: Deploy Ashgard To-Do
+on:
+  push:
+    branches: [ production ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vultr via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+           cd ~/ashgard_todo
+           git pull origin production
+           source venv/bin/activate
+           pip install -r requirements.txt
+           sudo systemctl restart ashgard_todo

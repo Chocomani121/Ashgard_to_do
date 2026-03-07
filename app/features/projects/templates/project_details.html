@@ -22,10 +22,11 @@
                     <div class="col-xl-7 d-flex">
                         <!-- PROJECT OVERVIEW: card height matches right column (Assigned Members + Description) per screenshot -->
                         <div class="card mb-4 flex-grow-1 project-details-overview-card">
-
+                                {% set all_tasks_completed = task_total and task_completed_count == task_total %}
+                                {% set display_status = 'Completed' if all_tasks_completed else ('Ongoing' if (project.project_status == 'Pending' or not project.project_status or project.project_status == 'Cancelled') else project.project_status) %}
                                 <!-- Card Header with Button -->
-                                <div class="card-header d-flex align-items-center justify-content-between">
-                                    <h4 class="card-title mb-0"><span class="text-muted">Project Name:</span><span class="ms-4">{{ project.project_name or 'Project Details' }}</span></h4>
+                                <div class="card-header d-flex align-items-center justify-content-between{% if display_status == 'Completed' %} alert-success{% endif %}">
+                                    <h4 class="card-title mb-0{% if display_status == 'Completed' %} text-success{% endif %}"><span class="fw-normal{% if display_status != 'Completed' %} text-muted{% endif %}">Project Name:</span><span class="ms-4 fw-semibold">{{ project.project_name or 'Project Details' }}</span></h4>
                                     {% if is_project_manager %}
                                     <div class="dropdown">
                                         <button class="btn btn-light" data-bs-toggle="dropdown">
@@ -53,7 +54,7 @@
                                     <div class="row mb-3 g-3 flex-shrink-0">
                                         <div class="col-md-4">
                                             <div class="text-muted small">Priority</div>
-                                            <div class="mt-1">{% if project.priority == 'High' %}<span class="badge bg-soft-danger text-danger">High</span>{% elif project.priority == 'Medium' %}<span class="badge bg-soft-warning text-warning">Medium</span>{% elif project.priority == 'Low' %}<span class="badge bg-soft-info text-info">Low</span>{% else %}<span class="badge bg-soft-danger text-danger">{{ project.priority or 'High' }}</span>{% endif %}</div>
+                                            <div class="mt-1 text-center">{% if project.priority == 'High' %}<div class="alert bg-soft-danger text-danger px-2 py-1 fs-5 mb-0 fw-semibold fw-semibold">High</div>{% elif project.priority == 'Medium' %}<div class="alert bg-soft-warning text-warning px-2 py-1 fs-5 mb-0 fw-semibold fw-semibold">Medium</div>{% elif project.priority == 'Low' %}<div class="alert bg-soft-info text-info px-2 py-1 fs-5 mb-0 fw-semibold fw-semibold">Low</div>{% else %}<div class="alert bg-soft-danger text-danger px-2 py-1 fs-5 mb-0 fw-semibold fw-semibold">{{ project.priority or 'High' }}</div>{% endif %}</div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="text-muted small">Client</div>
@@ -62,9 +63,25 @@
                                         <div class="col-md-4">
                                             <div class="text-muted small">Department</div>
                                             <strong class="d-block mt-1">{{ manager_department.department_name if manager_department else '—' }}</strong>
-                                        </div>
+                                        </div>                                   
                                     </div>
                                     <div class="row mb-3 g-3 flex-shrink-0">
+                                        <div class="col-md-4">
+                                            <div class="text-muted small">Status</div>
+                                            <div class="mt-1 text-center">
+                                                {% set all_tasks_completed = task_total and task_completed_count == task_total %}
+                                                {% set display_status = 'Completed' if all_tasks_completed else ('Ongoing' if (project.project_status == 'Pending' or not project.project_status or project.project_status == 'Cancelled') else project.project_status) %}
+                                                {% if display_status == 'Ongoing' %}
+                                                <div class="alert bg-soft-warning text-warning px-2 py-1 fs-5 mb-0 fw-semibold">Ongoing</div>
+                                                {% elif display_status == 'Completed' %}
+                                                <div class="alert bg-soft-success text-success px-2 py-1 fs-5 mb-0 fw-semibold">Completed</div>
+                                                {% elif display_status == 'On Hold' %}
+                                                <div class="alert bg-soft-secondary text-secondary px-2 py-1 fs-5 mb-0 fw-semibold">On Hold</div>
+                                                {% else %}
+                                                <div class="alert bg-soft-warning text-warning px-2 py-1 fs-5 mb-0 fw-semibold">Ongoing</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
                                         <div class="col-md-4">
                                             <div class="text-muted small">Start date</div>
                                             <strong class="d-block mt-1">{% if deadline and deadline.start_date %}{{ deadline.start_date.strftime('%B %d, %Y') }}{% else %}N/A{% endif %}</strong>
