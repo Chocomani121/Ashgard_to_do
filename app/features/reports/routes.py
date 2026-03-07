@@ -1,6 +1,7 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app.models import User, Report, ReportCC, Comment, Project, Task, Deadlines, ProjectMembers, TaskAssignee, SubTask, Notes, Department
+from app.services.notification_service import create_notification
 from app import db, main 
 from datetime import datetime, date, time
 from sqlalchemy import or_, text
@@ -202,17 +203,32 @@ def create_report():
         db.session.flush()  # Gets the new_report.report_id
 
         # 3. Create CC Entries (report_cc_tbl)
-        cc_member_ids = request.form.getlist('cc_members')
-        if cc_member_ids:
-            for m_id in cc_member_ids:
-                try:
-                    cc_entry = ReportCC(
-                        report_id=new_report.report_id,
-                        member_id=int(m_id)
-                    )
-                    db.session.add(cc_entry)
-                except (ValueError, TypeError):
-                    continue
+        cc_member_ids = []
+        for m_id in request.form.getlist('cc_members'):
+            try:
+                mid = int(m_id)
+                cc_entry = ReportCC(
+                    report_id=new_report.report_id,
+                    member_id=mid
+                )
+                db.session.add(cc_entry)
+                cc_member_ids.append(mid)
+            except (ValueError, TypeError):
+                continue
+
+        # 4. Notify CC'd members and reviewer (exclude author)
+        author_name = current_user.name or current_user.username or 'Someone'
+        msg = f'{author_name} added you as CC on a report for week {week_name}.'
+        recipient_ids = list(set(cc_member_ids + ([int(reviewer_id)] if reviewer_id else [])))
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='report',
+            event_type='cc',
+            reference_table='report_tbl',
+            reference_id=new_report.report_id,
+            message=msg,
+            sender_id=int(member_id)
+        )
 
         db.session.commit()
         flash('Weekly report created and sent for review!', 'success')
