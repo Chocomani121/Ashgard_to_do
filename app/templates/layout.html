@@ -225,7 +225,7 @@
                         <button type="button" class="btn header-item user text-start d-flex align-items-center" id="page-header-user-dropdown-v"
                             data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             {% if current_user.is_authenticated %}
-                                <img class="rounded-circle header-profile-user" src="{{ url_for('static', filename='profile_pics/' + current_user.image_file) }}" alt="Header Avatar">
+                                <img class="rounded-circle header-profile-user" src="{{ url_for('static', filename='profile_pics/' + current_user.image_file) }}" alt="Header Avatar" onerror="this.onerror=null; this.src='{{ url_for('static', filename='profile_pics/default.jpg') }}';">
                                 <span class="d-none d-xl-inline-block ms-2 fw-medium font-size-15">{{ current_user.username }}</span>
                             {% else %}
                                 <img class="rounded-circle header-profile-user" src="{{ url_for('static', filename='assets/images/users/avatar-1.jpg') }}" alt="Guest Avatar">
