@@ -68,17 +68,17 @@
                                     <div class="row mb-3 g-3 flex-shrink-0">
                                         <div class="col-md-4">
                                             <div class="text-muted small">Status</div>
-                                            <div class="mt-1">
+                                            <div class="mt-1 text-center">
                                                 {% set all_tasks_completed = task_total and task_completed_count == task_total %}
                                                 {% set display_status = 'Completed' if all_tasks_completed else ('Ongoing' if (project.project_status == 'Pending' or not project.project_status or project.project_status == 'Cancelled') else project.project_status) %}
                                                 {% if display_status == 'Ongoing' %}
-                                                <span class="badge badge-soft-warning fs-5">Ongoing</span>
+                                                <div class="alert bg-soft-warning text-warning px-2 py-1 fs-5 mb-0 fw-semibold">Ongoing</div>
                                                 {% elif display_status == 'Completed' %}
-                                                <span class="badge badge-soft-success fs-5">Completed</span>
+                                                <div class="alert bg-soft-success text-success px-2 py-1 fs-5 mb-0 fw-semibold">Completed</div>
                                                 {% elif display_status == 'On Hold' %}
-                                                <span class="badge badge-soft-secondary fs-5">On Hold</span>
+                                                <div class="alert bg-soft-secondary text-secondary px-2 py-1 fs-5 mb-0 fw-semibold">On Hold</div>
                                                 {% else %}
-                                                <span class="badge badge-soft-warning fs-5">Ongoing</span>
+                                                <div class="alert bg-soft-warning text-warning px-2 py-1 fs-5 mb-0 fw-semibold">Ongoing</div>
                                                 {% endif %}
                                             </div>
                                         </div>

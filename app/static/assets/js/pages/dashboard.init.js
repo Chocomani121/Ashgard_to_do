@@ -314,10 +314,11 @@ if (saleingCategoriesEl && typeof ApexCharts !== "undefined") {
     series: series,
     labels: labels,
     colors: (barchartColors || ["#28b765", "#f4c238c2"]).slice(0, series.length),
-    colors: barchartColors || ["#28b765", "#f4c238c2"],
     plotOptions: {
       pie: {
-        startAngle: 25,
+        // Keep the donut a true full circle even for exact 50/50 splits.
+        startAngle: 0,
+        endAngle: 360,
         donut: {
           size: '72%',
           labels: {
