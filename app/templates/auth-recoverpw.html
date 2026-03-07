@@ -50,20 +50,22 @@
                                             <div class="position-relative input-custom-icon">
                                                 {% if form.email.errors %}
                                                     {{ form.email(class="form-control is-invalid", placeholder="Enter email") }}
-                                                    <div class="invalid-feedback">
-                                                        {% for error in form.email.errors %}
-                                                            <span>{{ error }}</span>
-                                                        {% endfor %}
-                                                    </div>
                                                 {% else %}
                                                     {{ form.email(class="form-control", placeholder="Enter email") }}
                                                 {% endif %}
                                                 <span class="bx bx-mail-send"></span>
                                             </div>
+                                            {% if form.email.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.email.errors %}
+                                                        <span>{{ error }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
                                         </div>
 
                                         <div class="mt-4">
-                                            {{ form.submit(class="btn btn-primary w-100 waves-effect waves-light") }}
+                                            <button type="submit" class="btn btn-primary w-100 waves-effect waves-light" id="submit-btn" name="request_reset">{{ form.submit.label.text }}</button>
                                         </div>
 
                                         <div class="mt-4 text-center">
@@ -89,13 +91,32 @@
 
     <script>
         (function() {
-          var el = document.getElementById("flashed-messages");
-          if (el) {
-            setTimeout(function() {
-              window.location.href = "{{ url_for('auth.login') }}";
-            }, 2500);
-          }
+            var form = document.querySelector('form');
+            var btn = document.getElementById('submit-btn');
+            var originalLabel = btn ? btn.textContent.trim() : 'Submit';
+            form.addEventListener('submit', function(e) {
+                if (form.dataset.submitting === '1') return;
+                e.preventDefault();
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
+                form.dataset.submitting = '1';
+                var stopSpinner = function() {
+                    btn.disabled = false;
+                    btn.textContent = originalLabel;
+                    delete form.dataset.submitting;
+                };
+                setTimeout(function() {
+                    form.submit();
+                }, 80);
+                setTimeout(stopSpinner, 5000);
+            });
+            var el = document.getElementById("flashed-messages");
+            if (el) {
+                setTimeout(function() {
+                    window.location.href = "{{ url_for('auth.login') }}";
+                }, 2500);
+            }
         })();
-        </script>
+    </script>
 </body>
 </html>

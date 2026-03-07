@@ -122,7 +122,7 @@ def department_projects():
             pass
 
     stats = {
-        'pending': len([p for p in projects if p.project_status and p.project_status.lower() == 'pending']),
+        'ongoing': len([p for p in projects if p.project_status and p.project_status.lower() == 'ongoing']),
         'high_priority': high_priority_count,
         'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
         'on_hold': len([p for p in projects if p.project_status and p.project_status.lower() == 'on hold'])
@@ -311,7 +311,7 @@ def all_projects():
             pass
 
     stats = {
-        'pending': len([p for p in projects if p.project_status and p.project_status.lower() == 'pending']),
+        'ongoing': len([p for p in projects if p.project_status and p.project_status.lower() == 'ongoing']),
         'high_priority': high_priority_count,
         'completed': len([p for p in projects if p.project_status and p.project_status.lower() == 'completed']),
         'on_hold': len([p for p in projects if p.project_status and p.project_status.lower() == 'on hold'])
