@@ -302,7 +302,8 @@ if (saleingCategoriesEl && typeof ApexCharts !== "undefined") {
   var taskOngoing = parseInt(saleingCategoriesEl.getAttribute("data-task-ongoing"), 10);
   var progressPct = saleingCategoriesEl.getAttribute("data-progress-pct");
   var isTaskData = !isNaN(taskCompleted) && !isNaN(taskOngoing);
-  var series = isTaskData ? [taskCompleted, taskOngoing] : [60, 40];
+  var series = isTaskData ? (taskOngoing > 0 ? [taskCompleted, taskOngoing] : [taskCompleted]) : [60, 40];
+  var labels = isTaskData ? (taskOngoing > 0 ? ["Completed", "Ongoing"] : ["Completed"]) : ["Completed", "Ongoing"];
   var progressNum = progressPct !== null && progressPct !== "" ? parseFloat(progressPct) : NaN;
   var centerLabel = !isNaN(progressNum) ? progressNum + "%" : (isTaskData ? (series[0] + series[1]) : "60");
   var options = {
@@ -311,11 +312,13 @@ if (saleingCategoriesEl && typeof ApexCharts !== "undefined") {
       type: 'donut',
     },
     series: series,
-    labels: ["Completed", "Ongoing"],
-    colors: barchartColors || ["#28b765", "#f4c238c2"],
+    labels: labels,
+    colors: (barchartColors || ["#28b765", "#f4c238c2"]).slice(0, series.length),
     plotOptions: {
       pie: {
-        startAngle: 25,
+        // Keep the donut a true full circle even for exact 50/50 splits.
+        startAngle: 0,
+        endAngle: 360,
         donut: {
           size: '72%',
           labels: {
