@@ -47,7 +47,7 @@ def create_app():
     flask_app.config["CACHE_DIR"] = "flask_cache"
     flask_app.config["CACHE_DEFAULT_TIMEOUT"] = 300
 
-    # --- DATABASE CONFIG (LIVE)---
+    # --- DATABASE CONFIG (REMOTE)---
     user            = os.getenv("DB_USER")
     raw_password    = str(os.getenv("DB_PASSWORD", "")) 
     password        = urllib.parse.quote_plus(raw_password)
@@ -55,7 +55,7 @@ def create_app():
     db_port         = os.getenv("DB_PORT")
     port            = int(db_port) if db_port and db_port.isdigit() else 16751 
     db_name         = os.getenv("DB_NAME")
-    # LIVE - slave
+    # REMOTE - backup
     remote_url      = f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}"
 
 
@@ -72,6 +72,7 @@ def create_app():
 
 
     flask_app.config["SQLALCHEMY_DATABASE_URI"] = local_url
+
 
 
     flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
