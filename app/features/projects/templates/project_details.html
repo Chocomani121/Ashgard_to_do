@@ -150,7 +150,7 @@
                                         <ul class="list-unstyled mb-0">
                                             {% if manager %}
                                             <li class="d-flex align-items-center mb-3">
-                                                <img src="{{ url_for('static', filename='profile_pics/' + manager.image_file) }}" class="rounded-circle avatar-sm me-3" alt="{{ manager.name or manager.username }}">
+                                                <img src="{{ url_for('static', filename='profile_pics/' + manager.image_file) }}" class="rounded-circle avatar-sm me-3" alt="{{ manager.name or manager.username }}" onerror="this.onerror=null; this.src='{{ url_for('static', filename='profile_pics/default.jpg') }}';">
                                                 <div>
                                                     <h6 class="mb-0 font-size-16 fw-bold">{{ manager.name if manager.name else manager.username }}</h6>
                                                     <small class="text-muted font-size-13">Project Manager</small>
@@ -161,7 +161,7 @@
                                                 {% for member_info in assigned_members %}
                                                 {% if not project.project_manager or member_info.user.member_id != project.project_manager %}
                                                 <li class="d-flex align-items-center mb-2">
-                                                    <img src="{{ url_for('static', filename='profile_pics/' + member_info.user.image_file) }}" class="rounded-circle avatar-sm me-3" alt="{{ member_info.user.name or member_info.user.username }}">
+                                                    <img src="{{ url_for('static', filename='profile_pics/' + member_info.user.image_file) }}" class="rounded-circle avatar-sm me-3" alt="{{ member_info.user.name or member_info.user.username }}" onerror="this.onerror=null; this.src='{{ url_for('static', filename='profile_pics/default.jpg') }}';">
                                                     <div>
                                                         <h6 class="mb-0 font-size-16 fw-bold">{{ member_info.user.name if member_info.user.name else member_info.user.username }}</h6>
                                                         <!-- <small class="text-muted font-size-13">{{ member_info.role }}</small> -->
