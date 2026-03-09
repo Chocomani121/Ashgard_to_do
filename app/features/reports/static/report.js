@@ -20,7 +20,7 @@
         return `<img src="/static/profile_pics/${user.image}" 
                      class="rounded-circle shadow-sm" 
                      style="width:${size}; height:${size}; object-fit: cover; flex-shrink: 0;"
-                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'rounded-circle d-flex align-items-center justify-content-center text-white shadow-sm\' style=\'width:${size}; height:${size}; background:${bg}; font-size:${fontSize}; flex-shrink: 0;\'>${initials}</div>';">`;
+                       onerror="this.onerror=null; this.src='/static/profile_pics/default.jpg';">`
     }
     
     // Default to the initials circle
