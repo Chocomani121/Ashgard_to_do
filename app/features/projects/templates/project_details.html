@@ -243,7 +243,7 @@
                                                                 <div class="d-flex flex-wrap align-items-center gap-1">
                                                                     {% for assignee in task_info.assignees %}
                                                                     <div class="d-flex align-items-center">
-                                                                        <img class="rounded-circle avatar-xs me-1" src="{{ url_for('static', filename='profile_pics/' + assignee.image_file) }}" alt="" title="{{ assignee.name or assignee.username }}">
+                                                                        <img class="rounded-circle avatar-xs me-1" src="{{ url_for('static', filename='profile_pics/' + assignee.image_file) }}" alt="" title="{{ assignee.name or assignee.username }}" onerror="this.onerror=null; this.src='{{ url_for('static', filename='profile_pics/default.jpg') }}';">
                                                                         <span class="small">{{ assignee.name or assignee.username }}{% if not loop.last %},{% endif %}</span>
                                                                     </div>
                                                                     {% endfor %}
