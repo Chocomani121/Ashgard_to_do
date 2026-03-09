@@ -704,29 +704,33 @@ def update_project_members(id):
                 selected_member_ids.add(int(mid))
 
         current_pms = ProjectMembers.query.filter_by(project_id=project.project_id).all()
-        could_not_remove = []
 
         for pm in current_pms:
             if pm.member_id in selected_member_ids:
                 continue
-            # Member was deselected — only delete if not referenced by any task
-            used_in_task_tbl = Task.query.filter_by(
-                project_id=project.project_id, p_members_id=pm.p_members_id
-            ).count() > 0
-            used_in_assignees = (
-                TaskAssignee.query.join(Task)
-                .filter(
-                    Task.project_id == project.project_id,
-                    TaskAssignee.p_members_id == pm.p_members_id,
-                )
-                .count()
-                > 0
+
+            p_members_id_to_delete = pm.p_members_id
+
+            TaskAssignee.query.filter_by(p_members_id=p_members_id_to_delete).delete(synchronize_session=False)
+
+            pm_manager = ProjectMembers.query.filter_by(
+                project_id=project.project_id, member_id=project.project_manager
+            ).first()
+            fallback_p_members_id = pm_manager.p_members_id if pm_manager else None
+            if fallback_p_members_id:
+                Task.query.filter_by(
+                    project_id=project.project_id, p_members_id=p_members_id_to_delete
+                ).update({Task.p_members_id: fallback_p_members_id}, synchronize_session=False)
+
+            SubTask.query.filter(SubTask.p_members_id == p_members_id_to_delete).update(
+                {SubTask.p_members_id: None}, synchronize_session=False
             )
-            if used_in_task_tbl or used_in_assignees:
-                u = User.query.filter_by(member_id=pm.member_id).first()
-                could_not_remove.append(u.name or u.username if u else str(pm.member_id))
-            else:
-                db.session.delete(pm)
+
+            Notes.query.filter(Notes.p_members_id == p_members_id_to_delete).update(
+                {Notes.p_members_id: None}, synchronize_session=False
+            )
+
+            db.session.delete(pm)
 
         db.session.flush()
 
@@ -745,15 +749,7 @@ def update_project_members(id):
                 db.session.add(pm)
 
         db.session.commit()
-        if could_not_remove:
-            flash(
-                'Project members updated. Could not remove: {} (still assigned to tasks).'.format(
-                    ', '.join(could_not_remove)
-                ),
-                'warning',
-            )
-        else:
-            flash('Project members updated successfully', 'success')
+        flash('Project members updated successfully', 'success')
     except Exception as e:
         db.session.rollback()
         flash('Failed to update: {}'.format(str(e)), 'danger')
