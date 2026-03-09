@@ -1,7 +1,8 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app.models import Department, User, Project, Deadlines, ProjectMembers, Task, TaskAssignee, SubTask, Notes, Report, ReportCC, Comment
-from app import db 
+from app import db
+from app.services.notification_service import create_notification, _project_recipient_member_ids, _task_recipient_member_ids, _subtask_recipient_member_ids 
 from datetime import datetime, date, time
 from sqlalchemy import or_, text
 from sqlalchemy.exc import ProgrammingError, OperationalError
@@ -678,7 +679,31 @@ def update_project_manager(id):
         flash('Please select a Project Manager', 'danger')
         return redirect(url_for('project.project_details', id=id))
     try:
-        project.project_manager = int(project_manager_id)
+        new_pm_id = int(project_manager_id)
+        old_pm_id = project.project_manager
+        project.project_manager = new_pm_id
+        author_name = current_user.name or current_user.username or 'Someone'
+        new_pm_user = User.query.get(new_pm_id)
+        new_pm_name = (new_pm_user.name or new_pm_user.username) if new_pm_user else 'A team member'
+        create_notification(
+            recipient_ids=[new_pm_id],
+            module='project',
+            event_type='updated',
+            reference_table='project',
+            reference_id=project.project_id,
+            message=f'Project status changed **{new_pm_name}** is now Project Manager for **{project.project_name}**.',
+            sender_id=current_user.member_id
+        )
+        if old_pm_id and old_pm_id != new_pm_id:
+            create_notification(
+                recipient_ids=[old_pm_id],
+                module='project',
+                event_type='updated',
+                reference_table='project',
+                reference_id=project.project_id,
+                message=f'Project status changed You were removed as Project Manager for **{project.project_name}**.',
+                sender_id=current_user.member_id
+            )
         db.session.commit()
         flash('Project manager updated successfully', 'success')
     except Exception as e:
@@ -726,6 +751,15 @@ def update_project_members(id):
                 u = User.query.filter_by(member_id=pm.member_id).first()
                 could_not_remove.append(u.name or u.username if u else str(pm.member_id))
             else:
+                create_notification(
+                    recipient_ids=[pm.member_id],
+                    module='project',
+                    event_type='updated',
+                    reference_table='project',
+                    reference_id=project.project_id,
+                    message=f'Project status changed You were removed from project **{project.project_name}**.',
+                    sender_id=current_user.member_id
+                )
                 db.session.delete(pm)
 
         db.session.flush()
@@ -743,6 +777,16 @@ def update_project_members(id):
                     role='Team Member'
                 )
                 db.session.add(pm)
+                author_name = current_user.name or current_user.username or 'Someone'
+                create_notification(
+                    recipient_ids=[member_id_int],
+                    module='project',
+                    event_type='created',
+                    reference_table='project',
+                    reference_id=project.project_id,
+                    message=f'New Project You were assigned to **{project.project_name}**.',
+                    sender_id=current_user.member_id
+                )
 
         db.session.commit()
         if could_not_remove:
@@ -771,12 +815,17 @@ def update_project(id):
         flash('Project name is required', 'danger')
         return redirect(url_for('project.project_details', id=id))
     try:
+        old_name = project.project_name
+        old_priority = project.priority
+        old_status = project.project_status
+        old_client = project.client_name
         project.project_name = project_name
         project.priority = request.form.get('priority') or project.priority
         project.project_status = request.form.get('project_status') or project.project_status
         project.client_name = request.form.get('client_name') or None
         start_str = request.form.get('start_date')
         end_str = request.form.get('end_date')
+        schedule_changed = False
         if start_str and end_str:
             start_date = datetime.strptime(start_str, '%Y-%m-%d')
             end_date = datetime.strptime(end_str, '%Y-%m-%d')
@@ -786,13 +835,43 @@ def update_project(id):
             if project.deadlines_id:
                 dl = Deadlines.query.get(project.deadlines_id)
                 if dl:
+                    schedule_changed = (dl.start_date != start_date or dl.end_date != end_date)
                     dl.start_date = start_date
                     dl.end_date = end_date
             else:
+                schedule_changed = True
                 dl = Deadlines(start_date=start_date, end_date=end_date)
                 db.session.add(dl)
                 db.session.flush()
                 project.deadlines_id = dl.deadlines_id
+        recipient_ids = _project_recipient_member_ids(project)
+        if schedule_changed:
+            create_notification(
+                recipient_ids=recipient_ids,
+                module='project',
+                event_type='updated',
+                reference_table='project',
+                reference_id=project.project_id,
+                message=f'Project schedule changed Start or end date was updated for **{project_name}**.',
+                sender_id=current_user.member_id
+            )
+        status_changed = (
+            old_name != project_name or
+            old_status != project.project_status or
+            old_client != project.client_name or
+            (str(project.priority or '').lower() == 'high')
+        )
+        if status_changed:
+            msg = f'**{project_name}** marked as completed.' if (project.project_status or '').lower() == 'completed' else f'Project name, priority (High), client, or status was updated for **{project_name}**.'
+            create_notification(
+                recipient_ids=recipient_ids,
+                module='project',
+                event_type='updated',
+                reference_table='project',
+                reference_id=project.project_id,
+                message=f'Project status changed {msg}',
+                sender_id=current_user.member_id
+            )
         db.session.commit()
         flash('Project updated successfully', 'success')
     except Exception as e:
@@ -810,6 +889,16 @@ def update_project_description(id):
     project_desc = request.form.get('project_desc', '').strip() or None
     try:
         project.project_desc = project_desc
+        recipient_ids = _project_recipient_member_ids(project)
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='project',
+            event_type='updated',
+            reference_table='project',
+            reference_id=project.project_id,
+            message=f'Project status changed Project description was updated for **{project.project_name}**.',
+            sender_id=current_user.member_id
+        )
         db.session.commit()
         flash('Description updated successfully', 'success')
     except Exception as e:
@@ -825,6 +914,17 @@ def delete_project(id):
         flash('Only the project manager can perform this action.', 'danger')
         return redirect(url_for('project.projects'))
     try:
+        author_name = current_user.name or current_user.username or 'Someone'
+        recipient_ids = _project_recipient_member_ids(project)
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='project',
+            event_type='deleted',
+            reference_table='project',
+            reference_id=project.project_id,
+            message=f'{author_name} deleted project **{project.project_name}**.',
+            sender_id=current_user.member_id
+        )
         task_ids = [t.task_id for t in Task.query.filter_by(project_id=project.project_id).all()]
         if task_ids:
             Notes.query.filter(Notes.task_id.in_(task_ids)).delete(synchronize_session=False)
@@ -1192,6 +1292,16 @@ def create_subtask(id):
     # If task was Completed, adding a subtask makes it Ongoing again
     if task.task_status == 'Completed':
         task.task_status = 'Ongoing'
+    recipient_ids = _task_recipient_member_ids(task)
+    create_notification(
+        recipient_ids=recipient_ids,
+        module='subtask',
+        event_type='created',
+        reference_table='sub_task_list',
+        reference_id=st.sub_task_id,
+        message=f'New Sub-task added **{subtask_name}** in task **{task.task_name}**.',
+        sender_id=current_user.member_id
+    )
     try:
         db.session.commit()
         flash('Sub-task created.', 'success')
@@ -1236,6 +1346,21 @@ def update_subtask_status(task_id, sub_task_id):
         subtask.is_checked = True
     else:
         subtask.is_checked = False
+    author_name = current_user.name or current_user.username or 'Someone'
+    recipient_ids = _subtask_recipient_member_ids(task, subtask)
+    if status == 'Done':
+        msg = f'{author_name} Completed the task **{subtask.subtask_name}**.'
+    else:
+        msg = f'Sub-task status changed **{subtask.subtask_name}** set to Ongoing.'
+    create_notification(
+        recipient_ids=recipient_ids,
+        module='subtask',
+        event_type='completed' if status == 'Done' else 'updated',
+        reference_table='sub_task_list',
+        reference_id=subtask.sub_task_id,
+        message=msg,
+        sender_id=current_user.member_id
+    )
     try:
         db.session.commit()
         flash('Subtask updated.', 'success')
@@ -1261,6 +1386,19 @@ def delete_subtask(task_id, sub_task_id):
     if not pm or pm.member_id != current_user.member_id:
         flash('Only the subtask owner can delete it.', 'danger')
         return redirect(url_for('project.task_details', id=task_id))
+    project = Project.query.get(task.project_id) if task.project_id else None
+    project_name = project.project_name if project else 'project'
+    author_name = current_user.name or current_user.username or 'Someone'
+    recipient_ids = _subtask_recipient_member_ids(task, subtask)
+    create_notification(
+        recipient_ids=recipient_ids,
+        module='subtask',
+        event_type='deleted',
+        reference_table='sub_task_list',
+        reference_id=subtask.sub_task_id,
+        message=f'Sub-task status changed **{subtask.subtask_name}** was deleted from **{project_name}**.',
+        sender_id=current_user.member_id
+    )
     try:
         db.session.delete(subtask)
         db.session.commit()
@@ -1395,6 +1533,18 @@ def subtask_note(task_id, sub_task_id):
         generated_code=action or 'note'
     )
     db.session.add(new_note)
+    db.session.flush()
+    author_name = current_user.name or current_user.username or 'Someone'
+    recipient_ids = _subtask_recipient_member_ids(task, subtask)
+    create_notification(
+        recipient_ids=recipient_ids,
+        module='note',
+        event_type='created',
+        reference_table='notes_tbl',
+        reference_id=new_note.notes_id,
+        message=f'Sub-task status changed A new note was added to **{subtask.subtask_name}**.',
+        sender_id=current_user.member_id
+    )
     if action == 'submit':
         subtask.status = 'To be reviewed'
     elif action == 'resubmit':
@@ -1448,6 +1598,20 @@ def reply_subtask_note(task_id, sub_task_id, parent_note_id):
         generated_code='reply',
     )
     db.session.add(new_note)
+    db.session.flush()
+    author_name = current_user.name or current_user.username or 'Someone'
+    recipient_ids = _subtask_recipient_member_ids(task, subtask)
+    if parent.member_id and parent.member_id != current_user.member_id:
+        recipient_ids = list(set(recipient_ids + [parent.member_id]))
+    create_notification(
+        recipient_ids=recipient_ids,
+        module='note',
+        event_type='created',
+        reference_table='notes_tbl',
+        reference_id=new_note.notes_id,
+        message=f'Sub-task status changed {author_name} replied to a note on **{subtask.subtask_name}**.',
+        sender_id=current_user.member_id
+    )
     try:
         db.session.commit()
         flash('Reply saved.', 'success')
@@ -1472,6 +1636,16 @@ def edit_subtask(task_id, sub_task_id):
     name = (request.form.get('subtask_name') or '').strip()
     if name:
         subtask.subtask_name = name
+        recipient_ids = _subtask_recipient_member_ids(task, subtask)
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='subtask',
+            event_type='updated',
+            reference_table='sub_task_list',
+            reference_id=subtask.sub_task_id,
+            message=f'Sub-task status changed **{subtask.subtask_name}** was updated (name or owner).',
+            sender_id=current_user.member_id
+        )
     try:
         db.session.commit()
         flash('Subtask updated.', 'success')
@@ -1557,6 +1731,28 @@ def update_task(id):
     elif not start_date_str and not end_date_str:
         task.deadline_id = None
 
+    recipient_ids = _task_recipient_member_ids(task)
+    schedule_changed = bool(start_date_str and end_date_str)
+    if schedule_changed:
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='task',
+            event_type='updated',
+            reference_table='task_tbl',
+            reference_id=task.task_id,
+            message=f'Task schedule changed Start or end date was updated for **{task_name}**.',
+            sender_id=current_user.member_id
+        )
+    else:
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='task',
+            event_type='updated',
+            reference_table='task_tbl',
+            reference_id=task.task_id,
+            message=f'Task status changed Task name, priority, owner, or status was updated for **{task_name}**.',
+            sender_id=current_user.member_id
+        )
     try:
         db.session.commit()
         flash('Task updated successfully.', 'success')
@@ -1578,6 +1774,19 @@ def delete_task(id):
     
     project_id = task.project_id
     task_id = task.task_id
+    task_name = task.task_name
+    project = Project.query.get(project_id) if project_id else None
+    project_name = project.project_name if project else 'project'
+    recipient_ids = _task_recipient_member_ids(task)
+    create_notification(
+        recipient_ids=recipient_ids,
+        module='task',
+        event_type='deleted',
+        reference_table='task_tbl',
+        reference_id=task_id,
+        message=f'Task status changed Task **{task_name}** was deleted from **{project_name}**.',
+        sender_id=current_user.member_id
+    )
     try:
         # Delete notes before subtasks (notes_tbl.sub_task_id references sub_task_list)
         subtask_ids = [s.sub_task_id for s in SubTask.query.filter_by(parent_task_id=task_id).all()]
@@ -1625,9 +1834,21 @@ def mark_task_complete(task_id):
                 return jsonify({'success': False, 'error': 'You do not have permission to mark this task as complete. Only the project manager or assigned member can do this.'}), 403
             flash('You do not have permission to mark this task as complete. Only the project manager or assigned member can do this.', 'danger')
             return redirect(url_for('project.task_details', id=task_id))
+        project = Project.query.get(task.project_id) if task.project_id else None
         
         # Update task status to Completed
         task.task_status = 'Completed'
+        author_name = current_user.name or current_user.username or 'Someone'
+        recipient_ids = _task_recipient_member_ids(task)
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='task',
+            event_type='completed',
+            reference_table='task_tbl',
+            reference_id=task.task_id,
+            message=f'{author_name} Completed the task **{task.task_name}**.',
+            sender_id=current_user.member_id
+        )
         db.session.commit()
         
         if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -1724,7 +1945,16 @@ def create_task(id):
                 db.session.add(ta)
         except (ProgrammingError, OperationalError):
             pass
-        
+        recipient_ids = _task_recipient_member_ids(task)
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='task',
+            event_type='created',
+            reference_table='task_tbl',
+            reference_id=task.task_id,
+            message=f'New Task added **{task_name}** in **{project.project_name}**.',
+            sender_id=current_user.member_id
+        )
         db.session.commit()
         
         flash('Task created successfully!', 'success')
@@ -1841,9 +2071,18 @@ def create_project():
                     ))
             except (ValueError, TypeError):
                 continue
-        
+        # New Project: notify team members (excluding creator)
+        recipient_ids = [int(m) for m in member_ids if m and str(m).isdigit() and int(m) != current_user.member_id]
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='project',
+            event_type='created',
+            reference_table='project',
+            reference_id=project.project_id,
+            message=f'New Project You were assigned to **{project_name}**.',
+            sender_id=current_user.member_id
+        )
         db.session.commit()
-        
         flash('Project created successfully!', 'success')
         return redirect(url_for('project.projects'))
         
@@ -1879,6 +2118,18 @@ def add_note(task_id):
         )
         
         db.session.add(new_note)
+        db.session.flush()
+        author_name = current_user.name or current_user.username or 'Someone'
+        recipient_ids = _task_recipient_member_ids(task)
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='note',
+            event_type='created',
+            reference_table='notes_tbl',
+            reference_id=new_note.notes_id,
+            message=f'Task status changed A note was added to task **{task.task_name}**.',
+            sender_id=current_user.member_id
+        )
         db.session.commit()
         flash('Note submitted!', 'success')
     except Exception as e:
@@ -1900,6 +2151,8 @@ def reply_note(note_id):
         return redirect(request.referrer)
 
     try:
+        task = Task.query.get_or_404(int(task_id))
+        parent_note = Notes.query.get_or_404(note_id)
         new_reply = Notes(  
             task_id=int(task_id),
             member_id=current_user.member_id,
@@ -1909,6 +2162,20 @@ def reply_note(note_id):
             pin_stat=0
         )
         db.session.add(new_reply)
+        db.session.flush()
+        author_name = current_user.name or current_user.username or 'Someone'
+        recipient_ids = _task_recipient_member_ids(task)
+        if parent_note.member_id and parent_note.member_id != current_user.member_id:
+            recipient_ids = list(set(recipient_ids + [parent_note.member_id]))
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='note',
+            event_type='created',
+            reference_table='notes_tbl',
+            reference_id=new_reply.notes_id,
+            message=f'Task status changed {author_name} replied to a note on task **{task.task_name}**.',
+            sender_id=current_user.member_id
+        )
         db.session.commit()
     except Exception as e:
         db.session.rollback()
