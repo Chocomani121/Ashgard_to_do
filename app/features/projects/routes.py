@@ -1292,6 +1292,8 @@ def create_subtask(id):
     # If task was Completed, adding a subtask makes it Ongoing again
     if task.task_status == 'Completed':
         task.task_status = 'Ongoing'
+    project = Project.query.get(task.project_id) if task.project_id else None
+    project_name = project.project_name if project else 'project'
     recipient_ids = _task_recipient_member_ids(task)
     create_notification(
         recipient_ids=recipient_ids,
@@ -1299,7 +1301,7 @@ def create_subtask(id):
         event_type='created',
         reference_table='sub_task_list',
         reference_id=st.sub_task_id,
-        message=f'New Sub-task added <b>{subtask_name}</b> in task <b>{task.task_name}</b>.',
+        message=f'You are assigned to a new Sub-Task: <b>{subtask_name}</b> inside <b>{task.task_name}</b> located in project <b>{project_name}</b>.',
         sender_id=current_user.member_id
     )
     try:
@@ -1346,12 +1348,15 @@ def update_subtask_status(task_id, sub_task_id):
         subtask.is_checked = True
     else:
         subtask.is_checked = False
+    project = Project.query.get(task.project_id) if task.project_id else None
+    project_name = project.project_name if project else 'project'
     author_name = current_user.name or current_user.username or 'Someone'
     recipient_ids = _subtask_recipient_member_ids(task, subtask)
     if status == 'Done':
-        msg = f'<b>{author_name}</b> Completed the task <b>{subtask.subtask_name}</b>.'
+        msg = f'Sub-Task: <b>{task.task_name}</b> from <b>{project_name }</b>, changed status to <b>{subtask.status}</b>.'
     else:
-        msg = f'Sub-task status changed **{subtask.subtask_name}** set to Ongoing.'
+        msg=f'Sub-Task: <b>{task.task_name}</b> from <b>{project_name }</b>, changed status to <b>{subtask.status}</b>.',
+
     create_notification(
         recipient_ids=recipient_ids,
         module='subtask',
@@ -1396,7 +1401,7 @@ def delete_subtask(task_id, sub_task_id):
         event_type='deleted',
         reference_table='sub_task_list',
         reference_id=subtask.sub_task_id,
-        message=f'Sub-task status changed <b>{subtask.subtask_name}</b> was deleted from <b>{project_name}</b>.',
+        message=f'Sub-Task: <b>{subtask.subtask_name}</b> was deleted in <b>{task.task_name}</b> located in <b>{project_name}</b> by <b>{author_name}</b>.',
         sender_id=current_user.member_id
     )
     try:
@@ -1534,6 +1539,8 @@ def subtask_note(task_id, sub_task_id):
     )
     db.session.add(new_note)
     db.session.flush()
+    project = Project.query.get(task.project_id) if task.project_id else None
+    project_name = project.project_name if project else 'project'
     author_name = current_user.name or current_user.username or 'Someone'
     recipient_ids = _subtask_recipient_member_ids(task, subtask)
     create_notification(
@@ -1542,7 +1549,7 @@ def subtask_note(task_id, sub_task_id):
         event_type='created',
         reference_table='notes_tbl',
         reference_id=new_note.notes_id,
-        message=f'Sub-task status changed A new note was added to <b>{subtask.subtask_name}</b>.',
+        message=f'A note was added to sub-task <b>{subtask.subtask_name}</b> in <b>{task.task_name}</b> located in project <b>{project_name}</b>.',
         sender_id=current_user.member_id
     )
     if action == 'submit':
@@ -1599,6 +1606,8 @@ def reply_subtask_note(task_id, sub_task_id, parent_note_id):
     )
     db.session.add(new_note)
     db.session.flush()
+    project = Project.query.get(task.project_id) if task.project_id else None
+    project_name = project.project_name if project else 'project'
     author_name = current_user.name or current_user.username or 'Someone'
     recipient_ids = _subtask_recipient_member_ids(task, subtask)
     if parent.member_id and parent.member_id != current_user.member_id:
@@ -1609,7 +1618,7 @@ def reply_subtask_note(task_id, sub_task_id, parent_note_id):
         event_type='created',
         reference_table='notes_tbl',
         reference_id=new_note.notes_id,
-        message=f'Sub-task status changed <b>{author_name}</b> replied to a note on <b>{subtask.subtask_name}</b>.',
+        message=f'<b>{author_name}</b> replied to your note on <b>{subtask.subtask_name}</b> in <b>{task.task_name}</b> located in <b>{project_name}</b>',
         sender_id=current_user.member_id
     )
     try:
@@ -1636,6 +1645,10 @@ def edit_subtask(task_id, sub_task_id):
     name = (request.form.get('subtask_name') or '').strip()
     if name:
         subtask.subtask_name = name
+        project = Project.query.get(task.project_id) if task.project_id else None
+        project_name = project.project_name if project else 'project'
+        author_name = current_user.name or current_user.username or 'Someone'
+        message = f'Sub-Task: <b>{subtask.subtask_name}</b> was updated in <b>{task.task_name}</b> located in <b>{project_name}</b> by <b>{author_name}</b>'
         recipient_ids = _subtask_recipient_member_ids(task, subtask)
         create_notification(
             recipient_ids=recipient_ids,
@@ -1643,7 +1656,7 @@ def edit_subtask(task_id, sub_task_id):
             event_type='updated',
             reference_table='sub_task_list',
             reference_id=subtask.sub_task_id,
-            message=f'Sub-task status changed <b>{subtask.subtask_name}</b> was updated (name or owner).',
+            message=f'Sub-Task: <b>{subtask.subtask_name}</b> was updated in <b>{task.task_name}</b> located in <b>{project_name}</b> by <b>{author_name}</b>',
             sender_id=current_user.member_id
         )
     try:
@@ -1838,6 +1851,8 @@ def mark_task_complete(task_id):
         
         # Update task status to Completed
         task.task_status = 'Completed'
+        project = Project.query.get(task.project_id) if task.project_id else None
+        project_name = project.project_name if project else 'project'
         author_name = current_user.name or current_user.username or 'Someone'
         recipient_ids = _task_recipient_member_ids(task)
         create_notification(
@@ -1846,7 +1861,7 @@ def mark_task_complete(task_id):
             event_type='completed',
             reference_table='task_tbl',
             reference_id=task.task_id,
-            message=f'{author_name} Completed the task <b>{task.task_name}</b>.',
+            message=f'Sub-Task: <b>{task.task_name}</b> from <b>{project_name }</b>, changed status to <b>{task.task_status}</b>.',
             sender_id=current_user.member_id
         )
         db.session.commit()
