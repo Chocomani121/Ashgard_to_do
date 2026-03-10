@@ -179,6 +179,15 @@ def create_app():
             'recent_notifications': recent_notifications
         }
 
+
+    @flask_app.context_processor
+    def inject_version():
+        try:
+            from app.version import get_version_string
+            return {'version': get_version_string(project_status="BETA", version_number="0.11")}
+        except Exception:
+            return {'version': "BETA Ver. 0.11.unknown"}
+
     # --- BLUEPRINT REGISTRATION ---
     
     # 1. Import the Blueprint objects first

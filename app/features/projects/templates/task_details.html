@@ -116,7 +116,7 @@
                                     {% if task_assignees %}
                                     {% for assignee in task_assignees %}
                                     <div class="d-flex align-items-center">
-                                        <img class="rounded-circle avatar-xs me-1" src="{{ url_for('static', filename='profile_pics/' + assignee.image_file) }}" alt="" title="{{ assignee.name or assignee.username }}">
+                                        <img class="rounded-circle avatar-xs me-1" src="{{ url_for('static', filename='profile_pics/' + assignee.image_file) }}" alt="" title="{{ assignee.name or assignee.username }}" onerror="this.onerror=null; this.src='{{ url_for('static', filename='profile_pics/default.jpg') }}';">
                                         <span class="small">{{ assignee.name or assignee.username }}{% if not loop.last %},{% endif %}</span>
                                     </div>
                                     {% endfor %}
@@ -187,7 +187,10 @@
                                                 </a>
                                                 {% endif %}
                                             </div>
-                                            <small class="text-muted">{{ note.created_on.strftime('%b %d, %Y %I:%M %p') if note.created_on else '' }}</small>
+                                            <small class="text-muted">
+                                                {% if note.edited_on %}{{ note.edited_on.strftime('%b %d, %Y %I:%M %p') }} <span class="text-muted fw-normal">(edited)</span>
+                                                {% else %}{{ note.created_on.strftime('%b %d, %Y %I:%M %p') if note.created_on else '' }}{% endif %}
+                                            </small>
                                         </div>
                                         <div class="p-2 {% if is_reply %}bg-soft-light rounded border small{% else %}{% if note.pin_stat %}bg-soft-warning border-warning{% else %}bg-light border{% endif %} rounded mt-1 border{% endif %}">
                                             {% if not is_reply and note.pin_stat %}
@@ -604,7 +607,7 @@
                     </div>
 
 
-
+                    
                 <div class="modal fade" id="editNoteModal" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
