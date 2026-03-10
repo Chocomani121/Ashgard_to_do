@@ -1299,7 +1299,7 @@ def create_subtask(id):
         event_type='created',
         reference_table='sub_task_list',
         reference_id=st.sub_task_id,
-        message=f'New Sub-task added **{subtask_name}** in task **{task.task_name}**.',
+        message=f'New Sub-task added <b>{subtask_name}</b> in task <b>{task.task_name}</b>.',
         sender_id=current_user.member_id
     )
     try:
@@ -1349,7 +1349,7 @@ def update_subtask_status(task_id, sub_task_id):
     author_name = current_user.name or current_user.username or 'Someone'
     recipient_ids = _subtask_recipient_member_ids(task, subtask)
     if status == 'Done':
-        msg = f'{author_name} Completed the task **{subtask.subtask_name}**.'
+        msg = f'<b>{author_name}</b> Completed the task <b>{subtask.subtask_name}</b>.'
     else:
         msg = f'Sub-task status changed **{subtask.subtask_name}** set to Ongoing.'
     create_notification(
@@ -1396,7 +1396,7 @@ def delete_subtask(task_id, sub_task_id):
         event_type='deleted',
         reference_table='sub_task_list',
         reference_id=subtask.sub_task_id,
-        message=f'Sub-task status changed **{subtask.subtask_name}** was deleted from **{project_name}**.',
+        message=f'Sub-task status changed <b>{subtask.subtask_name}</b> was deleted from <b>{project_name}</b>.',
         sender_id=current_user.member_id
     )
     try:
@@ -1542,7 +1542,7 @@ def subtask_note(task_id, sub_task_id):
         event_type='created',
         reference_table='notes_tbl',
         reference_id=new_note.notes_id,
-        message=f'Sub-task status changed A new note was added to **{subtask.subtask_name}**.',
+        message=f'Sub-task status changed A new note was added to <b>{subtask.subtask_name}</b>.',
         sender_id=current_user.member_id
     )
     if action == 'submit':
@@ -1609,7 +1609,7 @@ def reply_subtask_note(task_id, sub_task_id, parent_note_id):
         event_type='created',
         reference_table='notes_tbl',
         reference_id=new_note.notes_id,
-        message=f'Sub-task status changed {author_name} replied to a note on **{subtask.subtask_name}**.',
+        message=f'Sub-task status changed <b>{author_name}</b> replied to a note on <b>{subtask.subtask_name}</b>.',
         sender_id=current_user.member_id
     )
     try:
@@ -1643,7 +1643,7 @@ def edit_subtask(task_id, sub_task_id):
             event_type='updated',
             reference_table='sub_task_list',
             reference_id=subtask.sub_task_id,
-            message=f'Sub-task status changed **{subtask.subtask_name}** was updated (name or owner).',
+            message=f'Sub-task status changed <b>{subtask.subtask_name}</b> was updated (name or owner).',
             sender_id=current_user.member_id
         )
     try:
@@ -1740,7 +1740,7 @@ def update_task(id):
             event_type='updated',
             reference_table='task_tbl',
             reference_id=task.task_id,
-            message=f'Task schedule changed Start or end date was updated for **{task_name}**.',
+            message=f'Task schedule changed Start or end date was updated for <b>{task_name}</b>.',
             sender_id=current_user.member_id
         )
     else:
@@ -1750,7 +1750,7 @@ def update_task(id):
             event_type='updated',
             reference_table='task_tbl',
             reference_id=task.task_id,
-            message=f'Task status changed Task name, priority, owner, or status was updated for **{task_name}**.',
+            message=f'Task status changed Task name, priority, owner, or status was updated for <b>{task_name}</b>.',
             sender_id=current_user.member_id
         )
     try:
@@ -1784,7 +1784,7 @@ def delete_task(id):
         event_type='deleted',
         reference_table='task_tbl',
         reference_id=task_id,
-        message=f'Task status changed Task **{task_name}** was deleted from **{project_name}**.',
+        message=f'Task status changed Task <b>{task_name}</b> was deleted from <b>{project_name}</b>.',
         sender_id=current_user.member_id
     )
     try:
@@ -1846,7 +1846,7 @@ def mark_task_complete(task_id):
             event_type='completed',
             reference_table='task_tbl',
             reference_id=task.task_id,
-            message=f'{author_name} Completed the task **{task.task_name}**.',
+            message=f'{author_name} Completed the task <b>{task.task_name}</b>.',
             sender_id=current_user.member_id
         )
         db.session.commit()
@@ -1952,7 +1952,7 @@ def create_task(id):
             event_type='created',
             reference_table='task_tbl',
             reference_id=task.task_id,
-            message=f'New Task added **{task_name}** in **{project.project_name}**.',
+            message=f'New Task added <b>{task_name}</b> in <b>{project.project_name}</b>.',
             sender_id=current_user.member_id
         )
         db.session.commit()
@@ -2079,7 +2079,7 @@ def create_project():
             event_type='created',
             reference_table='project',
             reference_id=project.project_id,
-            message=f'New Project You were assigned to **{project_name}**.',
+            message=f'New Project You were assigned to <b>{project_name}</b>.',
             sender_id=current_user.member_id
         )
         db.session.commit()
@@ -2127,7 +2127,7 @@ def add_note(task_id):
             event_type='created',
             reference_table='notes_tbl',
             reference_id=new_note.notes_id,
-            message=f'Task status changed A note was added to task **{task.task_name}**.',
+            message=f'Task status changed A note was added to task <b>{task.task_name}</b>.',
             sender_id=current_user.member_id
         )
         db.session.commit()
@@ -2173,7 +2173,7 @@ def reply_note(note_id):
             event_type='created',
             reference_table='notes_tbl',
             reference_id=new_reply.notes_id,
-            message=f'Task status changed {author_name} replied to a note on task **{task.task_name}**.',
+            message=f'Task status changed <b>{author_name}</b> replied to a note on task <b>{task.task_name}</b>.',
             sender_id=current_user.member_id
         )
         db.session.commit()
