@@ -2,11 +2,22 @@
 from datetime import datetime
 from flask import url_for
 
-# Import here to avoid circular import; SubTask is used only when building action URL
+# Import here to avoid circular import
 def _get_subtask_parent_task_id(sub_task_id):
     from app.models import SubTask
     st = SubTask.query.get(sub_task_id)
     return st.parent_task_id if st else None
+
+
+def _get_note_task_and_subtask(notes_id):
+    """Return (task_id, sub_task_id) for a note. sub_task_id may be None for task-level notes."""
+    from app.models import Notes
+    note = Notes.query.get(notes_id)
+    if not note:
+        return None, None
+    task_id = note.task_id
+    sub_task_id = getattr(note, 'sub_task_id', None)
+    return task_id, sub_task_id
 
 
 def notification_action_url(n):
@@ -17,9 +28,9 @@ def notification_action_url(n):
         if n.reference_table == 'sub_task_list':
             task_id = _get_subtask_parent_task_id(n.reference_id)
             if task_id is not None:
-                return url_for('project.task_details', id=task_id)
+                return url_for('project.task_details', id=task_id, sub_task_id=n.reference_id)
         if n.reference_table == 'report_tbl':
-            return url_for('reports.reports')
+            return url_for('reports.reports', report_id=n.reference_id)
         if n.reference_table == 'project':
             return url_for('project.project_details', id=n.reference_id)
         if n.reference_table == 'deadlines_tbl':
@@ -30,6 +41,12 @@ def notification_action_url(n):
             p = Project.query.filter_by(deadlines_id=n.reference_id).first()
             if p:
                 return url_for('project.project_details', id=p.project_id)
+        if n.reference_table == 'notes_tbl':
+            task_id, sub_task_id = _get_note_task_and_subtask(n.reference_id)
+            if task_id is not None:
+                if sub_task_id is not None:
+                    return url_for('project.task_details', id=task_id, sub_task_id=sub_task_id, note_id=n.reference_id)
+                return url_for('project.task_details', id=task_id, note_id=n.reference_id)
     except Exception:
         pass
     return url_for('users.notifications')

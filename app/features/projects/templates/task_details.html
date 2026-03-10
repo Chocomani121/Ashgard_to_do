@@ -915,6 +915,53 @@ document.addEventListener("DOMContentLoaded", function() {
             bootstrap.Modal.getOrCreateInstance(modalEl).show();
         }
     });
+    // Open subtask notes from URL (e.g. from note notification link)
+    var urlParams = new URLSearchParams(window.location.search);
+    var subTaskIdParam = urlParams.get("sub_task_id");
+    var noteIdParam = urlParams.get("note_id");
+    if (subTaskIdParam) {
+        var clickEl = document.querySelector(".notes-preview-clickable[data-sub-task-id=\"" + subTaskIdParam + "\"]");
+        if (clickEl) {
+            var taskId = clickEl.getAttribute("data-task-id") || "";
+            var code = clickEl.getAttribute("data-generated-code") || "";
+            var name = clickEl.getAttribute("data-subtask-name") || "Subtask";
+            var modalEl = document.getElementById("subtaskNotesModal");
+            if (modalEl) {
+                modalEl.setAttribute("data-task-id", taskId);
+                modalEl.setAttribute("data-generated-code", code);
+                modalEl.setAttribute("data-sub-task-id", subTaskIdParam);
+                modalEl.setAttribute("data-subtask-name", name);
+                var listEl = document.querySelector("#subtaskNotesModalBody .subtask-notes-list");
+                var dataEl = document.getElementById("subtask-notes-data");
+                var notesMap = {};
+                if (dataEl && dataEl.textContent) { try { notesMap = JSON.parse(dataEl.textContent); } catch (err) {} }
+                var notesFull = notesMap[code] || {};
+                var main = notesFull.main || [];
+                var replies = notesFull.replies || {};
+                var emptyEl = document.getElementById("subtaskNotesEmpty");
+                if (main.length > 0) {
+                    if (listEl) listEl.innerHTML = renderNotesRec(main, replies, 0);
+                    if (emptyEl) emptyEl.style.display = "none";
+                } else {
+                    if (listEl) listEl.innerHTML = "";
+                    if (emptyEl) emptyEl.style.display = "block";
+                }
+                var modalInst = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modalInst.show();
+                if (noteIdParam) {
+                    modalEl.addEventListener("shown.bs.modal", function onShown() {
+                        modalEl.removeEventListener("shown.bs.modal", onShown);
+                        refreshSubtaskNotesModalContent(noteIdParam);
+                    }, { once: true });
+                }
+                history.replaceState(null, "", window.location.pathname + (window.location.hash || ""));
+            }
+        }
+    } else if (noteIdParam) {
+        var taskNoteEl = document.getElementById("reply-form-" + noteIdParam);
+        if (!taskNoteEl) taskNoteEl = document.querySelector("[data-notes-id=\"" + noteIdParam + "\"]");
+        if (taskNoteEl) taskNoteEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
     // Inline add note form (no separate modal – type and submit directly)
     var inlineAddForm = document.getElementById("subtaskInlineAddNoteForm");
     if (inlineAddForm) {
