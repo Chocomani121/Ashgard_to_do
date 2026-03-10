@@ -755,15 +755,15 @@ def update_project_members(id):
                 {Notes.p_members_id: None}, synchronize_session=False
             )
 
-                create_notification(
-                    recipient_ids=[pm.member_id],
-                    module='project',
-                    event_type='updated',
-                    reference_table='project',
-                    reference_id=project.project_id,
-                    message=f'Project status changed You were removed from project **{project.project_name}**.',
-                    sender_id=current_user.member_id
-                )
+            create_notification(
+                recipient_ids=[pm.member_id],
+                module='project',
+                event_type='updated',
+                reference_table='project',
+                reference_id=project.project_id,
+                message=f'Project status changed You were removed from project **{project.project_name}**.',
+                sender_id=current_user.member_id
+            )
             db.session.delete(pm)
 
         db.session.flush()

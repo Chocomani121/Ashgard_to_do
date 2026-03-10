@@ -116,7 +116,7 @@
                                     {% if task_assignees %}
                                     {% for assignee in task_assignees %}
                                     <div class="d-flex align-items-center">
-                                        <img class="rounded-circle avatar-xs me-1" src="{{ url_for('static', filename='profile_pics/' + assignee.image_file) }}" alt="" title="{{ assignee.name or assignee.username }}" onerror="this.onerror=null; this.src='{{ url_for('static', filename='profile_pics/default.jpg') }}';">
+                                        <img class="rounded-circle avatar-xs me-1" src="{{ url_for('static', filename='profile_pics/' + assignee.image_file) }}" alt="" title="{{ assignee.name or assignee.username }}" data-default-avatar="{{ url_for('static', filename='profile_pics/default.jpg') }}" onerror="var d=this.getAttribute('data-default-avatar');if(d){this.onerror=null;this.src=d;}">
                                         <span class="small">{{ assignee.name or assignee.username }}{% if not loop.last %},{% endif %}</span>
                                     </div>
                                     {% endfor %}
