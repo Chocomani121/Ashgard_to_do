@@ -183,10 +183,10 @@ def create_app():
     @flask_app.context_processor
     def inject_version():
         try:
-            from app.version import get_version_string
-            return {'version': get_version_string(project_status="BETA", version_number="0.11")}
+            from app.version_config import VERSION_STRING
+            return {'version': VERSION_STRING}
         except Exception:
-            return {'version': "BETA Ver. 0.11.unknown"}
+            return {'version': "beta version 0.39"}
 
     # --- BLUEPRINT REGISTRATION ---
     
