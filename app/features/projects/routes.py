@@ -755,13 +755,16 @@ def update_project_members(id):
                 {Notes.p_members_id: None}, synchronize_session=False
             )
 
+            # Get project manager name
+            pm_user = User.query.get(project.project_manager)
+            pm_name = (pm_user.name or pm_user.username) if pm_user else 'Project Manager'
             create_notification(
                 recipient_ids=[pm.member_id],
                 module='project',
                 event_type='updated',
                 reference_table='project',
                 reference_id=project.project_id,
-                message=f'Project status changed You were removed from project **{project.project_name}**.',
+                message=f'{pm_name} (PM) has removed you from this project: <b>{project.project_name}</b>',
                 sender_id=current_user.member_id
             )
             db.session.delete(pm)
@@ -781,14 +784,16 @@ def update_project_members(id):
                     role='Team Member'
                 )
                 db.session.add(pm)
-                author_name = current_user.name or current_user.username or 'Someone'
+                # Get project manager name
+                pm_user = User.query.get(project.project_manager)
+                pm_name = (pm_user.name or pm_user.username) if pm_user else 'Project Manager'
                 create_notification(
                     recipient_ids=[member_id_int],
                     module='project',
                     event_type='created',
                     reference_table='project',
                     reference_id=project.project_id,
-                    message=f'New Project You were assigned to **{project.project_name}**.',
+                    message=f'{pm_name} (PM) has assigned you to this project: <b>{project.project_name}</b>',
                     sender_id=current_user.member_id
                 )
 
@@ -811,63 +816,185 @@ def update_project(id):
         flash('Project name is required', 'danger')
         return redirect(url_for('project.project_details', id=id))
     try:
+        # Get project manager name
+        pm_user = User.query.get(project.project_manager)
+        pm_name = (pm_user.name or pm_user.username) if pm_user else 'Project Manager'
+        
+        # Store old values
         old_name = project.project_name
         old_priority = project.priority
         old_status = project.project_status
         old_client = project.client_name
+        old_start_date = None
+        old_end_date = None
+        
+        # Get old dates if they exist
+        if project.deadlines_id:
+            old_dl = Deadlines.query.get(project.deadlines_id)
+            if old_dl:
+                old_start_date = old_dl.start_date
+                old_end_date = old_dl.end_date
+        
+        # Update project fields
         project.project_name = project_name
-        project.priority = request.form.get('priority') or project.priority
-        project.project_status = request.form.get('project_status') or project.project_status
-        project.client_name = request.form.get('client_name') or None
+        new_priority = request.form.get('priority') or project.priority
+        new_status = request.form.get('project_status') or project.project_status
+        new_client = request.form.get('client_name') or None
+        project.priority = new_priority
+        project.project_status = new_status
+        project.client_name = new_client
+        
+        # Handle dates
         start_str = request.form.get('start_date')
         end_str = request.form.get('end_date')
-        schedule_changed = False
+        new_start_date = None
+        new_end_date = None
+        start_date_changed = False
+        end_date_changed = False
+        
         if start_str and end_str:
-            start_date = datetime.strptime(start_str, '%Y-%m-%d')
-            end_date = datetime.strptime(end_str, '%Y-%m-%d')
-            if end_date < start_date:
+            new_start_date = datetime.strptime(start_str, '%Y-%m-%d')
+            new_end_date = datetime.strptime(end_str, '%Y-%m-%d')
+            if new_end_date < new_start_date:
                 flash('Deadline cannot be earlier than the start date.', 'danger')
                 return redirect(url_for('project.project_details', id=id))
             if project.deadlines_id:
                 dl = Deadlines.query.get(project.deadlines_id)
                 if dl:
-                    schedule_changed = (dl.start_date != start_date or dl.end_date != end_date)
-                    dl.start_date = start_date
-                    dl.end_date = end_date
+                    # Compare dates (normalize to date for comparison)
+                    old_start_date_only = old_start_date.date() if old_start_date and hasattr(old_start_date, 'date') else (old_start_date if old_start_date else None)
+                    old_end_date_only = old_end_date.date() if old_end_date and hasattr(old_end_date, 'date') else (old_end_date if old_end_date else None)
+                    new_start_date_only = new_start_date.date() if hasattr(new_start_date, 'date') else new_start_date
+                    new_end_date_only = new_end_date.date() if hasattr(new_end_date, 'date') else new_end_date
+                    start_date_changed = (old_start_date_only != new_start_date_only) if old_start_date_only else True
+                    end_date_changed = (old_end_date_only != new_end_date_only) if old_end_date_only else True
+                    dl.start_date = new_start_date
+                    dl.end_date = new_end_date
             else:
-                schedule_changed = True
-                dl = Deadlines(start_date=start_date, end_date=end_date)
+                start_date_changed = True
+                end_date_changed = True
+                dl = Deadlines(start_date=new_start_date, end_date=new_end_date)
                 db.session.add(dl)
                 db.session.flush()
                 project.deadlines_id = dl.deadlines_id
+        
         recipient_ids = _project_recipient_member_ids(project)
-        if schedule_changed:
+        
+        # Track individual changes
+        changes = []
+        
+        # Check for name change
+        if old_name != project_name:
+            changes.append('name')
+        
+        # Check for priority change
+        if old_priority != new_priority:
+            changes.append('priority')
+        
+        # Check for client change
+        if old_client != new_client:
+            changes.append('client')
+        
+        # Check for status change
+        if old_status != new_status:
+            changes.append('status')
+        
+        # Check for start date change
+        if start_date_changed:
+            changes.append('start_date')
+        
+        # Check for end date change
+        if end_date_changed:
+            changes.append('end_date')
+        
+        # Create notifications based on changes
+        if len(changes) == 0:
+            # No changes detected
+            pass
+        elif len(changes) == 1:
+            # Single change - create specific notification
+            change_type = changes[0]
+            if change_type == 'name':
+                create_notification(
+                    recipient_ids=recipient_ids,
+                    module='project',
+                    event_type='updated',
+                    reference_table='project',
+                    reference_id=project.project_id,
+                    message=f'Project: <b>{old_name}</b> has been renamed to <b>{project_name}</b> by {pm_name} (PM)',
+                    sender_id=current_user.member_id
+                )
+            elif change_type == 'priority':
+                priority_display = new_priority if new_priority else 'None'
+                create_notification(
+                    recipient_ids=recipient_ids,
+                    module='project',
+                    event_type='updated',
+                    reference_table='project',
+                    reference_id=project.project_id,
+                    message=f'Project: <b>{project_name}</b> priority has been changed to {priority_display} by {pm_name} (PM)',
+                    sender_id=current_user.member_id
+                )
+            elif change_type == 'client':
+                client_display = new_client if new_client else 'None'
+                create_notification(
+                    recipient_ids=recipient_ids,
+                    module='project',
+                    event_type='updated',
+                    reference_table='project',
+                    reference_id=project.project_id,
+                    message=f'Project: <b>{project_name}</b> client name has been changed to {client_display} by {pm_name} (PM)',
+                    sender_id=current_user.member_id
+                )
+            elif change_type == 'status':
+                status_display = new_status if new_status else 'None'
+                create_notification(
+                    recipient_ids=recipient_ids,
+                    module='project',
+                    event_type='updated',
+                    reference_table='project',
+                    reference_id=project.project_id,
+                    message=f'Project: <b>{project_name}</b> status has been changed to {status_display} by {pm_name} (PM)',
+                    sender_id=current_user.member_id
+                )
+            elif change_type == 'start_date':
+                start_date_str = new_start_date.strftime('%Y-%m-%d') if new_start_date else 'None'
+                if hasattr(new_start_date, 'date'):
+                    start_date_str = new_start_date.date().strftime('%Y-%m-%d')
+                create_notification(
+                    recipient_ids=recipient_ids,
+                    module='project',
+                    event_type='updated',
+                    reference_table='project',
+                    reference_id=project.project_id,
+                    message=f'Project: <b>{project_name}</b> start date has been changed to {start_date_str} by {pm_name} (PM)',
+                    sender_id=current_user.member_id
+                )
+            elif change_type == 'end_date':
+                end_date_str = new_end_date.strftime('%Y-%m-%d') if new_end_date else 'None'
+                if hasattr(new_end_date, 'date'):
+                    end_date_str = new_end_date.date().strftime('%Y-%m-%d')
+                create_notification(
+                    recipient_ids=recipient_ids,
+                    module='project',
+                    event_type='updated',
+                    reference_table='project',
+                    reference_id=project.project_id,
+                    message=f'Project: <b>{project_name}</b> end date has been changed to {end_date_str} by {pm_name} (PM)',
+                    sender_id=current_user.member_id
+                )
+        else:
+            # Multiple changes - create single notification
             create_notification(
                 recipient_ids=recipient_ids,
                 module='project',
                 event_type='updated',
                 reference_table='project',
                 reference_id=project.project_id,
-                message=f'Project schedule changed Start or end date was updated for **{project_name}**.',
+                message=f'Project: <b>{project_name}</b> details has been updated by {pm_name} (PM)',
                 sender_id=current_user.member_id
             )
-        status_changed = (
-            old_name != project_name or
-            old_status != project.project_status or
-            old_client != project.client_name or
-            (str(project.priority or '').lower() == 'high')
-        )
-        if status_changed:
-            msg = f'**{project_name}** marked as completed.' if (project.project_status or '').lower() == 'completed' else f'Project name, priority (High), client, or status was updated for **{project_name}**.'
-            create_notification(
-                recipient_ids=recipient_ids,
-                module='project',
-                event_type='updated',
-                reference_table='project',
-                reference_id=project.project_id,
-                message=f'Project status changed {msg}',
-                sender_id=current_user.member_id
-            )
+        
         db.session.commit()
         flash('Project updated successfully', 'success')
     except Exception as e:
@@ -886,13 +1013,16 @@ def update_project_description(id):
     try:
         project.project_desc = project_desc
         recipient_ids = _project_recipient_member_ids(project)
+        # Get project manager name
+        pm_user = User.query.get(project.project_manager)
+        pm_name = (pm_user.name or pm_user.username) if pm_user else 'Project Manager'
         create_notification(
             recipient_ids=recipient_ids,
             module='project',
             event_type='updated',
             reference_table='project',
             reference_id=project.project_id,
-            message=f'Project status changed Project description was updated for **{project.project_name}**.',
+            message=f'Project: <b>{project.project_name}</b> description has been changed by {pm_name} (PM)',
             sender_id=current_user.member_id
         )
         db.session.commit()
@@ -910,7 +1040,9 @@ def delete_project(id):
         flash('Only the project manager can perform this action.', 'danger')
         return redirect(url_for('project.projects'))
     try:
-        author_name = current_user.name or current_user.username or 'Someone'
+        # Get project manager name
+        pm_user = User.query.get(project.project_manager)
+        pm_name = (pm_user.name or pm_user.username) if pm_user else 'Project Manager'
         recipient_ids = _project_recipient_member_ids(project)
         create_notification(
             recipient_ids=recipient_ids,
@@ -918,7 +1050,7 @@ def delete_project(id):
             event_type='deleted',
             reference_table='project',
             reference_id=project.project_id,
-            message=f'{author_name} deleted project **{project.project_name}**.',
+            message=f'{pm_name} (PM) has deleted this project <b>{project.project_name}</b>',
             sender_id=current_user.member_id
         )
         task_ids = [t.task_id for t in Task.query.filter_by(project_id=project.project_id).all()]
@@ -2130,7 +2262,7 @@ def create_project():
             event_type='created',
             reference_table='project',
             reference_id=project.project_id,
-            message=f'New Project You were assigned to <b>{project_name}</b>.',
+            message=f'You have been assigned to a new project <b>{project_name}</b>',
             sender_id=current_user.member_id
         )
         db.session.commit()
