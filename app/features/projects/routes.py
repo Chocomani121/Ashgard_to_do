@@ -1368,7 +1368,7 @@ def update_subtask_status(task_id, sub_task_id):
     )
     try:
         db.session.commit()
-        flash('Subtask updated.', 'success')
+        flash('Subtask updated.', 'success')    
     except Exception:
         db.session.rollback()
         flash('Failed to update subtask.', 'danger')
