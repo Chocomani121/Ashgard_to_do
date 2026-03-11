@@ -1818,7 +1818,18 @@ def update_task(id):
     task.task_description = request.form.get('task_description', '').strip() or None
 
     # Update assigned members (multiple allowed)
+    old_assignee_p_members_ids = set()
+    try:
+        for ta in (task.assignees or []):
+            if ta.project_member:
+                old_assignee_p_members_ids.add(ta.project_member.p_members_id)
+    except (Exception):
+        pass
+    if not old_assignee_p_members_ids and task.p_members_id:
+        old_assignee_p_members_ids.add(task.p_members_id)
+
     owner_ids = request.form.getlist('owner_id')  # p_members_id or member_id
+    new_p_members_ids = []
     if owner_ids:
         try:
             # Resolve to p_members_id list (form may send p_members_id or member_id)
@@ -1834,6 +1845,7 @@ def update_task(id):
                 except (ValueError, TypeError):
                     continue
             if p_members_ids:
+                new_p_members_ids = p_members_ids
                 task.p_members_id = p_members_ids[0]
                 try:
                     TaskAssignee.query.filter_by(task_id=task.task_id).delete()
@@ -1848,6 +1860,18 @@ def update_task(id):
 
     start_date_str = request.form.get('start_date', '').strip()
     end_date_str = request.form.get('end_date', '').strip()
+    old_start_date = None
+    old_end_date = None
+    if task.deadline_id:
+        old_dl = Deadlines.query.get(task.deadline_id)
+        if old_dl:
+            old_start_date = old_dl.start_date
+            old_end_date = old_dl.end_date
+
+    start_date_changed = False
+    end_date_changed = False
+    start_dt = None
+    end_dt = None
     if start_date_str and end_date_str:
         try:
             start_dt = datetime.strptime(start_date_str, '%Y-%m-%d')
@@ -1858,14 +1882,24 @@ def update_task(id):
             if task.deadline_id:
                 deadline = Deadlines.query.get(task.deadline_id)
                 if deadline:
+                    old_start_only = old_start_date.date() if old_start_date and hasattr(old_start_date, 'date') else (old_start_date if old_start_date else None)
+                    old_end_only = old_end_date.date() if old_end_date and hasattr(old_end_date, 'date') else (old_end_date if old_end_date else None)
+                    new_start_only = start_dt.date() if hasattr(start_dt, 'date') else start_dt
+                    new_end_only = end_dt.date() if hasattr(end_dt, 'date') else end_dt
+                    start_date_changed = (old_start_only != new_start_only) if old_start_only else True
+                    end_date_changed = (old_end_only != new_end_only) if old_end_only else True
                     deadline.start_date = start_dt
                     deadline.end_date = end_dt
                 else:
+                    start_date_changed = True
+                    end_date_changed = True
                     deadline = Deadlines(start_date=start_dt, end_date=end_dt, flag='active')
                     db.session.add(deadline)
                     db.session.flush()
                     task.deadline_id = deadline.deadlines_id
             else:
+                start_date_changed = True
+                end_date_changed = True
                 deadline = Deadlines(start_date=start_dt, end_date=end_dt, flag='active')
                 db.session.add(deadline)
                 db.session.flush()
@@ -1876,13 +1910,28 @@ def update_task(id):
         task.deadline_id = None
 
     recipient_ids = _task_recipient_member_ids(task)
-    schedule_changed = bool(start_date_str and end_date_str)
+    schedule_changed = start_date_changed or end_date_changed
     task_name_changed = (old_task_name != task_name)
     task_status_changed = (old_task_status != task.task_status)
     task_priority_changed = (old_task_priority != task.priority)
     project = Project.query.get(task.project_id) if task.project_id else None
     project_name = project.project_name if project else 'project'
     author_name = current_user.name or current_user.username or 'Someone'
+
+    # Notify newly assigned members
+    newly_assigned_p_members_ids = set(new_p_members_ids) - old_assignee_p_members_ids
+    for pid in newly_assigned_p_members_ids:
+        pm = ProjectMembers.query.get(pid)
+        if pm and pm.member_id and pm.member_id != current_user.member_id:
+            create_notification(
+                recipient_ids=[pm.member_id],
+                module='task',
+                event_type='updated',
+                reference_table='task_tbl',
+                reference_id=task.task_id,
+                message=f'You are assigned to a new Task: <b>{task_name}</b> located in project <b>{project_name}</b>.',
+                sender_id=current_user.member_id
+            )
 
     if task_name_changed:
         create_notification(
@@ -1915,15 +1964,28 @@ def update_task(id):
             sender_id=current_user.member_id
         )
     elif schedule_changed:
-        create_notification(
-            recipient_ids=recipient_ids,
-            module='task',
-            event_type='updated',
-            reference_table='task_tbl',
-            reference_id=task.task_id,
-            message=f'Task schedule changed Start or end date was updated for <b>{task_name}</b>.',
-            sender_id=current_user.member_id
-        )
+        start_fmt = start_dt.strftime('%b %d, %Y') if start_dt else ''
+        end_fmt = end_dt.strftime('%b %d, %Y') if end_dt else ''
+        if start_date_changed and start_fmt:
+            create_notification(
+                recipient_ids=recipient_ids,
+                module='task',
+                event_type='updated',
+                reference_table='task_tbl',
+                reference_id=task.task_id,
+                message=f'Task: <b>{task_name}</b> from <b>{project_name}</b>, changed start date to <b>{start_fmt}</b>.',
+                sender_id=current_user.member_id
+            )
+        if end_date_changed and end_fmt:
+            create_notification(
+                recipient_ids=recipient_ids,
+                module='task',
+                event_type='updated',
+                reference_table='task_tbl',
+                reference_id=task.task_id,
+                message=f'Task: <b>{task_name}</b> from <b>{project_name}</b>, changed end date to <b>{end_fmt}</b>.',
+                sender_id=current_user.member_id
+            )
     else:
         create_notification(
             recipient_ids=recipient_ids,
@@ -2138,6 +2200,19 @@ def create_task(id):
             message=f'New Task added <b>{task_name}</b> in <b>{project.project_name}</b>.',
             sender_id=current_user.member_id
         )
+        # Notify each assignee personally
+        for p_members_id in project_member_ids:
+            pm = ProjectMembers.query.get(p_members_id)
+            if pm and pm.member_id and pm.member_id != current_user.member_id:
+                create_notification(
+                    recipient_ids=[pm.member_id],
+                    module='task',
+                    event_type='created',
+                    reference_table='task_tbl',
+                    reference_id=task.task_id,
+                    message=f'You are assigned to a new Task: <b>{task_name}</b> located in project <b>{project.project_name}</b>.',
+                    sender_id=current_user.member_id
+                )
         db.session.commit()
         
         flash('Task created successfully!', 'success')
@@ -2302,7 +2377,8 @@ def add_note(task_id):
         
         db.session.add(new_note)
         db.session.flush()
-        author_name = current_user.name or current_user.username or 'Someone'
+        project = Project.query.get(task.project_id) if task.project_id else None
+        project_name = project.project_name if project else 'project'
         recipient_ids = _task_recipient_member_ids(task)
         create_notification(
             recipient_ids=recipient_ids,
@@ -2310,7 +2386,7 @@ def add_note(task_id):
             event_type='created',
             reference_table='notes_tbl',
             reference_id=new_note.notes_id,
-            message=f'Task status changed A note was added to task <b>{task.task_name}</b>.',
+            message=f'A note was added to task <b>{task.task_name}</b> in project <b>{project_name}</b>.',
             sender_id=current_user.member_id
         )
         db.session.commit()
@@ -2346,7 +2422,9 @@ def reply_note(note_id):
         )
         db.session.add(new_reply)
         db.session.flush()
-        author_name = current_user.name or current_user.username or 'Someone'
+        commenter = current_user.name or current_user.username or 'Someone'
+        project = Project.query.get(task.project_id) if task.project_id else None
+        project_name = project.project_name if project else 'project'
         recipient_ids = _task_recipient_member_ids(task)
         if parent_note.member_id and parent_note.member_id != current_user.member_id:
             recipient_ids = list(set(recipient_ids + [parent_note.member_id]))
@@ -2356,7 +2434,7 @@ def reply_note(note_id):
             event_type='created',
             reference_table='notes_tbl',
             reference_id=new_reply.notes_id,
-            message=f'Task status changed <b>{author_name}</b> replied to a note on task <b>{task.task_name}</b>.',
+            message=f'<b>{commenter}</b> replied to your note on <b>{task.task_name}</b> located in <b>{project_name}</b>.',
             sender_id=current_user.member_id
         )
         db.session.commit()
