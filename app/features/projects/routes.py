@@ -1681,6 +1681,7 @@ def update_task(id):
     if not task_name:
         flash('Task name is required.', 'danger')
         return redirect(url_for('project.task_details', id=id))
+    old_task_name = task.task_name
     task.task_name = task_name
     task.priority = request.form.get('priority') or task.priority
     task.task_status = request.form.get('task_status') or 'Ongoing'
@@ -1746,7 +1747,22 @@ def update_task(id):
 
     recipient_ids = _task_recipient_member_ids(task)
     schedule_changed = bool(start_date_str and end_date_str)
-    if schedule_changed:
+    task_name_changed = (old_task_name != task_name)
+    project = Project.query.get(task.project_id) if task.project_id else None
+    project_name = project.project_name if project else 'project'
+    author_name = current_user.name or current_user.username or 'Someone'
+
+    if task_name_changed:
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='task',
+            event_type='updated',
+            reference_table='task_tbl',
+            reference_id=task.task_id,
+            message=f'Task <b>{old_task_name}</b> was renamed to <b>{task_name}</b> in <b>{project_name}</b> by <b>{author_name}</b>.',
+            sender_id=current_user.member_id
+        )
+    elif schedule_changed:
         create_notification(
             recipient_ids=recipient_ids,
             module='task',
