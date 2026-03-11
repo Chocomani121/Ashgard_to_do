@@ -1682,6 +1682,8 @@ def update_task(id):
         flash('Task name is required.', 'danger')
         return redirect(url_for('project.task_details', id=id))
     old_task_name = task.task_name
+    old_task_status = task.task_status or 'Ongoing'
+    old_task_priority = task.priority
     task.task_name = task_name
     task.priority = request.form.get('priority') or task.priority
     task.task_status = request.form.get('task_status') or 'Ongoing'
@@ -1748,6 +1750,8 @@ def update_task(id):
     recipient_ids = _task_recipient_member_ids(task)
     schedule_changed = bool(start_date_str and end_date_str)
     task_name_changed = (old_task_name != task_name)
+    task_status_changed = (old_task_status != task.task_status)
+    task_priority_changed = (old_task_priority != task.priority)
     project = Project.query.get(task.project_id) if task.project_id else None
     project_name = project.project_name if project else 'project'
     author_name = current_user.name or current_user.username or 'Someone'
@@ -1760,6 +1764,26 @@ def update_task(id):
             reference_table='task_tbl',
             reference_id=task.task_id,
             message=f'Task <b>{old_task_name}</b> was renamed to <b>{task_name}</b> in <b>{project_name}</b> by <b>{author_name}</b>.',
+            sender_id=current_user.member_id
+        )
+    elif task_status_changed:
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='task',
+            event_type='updated',
+            reference_table='task_tbl',
+            reference_id=task.task_id,
+            message=f'Task: <b>{task_name}</b> from <b>{project_name}</b>, changed status to <b>{task.task_status}</b>.',
+            sender_id=current_user.member_id
+        )
+    elif task_priority_changed:
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='task',
+            event_type='updated',
+            reference_table='task_tbl',
+            reference_id=task.task_id,
+            message=f'Task: <b>{task_name}</b> from <b>{project_name}</b>, changed priority to <b>{task.priority}</b>',
             sender_id=current_user.member_id
         )
     elif schedule_changed:
