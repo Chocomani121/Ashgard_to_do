@@ -1,6 +1,8 @@
 from flask import render_template, Blueprint, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app.models import User, Report, ReportCC, Comment, Project, Task, Deadlines, ProjectMembers, TaskAssignee, SubTask, Notes, Department
+from app.services.notification_service import create_notification
+from app.features.projects.routes import _can_act_on_subtask
 from app import db, main 
 from datetime import datetime, date, time
 from sqlalchemy import or_, text
@@ -202,17 +204,41 @@ def create_report():
         db.session.flush()  # Gets the new_report.report_id
 
         # 3. Create CC Entries (report_cc_tbl)
-        cc_member_ids = request.form.getlist('cc_members')
+        cc_member_ids = []
+        for m_id in request.form.getlist('cc_members'):
+            try:
+                mid = int(m_id)
+                cc_entry = ReportCC(
+                    report_id=new_report.report_id,
+                    member_id=mid
+                )
+                db.session.add(cc_entry)
+                cc_member_ids.append(mid)
+            except (ValueError, TypeError):
+                continue
+
+        # 4. Notify CC'd members and reviewer (exclude author) with different messages
+        author_name = current_user.name or current_user.username or 'Someone'
         if cc_member_ids:
-            for m_id in cc_member_ids:
-                try:
-                    cc_entry = ReportCC(
-                        report_id=new_report.report_id,
-                        member_id=int(m_id)
-                    )
-                    db.session.add(cc_entry)
-                except (ValueError, TypeError):
-                    continue
+            create_notification(
+                recipient_ids=cc_member_ids,
+                module='report',
+                event_type='cc',
+                reference_table='report_tbl',
+                reference_id=new_report.report_id,
+                message=f'<strong>{author_name}</strong> added you as CC on a report for week {week_name}.',
+                sender_id=int(member_id)
+            )
+        if reviewer_id:
+            create_notification(
+                recipient_ids=[int(reviewer_id)],
+                module='report',
+                event_type='reviewer',
+                reference_table='report_tbl',
+                reference_id=new_report.report_id,
+                message=f'<strong>{author_name}</strong> submitted a report for week {week_name} for your review.',
+                sender_id=int(member_id)
+            )
 
         db.session.commit()
         flash('Weekly report created and sent for review!', 'success')
@@ -266,6 +292,24 @@ def approve_report(report_id):
         report.is_checked = True
         report.checked_at = datetime.utcnow()
         db.session.commit()
+
+        # Notify author and CC members
+        reviewer_name = current_user.name or current_user.username or 'Reviewer'
+        week_name = report.week_name or 'this week'
+        recipient_ids = {report.member_id}
+        for cc in (report.cc_entries or []):
+            recipient_ids.add(cc.member_id)
+        create_notification(
+            recipient_ids=list(recipient_ids),
+            module='report',
+            event_type='approved',
+            reference_table='report_tbl',
+            reference_id=report_id,
+            message=f'<strong>{reviewer_name}</strong> approved the report for week {week_name}.',
+            sender_id=current_user.member_id
+        )
+        db.session.commit()
+
         flash('Report approved successfully.', 'success')
     except Exception as e:
         db.session.rollback()
@@ -309,6 +353,59 @@ def add_report_comment(report_id):
         )
         db.session.add(comment)
         db.session.commit()
+
+        # Notify report author, reviewer, and CC (excluding commenter) with message based on reply type
+        commenter_name = current_user.name or current_user.username or 'Someone'
+        week_name = report.week_name or 'this week'
+        is_reply = parent_comment_id is not None
+        parent = Comment.query.get(parent_comment_id) if parent_comment_id else None
+        parent_is_reply = parent and parent.parent_comment_id is not None
+
+        base_recipients = set()
+        if report.member_id != current_user.member_id:
+            base_recipients.add(report.member_id)
+        if report.reviewer_id and report.reviewer_id != current_user.member_id:
+            base_recipients.add(report.reviewer_id)
+        for cc in (report.cc_entries or []):
+            if cc.member_id != current_user.member_id:
+                base_recipients.add(cc.member_id)
+
+        if is_reply and parent and parent.member_id != current_user.member_id:
+            # Notify parent comment author with personalized message
+            parent_msg = (
+                f'<strong>{commenter_name}</strong> replied to your reply on a report for week {week_name}.'
+                if parent_is_reply
+                else f'<strong>{commenter_name}</strong> replied to your comment on a report for week {week_name}.'
+            )
+            create_notification(
+                recipient_ids=[parent.member_id],
+                module='report',
+                event_type='comment',
+                reference_table='report_tbl',
+                reference_id=report_id,
+                message=parent_msg,
+                sender_id=current_user.member_id
+            )
+            base_recipients.discard(parent.member_id)
+
+        if base_recipients:
+            msg = (
+                f'<strong>{commenter_name}</strong> replied on a report for week {week_name}.'
+                if is_reply
+                else f'<strong>{commenter_name}</strong> commented on a report for week {week_name}.'
+            )
+            create_notification(
+                recipient_ids=list(base_recipients),
+                module='report',
+                event_type='comment',
+                reference_table='report_tbl',
+                reference_id=report_id,
+                message=msg,
+                sender_id=current_user.member_id
+            )
+        if base_recipients or (is_reply and parent and parent.member_id != current_user.member_id):
+            db.session.commit()
+
         if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             author_name = (current_user.name or current_user.username) or ''
             created_str = comment.created_at.strftime('%m/%d/%Y %H:%M') if comment.created_at else ''

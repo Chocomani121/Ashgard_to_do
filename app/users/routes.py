@@ -1,10 +1,17 @@
-from flask import render_template, url_for, flash, redirect, request, Blueprint, current_app
+from flask import render_template, url_for, flash, redirect, request, Blueprint, current_app, jsonify
 from app import db, bcrypt, mail
 from app.users.forms import RegisterForm, LoginForm, RequestResetForm, ResetPasswordForm, UpdateAccountForm, ChangePasswordForm
-from app.models import User, Department, Notes, Task
+from app.models import User, Department, Notes, Task, Notification
+from app.utils.notification_helpers import (
+    notification_action_url as _notification_action_url,
+    notification_link_text as _notification_link_text,
+    notification_type_badge as _notification_type_badge,
+    time_ago as _time_ago,
+)
 from flask_login import login_user, current_user, logout_user, login_required
-from flask_mail import Message
 from sqlalchemy.orm import joinedload
+from datetime import datetime
+from flask_mail import Message
 import os
 import secrets
 from PIL import Image
@@ -178,7 +185,136 @@ def reset_password():
     return render_template('profile.html', title='Reset Password', form=form)
 
 
+# --- NOTIFICATIONS PAGE ---
+
 @users.route("/notifications")
 @login_required
 def notifications():
-    return render_template('notifications.html', title='Notifications')
+    q = (Notification.query
+         .filter_by(recipient_id=current_user.member_id)
+         .options(joinedload(Notification.sender))
+         .order_by(Notification.created_at.desc())
+         .limit(100))
+    raw = q.all()
+    notifications_list = []
+    for n in raw:
+        badge_label, badge_class = _notification_type_badge(n.module)
+        sender_name = (n.sender.name or n.sender.username) if n.sender else 'System'
+        notifications_list.append({
+            'notif': n,
+            'sender_name': sender_name,
+            'action_url': _notification_action_url(n),
+            'link_text': _notification_link_text(n),
+            'badge_label': badge_label,
+            'badge_class': badge_class,
+            'time_ago': _time_ago(n.created_at),
+        })
+    return render_template(
+        'notifications.html',
+        title='Notifications',
+        notifications=notifications_list
+    )
+
+
+# --- NOTIFICATION API ---
+
+@users.route("/api/notifications")
+@login_required
+def api_notifications():
+    """JSON: list recent notifications for current user."""
+    limit = min(int(request.args.get('limit', 20)), 50)
+    q = (Notification.query
+         .filter_by(recipient_id=current_user.member_id)
+         .options(joinedload(Notification.sender))
+         .order_by(Notification.created_at.desc())
+         .limit(limit))
+    items = []
+    for n in q.all():
+        sender_name = (n.sender.name or n.sender.username) if n.sender else 'System'
+        items.append({
+            'notif_id': n.notif_id,
+            'module': n.module,
+            'event_type': n.event_type,
+            'message': n.message,
+            'is_read': n.is_read,
+            'created_at': n.created_at.isoformat() if n.created_at else None,
+            'sender_name': sender_name,
+            'action_url': _notification_action_url(n),
+            'link_text': _notification_link_text(n),
+        })
+    return jsonify(notifications=items)
+
+
+@users.route("/api/notifications/unread-count")
+@login_required
+def api_notifications_unread_count():
+    """JSON: unread notification count for current user."""
+    count = Notification.query.filter_by(
+        recipient_id=current_user.member_id,
+        is_read=False
+    ).count()
+    return jsonify(unread_count=count)
+
+
+@users.route("/api/notifications/<int:notif_id>/mark-read", methods=['POST'])
+@login_required
+def api_notification_mark_read(notif_id):
+    n = Notification.query.filter_by(
+        notif_id=notif_id,
+        recipient_id=current_user.member_id
+    ).first_or_404()
+    n.is_read = True
+    n.read_at = datetime.utcnow()
+    db.session.commit()
+    return jsonify(success=True)
+
+
+@users.route("/api/notifications/due-soon-check", methods=['POST'])
+@login_required
+def api_notifications_due_soon_check():
+    """Create due_soon and overdue notifications for tasks and projects. Admin only. Call via cron daily."""
+    if getattr(current_user, 'account_type', None) != 'admin':
+        return jsonify({'error': 'Unauthorized'}), 403
+    from app.services.notification_service import (
+        create_due_soon_notifications,
+        create_overdue_notifications,
+        create_project_upcoming_deadline_notifications,
+    )
+    create_due_soon_notifications(days_ahead=3)
+    create_project_upcoming_deadline_notifications(days_ahead=3)
+    create_overdue_notifications()
+    db.session.commit()
+    return jsonify(success=True)
+
+
+@users.route("/api/notifications/mark-all-read", methods=['POST'])
+@login_required
+def api_notifications_mark_all_read():
+    Notification.query.filter_by(
+        recipient_id=current_user.member_id,
+        is_read=False
+    ).update({'is_read': True, 'read_at': datetime.utcnow()})
+    db.session.commit()
+    return jsonify(success=True)
+
+# Delete a notification
+@users.route("/api/notifications/<int:notif_id>", methods=['DELETE'])
+@login_required
+def api_notification_delete(notif_id):
+    n = Notification.query.filter_by(
+        notif_id=notif_id,
+        recipient_id=current_user.member_id
+    ).first_or_404()
+    db.session.delete(n)
+    db.session.commit()
+    return jsonify(success=True)
+
+# Delete all notifications
+@users.route("/api/notifications/delete-all", methods=['POST'])
+@login_required
+def api_notifications_delete_all():
+    Notification.query.filter_by(
+        recipient_id=current_user.member_id
+    ).delete()
+    db.session.commit()
+    return jsonify(success=True)

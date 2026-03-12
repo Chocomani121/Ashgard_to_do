@@ -140,6 +140,47 @@ def create_app():
         }
 
     @flask_app.context_processor
+    def inject_notifications():
+        from flask_login import current_user
+        from app.models import Notification
+        from sqlalchemy.orm import joinedload
+        from app.utils.notification_helpers import (
+            notification_action_url,
+            notification_link_text,
+            notification_type_badge,
+            time_ago,
+        )
+        unread_notifications_count = 0
+        recent_notifications = []
+        if current_user.is_authenticated:
+            unread_notifications_count = Notification.query.filter_by(
+                recipient_id=current_user.member_id,
+                is_read=False
+            ).count()
+            q = (Notification.query
+                 .filter_by(recipient_id=current_user.member_id)
+                 .options(joinedload(Notification.sender))
+                 .order_by(Notification.created_at.desc())
+                 .limit(5))
+            for n in q.all():
+                badge_label, badge_class = notification_type_badge(n.module)
+                sender_name = (n.sender.name or n.sender.username) if n.sender else 'System'
+                recent_notifications.append({
+                    'notif': n,
+                    'sender_name': sender_name,
+                    'action_url': notification_action_url(n),
+                    'link_text': notification_link_text(n),
+                    'badge_label': badge_label,
+                    'badge_class': badge_class,
+                    'time_ago': time_ago(n.created_at),
+                })
+        return {
+            'unread_notifications_count': unread_notifications_count,
+            'recent_notifications': recent_notifications
+        }
+
+
+    @flask_app.context_processor
     def inject_version():
         try:
             from app.version_config import VERSION_STRING

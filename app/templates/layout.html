@@ -143,8 +143,7 @@
                         </li>
                     </ul>
                 </div>
-                </div>
-                <p class="text-muted small text-center">{{ version }}</p>
+            </div>
         </div>
             
         <header id="page-topbar" class="isvertical-topbar">
@@ -169,7 +168,7 @@
                             </span>
                         </a>
                     </div>
-
+                    
                     <button type="button" class="btn btn-sm px-3 font-size-24 header-item waves-effect vertical-menu-btn">
                         <i class="bx bx-menu align-middle"></i>
                     </button>
@@ -186,7 +185,9 @@
                         <button type="button" class="btn header-item noti-icon" id="page-header-notifications-dropdown-v"
                             data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="bx bx-bell icon-sm align-middle"></i>
-                            <span class="noti-dot bg-danger rounded-pill">4</span>
+                            {% if current_user.is_authenticated and unread_notifications_count > 0 %}
+                            <span class="noti-dot bg-danger rounded-pill">{{ unread_notifications_count }}</span>
+                            {% endif %}
                         </button>
                         <div class="dropdown-menu dropdown-menu-xl dropdown-menu-end p-0"
                             aria-labelledby="page-header-notifications-dropdown-v">
@@ -196,23 +197,31 @@
                                         <h5 class="m-0 font-size-15"> Notifications </h5>
                                     </div>
                                     <div class="col-auto">
-                                        <a href="#!" class="small fw-semibold text-decoration-underline"> Mark all as read</a>
+                                        <a href="#" id="headerMarkAllReadBtn" class="small fw-semibold text-decoration-underline"> Mark all as read</a>
                                     </div>
                                 </div>
                             </div>
                             <div data-simplebar style="max-height: 250px;">
-                                <a href="#!" class="text-reset notification-item">
+                                {% for item in recent_notifications %}
+                                <a href="{{ item.action_url }}" class="text-reset notification-item">
                                     <div class="d-flex">
                                         <div class="flex-shrink-0 me-3">
-                                            <img src="{{ url_for('static', filename='assets/images/users/avatar-3.jpg') }}" class="rounded-circle avatar-sm" alt="user-pic">
+                                            {% if item.notif.sender and item.notif.sender.image_file %}
+                                            <img src="{{ url_for('static', filename='profile_pics/' + item.notif.sender.image_file) }}" onerror="this.onerror=null; this.src='{{ url_for('static', filename='profile_pics/default.jpg') }}';" class="rounded-circle avatar-sm" alt="">
+                                            {% else %}
+                                            <img src="{{ url_for('static', filename='assets/images/users/avatar-3.jpg') }}" onerror="this.onerror=null; this.src='{{ url_for('static', filename='profile_pics/default.jpg') }}';" class="rounded-circle avatar-sm" alt="">
+                                            {% endif %}
                                         </div>
                                         <div class="flex-grow-1">
-                                            <p class="text-muted font-size-13 mb-0 float-end">1 hour ago</p>
-                                            <h6 class="mb-1">James Lemire</h6>
-                                            <p class="mb-0">It will seem like simplified English.</p>
+                                            <p class="text-muted font-size-13 mb-0 float-end">{{ item.time_ago }}</p>
+                                            <h6 class="mb-1">{{ item.sender_name }}</h6>
+                                            <p class="mb-0 text-truncate" style="max-width: 220px;">{{ item.notif.message |safe }}</p>
                                         </div>
                                     </div>
                                 </a>
+                                {% else %}
+                                <p class="text-muted text-center py-3 mb-0 font-size-13">No notifications</p>
+                                {% endfor %}
                             </div>
                             <div class="p-2 border-top d-grid">
                                 <a class="btn btn-sm btn-link font-size-14 btn-block text-center" href="{{ url_for('users.notifications') }}">
@@ -291,7 +300,12 @@
 
         <script src="{{ url_for('static', filename='assets/libs/alertifyjs/build/alertify.min.js') }}"></script>
         <script src="{{ url_for('static', filename='assets/js/pages/notification.init.js') }}"></script>
-        
+        <script>
+        (function(){
+            var btn = document.getElementById('headerMarkAllReadBtn');
+            if (btn) btn.addEventListener('click', function(e){ e.preventDefault(); fetch('{{ url_for("users.api_notifications_mark_all_read") }}', { method: 'POST', headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'}, credentials: 'same-origin' }).then(function(r){ if(r.ok) location.reload(); }); });
+        })();
+        </script>
         <script src="{{ url_for('static', filename='assets/libs/nouislider/nouislider.min.js')}}"></script>
         <script src="{{url_for('static', filename='assets/libs/wnumb/wNumb.min.js')}}"></script>
 

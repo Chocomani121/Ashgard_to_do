@@ -6,13 +6,14 @@
     .notifications-table th,
     .notifications-table td { padding: 0.85rem 1rem; vertical-align: middle !important; }
     .notifications-table .notif-col-type { width: 100px; min-width: 100px; }
-    .notifications-table .notif-col-from { width: 160px; min-width: 160px; }
     .notifications-table .notif-col-message { width: 28%; max-width: 360px; min-width: 200px; }
     .notifications-table .notif-col-link { width: 150px; min-width: 150px; padding-left: 1.25rem !important; }
     .notifications-table .notif-col-date { width: 145px; min-width: 145px; padding-left: 1.25rem !important; }
     .notifications-table .notif-col-status { width: 105px; min-width: 105px; padding-left: 1.25rem !important; text-align: center; }
-    .notifications-table tbody td:nth-child(4),
-    .notifications-table tbody td:nth-child(5) { padding-left: 1.25rem !important; }
+    .notifications-table .notif-col-delete { width: 105px; min-width: 105px; padding-left: 1.25rem !important; text-align: center; }
+    .notifications-table tbody td:nth-child(3),
+    .notifications-table tbody td:nth-child(4) { padding-left: 1.25rem !important; }
+    .notifications-table tbody td:nth-child(5) { text-align: center; padding-left: 1.25rem !important; }
     .notifications-table tbody td:nth-child(6) { text-align: center; padding-left: 1.25rem !important; }
 </style>
 <div class="main-content">
@@ -24,7 +25,10 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center justify-content-between mb-4">
                                 <h5 class="card-title mb-0">Notifications</h5>
-                                <a href="#!" class="btn btn-sm btn-soft-primary">Mark all as read</a>
+                                <div class="d-flex align-items-center gap-2">
+                                    <a href="#" id="deleteAllNotificationsBtn" class="btn btn-sm btn-soft-danger">Delete all</a>
+                                    <a href="#" id="markAllReadBtn" class="btn btn-sm btn-soft-primary">Mark all as read</a>
+                                </div>
                             </div>
 
                             <div class="table-responsive">
@@ -32,46 +36,41 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th scope="col" class="notif-col-type">Type</th>
-                                            <th scope="col" class="notif-col-from">From</th>
                                             <th scope="col" class="notif-col-message">Message</th>
                                             <th scope="col" class="notif-col-link">Link</th>
                                             <th scope="col" class="notif-col-date">Date</th>
                                             <th scope="col" class="notif-col-status">Status</th>
+                                            <th scope="col" class="notif-col-delete">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr class="table-light">
-                                            <td><span class="badge bg-primary">Project</span></td>
-                                            <td class="text-muted font-size-13">James Lemire</td>
-                                            <td>James Lemire assigned you to <strong>Project Alpha</strong>.</td>
-                                            <td><a href="#" class="text-primary text-decoration-underline">View Project <i class="bx bx-link-external font-size-12"></i></a></td>
-                                            <td class="text-muted font-size-13">1 hour ago</td>
-                                            <td><span class="badge bg-danger">New</span></td>
+                                        {% for item in notifications %}
+                                        <tr class="{% if not item.notif.is_read %}table-light{% endif %}">
+                                            <td><span class="badge {{ item.badge_class }}">{{ item.badge_label }}</span></td>
+                                            <td>{{ item.notif.message|safe }}</td>
+                                            <td><a href="{{ item.action_url }}" class="text-primary text-decoration-underline">{{ item.link_text }} <i class="bx bx-link-external font-size-12"></i></a></td>
+                                            <td class="text-muted font-size-13">{{ item.time_ago }}</td>
+                                            <td>{% if item.notif.is_read %}<span class="badge bg-secondary">Read</span>{% else %}<span class="badge bg-danger">New</span>{% endif %}</td>
+                                            <!-- <td>
+                                                <input class="form-check-input" type="checkbox" id="notifcheck">
+                                                <label class="form-check-label" for="notifcheck"></label>
+                                            </td> -->
+                                            <td class="text-center">
+                                                {% if not item.notif.is_read %}
+                                                <button type="button" class="btn btn-sm btn-soft-primary btn-mark-read" data-notif-id="{{ item.notif.notif_id }}" title="Mark as read">
+                                                    <i class="bx bx-check"></i>
+                                                </button>
+                                                {% endif %}
+                                                <button type="button" class="btn btn-sm btn-soft-danger btn-delete-notif" data-notif-id="{{ item.notif.notif_id }}" title="Delete">
+                                                    <i class="bx bx-trash"></i>
+                                                </button>
+                                            </td>
                                         </tr>
+                                        {% else %}
                                         <tr>
-                                            <td><span class="badge bg-info">Task</span></td>
-                                            <td class="text-muted font-size-13">System</td>
-                                            <td>Your task <strong>API Integration</strong> is due for review.</td>
-                                            <td><a href="#" class="text-primary text-decoration-underline">View Task <i class="bx bx-link-external font-size-12"></i></a></td>
-                                            <td class="text-muted font-size-13">3 hours ago</td>
-                                            <td><span class="badge bg-secondary">Read</span></td>
+                                            <td colspan="5" class="text-center text-muted py-5">No notifications yet.</td>
                                         </tr>
-                                        <tr>
-                                            <td><span class="badge bg-secondary">Subtask</span></td>
-                                            <td class="text-muted font-size-13">Sarah Wilson</td>
-                                            <td>Sarah Wilson completed subtask <strong>Database Schema</strong>.</td>
-                                            <td><a href="#" class="text-primary text-decoration-underline">View Subtask <i class="bx bx-link-external font-size-12"></i></a></td>
-                                            <td class="text-muted font-size-13">Yesterday</td>
-                                            <td><span class="badge bg-secondary">Read</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td><span class="badge bg-success">Report</span></td>
-                                            <td class="text-muted font-size-13">Michael Chen</td>
-                                            <td>Report from Michael Chen is pending your approval.</td>
-                                            <td><a href="#" class="text-primary text-decoration-underline">View Report <i class="bx bx-link-external font-size-12"></i></a></td>
-                                            <td class="text-muted font-size-13">2 days ago</td>
-                                            <td><span class="badge bg-secondary">Read</span></td>
-                                        </tr>
+                                        {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
@@ -82,4 +81,109 @@
         </div>
     </div>
 </div>
+<script>
+(function() {
+    var markBtn = document.getElementById('markAllReadBtn');
+    if (!markBtn) return;
+    markBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        fetch('{{ url_for("users.api_notifications_mark_all_read") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin'
+        }).then(function(r) {
+            if (r.ok) window.location.reload();
+        });
+    });
+})();
+
+(function() {
+    var deleteBtn = document.getElementById('deleteAllNotificationsBtn');
+    if (!deleteBtn) return;
+    deleteBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        Swal.fire({
+            title: "Delete all?",
+            text: "You won't be able to recover these notifications.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete",
+            confirmButtonColor: "#f34e4e"   
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: "Deleting...",
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: function() { Swal.showLoading(); }
+                });
+                fetch('{{ url_for("users.api_notifications_delete_all") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin'
+                }).then(function(r) {
+                    if (r.ok) window.location.reload();
+                    else Swal.fire({ icon: "error", title: "Error", text: "Failed to delete." });
+                }).catch(function() {
+                    Swal.fire({ icon: "error", title: "Error", text: "Network error." });
+                });
+            }
+        });
+    });
+})();
+
+(function() {
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.btn-delete-notif');
+        if (!btn) return;
+        e.preventDefault();
+        var notifId = btn.getAttribute('data-notif-id');
+        var url = '{{ url_for("users.api_notifications") }}/' + notifId;
+        Swal.fire({
+            title: "Delete this notification?",
+            text: "You won't be able to recover it.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete",
+            confirmButtonColor: "#f34e4e"   
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: "Deleting...",
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: function() { Swal.showLoading(); }
+                });
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin'
+                }).then(function(r) {
+                    if (r.ok) window.location.reload();
+                    else Swal.fire({ icon: "error", title: "Error", text: "Failed to delete." });
+                }).catch(function() {
+                    Swal.fire({ icon: "error", title: "Error", text: "Network error." });
+                });
+            }
+        });
+    });
+})();
+
+(function() {
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.btn-mark-read');
+        if (!btn) return;
+        e.preventDefault();
+        var notifId = btn.getAttribute('data-notif-id');
+        var url = '{{ url_for("users.api_notifications") }}/' + notifId + '/mark-read';
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin'
+        }).then(function(r) {
+            if (r.ok) window.location.reload();
+        });
+    });
+})();
+</script>
 {% endblock content %}
