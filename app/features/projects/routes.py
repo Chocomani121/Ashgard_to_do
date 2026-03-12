@@ -1812,6 +1812,7 @@ def update_task(id):
     old_task_name = task.task_name
     old_task_status = task.task_status or 'Ongoing'
     old_task_priority = task.priority
+    old_task_description = task.task_description or ''
     task.task_name = task_name
     task.priority = request.form.get('priority') or task.priority
     task.task_status = request.form.get('task_status') or 'Ongoing'
@@ -1914,12 +1915,29 @@ def update_task(id):
     task_name_changed = (old_task_name != task_name)
     task_status_changed = (old_task_status != task.task_status)
     task_priority_changed = (old_task_priority != task.priority)
+    task_description_changed = (old_task_description != (task.task_description or ''))
     project = Project.query.get(task.project_id) if task.project_id else None
     project_name = project.project_name if project else 'project'
     author_name = current_user.name or current_user.username or 'Someone'
+    pm_user = User.query.get(project.project_manager) if project and project.project_manager else None
+    pm_name = (pm_user.name or pm_user.username) if pm_user else 'Project Manager'
+    detail_changes_count = sum([task_name_changed, task_status_changed, task_priority_changed, task_description_changed, schedule_changed])
 
     # Notify newly assigned members
     newly_assigned_p_members_ids = set(new_p_members_ids) - old_assignee_p_members_ids
+    removed_p_members_ids = old_assignee_p_members_ids - set(new_p_members_ids)
+    for pid in removed_p_members_ids:
+        pm = ProjectMembers.query.get(pid)
+        if pm and pm.member_id and pm.member_id != current_user.member_id:
+            create_notification(
+                recipient_ids=[pm.member_id],
+                module='task',
+                event_type='updated',
+                reference_table='task_tbl',
+                reference_id=task.task_id,
+                message=f'You are removed from the Task: <b>{task_name}</b> located in project <b>{project_name}</b>.',
+                sender_id=current_user.member_id
+            )
     for pid in newly_assigned_p_members_ids:
         pm = ProjectMembers.query.get(pid)
         if pm and pm.member_id and pm.member_id != current_user.member_id:
@@ -1933,7 +1951,17 @@ def update_task(id):
                 sender_id=current_user.member_id
             )
 
-    if task_name_changed:
+    if detail_changes_count >= 2:
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='task',
+            event_type='updated',
+            reference_table='task_tbl',
+            reference_id=task.task_id,
+            message=f'Task: <b>{task_name}</b> details has been updated by <b>{pm_name}</b> (PM).',
+            sender_id=current_user.member_id
+        )
+    elif task_name_changed:
         create_notification(
             recipient_ids=recipient_ids,
             module='task',
@@ -1963,6 +1991,16 @@ def update_task(id):
             message=f'Task: <b>{task_name}</b> from <b>{project_name}</b>, changed priority to <b>{task.priority}</b>',
             sender_id=current_user.member_id
         )
+    elif task_description_changed:
+        create_notification(
+            recipient_ids=recipient_ids,
+            module='task',
+            event_type='updated',
+            reference_table='task_tbl',
+            reference_id=task.task_id,
+            message=f'Task: <b>{task_name}</b> from <b>{project_name}</b>, description was updated.',
+            sender_id=current_user.member_id
+        )
     elif schedule_changed:
         start_fmt = start_dt.strftime('%b %d, %Y') if start_dt else ''
         end_fmt = end_dt.strftime('%b %d, %Y') if end_dt else ''
@@ -1986,16 +2024,9 @@ def update_task(id):
                 message=f'Task: <b>{task_name}</b> from <b>{project_name}</b>, changed end date to <b>{end_fmt}</b>.',
                 sender_id=current_user.member_id
             )
-    else:
-        create_notification(
-            recipient_ids=recipient_ids,
-            module='task',
-            event_type='updated',
-            reference_table='task_tbl',
-            reference_id=task.task_id,
-            message=f'Task status changed Task name, priority, owner, or status was updated for <b>{task_name}</b>.',
-            sender_id=current_user.member_id
-        )
+    elif removed_p_members_ids:
+        # Removed members already notified above with "You are removed from the Task..."
+        pass
     try:
         db.session.commit()
         flash('Task updated successfully.', 'success')
@@ -2027,7 +2058,7 @@ def delete_task(id):
         event_type='deleted',
         reference_table='task_tbl',
         reference_id=task_id,
-        message=f'Task status changed Task <b>{task_name}</b> was deleted from <b>{project_name}</b>.',
+        message=f'Task: <b>{task_name}</b> from <b>{project_name}</b> has been deleted.',
         sender_id=current_user.member_id
     )
     try:
