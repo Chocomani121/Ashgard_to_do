@@ -296,3 +296,25 @@ def api_notifications_mark_all_read():
     ).update({'is_read': True, 'read_at': datetime.utcnow()})
     db.session.commit()
     return jsonify(success=True)
+
+# Delete a notification
+@users.route("/api/notifications/<int:notif_id>", methods=['DELETE'])
+@login_required
+def api_notification_delete(notif_id):
+    n = Notification.query.filter_by(
+        notif_id=notif_id,
+        recipient_id=current_user.member_id
+    ).first_or_404()
+    db.session.delete(n)
+    db.session.commit()
+    return jsonify(success=True)
+
+# Delete all notifications
+@users.route("/api/notifications/delete-all", methods=['POST'])
+@login_required
+def api_notifications_delete_all():
+    Notification.query.filter_by(
+        recipient_id=current_user.member_id
+    ).delete()
+    db.session.commit()
+    return jsonify(success=True)
