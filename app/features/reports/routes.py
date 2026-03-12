@@ -226,7 +226,7 @@ def create_report():
                 event_type='cc',
                 reference_table='report_tbl',
                 reference_id=new_report.report_id,
-                message=f'{author_name} added you as CC on a report for week {week_name}.',
+                message=f'<strong>{author_name}</strong> added you as CC on a report for week {week_name}.',
                 sender_id=int(member_id)
             )
         if reviewer_id:
@@ -236,7 +236,7 @@ def create_report():
                 event_type='reviewer',
                 reference_table='report_tbl',
                 reference_id=new_report.report_id,
-                message=f'{author_name} submitted a report for week {week_name} for your review.',
+                message=f'<strong>{author_name}</strong> submitted a report for week {week_name} for your review.',
                 sender_id=int(member_id)
             )
 
@@ -305,7 +305,7 @@ def approve_report(report_id):
             event_type='approved',
             reference_table='report_tbl',
             reference_id=report_id,
-            message=f'{reviewer_name} approved the report for week {week_name}.',
+            message=f'<strong>{reviewer_name}</strong> approved the report for week {week_name}.',
             sender_id=current_user.member_id
         )
         db.session.commit()
@@ -373,9 +373,9 @@ def add_report_comment(report_id):
         if is_reply and parent and parent.member_id != current_user.member_id:
             # Notify parent comment author with personalized message
             parent_msg = (
-                f'{commenter_name} replied to your reply on a report for week {week_name}.'
+                f'<strong>{commenter_name}</strong> replied to your reply on a report for week {week_name}.'
                 if parent_is_reply
-                else f'{commenter_name} replied to your comment on a report for week {week_name}.'
+                else f'<strong>{commenter_name}</strong> replied to your comment on a report for week {week_name}.'
             )
             create_notification(
                 recipient_ids=[parent.member_id],
@@ -390,9 +390,9 @@ def add_report_comment(report_id):
 
         if base_recipients:
             msg = (
-                f'{commenter_name} replied on a report for week {week_name}.'
+                f'<strong>{commenter_name}</strong> replied on a report for week {week_name}.'
                 if is_reply
-                else f'{commenter_name} commented on a report for week {week_name}.'
+                else f'<strong>{commenter_name}</strong> commented on a report for week {week_name}.'
             )
             create_notification(
                 recipient_ids=list(base_recipients),
