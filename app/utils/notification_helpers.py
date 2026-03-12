@@ -80,7 +80,7 @@ def time_ago(dt):
     """Return human-readable relative time, e.g. '1 hour ago', 'Yesterday'."""
     if not dt:
         return '—'
-    now = datetime.utcnow()
+    now = datetime.now()
     try:
         dt_naive = dt.replace(tzinfo=None) if hasattr(dt, 'tzinfo') and dt.tzinfo else dt
     except Exception:
