@@ -10,9 +10,11 @@
     .notifications-table .notif-col-link { width: 150px; min-width: 150px; padding-left: 1.25rem !important; }
     .notifications-table .notif-col-date { width: 145px; min-width: 145px; padding-left: 1.25rem !important; }
     .notifications-table .notif-col-status { width: 105px; min-width: 105px; padding-left: 1.25rem !important; text-align: center; }
+    .notifications-table .notif-col-delete { width: 105px; min-width: 105px; padding-left: 1.25rem !important; text-align: center; }
     .notifications-table tbody td:nth-child(3),
     .notifications-table tbody td:nth-child(4) { padding-left: 1.25rem !important; }
     .notifications-table tbody td:nth-child(5) { text-align: center; padding-left: 1.25rem !important; }
+    .notifications-table tbody td:nth-child(6) { text-align: center; padding-left: 1.25rem !important; }
 </style>
 <div class="main-content">
     <div class="page-content">
@@ -23,7 +25,10 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center justify-content-between mb-4">
                                 <h5 class="card-title mb-0">Notifications</h5>
-                                <a href="#" id="markAllReadBtn" class="btn btn-sm btn-soft-primary">Mark all as read</a>
+                                <div class="d-flex align-items-center gap-2">
+                                    <a href="#" id="deleteAllNotificationsBtn" class="btn btn-sm btn-soft-danger">Delete all</a>
+                                    <a href="#" id="markAllReadBtn" class="btn btn-sm btn-soft-primary">Mark all as read</a>
+                                </div>
                             </div>
 
                             <div class="table-responsive">
@@ -35,6 +40,7 @@
                                             <th scope="col" class="notif-col-link">Link</th>
                                             <th scope="col" class="notif-col-date">Date</th>
                                             <th scope="col" class="notif-col-status">Status</th>
+                                            <th scope="col" class="notif-col-delete">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -45,6 +51,20 @@
                                             <td><a href="{{ item.action_url }}" class="text-primary text-decoration-underline">{{ item.link_text }} <i class="bx bx-link-external font-size-12"></i></a></td>
                                             <td class="text-muted font-size-13">{{ item.time_ago }}</td>
                                             <td>{% if item.notif.is_read %}<span class="badge bg-secondary">Read</span>{% else %}<span class="badge bg-danger">New</span>{% endif %}</td>
+                                            <!-- <td>
+                                                <input class="form-check-input" type="checkbox" id="notifcheck">
+                                                <label class="form-check-label" for="notifcheck"></label>
+                                            </td> -->
+                                            <td class="text-center">
+                                                {% if not item.notif.is_read %}
+                                                <button type="button" class="btn btn-sm btn-soft-primary btn-mark-read" data-notif-id="{{ item.notif.notif_id }}" title="Mark as read">
+                                                    <i class="bx bx-check"></i>
+                                                </button>
+                                                {% endif %}
+                                                <button type="button" class="btn btn-sm btn-soft-danger btn-delete-notif" data-notif-id="{{ item.notif.notif_id }}" title="Delete">
+                                                    <i class="bx bx-trash"></i>
+                                                </button>
+                                            </td>
                                         </tr>
                                         {% else %}
                                         <tr>
@@ -68,6 +88,95 @@
     markBtn.addEventListener('click', function(e) {
         e.preventDefault();
         fetch('{{ url_for("users.api_notifications_mark_all_read") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin'
+        }).then(function(r) {
+            if (r.ok) window.location.reload();
+        });
+    });
+})();
+
+(function() {
+    var deleteBtn = document.getElementById('deleteAllNotificationsBtn');
+    if (!deleteBtn) return;
+    deleteBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        Swal.fire({
+            title: "Delete all?",
+            text: "You won't be able to recover these notifications.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete",
+            confirmButtonColor: "#f34e4e"   
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: "Deleting...",
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: function() { Swal.showLoading(); }
+                });
+                fetch('{{ url_for("users.api_notifications_delete_all") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin'
+                }).then(function(r) {
+                    if (r.ok) window.location.reload();
+                    else Swal.fire({ icon: "error", title: "Error", text: "Failed to delete." });
+                }).catch(function() {
+                    Swal.fire({ icon: "error", title: "Error", text: "Network error." });
+                });
+            }
+        });
+    });
+})();
+
+(function() {
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.btn-delete-notif');
+        if (!btn) return;
+        e.preventDefault();
+        var notifId = btn.getAttribute('data-notif-id');
+        var url = '{{ url_for("users.api_notifications") }}/' + notifId;
+        Swal.fire({
+            title: "Delete this notification?",
+            text: "You won't be able to recover it.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete",
+            confirmButtonColor: "#f34e4e"   
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: "Deleting...",
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: function() { Swal.showLoading(); }
+                });
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin'
+                }).then(function(r) {
+                    if (r.ok) window.location.reload();
+                    else Swal.fire({ icon: "error", title: "Error", text: "Failed to delete." });
+                }).catch(function() {
+                    Swal.fire({ icon: "error", title: "Error", text: "Network error." });
+                });
+            }
+        });
+    });
+})();
+
+(function() {
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.btn-mark-read');
+        if (!btn) return;
+        e.preventDefault();
+        var notifId = btn.getAttribute('data-notif-id');
+        var url = '{{ url_for("users.api_notifications") }}/' + notifId + '/mark-read';
+        fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             credentials: 'same-origin'
