@@ -77,10 +77,12 @@
                                     {% endfor %}
                                     {% endif %}
                                     </div>
-                                        <div class="mt-3">
+                                        <!-- <div class="mt-3">
                                             {{ form.submit(class="btn btn-primary w-100 waves-effect waves-light") }}
+                                        </div> -->
+                                        <div class="mt-3">
+                                            <button type="submit" class="btn btn-primary w-100 waves-effect waves-light" id="login-submit-btn">{{ form.submit.label.text }}</button>
                                         </div>
-
                                         <div class="mt-4 text-center">
                                             <p class="mb-0">Don't have an account? 
                                                 <a href="{{ url_for('auth.register') }}" class="fw-medium text-primary"> Signup now </a>
@@ -103,5 +105,24 @@
     <script src="{{ url_for('static', filename='assets/libs/metismenujs/metismenujs.min.js') }}"></script>
     <script src="{{ url_for('static', filename='assets/libs/simplebar/simplebar.min.js') }}"></script>
     <script src="{{ url_for('static', filename='assets/libs/eva-icons/eva.min.js') }}"></script>
+
+    <script>
+        (function() {
+            var form = document.querySelector('form');
+            var btn = document.getElementById('login-submit-btn');
+            if (!form || !btn) return;
+            var originalLabel = btn.textContent.trim();
+            form.addEventListener('submit', function(e) {
+                if (form.dataset.submitting === '1') return;
+                e.preventDefault();
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Logging in...';
+                form.dataset.submitting = '1';
+                setTimeout(function() {
+                    form.submit();
+                }, 80);
+            });
+        })();
+    </script>
 </body>
 </html>

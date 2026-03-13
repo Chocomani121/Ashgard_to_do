@@ -37,7 +37,7 @@ def admin_register():
         db.session.add(user)
         db.session.commit()
         flash('Admin account created!', 'success')
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('users.admin_register'))
     
     # Points ONLY to the admin template
     return render_template('auth-register-admin.html', title='Register Admin', form=form)

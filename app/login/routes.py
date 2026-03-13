@@ -47,8 +47,8 @@ def register():
                     password=hashed_password, account_type='user')
         db.session.add(user)
         db.session.commit()
-        flash('Account created!', 'success')
-        return redirect(url_for('auth.login'))
+        flash('User Account created!', 'success')
+        return redirect(url_for('auth.register'))
     return render_template('auth-register.html', title='Register', form=form)
 
 @auth_bp.route("/logout")
