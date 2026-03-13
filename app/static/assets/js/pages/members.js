@@ -39,3 +39,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 3000);
         }
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('editMemberForm');
+        var btn = document.getElementById('btn-save-event-edit');
+        if (!form || !btn) return;
+    
+        var originalHTML = btn.innerHTML;
+    
+        form.addEventListener('submit', function(e) {
+            if (form.dataset.submitting === '1') return;
+            e.preventDefault();
+            form.dataset.submitting = '1';
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Updating...';
+    
+            setTimeout(function() {
+                form.submit();
+            }, 80);
+        });
+    });

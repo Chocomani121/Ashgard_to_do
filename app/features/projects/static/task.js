@@ -82,17 +82,28 @@ document.addEventListener('DOMContentLoaded', function() {
 //Delete sweet Alert
 // Delete SweetAlert for Members
 function confirmDelete(memberName, memberId) {
+    if (typeof Swal === "undefined") {
+        if (confirm("Are you sure you want to delete " + memberName + "?")) {
+            window.location.href = "/delete_member/" + memberId;
+        }
+        return;
+    }
     Swal.fire({
         title: "Are you sure?",
         text: "You are about to delete " + memberName + ". You won't be able to revert this!",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#51d28c",
-        cancelButtonColor: "#f34e4e",
+        confirmButtonColor: "#f34e4e",
+        cancelButtonColor: "#74788d",
         confirmButtonText: "Yes, delete it!"
     }).then(function (result) {
         if (result.isConfirmed) {
-            // Redirect to the Flask route you created
+            Swal.fire({
+                title: "Deleting...",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: function() { Swal.showLoading(); }
+            });
             window.location.href = "/delete_member/" + memberId;
         }
     });
