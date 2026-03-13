@@ -362,31 +362,28 @@ document.addEventListener('DOMContentLoaded', function() {
     initEditModalOwners();
 });
 
-// Department deletion with event listeners (avoids inline JavaScript syntax errors)
+// Department deletion – use event delegation so it works with GridJS-rendered table
 document.addEventListener('DOMContentLoaded', function() {
-    // Attach event listeners to all delete buttons
-    document.querySelectorAll('.delete-department-btn').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const departmentName = this.getAttribute('data-dept-name');
-            const departmentId = this.getAttribute('data-dept-id');
-            const deleteUrl = this.getAttribute('data-delete-url');
-            
-            Swal.fire({
-                title: "Are you sure?",
-                text: "You are about to delete \"" + (departmentName || "this department") + "\". You won't be able to revert this!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#51d28c",
-                cancelButtonColor: "#f34e4e",
-                confirmButtonText: "Yes, delete it!"
-            }).then(function (result) {
-                if (result.isConfirmed) {
-                    const form = document.getElementById('deleteDepartmentForm');
-                    form.action = deleteUrl;
-                    form.submit();
-                }
-            });
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.delete-department-btn');
+        if (!btn) return;
+        e.preventDefault();
+        const departmentName = btn.getAttribute('data-dept-name');
+        const deleteUrl = btn.getAttribute('data-delete-url');
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You are about to delete \"" + (departmentName || "this department") + "\". You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#51d28c",
+            cancelButtonColor: "#f34e4e",
+            confirmButtonText: "Yes, delete it!"
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                const form = document.getElementById('deleteDepartmentForm');
+                form.action = deleteUrl;
+                form.submit();
+            }
         });
     });
 });
