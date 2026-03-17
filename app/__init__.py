@@ -57,6 +57,7 @@ def create_app():
     db_name         = os.getenv("DB_NAME")
     # REMOTE - backup
     remote_url      = f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name}"
+    flask_app.config["REMOTE_DB_URL"] = remote_url
 
 
     # --- DATABASE CONFIG (LOCAL)---

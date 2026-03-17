@@ -6,3 +6,7 @@ from app import create_app
 
 flask_app = create_app()
 celery_app = flask_app.extensions["celery"]
+
+
+# Import tasks so they are registered with Celery
+import app.tasks.test_remote_db
