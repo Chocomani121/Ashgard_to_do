@@ -81,7 +81,11 @@ def create_app():
 
     
     # --- CELERY config ---
-    flask_app.config["CELERY"] = {"broker_url":"redis://localhost:6379", "result_backend":"redis://localhost:6379", "task_ignore_result":True}
+    flask_app.config["CELERY"] = {
+        "broker_url"        :   "redis://localhost:6379", 
+        "result_backend"    :   "redis://localhost:6379", 
+        "task_ignore_result":   False
+    }
 
 
 
