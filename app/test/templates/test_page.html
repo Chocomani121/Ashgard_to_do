@@ -12,7 +12,7 @@
 </head>
 
 <body>
-    <!-- <div class="authentication-bg min-vh-100"></div> -->
+
         <div class="container-fluid">
             <div class="row min-vh-100">
 
@@ -24,56 +24,52 @@
                 </div> -->
 
                 <div class="col-12  d-flex flex-column justify-content-center align-items-center bg-light">
-                    <!-- <div class="col-12 col-md-6"> -->
-
-                        <div class="card">
-                            <div class="card-body p-4">
-                                <!-- <div class="mt-2 text-center">
-                                    <h5>Login</h5>  
-                                    <p class="text-muted">Please fill your information below</p>
-                                </div> -->
+                    <div class="card">
+                        <div class="card-body p-4">
+                            <div class="p-2 mt-4">
+                                {% with messages = get_flashed_messages(with_categories=true) %}
+                                    {% if messages %}
+                                        {% for category, message in messages %}
+                                            <div class="alert alert-{{ category }} small mb-2 text-center">{{ message }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endwith %}
                                 
-                                <div class="p-2 mt-4">
-                                    {% with messages = get_flashed_messages(with_categories=true) %}
-                                        {% if messages %}
-                                            {% for category, message in messages %}
-                                                <div class="alert alert-{{ category }} small mb-2 text-center">{{ message }}</div>
-                                            {% endfor %}
-                                        {% endif %}
-                                    {% endwith %}
-                                    <!-- <div class="alert alert-danger small mb-2 text-center">asdasd</div> -->
 
-                                    <!-- <form method="POST" action="{{ url_for('test_bp.test_task') }}">
-                                        <div class="mb-3">
-                                            <label class="form-label" for="email">Test Tag</label>
-                                            <div class="position-relative input-custom-icon">
-                                                <input type="text" class="form-control" name="test_db_connection">
-                                                <span class="bx bx-user"></span>
-                                            </div>
+                                <div class="mt-3">
+                                    <form action="{{ url_for('test_bp.connect_remote_db') }}" method="POST">
+                                        <button type="submit" class="btn btn-warning w-100 waves-effect waves-light" id="login-submit-btn">test DB</button>
+                                        <div class="form-check mt-3">
+                                            <label class="form-check-label" for="">progressbar bg test</label>
+                                            <input type="checkbox" class="form-check-input" name="progbar">
                                         </div>
-
-                                        <div class="mt-3">
-                                            <button type="submit" class="btn btn-primary w-100 waves-effect waves-light" id="login-submit-btn">Go</button>
-                                        </div>
-                                    </form> -->
-
-                                    <div class="mt-3">
-                                        <form action="{{ url_for('test_bp.connect_remote_db') }}" method="POST">
-                                            <button type="submit" class="btn btn-warning w-100 waves-effect waves-light" id="login-submit-btn">test DB</button>
-                                        </form>
-                                    </div>
+                                    </form>
                                 </div>
 
-                                
+
+                                <div class="mt-3">
+                                    <div id="db-test-status" class="small text-muted mb-2 d-none"></div>
+                                    <div id="db-test-result" class="mb-2"></div>
+                                    <!-- <button type="button" class="btn btn-warning w-100" id="db-test-btn">test DB</button> -->
+                                        
+                                    <button type="type" class="btn btn-primary w-100 waves-effect waves-light" id="db-test-btn">test async task</button>
+                                    <!-- <div class="form-check mt-3">
+                                        <label class="form-check-label" for="">progressbar bg test</label>
+                                        <input type="checkbox" class="form-check-input" name="progbar">
+                                    </div> -->
+                                </div>
                             </div>
+
+                            
                         </div>
+                    </div>
 
                 </div>
 
             </div>
-        
         </div>
-</body>
+        
+
     <script src="{{ url_for('static', filename='assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ url_for('static', filename='assets/libs/metismenujs/metismenujs.min.js') }}"></script>
     <script src="{{ url_for('static', filename='assets/libs/simplebar/simplebar.min.js') }}"></script>
@@ -97,13 +93,77 @@
             });
         })();
 
-
         
         // var db_test_btn = document.getElementById('db_test_btn');
         // db_test_btn.addEventListener('click', (e)=>{
         //     e.preventDefault();
         //     // console.log('asd')
+        //     db_test_btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading in...'
+        //     setTimeout(function() {
+        //         db_test_btn.innerHTML = 'test async task';
+        //     }, 100);
         // });
+        
+        function non_block(){
+            var startUrl = "{{ url_for('test_bp.connect_remote_db') }}";
+            var btn      = document.getElementById('db-test-btn');
+            var statusEl = document.getElementById('db-test-status');
+            var resultEl = document.getElementById('db-test-result');
+
+            var taskId = "{{ task_id  }}";
+            
+
+            if (!btn) return;
+
+            function poll(taskId){
+                // console.log(taskId)
+                var url = "{{ url_for('test_bp.get_result', task_id='__ID__') }}".replace('__ID__', taskId);
+                fetch(url).then(r => r.json()).then(function(data) {
+                console.log(data)
+                    if (!data.ready) {
+                        statusEl.textContent = 'State: ' + data.state + '…';
+                        statusEl.classList.remove('d-none');
+                        setTimeout(function() { poll(taskId); }, 1000);
+                        return;
+                    }
+                    statusEl.classList.add('d-none');
+                    btn.disabled = false;
+                    btn.textContent = 'test DB';
+                    var res = data.result;
+                    console.log(res)
+                
+                    if (res && res.success)
+                        resultEl.innerHTML = '<div class="alert alert-success small">' + (res.message || 'OK') + '</div>';
+                    else
+                        resultEl.innerHTML = '<div class="alert alert-danger small">' + ((res && res.error) ? res.error : JSON.stringify(res)) + '</div>';
+                }).catch(function(err) {
+                    btn.disabled = false;
+                    resultEl.innerHTML = '<div class="alert alert-danger small">' + err + '</div>';
+                });
+            }
+
+            btn.addEventListener('click', function() {
+                resultEl.innerHTML = '';
+                statusEl.classList.remove('d-none');
+                statusEl.textContent = 'Starting…';
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Running…';
+                fetch(startUrl, { method: 'POST', headers: { 'Accept': 'application/json' } })
+                .then(r => r.json())
+                .then(function(data) {
+                    console.log(data)
+
+                    if (!data.task_id) throw new Error('No task_id');
+                    statusEl.textContent = 'Polling…';
+                    poll(data.task_id);
+                })
+                .catch(function(err) {
+                    btn.disabled = false;
+                    btn.textContent = 'test DB';
+                    resultEl.innerHTML = '<div class="alert alert-danger small">' + err + '</div>';
+                });
+            });
+        });
         
     </script>
 
