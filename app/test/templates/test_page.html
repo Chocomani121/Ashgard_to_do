@@ -26,39 +26,31 @@
                 <div class="col-12  d-flex flex-column justify-content-center align-items-center bg-light">
                     <div class="card">
                         <div class="card-body p-4">
-                            <div class="p-2 mt-4">
-                                {% with messages = get_flashed_messages(with_categories=true) %}
-                                    {% if messages %}
-                                        {% for category, message in messages %}
-                                            <div class="alert alert-{{ category }} small mb-2 text-center">{{ message }}</div>
-                                        {% endfor %}
-                                    {% endif %}
-                                {% endwith %}
-                                
-
-                                <div class="mt-3">
-                                    <form action="{{ url_for('test_bp.connect_remote_db') }}" method="POST">
-                                        <button type="submit" class="btn btn-warning w-100 waves-effect waves-light" id="login-submit-btn">test DB</button>
-                                        <div class="form-check mt-3">
-                                            <label class="form-check-label" for="">progressbar bg test</label>
-                                            <input type="checkbox" class="form-check-input" name="progbar">
-                                        </div>
-                                    </form>
-                                </div>
-
+                            <!-- <div class="p-2 mt-4_"> -->
+                                <span id="messages_span">
+                                    {% with messages = get_flashed_messages(with_categories=true) %}
+                                        {% if messages %}
+                                            {% for category, message in messages %}
+                                                <div class="alert alert-{{ category }} small mb-2 text-center">{{ message }}</div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endwith %}
+                                </span>
 
                                 <div class="mt-3">
                                     <div id="db-test-status" class="small text-muted mb-2 d-none"></div>
                                     <div id="db-test-result" class="mb-2"></div>
-                                    <!-- <button type="button" class="btn btn-warning w-100" id="db-test-btn">test DB</button> -->
-                                        
-                                    <button type="type" class="btn btn-primary w-100 waves-effect waves-light" id="db-test-btn">test async task</button>
-                                    <!-- <div class="form-check mt-3">
-                                        <label class="form-check-label" for="">progressbar bg test</label>
-                                        <input type="checkbox" class="form-check-input" name="progbar">
-                                    </div> -->
+
+                                    <form action="{{ url_for('test_bp.connect_remote_db') }}" method="POST">
+                                        <button type="submit" class="btn btn-warning w-100 waves-effect waves-light" id="login-submit-btn">test DB</button>
+                                        <div class="form-check my-3">
+                                            <label class="form-check-label" for="">progressbar bg test</label>
+                                            <input type="checkbox" class="form-check-input" name="progbar" id="progbar">
+                                        </div>
+
+                                    </form>
+                                    <!-- <button class="btn btn-primary w-100 waves-effect waves-light" id="db-test-btn">test async task</button> -->
                                 </div>
-                            </div>
 
                             
                         </div>
@@ -76,23 +68,40 @@
     <script src="{{ url_for('static', filename='assets/libs/eva-icons/eva.min.js') }}"></script>
 
     <script>
+        var form    = document.querySelector('form');
+        var progbar = document.getElementById('progbar');
+        var btn     = document.getElementById('login-submit-btn');
+        var messages_span = document.getElementById('messages_span');
+
+        var startUrl = "{{ url_for('test_bp.connect_remote_db') }}";
+        var statusEl = document.getElementById('db-test-status');
+        var resultEl = document.getElementById('db-test-result');
+        var loading  = 0;
+        
+
         (function() {
-            var form = document.querySelector('form');
-            var btn = document.getElementById('login-submit-btn');
             if (!form || !btn) return;
             var originalLabel = btn.textContent.trim();
             form.addEventListener('submit', function(e) {
-                if (form.dataset.submitting === '1') return;
+                messages_span.innerHTML = "";
                 e.preventDefault();
-                btn.disabled = true;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Logging in...';
-                form.dataset.submitting = '1';
-                setTimeout(function() {
-                    form.submit();
-                }, 80);
+                if (progbar.checked){
+                    console.log(progbar.checked);
+                    non_block();
+                } else {
+                    if (form.dataset.submitting === '1') return;
+                    messages_span.innerHTML = "";
+                    
+                    // console.log('sas');
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Logging in...';
+                    form.dataset.submitting = '1';
+                    setTimeout(function() {
+                        form.submit();
+                    }, 500);
+                }
             });
         })();
-
         
         // var db_test_btn = document.getElementById('db_test_btn');
         // db_test_btn.addEventListener('click', (e)=>{
@@ -103,55 +112,65 @@
         //         db_test_btn.innerHTML = 'test async task';
         //     }, 100);
         // });
-        
-        function non_block(){
-            var startUrl = "{{ url_for('test_bp.connect_remote_db') }}";
-            var btn      = document.getElementById('db-test-btn');
-            var statusEl = document.getElementById('db-test-status');
-            var resultEl = document.getElementById('db-test-result');
 
-            var taskId = "{{ task_id  }}";
+        
+        function poll(taskId){
+            // console.log(taskId)
             
+            var url = "{{ url_for('test_bp.get_result', task_id='__ID__') }}".replace('__ID__', taskId);
+            fetch(url).then(r => r.json()).then(function(data) {
+                console.log(data)
+                loading++;
+                console.log(loading)
+                if (!data.ready) {
+                    // statusEl.textContent = 'State: ' + data.state + '…';
+                    // statusEl.classList.remove('d-none');
+                    resultEl.innerHTML = '<div class="alert alert-secondary small"> State: ' + data.state + '...'+loading+' </div>';
+                    
+                    // statusEl.innerHTML = 'Seconds: '+loading;
+                    setTimeout(function() { poll(taskId); }, 1000);
+                    return;
+                }
+                
+                // statusEl.classList.add('d-none');
+                btn.disabled = false;
+                btn.textContent = 'test DB';
+                var res = data.result;
+                // console.log(res)
+            
+                if (res && res.success){
+                    statusEl.innerHTML = 'Seconds: '+loading;
+                    resultEl.innerHTML = '<div class="alert alert-success small">' + (res.message || 'OK') + '</div>';
+                }
+                else
+                    resultEl.innerHTML = '<div class="alert alert-danger small">' + ((res && res.error) ? res.error : JSON.stringify(res)) + '</div>';
+            }).catch(function(err) {
+                btn.disabled = false;
+                resultEl.innerHTML = '<div class="alert alert-danger small">' + err + '</div>';
+            });
+        }
+        
+
+        function non_block(){
+            messages_span.innerHTML = "";
+            var taskId = "{{ task_id  }}";
 
             if (!btn) return;
-
-            function poll(taskId){
-                // console.log(taskId)
-                var url = "{{ url_for('test_bp.get_result', task_id='__ID__') }}".replace('__ID__', taskId);
-                fetch(url).then(r => r.json()).then(function(data) {
-                console.log(data)
-                    if (!data.ready) {
-                        statusEl.textContent = 'State: ' + data.state + '…';
-                        statusEl.classList.remove('d-none');
-                        setTimeout(function() { poll(taskId); }, 1000);
-                        return;
-                    }
-                    statusEl.classList.add('d-none');
-                    btn.disabled = false;
-                    btn.textContent = 'test DB';
-                    var res = data.result;
-                    console.log(res)
-                
-                    if (res && res.success)
-                        resultEl.innerHTML = '<div class="alert alert-success small">' + (res.message || 'OK') + '</div>';
-                    else
-                        resultEl.innerHTML = '<div class="alert alert-danger small">' + ((res && res.error) ? res.error : JSON.stringify(res)) + '</div>';
-                }).catch(function(err) {
-                    btn.disabled = false;
-                    resultEl.innerHTML = '<div class="alert alert-danger small">' + err + '</div>';
-                });
-            }
-
-            btn.addEventListener('click', function() {
+            // btn.addEventListener('click', function() {
+                loading = 0;
                 resultEl.innerHTML = '';
+                resultEl.innerHTML = '<div class="alert alert-secondary small"> Starting... </div>';
+
                 statusEl.classList.remove('d-none');
-                statusEl.textContent = 'Starting…';
                 btn.disabled = true;
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Running…';
-                fetch(startUrl, { method: 'POST', headers: { 'Accept': 'application/json' } })
+                fetch(startUrl, { 
+                    method: 'POST', 
+                    body: new URLSearchParams({'progbar': true}), 
+                    headers: { 'Accept': 'application/json' } })
                 .then(r => r.json())
                 .then(function(data) {
-                    console.log(data)
+                    // console.log(data)
 
                     if (!data.task_id) throw new Error('No task_id');
                     statusEl.textContent = 'Polling…';
@@ -162,9 +181,10 @@
                     btn.textContent = 'test DB';
                     resultEl.innerHTML = '<div class="alert alert-danger small">' + err + '</div>';
                 });
-            });
-        });
-        
+            // });
+        };
+        // non_block();
+
     </script>
 
 
