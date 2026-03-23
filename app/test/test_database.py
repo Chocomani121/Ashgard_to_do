@@ -1,7 +1,9 @@
 from flask import render_template, redirect, url_for, request, flash, jsonify
 from . import test_bp
-from app.tasks import test_remote_db
+from app.tasks import test_remote_db, backup_db
 from celery.result import AsyncResult
+from datetime import datetime
+import pytz
 
 @test_bp.route('/testtask', methods=['GET', 'POST'])
 def test_task():
@@ -61,10 +63,27 @@ def connect_remote_db():
                 flash(f"Remote DB connection test stopped. Task ID: {task.id}", "danger")
         
         return redirect(url_for("test_bp.connect_remote_db"))
-        
-        
 
     return render_template('test_page.html')
 
 
 # -------------------------------------------------------------
+
+@test_bp.route('/trigger_backup', methods=['GET', 'POST'])
+def trigger_backup():
+    """Trigger a background backup of local DB to remote."""
+    if request.method == 'POST':
+        tz = pytz.timezone('Asia/Manila')
+        t = datetime.datetime.now(tz)
+        dt = t.strftime("%m-%d-%Y | %H:%M:%S")
+
+
+        print(f"\n\n Database backup --- {dt} \n\n")
+        task = backup_db.backup_local_to_remote.delay()
+
+        if "application/json" in (request.headers.get("Accept") or ""):
+            return jsonify(task_id=task.id)
+        flash(f"Backup queued. Task ID: {task.id}", "info")
+        return redirect(url_for("test_bp.test_task"))
+    
+    return render_template('test_page.html')

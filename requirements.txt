@@ -24,6 +24,7 @@ Flask-MySQLdb==2.0.0
 Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.2.2
 greenlet==3.2.4
+gunicorn==25.1.0
 idna==3.11
 itsdangerous==2.2.0
 Jinja2==3.1.6
@@ -39,6 +40,7 @@ prompt_toolkit==3.0.52
 PyMySQL==1.1.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
+pytz==2026.1.post1
 redis==7.2.1
 six==1.17.0
 SQLAlchemy==2.0.44

@@ -49,7 +49,8 @@
                                         </div>
 
                                     </form>
-                                    <!-- <button class="btn btn-primary w-100 waves-effect waves-light" id="db-test-btn">test async task</button> -->
+                                    <hr>
+                                    <button class="btn btn-primary w-100 waves-effect waves-light" id="backupBtn">Backup Local DB to Remote</button>
                                 </div>
 
                             
@@ -72,8 +73,10 @@
         var progbar = document.getElementById('progbar');
         var btn     = document.getElementById('login-submit-btn');
         var messages_span = document.getElementById('messages_span');
+        var backupBtn = document.getElementById('backupBtn');
 
         var startUrl = "{{ url_for('test_bp.connect_remote_db') }}";
+        var backup   = "{{ url_for('test_bp.trigger_backup') }}"
         var statusEl = document.getElementById('db-test-status');
         var resultEl = document.getElementById('db-test-result');
         var loading  = 0;
@@ -87,7 +90,7 @@
                 e.preventDefault();
                 if (progbar.checked){
                     console.log(progbar.checked);
-                    non_block();
+                    non_block(startUrl);
                 } else {
                     if (form.dataset.submitting === '1') return;
                     messages_span.innerHTML = "";
@@ -103,15 +106,14 @@
             });
         })();
         
-        // var db_test_btn = document.getElementById('db_test_btn');
-        // db_test_btn.addEventListener('click', (e)=>{
-        //     e.preventDefault();
-        //     // console.log('asd')
-        //     db_test_btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading in...'
-        //     setTimeout(function() {
-        //         db_test_btn.innerHTML = 'test async task';
-        //     }, 100);
-        // });
+        
+        backupBtn.addEventListener('click', (e)=>{
+            e.preventDefault();
+            backupBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading in...'
+            setTimeout(function() {
+                backupBtn.innerHTML = 'test async task';
+            }, 500);
+        });
 
         
         function poll(taskId){
@@ -151,7 +153,7 @@
         }
         
 
-        function non_block(){
+        function non_block(url_actual){
             messages_span.innerHTML = "";
             var taskId = "{{ task_id  }}";
 
@@ -164,7 +166,7 @@
                 statusEl.classList.remove('d-none');
                 btn.disabled = true;
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Running…';
-                fetch(startUrl, { 
+                fetch(url_actual, { 
                     method: 'POST', 
                     body: new URLSearchParams({'progbar': true}), 
                     headers: { 'Accept': 'application/json' } })
