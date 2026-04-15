@@ -233,3 +233,40 @@ class Notification(db.Model):
 
     recipient = db.relationship('User', foreign_keys=[recipient_id], backref='notifications_received', lazy=True)
     sender    = db.relationship('User', foreign_keys=[sender_id], backref='notifications_sent', lazy=True)
+
+
+# ----TRANSACTIONAL OUTBOX
+class OutboxEvents(db.Model):
+    __tablename__   = 'outbox_events'
+    event_id        = db.Column(db.Integer, primary_key=True, autoincrement=True) 
+
+    # Lifecycle
+    status          = db.Column(db.String(20), nullable=False, default="pending")           # pending, processing, done, failed
+    created_at      = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+
+    processing_started_at   = db.Column(db.DateTime(timezone=True), nullable=True)
+    processing_finished_at  = db.Column(db.DateTime(timezone=True), nullable=True)
+
+    attempt_count   = db.Column(db.Integer, nullable=False, default=0)
+    last_error      = db.Column(db.Text, nullable=True)
+
+    # What to apply on the remote DB
+    table_name  = db.Column(db.String(100), nullable=False)     # e.g. "task_tbl"
+    event_type  = db.Column(db.String(10), nullable=False)      # "insert" | "update" | "delete"
+
+    # Primary key of the row(s) affected (store JSON so it works for composite PKs)
+    pk_json = db.Column(db.Text, nullable=True)                # JSON string
+    pk_str  = db.Column(db.String(255), nullable=True)         # human-readable helper for logs
+
+    # Full row snapshot for insert/update (JSON string); usually empty for delete
+    payload_json = db.Column(db.Text, nullable=True)           # JSON string
+
+    # Version gate for upserts/updates (derived from your row's updated_on/created_at, etc.)
+    # For updates: use updated_on (or the best available timestamp per table)
+    # For inserts: can use created_on/created_at
+    # For deletes: optional (if you choose to compare versions) - often deletes are ordered by event_id instead
+    version_ts = db.Column(db.DateTime(timezone=True), nullable=True)
+
+    # When remote apply succeeded (optional but handy)
+    remote_applied_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    

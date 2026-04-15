@@ -55,7 +55,7 @@ def create_app():
     db_port         = os.getenv("DB_PORT")
     port            = int(db_port) if db_port and db_port.isdigit() else 16751 
     db_name         = os.getenv("DB_NAME")
-    db_name_exp     = os.getenv("DB_NAME_EXP")
+    db_name_exp     = os.getenv("DB_NAME_EXP") # experimental table
     # REMOTE - backup
     remote_url      = f"mysql+pymysql://{user}:{password}@{host}:{port}/{db_name_exp}"
     flask_app.config["REMOTE_DB_URL"] = remote_url

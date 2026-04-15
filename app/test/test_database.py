@@ -4,6 +4,8 @@ from app.tasks import test_remote_db, backup_db
 from celery.result import AsyncResult
 from datetime import datetime
 import pytz
+from app.test.test_table_backup import simulate_project_creation_and_queue_events, drain_outbox_to_remote_simulated
+
 
 @test_bp.route('/testtask', methods=['GET', 'POST'])
 def test_task():
@@ -37,7 +39,7 @@ def get_result(task_id):
 
 
 
-
+# check remote db connection
 @test_bp.route('/test_remote_db', methods=['GET', 'POST'])
 def connect_remote_db():
     if request.method == 'POST':
@@ -69,21 +71,54 @@ def connect_remote_db():
 
 # -------------------------------------------------------------
 
+# trigger this to MANUALLY activate DB backup (EVERY TABLE)
 @test_bp.route('/trigger_backup', methods=['GET', 'POST'])
 def trigger_backup():
-    """Trigger a background backup of local DB to remote."""
     if request.method == 'POST':
         tz = pytz.timezone('Asia/Manila')
-        t = datetime.datetime.now(tz)
+        t = datetime.now(tz)
         dt = t.strftime("%m-%d-%Y | %H:%M:%S")
 
-
-        print(f"\n\n Database backup --- {dt} \n\n")
-        task = backup_db.backup_local_to_remote.delay()
+        print(f"\n\n\n\n Database backup --- {dt} \n\n\n\n")
+        task = backup_db.remote_db_backup.delay()
 
         if "application/json" in (request.headers.get("Accept") or ""):
             return jsonify(task_id=task.id)
-        flash(f"Backup queued. Task ID: {task.id}", "info")
+        flash(f"Backup queued ({dt}). Task ID: {task.id}", "info")
         return redirect(url_for("test_bp.test_task"))
     
     return render_template('test_page.html')
+
+
+
+
+@test_bp.route('/evenquetest', methods=['GET', 'POST'])
+def evenquetest():
+    if request.method == 'POST':
+        print('\n\n\n testing que... \n\n\n')
+
+
+        simulate_project_creation_and_queue_events(department_id=25, manager_user_id=5, member_user_ids=[2,8,9,4])
+        
+        flash(f"eventque test done", "info")
+        print('\n\n\n eventque test done \n\n\n')
+
+    return render_template('test_page.html')
+
+
+@test_bp.route('/drainevent', methods=['GET', 'POST'])
+def drainevent():
+    if request.method == 'POST':
+        print('\n\n\n draining que... \n\n\n')
+
+
+        simulate_project_creation_and_queue_events(department_id=25, manager_user_id=5, member_user_ids=[2,8,9,4])
+        
+        flash(f"drainque test done", "info")
+        print('\n\n\n drainque test done \n\n\n')
+
+    return render_template('test_page.html')
+
+
+
+

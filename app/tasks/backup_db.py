@@ -3,16 +3,24 @@ from flask import current_app
 from sqlalchemy import MetaData, create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 
+from datetime import datetime
+import pytz
+
 
 @shared_task
-def db_backup():
-    print("\n\n\nHello World!\n\n\n")
+def remote_db_backup():
+    tz = pytz.timezone('Asia/Manila')
+    t = datetime.now(tz)
+    dt = t.strftime("%m-%d-%Y | %H:%M:%S")
+
+    print(f"\n\n\n[{dt}]\t\t\t--- Backing up Local DB to remote... \n")
     # return 
     
     local_url   =   current_app.config.get("SQLALCHEMY_DATABASE_URI")
     remote_url  =   current_app.config.get("REMOTE_DB_URL")
     
     if not local_url or not remote_url:
+        print(f"\n[{dt}]\t\t\t--- Can't connect to database\n")
         return {"success"   :   False,
                 "tables"    :   {},
                 "error"     :   "Local or remote DB URL not configured",
@@ -36,7 +44,8 @@ def db_backup():
                     rows  = local_conn.execute(table.select()).fetchall()
                     count = len(rows)
 
-                    remote_conn.execute(text(f"TRUNCATE TABLE   `{table.name}`"))
+                    print(f"\n[{dt}]\t\t\t--- Truncating table: {table.name}")
+                    remote_conn.execute(text(f"TRUNCATE TABLE `{table.name}`"))
 
                     if rows:
                         ins = table.insert()
@@ -45,8 +54,9 @@ def db_backup():
                     
                     remote_conn.commit()
                     stats[table.name] = count
-                    
+
                 except SQLAlchemyError as e:
+                    print(f"\n[{dt}]\t\t\t--- Rolling back truncate table: {table.name} ")
                     remote_conn.rollback()
                     return {
                         "success"   :   False,
@@ -57,11 +67,14 @@ def db_backup():
             remote_conn.execute(text("SET FOREIGN_KEY_CHECKS = 1"))
             remote_conn.commit()
         
+        print(f"\n[{dt}]\t\t\t--- Backup complete ")
         return {"success" : True, "tables" : stats}
 
     except SQLAlchemyError as e:
+        print(f"\n[{dt}]\t\t\t--- Backup sql error ")
         return {"success": False, "tables": {}, "error": str(e)}
     except Exception as e:
+        print(f"\n[{dt}]\t\t\t--- Backup sql error ")
         return {"success": False, "tables": {}, "error": str(e)}
 
 

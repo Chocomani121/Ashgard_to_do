@@ -37,7 +37,8 @@
                                     {% endwith %}
                                 </span>
 
-                                <div class="mt-3">
+                                <div class="mt-5">
+                                    <h3>background job test</h3>
                                     <div id="db-test-status" class="small text-muted mb-2 d-none"></div>
                                     <div id="db-test-result" class="mb-2"></div>
 
@@ -49,11 +50,27 @@
                                         </div>
 
                                     </form>
-                                    <hr>
+                                </div>
+
+
+                                <hr>
+                                <div class="mt-5">
+                                    <h3>backup ALL to remote db test</h3>
                                     <button class="btn btn-primary w-100 waves-effect waves-light" id="backupBtn">Backup Local DB to Remote</button>
                                 </div>
 
-                            
+
+                                <hr>
+                                <div class="mt-5">
+                                    <form action="{{ url_for('test_bp.evenquetest') }}" method="POST">
+                                        <button type="submit" class="btn btn-secondary w-100 waves-effect waves-light">event que test</button>
+                                    </form>
+                                </div>
+                                <div class="mt-3">
+                                    <form action="{{ url_for('test_bp.drainevent') }}" method="POST">
+                                        <button type="submit" class="btn btn-danger w-100 waves-effect waves-light">drain que test</button>
+                                    </form>
+                                </div>
                         </div>
                     </div>
 
@@ -107,23 +124,12 @@
         })();
         
         
-        backupBtn.addEventListener('click', (e)=>{
-            e.preventDefault();
-            backupBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading in...'
-            setTimeout(function() {
-                backupBtn.innerHTML = 'test async task';
-            }, 500);
-        });
-
-        
         function poll(taskId){
-            // console.log(taskId)
-            
+            // console.log(taskId)          
             var url = "{{ url_for('test_bp.get_result', task_id='__ID__') }}".replace('__ID__', taskId);
             fetch(url).then(r => r.json()).then(function(data) {
                 console.log(data)
                 loading++;
-                console.log(loading)
                 if (!data.ready) {
                     // statusEl.textContent = 'State: ' + data.state + '…';
                     // statusEl.classList.remove('d-none');
@@ -138,7 +144,6 @@
                 btn.disabled = false;
                 btn.textContent = 'test DB';
                 var res = data.result;
-                // console.log(res)
             
                 if (res && res.success){
                     statusEl.innerHTML = 'Seconds: '+loading;
@@ -186,6 +191,19 @@
             // });
         };
         // non_block();
+
+
+        backupBtn.addEventListener('click', (e)=>{
+            e.preventDefault();
+            backupBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Backing up...'
+            backupBtn.classList.toggle('btn-secondary')
+            non_block(backup);
+            setTimeout(function() {
+                backupBtn.innerHTML = 'Backup Local DB to Remote';
+                backupBtn.classList.remove('btn-secondary')
+                backupBtn.classList.add('btn-primary')
+            }, 500);
+        });
 
     </script>
 
