@@ -125,6 +125,7 @@ def create_app():
             session.permanent = True
             session.modified = True
 
+
     @login_manager.unauthorized_handler
     def unauthorized():
         from flask import flash, redirect, url_for
@@ -234,6 +235,7 @@ def create_app():
             return {'version': VERSION_STRING}
         except Exception:
             return {'version': "beta version 0.39"}
+
 
     # --- BLUEPRINT REGISTRATION ---
     

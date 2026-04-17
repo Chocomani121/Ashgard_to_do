@@ -12,21 +12,19 @@ feature_db_backups = os.getenv("feature_db_backups")
 
 @test_bp.route('/testtask', methods=['GET', 'POST'])
 def test_task():
-    # print(f"\n\n\n{feature_db_backups}\n\n\n")
-    # if request.method == 'POST':
-    #     testtag = request.form['test_db_connection']
-    #     print(f"\n\n\nTest Tag: {testtag}\n\n\n")
-    #     flash(f"Test Tag: {testtag}" , "info")
-
     return render_template('test_page.html')
 
-@test_bp.route('/testtask2', methods=['GET', 'POST'])
-def test_task2():
-    if feature_db_backups:
 
+
+# --------------------------------------------------
+# FLAGs FEATURE
+if feature_db_backups == 'ON':
+    @test_bp.route('/testtask2', methods=['GET', 'POST'])
+    def test_task2():
         return render_template('test_page_2.html')
-    else:
-        return print(f"this feature")
+
+# Link: https://dev.to/triketora/build-your-own-feature-flags-manager-in-flask-python-1jo0
+# ----------------------------------------------------
 
 
 # POLLING THE RESULT
