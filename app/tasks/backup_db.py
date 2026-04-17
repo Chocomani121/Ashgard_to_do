@@ -71,10 +71,10 @@ def remote_db_backup():
         return {"success" : True, "tables" : stats}
 
     except SQLAlchemyError as e:
-        print(f"\n[{dt}]\t\t\t--- Backup sql error ")
+        print(f"\n[{dt}]\t\t\t--- Backup SQL error ")
         return {"success": False, "tables": {}, "error": str(e)}
     except Exception as e:
-        print(f"\n[{dt}]\t\t\t--- Backup sql error ")
+        print(f"\n[{dt}]\t\t\t--- Backup error ")
         return {"success": False, "tables": {}, "error": str(e)}
 
 

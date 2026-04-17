@@ -5,11 +5,13 @@ billiard==4.2.4
 blinker==1.9.0
 cachelib==0.13.0
 celery==5.6.2
+cffi==2.0.0
 click==8.3.1
 click-didyoumean==0.3.1
 click-plugins==1.1.1.2
 click-repl==0.3.0
 colorama==0.4.6
+cryptography==46.0.7
 distlib==0.4.0
 dnspython==2.8.0
 email-validator==2.3.0
@@ -37,6 +39,7 @@ packaging==26.0
 pillow==12.0.0
 platformdirs==4.5.0
 prompt_toolkit==3.0.52
+pycparser==3.0
 PyMySQL==1.1.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1

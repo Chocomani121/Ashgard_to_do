@@ -76,7 +76,6 @@ def create_app():
     flask_app.config["SQLALCHEMY_DATABASE_URI"] = local_url
 
 
-
     flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     flask_app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
@@ -246,6 +245,7 @@ def create_app():
     from app.features.projects.routes import project_bp as project_blueprint
     from app.features.department.routes import department_bp as department_blueprint
     from app.test import test_bp
+    from app.errors.error_pages import error_bp
 
     # 2. IMPORTANT: Import routes BEFORE registering the blueprint 
     # This prevents the "AssertionError: The setup method 'route' can no longer be called"
@@ -259,5 +259,6 @@ def create_app():
     flask_app.register_blueprint(project_blueprint)
     flask_app.register_blueprint(department_blueprint)
     flask_app.register_blueprint(test_bp)
+    flask_app.register_blueprint(error_bp)
 
     return flask_app

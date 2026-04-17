@@ -9,6 +9,7 @@ from sqlalchemy.exc import ProgrammingError, OperationalError
 from sqlalchemy.orm import joinedload, selectinload
 import json
 import random
+import os
 
 
 project_bp = Blueprint('project', __name__, template_folder='templates', static_folder='static', static_url_path='/project/static')
@@ -139,6 +140,9 @@ def department_projects():
     ]
 
     return render_template('department.html', title="Department Projects", projects_data=projects_data, departments=departments, users_json=users_json, stats=stats, today=date.today())
+
+
+
 
 @project_bp.route("/")
 @project_bp.route("/projects") 
