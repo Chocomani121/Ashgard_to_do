@@ -62,19 +62,20 @@ def remote_db_backup():
                         "success"   :   False,
                         "tables"    :   stats,
                         "error"     :   f"Table {table.name} : {str(e)}",
+                        "message"   :   f"Rolling back truncate table: {table.name}"
                     }
             
             remote_conn.execute(text("SET FOREIGN_KEY_CHECKS = 1"))
             remote_conn.commit()
         
         print(f"\n[{dt}]\t\t\t--- Backup complete ")
-        return {"success" : True, "tables" : stats}
+        return {"success" : True, "tables" : stats, "message" : "Backup complete"}
 
     except SQLAlchemyError as e:
         print(f"\n[{dt}]\t\t\t--- Backup SQL error ")
-        return {"success": False, "tables": {}, "error": str(e)}
+        return {"success": False, "tables": {}, "error": str(e), "message" : "Backup SQL error"}
     except Exception as e:
         print(f"\n[{dt}]\t\t\t--- Backup error ")
-        return {"success": False, "tables": {}, "error": str(e)}
+        return {"success": False, "tables": {}, "error": str(e), "message" : "Backup error"}
 
 

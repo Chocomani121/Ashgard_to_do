@@ -9,5 +9,5 @@ celery_app = flask_app.extensions["celery"]
 
 
 # Import tasks so they are registered with Celery
-import app.tasks.test_remote_db
-import app.tasks.backup_db
+import app.background_tasks.test_remote_db_connection
+import app.background_tasks.backup_db

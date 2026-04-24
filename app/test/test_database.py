@@ -1,6 +1,6 @@
 from flask import render_template, redirect, url_for, request, flash, jsonify, session
 from . import test_bp
-from app.tasks import test_remote_db, backup_db
+from app.background_tasks import backup_db, test_remote_db_connection
 from celery.result import AsyncResult
 from datetime import datetime
 import pytz, os
@@ -52,7 +52,7 @@ def get_result(task_id):
 @test_bp.route('/test_remote_db', methods=['GET', 'POST'])
 def connect_remote_db():
     if request.method == 'POST':
-        task    = test_remote_db.test_remote_db_connection.delay()
+        task    = test_remote_db_connection.test_remote_db_connection.delay()
         progbar = request.form.get('progbar')
 
         
@@ -65,17 +65,16 @@ def connect_remote_db():
             
         else:
             # ----Blocking
-            result  = task.get(timeout=10)
+            result  = task.get(timeout=20)
 
             if result['success']:
                 print(f"\n\n {result} \n\n")
-                flash(f"WAITING: {result['message']}", "success")
+                flash(f"BLOCKING: {result['message']}", "success")
             else:
-                flash(f"Remote DB connection test stopped. Task ID: {task.id}", "danger")
+                flash(f"BLOCKING: Remote DB connection test stopped. Task ID: {task.id}", "success")
         
         return redirect(url_for("test_bp.connect_remote_db"))
 
-    # return render_template('test_page.html')
     return redirect(url_for("test_bp.test_task"))
 
 

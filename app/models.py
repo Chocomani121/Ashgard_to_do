@@ -269,4 +269,6 @@ class OutboxEvents(db.Model):
 
     # When remote apply succeeded (optional but handy)
     remote_applied_at = db.Column(db.DateTime(timezone=True), nullable=True)
+
+    outbox_desc = db.Column(db.Text, nullable=True)   
     
