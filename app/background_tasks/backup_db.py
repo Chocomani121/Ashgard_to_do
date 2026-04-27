@@ -69,7 +69,7 @@ def remote_db_backup():
             remote_conn.commit()
         
         print(f"\n[{dt}]\t\t\t--- Backup complete ")
-        return {"success" : True, "tables" : stats, "message" : "Backup complete"}
+        return {"success" : True, "tables" : stats, "message" : "Backup database complete"}
 
     except SQLAlchemyError as e:
         print(f"\n[{dt}]\t\t\t--- Backup SQL error ")

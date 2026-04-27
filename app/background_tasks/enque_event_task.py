@@ -28,9 +28,8 @@ def _serialize_row(model_obj):
     return data
 
 
-@shared_task
+
 def enqueue_outbox_event(table_name, event_type, pk_dict, payload_dict=None, version_ts=None, outbox_desc=None):
-  
   print("\n\n\n Outbox triggered!! \n\n\n")
   evt = OutboxEvents(
       status        =   "pending",
@@ -43,3 +42,14 @@ def enqueue_outbox_event(table_name, event_type, pk_dict, payload_dict=None, ver
       outbox_desc   =   outbox_desc,
   )
   db.session.add(evt)
+
+
+@shared_task
+def enqueue_task(table_name, event_type, pk_dict, payload_dict=None, version_ts=None, outbox_desc=None):
+    try:
+
+        enqueue_outbox_event(table_name, event_type, pk_dict, payload_dict, version_ts, outbox_desc)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise

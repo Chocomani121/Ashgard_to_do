@@ -11,7 +11,7 @@ import random
 
 # Enque function
 # from ...background_tasks.modules.enque_event import enqueue_outbox_event, _pick_version_ts, _serialize_row
-from ...background_tasks.enque_event_task import enqueue_outbox_event, _pick_version_ts, _serialize_row
+from ...background_tasks.enque_event_task import enqueue_task, enqueue_outbox_event, _pick_version_ts, _serialize_row
 
 
 
@@ -43,7 +43,7 @@ def add_department():
         desc = f"new Dept: '{new_dept.department_name}'"
 
 
-        add_dept = enqueue_outbox_event.delay(
+        add_dept = enqueue_task.delay(
             table_name   =   "department",
             event_type   =   "insert",
             pk_dict      =   {"department_id": new_dept.department_id},
@@ -52,7 +52,7 @@ def add_department():
             outbox_desc  =   desc
         )
 
-        # enqueue_outbox_event(
+        # enqueue_task(
         #     table_name   =   "department",
         #     event_type   =   "insert",
         #     pk_dict      =   {"department_id": new_dept.department_id},
@@ -73,7 +73,7 @@ def add_department():
 
                         # Outbox : record Members to Outbox 
                         desc = f"addded User ID: '{user.member_id}' to this new Dept: '{new_dept.department_name}'"
-                        member_add = enqueue_outbox_event.delay(
+                        member_add = enqueue_task.delay(
                             table_name   =   "members",
                             event_type   =   "update",
                             pk_dict      =   {"member_id": user.member_id},
@@ -99,7 +99,7 @@ def edit_department(id):
 
         # write the update to Outbox
         desc = f"updated Dept name to: '{department.department_name}'"
-        edit_dept = enqueue_outbox_event.delay(
+        edit_dept = enqueue_task.delay(
             table_name   =   "department",
             event_type   =   "update",
             pk_dict      =   {"department_id": department.department_id},
@@ -113,7 +113,7 @@ def edit_department(id):
 
             # Outbox : update on Members when are unassigned from a Department  
             desc = f"removed User: {user.name} ({user.username}) to this Dept: {department.department_name}"
-            member_remove = enqueue_outbox_event.delay(
+            member_remove = enqueue_task.delay(
                 table_name   =   "members",
                 event_type   =   "update",
                 pk_dict      =   {"member_id": user.member_id},
@@ -131,7 +131,7 @@ def edit_department(id):
 
                         # Outbox : record update on Members  
                         desc = f"addded User: '{user.name}' ({user.username}) to Dept: '{department.department_name}'"
-                        member_add = enqueue_outbox_event.delay(
+                        member_add = enqueue_task.delay(
                             table_name   =   "members",
                             event_type   =   "update",
                             pk_dict      =   {"member_id": user.member_id},
@@ -141,6 +141,7 @@ def edit_department(id):
                         )
                         
                 except (ValueError, TypeError):
+                    print(f"\n\n \n\n")
                     continue
         
         # Update edited_on when name or members change (onupdate only fires on Dept row changes)
@@ -159,10 +160,10 @@ def delete_department(id):
 
         # Outbox : record delete on Members  
         desc = f"{department.department_name} has been deleted"
-        del_dept = enqueue_outbox_event.delay(
+        del_dept = enqueue_task.delay(
             table_name   =   "department",
             event_type   =   "delete",
-            pk_dict      =   {"department": department.department_id},
+            pk_dict      =   {"department_id": department.department_id},
             payload_dict =   None,
             version_ts   =   None,
             outbox_desc  =   desc

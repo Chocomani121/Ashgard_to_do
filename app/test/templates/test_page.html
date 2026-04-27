@@ -38,14 +38,14 @@
                 </div>
 
                 <!-- <div class="col-md-6  d-flex flex-column justify-content-center align-items-center bg-light"> -->
-                <div class="col-md-6 ">
+                <div class="col-lg-4 col-md-6">
                     <div class="card">
                         <div class="card-body p-4">
                             <div class="mt-5_">
-                                <h5>Celery</h5>
+                                <h5>Celery </h5>
                                 <ul>
-                                    <li><small>runs a function in the background, good for running multiple functions at the same time</small></li>
                                     <li><small>this function test the connection to the <strong>remote DB</strong></small></li>
+                                    <li><small>runs a function in the background, good for running multiple functions at the same time</small></li>
 
                                     <li class="mt-3"><small>there are 2 ways background task are done: </small>
                                         <ul>
@@ -68,7 +68,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-6 ">
+                <div class="col-lg-4 col-md-6">
                     <div class="card">
                         <div class="card-body p-4">
                             <div class="mt-5_">
@@ -80,12 +80,13 @@
                                 </div> -->
                                 
                                 <button class="btn btn-primary w-100 waves-effect waves-light" id="backupBtn">Backup Local DB to Remote</button>
+                                <div class="mt-3 mb-5" id="db_table_list"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-6 ">
+                <div class="col-lg-4 col-md-8">
                     <div class="card">
                         <div class="card-body p-4">
                             <h5>Outbox Queue testing</h5>
@@ -96,7 +97,7 @@
                                     
                                     <li>this calls function in the /background_task</li>
                                     <li>it also saves a record in the <strong class="text-danger">OutboxEvents</strong> table</li>
-                                    <li></li>
+                                    <!-- <li></li> -->
                                 </ul>
                             </small>
                                
@@ -138,6 +139,7 @@
 
         var statusEl_BG = document.getElementById('db-test-status_BG');
         var resultEl_BG = document.getElementById('db-test-result_BG');
+        var db_table_list = document.getElementById('db_table_list');
         var loading  = 0;
         var bk = '';
 
@@ -212,11 +214,11 @@
                     // statusEl.textContent = 'State: ' + data.state + '…';
                     // statusEl.classList.remove('d-none');
                     if (bk == true){
-                        statusEl.textContent = 'Polling…';
-                        resultEl.innerHTML = '<div class="alert alert-secondary small"> State: ' + data.state + '...'+loading+' </div>';
-                    }else{
                         statusEl_BG.textContent = 'Quering remote database…';
                         resultEl_BG.innerHTML = '<div class="alert alert-secondary small"> State: ' + data.state + '...'+loading+' </div>';
+                    }else{
+                        statusEl.textContent = 'Polling…';
+                        resultEl.innerHTML = '<div class="alert alert-secondary small"> State: ' + data.state + '...'+loading+' </div>';
                     }
                     
                     // statusEl.innerHTML = 'Seconds: '+loading;
@@ -234,24 +236,22 @@
                     BtnStatus_Alert(running=false, start=true, end=null, func_name='backup')
 
                     if (res.tables){
-                        // console.log("BK: "+bk)    
                         bk = false
                         resultEl.innerHTML = '';
 
                         statusEl_BG.innerHTML = 'Seconds: '+loading;
-                        resultEl_BG.innerHTML = '<div class="alert alert-success small">' + "Backup: " + (res.message || 'All Tables updated') + '</div>';
-
+                        resultEl_BG.innerHTML = '<div class="alert alert-success small">' + "BACKUP: " + (res.message || 'All Tables updated') + '</div>';
+                        db_table_list.innerHTML = '<div class="alert alert-success small">' + (res.tables) + '</div>';
 
                     }else{
                         statusEl.innerHTML = 'Seconds: '+loading;
-                        resultEl.innerHTML = '<div class="alert alert-success small">' + (res.message || 'OK') + '</div>';
+                        resultEl.innerHTML = '<div class="alert alert-success small">POLLING: ' + (res.message || 'OK') + '</div>';
                     }
-
                 }
                 else{                    
                     if (res.tables){
                         statusEl_BG.innerHTML = 'Seconds: '+loading;
-                        resultEl_BG.innerHTML = '<div class="alert alert-success small">' + "Backup: " + (res.message || 'All Tables updated') + '</div>';
+                        resultEl_BG.innerHTML = '<div class="alert alert-success small">' + (res.message || 'All Tables updated') + '</div>';
                     }else{
                         statusEl.innerHTML = 'Seconds ??: '+loading;
                         resultEl.innerHTML = '<div class="alert alert-danger small">' + ((res && res.error) ? res.error : JSON.stringify(res)) + '</div>';
