@@ -1,11 +1,12 @@
+import pytz, os
 from flask import render_template, redirect, url_for, request, flash, jsonify, session
 from . import test_bp
-from app.background_tasks import backup_db, test_remote_db_connection
+from app.background_tasks import backup_db_task, remote_db_connection_task
 from celery.result import AsyncResult
 from datetime import datetime
-import pytz, os
-from app.test.test_table_backup import simulate_project_creation_and_queue_events, drain_outbox_to_remote_simulated
 
+from app.test.test_table_backup import simulate_project_creation_and_queue_events, drain_outbox_to_remote_simulated
+from app.background_tasks.modules.compare_local_x_remote import compare_DB
 
 feature_db_backups = os.getenv("feature_db_backups")
 
@@ -16,8 +17,8 @@ def test_task():
 
 
 
-# --------------------------------------------------
-# FLAGs FEATURE
+# FLAGs FEATURE---------------------------------------
+# 
 if feature_db_backups == 'ON':
     @test_bp.route('/testtask2', methods=['GET', 'POST'])
     def test_task2():
@@ -52,7 +53,7 @@ def get_result(task_id):
 @test_bp.route('/test_remote_db', methods=['GET', 'POST'])
 def connect_remote_db():
     if request.method == 'POST':
-        task    = test_remote_db_connection.test_remote_db_connection.delay()
+        task    = remote_db_connection_task.test_remote_db_connection.delay()
         progbar = request.form.get('progbar')
 
         
@@ -89,7 +90,7 @@ def trigger_backup():
         dt = t.strftime("%m-%d-%Y | %H:%M:%S")
 
         print(f"\n\n\n\n Database backup --- {dt} \n\n\n\n")
-        task = backup_db.remote_db_backup.delay()
+        task = backup_db_task.remote_db_backup.delay()
 
         if "application/json" in (request.headers.get("Accept") or ""):
             return jsonify(task_id=task.id)
@@ -101,7 +102,9 @@ def trigger_backup():
 
 
 
+# START: SAMPLE entry to Projects table-------------------------------------------
 
+# enter a sample value into Project and ProjectMembers tables
 @test_bp.route('/evenquetest', methods=['GET', 'POST'])
 def evenquetest():
     if request.method == 'POST':
@@ -116,12 +119,14 @@ def evenquetest():
     return redirect(url_for("test_bp.test_task"))
 
 
+# sync the local database to the remote
 @test_bp.route('/drainevent', methods=['GET', 'POST'])
 def drainevent():
     if request.method == 'POST':
         print('\n\n\n draining que... \n\n\n')
 
-        drain_outbox_to_remote_simulated()
+        # drain_outbox_to_remote_simulated()
+        
         
         flash(f"drainque test done", "info")
         print('\n\n\n drainque test done \n\n\n')
@@ -129,6 +134,10 @@ def drainevent():
     # return render_template('test_page.html')
     return redirect(url_for("test_bp.test_task"))
 
+# END: SAMPLE entry to Projects table-------------------------------------------
 
 
-
+@test_bp.route("/db-diff", methods=["GET"])
+def db_diff():
+  data = compare_DB()
+  return jsonify(data), (200 if data["success"] else 500)

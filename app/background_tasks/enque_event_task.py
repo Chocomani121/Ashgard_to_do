@@ -27,8 +27,6 @@ def _serialize_row(model_obj):
         data[col.name] = getattr(model_obj, col.name)
     return data
 
-
-
 def enqueue_outbox_event(table_name, event_type, pk_dict, payload_dict=None, version_ts=None, outbox_desc=None):
   print("\n\n\n Outbox triggered!! \n\n\n")
   evt = OutboxEvents(
@@ -47,7 +45,6 @@ def enqueue_outbox_event(table_name, event_type, pk_dict, payload_dict=None, ver
 @shared_task
 def enqueue_task(table_name, event_type, pk_dict, payload_dict=None, version_ts=None, outbox_desc=None):
     try:
-
         enqueue_outbox_event(table_name, event_type, pk_dict, payload_dict, version_ts, outbox_desc)
         db.session.commit()
     except Exception:
