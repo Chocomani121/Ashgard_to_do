@@ -28,6 +28,7 @@ def compare_DB():
     }
     """
     started_at = time.perf_counter()
+    started_at_specifically = time.strftime("%Y-%m-%d %H:%M:%S")
 
     local_url  = current_app.config.get("SQLALCHEMY_DATABASE_URI")
     remote_url = current_app.config.get("REMOTE_DB_URL")
@@ -137,5 +138,6 @@ def compare_DB():
         result["connection"]["error"] = str(e)
         return result
     finally:
+        result["connection"]["started_at"] = started_at_specifically
         result["connection"]["checked_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
         result["connection"]["total_elapsed_ms"] = round((time.perf_counter() - started_at) * 1000, 2)

@@ -1,13 +1,15 @@
 import pytz
 import json
 from datetime import datetime
-from flask import current_app
+from flask import current_app, flash
 from sqlalchemy import MetaData, create_engine, text, and_
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.dialects.mysql import insert as mysql_insert
 from app import db
 from app.models import Project, ProjectMembers, OutboxEvents
 from app.background_tasks.modules.enque_event import enqueue_outbox_event  
+from app.background_tasks import outbox_queue
+
 
 
 
@@ -201,3 +203,14 @@ def drain_outbox_to_remote_simulated(batch_size=100):
 # *** END
 
 # -------------------------------------------------------------
+
+
+def drain_bg_task():
+    print(f"\n\nSTART:  Drainging the Outbox table")
+    task = outbox_queue.drain_outbox.delay()
+    result = task.get(timeout=20)
+    return result
+
+    
+
+

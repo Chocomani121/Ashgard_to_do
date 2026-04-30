@@ -5,15 +5,15 @@ from app.background_tasks import backup_db_task, remote_db_connection_task
 from celery.result import AsyncResult
 from datetime import datetime
 
-from app.test.test_table_backup import simulate_project_creation_and_queue_events, drain_outbox_to_remote_simulated
+from app.test.test_table_backup import simulate_project_creation_and_queue_events, drain_outbox_to_remote_simulated, drain_bg_task
 from app.background_tasks.modules.compare_local_x_remote import compare_DB
+from app.background_tasks import outbox_queue
 
 feature_db_backups = os.getenv("feature_db_backups")
 
 
 @test_bp.route('/testtask', methods=['GET', 'POST'])
-def test_task():
-    return render_template('test_page.html')
+def test_task(): return render_template('test_page.html')
 
 
 
@@ -126,12 +126,21 @@ def drainevent():
         print('\n\n\n draining que... \n\n\n')
 
         # drain_outbox_to_remote_simulated()
-        
+        task = outbox_queue.drain_outbox.delay()
+        result = task.get(timeout=20)
+
+        print(f"\n\n {result} \n\n")
+        flash(f"{result}", "success")
+
+        # if "application/json" in (request.headers.get("Accept") or ""):
+        #     return jsonify(task_id=task.id)
+        # flash(f"Task ID: {task.id}", "info")
+        # return redirect(url_for("test_bp.test_task"))
+
         
         flash(f"drainque test done", "info")
         print('\n\n\n drainque test done \n\n\n')
 
-    # return render_template('test_page.html')
     return redirect(url_for("test_bp.test_task"))
 
 # END: SAMPLE entry to Projects table-------------------------------------------
