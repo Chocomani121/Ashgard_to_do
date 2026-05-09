@@ -28,7 +28,7 @@ def _serialize_row(model_obj):
     return data
 
 def enqueue_outbox_event(table_name, event_type, pk_dict, payload_dict=None, version_ts=None, outbox_desc=None):
-  print("\n\n\n Outbox triggered!! \n\n\n")
+#   print("\n\n\n Outbox triggered!! \n\n\n")
   evt = OutboxEvents(
       status        =   "pending",
       table_name    =   table_name,

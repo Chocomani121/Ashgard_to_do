@@ -82,9 +82,18 @@ def create_app():
     
     # --- CELERY config ---
     flask_app.config["CELERY"] = {
-        "broker_url"        :   "redis://localhost:6379", 
-        "result_backend"    :   "redis://localhost:6379", 
-        "task_ignore_result":   False
+        "broker_url"        :   "redis://localhost:6379",
+        "result_backend"    :   "redis://localhost:6379",
+        "task_ignore_result":   False,
+        # Push outbox to REMOTE_DB_URL periodically (otherwise remote stays empty unless
+        # something calls drain_outbox.delay() manually).
+        "beat_schedule": {
+            "drain-outbox-periodically": {
+                "task": "app.background_tasks.outbox_queue.drain_outbox",
+                "schedule": timedelta(seconds=60),
+                "options": {"expires": 50.0},
+            },
+        },
     }
 
 
@@ -99,7 +108,7 @@ def create_app():
     flask_app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 
     # --- SESSION TIMEOUT (minutes). Set to 0 to disable. ---
-    timeout = 30
+    timeout = 0
     flask_app.config["SESSION_TIMEOUT_MINUTES"] = timeout
     flask_app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=timeout) if timeout else timedelta(days=31)
 

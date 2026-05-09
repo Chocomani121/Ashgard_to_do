@@ -1,5 +1,5 @@
 import pytz, os
-from flask import render_template, redirect, url_for, request, flash, jsonify, session
+from flask import render_template, redirect, url_for, request, flash, jsonify, session, current_app
 from . import test_bp
 from app.background_tasks import backup_db_task, remote_db_connection_task
 from celery.result import AsyncResult
@@ -13,7 +13,13 @@ feature_db_backups = os.getenv("feature_db_backups")
 
 
 @test_bp.route('/testtask', methods=['GET', 'POST'])
-def test_task(): return render_template('test_page.html')
+def test_task(): 
+    local_url   =   current_app.config.get("SQLALCHEMY_DATABASE_URI")
+    remote_url  =   current_app.config.get("REMOTE_DB_URL")
+    print(f"\n\nLocal: {local_url}")
+    print(f"\nRemote: {str(remote_url)}\n\n")
+
+    return render_template('test_page.html', local_url=local_url, remote_url=remote_url)
 
 
 
@@ -110,7 +116,7 @@ def evenquetest():
     if request.method == 'POST':
         print('\n\n\n testing que... \n\n\n')
 
-        simulate_project_creation_and_queue_events(department_id=25, manager_user_id=5, member_user_ids=[2,8,9,4])
+        simulate_project_creation_and_queue_events(department_id=25, manager_user_id=4, member_user_ids=[2,8,9,4])
         
         flash(f"eventque test done", "info")
         print('\n\n\n eventque test done \n\n\n')
@@ -130,16 +136,13 @@ def drainevent():
         result = task.get(timeout=20)
 
         print(f"\n\n {result} \n\n")
-        flash(f"{result}", "success")
+        flash(f"drainque test done: {result}", "success")
 
         # if "application/json" in (request.headers.get("Accept") or ""):
         #     return jsonify(task_id=task.id)
         # flash(f"Task ID: {task.id}", "info")
         # return redirect(url_for("test_bp.test_task"))
 
-        
-        flash(f"drainque test done", "info")
-        print('\n\n\n drainque test done \n\n\n')
 
     return redirect(url_for("test_bp.test_task"))
 

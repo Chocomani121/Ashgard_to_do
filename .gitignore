@@ -20,3 +20,4 @@ __pycache__/
 
 *.code-workspace
 ashgard-todo-app.code-workspace
+celerybeat-schedule

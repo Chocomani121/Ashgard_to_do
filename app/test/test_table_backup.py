@@ -91,6 +91,7 @@ def simulate_project_creation_and_queue_events(department_id, manager_user_id, m
         pk_dict      =   {"project_id": p1.project_id},
         payload_dict =   _serialize_row(p1),
         version_ts   =   _pick_version_ts(p1),
+        outbox_desc  =   'created new Project: TableBackupTest___1'
     )
 
 
@@ -110,6 +111,7 @@ def simulate_project_creation_and_queue_events(department_id, manager_user_id, m
             pk_dict     =   {"p_members_id": pm.p_members_id},
             payload_dict=   _serialize_row(pm),
             version_ts  =   _pick_version_ts(pm),
+            outbox_desc =   f"{pm.member_id} added in project: TableBackupTest___1"
         )
 
     # 5) Commit once: data + outbox atomically
