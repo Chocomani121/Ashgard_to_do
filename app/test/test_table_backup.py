@@ -7,39 +7,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.dialects.mysql import insert as mysql_insert
 from app import db
 from app.models import Project, ProjectMembers, OutboxEvents
-from app.background_tasks.modules.enque_event import enqueue_outbox_event  
+# from app.background_tasks.modules.enque_event import enqueue_outbox_event  
 from app.background_tasks import outbox_queue
+from app.background_tasks.enque_event_task import enqueue_task, _pick_version_ts, _serialize_row
 
 
 
-
-def _pick_version_ts(row_obj):
-    """Best-effort timestamp picker for versioning."""
-    for name in ("updated_on", "edited_on", "created_at", "created_on", "creation_date"):
-        if hasattr(row_obj, name):
-            val = getattr(row_obj, name)
-            if val is not None:
-                return val
-    return datetime.now()
-
-def _serialize_row(model_obj):
-    """Serialize SQLAlchemy model row to plain dict."""
-    data = {}
-    for col in model_obj.__table__.columns:
-        data[col.name] = getattr(model_obj, col.name)
-    return data
-
-# def enqueue_outbox_event(table_name, event_type, pk_dict, payload_dict=None, version_ts=None):
-#   evt = OutboxEvents(
-#       status        =   "pending",
-#       table_name    =   table_name,
-#       event_type    =   event_type,  # insert/update/delete
-#       pk_json       =   json.dumps(pk_dict) if pk_dict else None,
-#       pk_str        =   "|".join([f"{k}={v}" for k, v in (pk_dict or {}).items()]),
-#       payload_json  =   json.dumps(payload_dict, default=str) if payload_dict else None,
-#       version_ts    =   version_ts,
-#   )
-#   db.session.add(evt)
 
 
 # *** START ---- simulate creating Project & assinging ProjectMembers
@@ -85,7 +58,7 @@ def simulate_project_creation_and_queue_events(department_id, manager_user_id, m
     #         payload_dict=   _serialize_row(p),
     #         version_ts  =   _pick_version_ts(p),
     #     )
-    enqueue_outbox_event(
+    enqueue_task.delay(
         table_name   =   "project",
         event_type   =   "insert",
         pk_dict      =   {"project_id": p1.project_id},
@@ -105,7 +78,7 @@ def simulate_project_creation_and_queue_events(department_id, manager_user_id, m
 
     # 4) Queue outbox events for project_members inserts
     for pm in pm_rows:
-        enqueue_outbox_event(
+        enqueue_task.delay(
             table_name  =   "project_members",
             event_type  =   "insert",
             pk_dict     =   {"p_members_id": pm.p_members_id},

@@ -132,7 +132,7 @@ def _apply_upsert(remote_conn, table, payload):
 
 def _apply_delete(remote_conn, remote_md, table, pk_dict):
     """
-    Delete by PK (supports composite PK if pk_dict has multiple keys).
+    In order to delete rows we need to temporarily disable the Foreign Key check on the database 
     """
     if not pk_dict:
         raise ValueError(f"Delete event for {table.name} has empty pk_json")

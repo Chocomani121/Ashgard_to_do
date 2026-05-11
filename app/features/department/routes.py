@@ -11,7 +11,7 @@ import random
 
 # Enque function
 # from ...background_tasks.modules.enque_event import enqueue_outbox_event, _pick_version_ts, _serialize_row
-from ...background_tasks.enque_event_task import enqueue_task, enqueue_outbox_event, _pick_version_ts, _serialize_row
+from ...background_tasks.enque_event_task import enqueue_task, _pick_version_ts, _serialize_row
 
 
 
