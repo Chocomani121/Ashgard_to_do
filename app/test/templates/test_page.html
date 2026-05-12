@@ -75,13 +75,13 @@
                                 <p><small>Copy contents of the <strong class="text-primary">Local</strong> database to <strong class="text-primary">Remote</strong></small></p>
                                 <p><small>keyword: Sync (foremerly named as Backup)</small></p>
                                 <!-- Sync/Backup notif -->
-                                <div class="mt-3 mb-5">
+                                <div class="my-3">
                                     <div id="db-test-status_BG" class="small text-muted mb-2 d-none"></div>
                                     <div id="db-test-result_BG" class="mb-2"></div>
+                                    <div class="m-3" id="db_table_list"></div>
                                 </div>
                                 
-                                <button class="btn btn-primary w-100 waves-effect waves-light" id="syncBtn">Sync Local DB to Remote</button>
-                                <div class="mt-3 mb-5" id="db_table_list"></div>
+                                <button class="btn btn-primary w-100 waves-effect waves-light mb-3" id="syncBtn">Sync Local DB to Remote</button>
                             </div>
                         </div>
                     </div>
@@ -200,10 +200,10 @@
 
         function BtnStatus_Alert(running=null, start=null, end=null, func_name){
             // Sync ALL tables
-            console.log('func_name: '+func_name)
-            console.log('running: '+running)
-            console.log('start: '+start)
-            console.log('end: '+end)
+            // console.log('func_name: '+func_name)
+            // console.log('running: '+running)
+            // console.log('start: '+start)
+            // console.log('end: '+end)
 
             if (func_name == 'sync'){
                 if (running == true){
@@ -235,7 +235,7 @@
         function poll(taskId, bk){   
             var url = "{{ url_for('test_bp.get_result', task_id='__ID__') }}".replace('__ID__', taskId);
             fetch(url).then(r => r.json()).then(function(data) {
-                console.log(data)
+                // console.log(data);
                 loading++;
                 if (!data.ready) {
                     // statusEl.textContent = 'State: ' + data.state + '…';
@@ -278,7 +278,7 @@
                 btn.disabled = false;
                 btn.textContent = 'test DB';
                 var res = data.result;
-            
+            console
                 if (res && res.success){
                     statusEl.textContent = '';
                     BtnStatus_Alert(running=false, start=true, end=null, func_name='sync')
