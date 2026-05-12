@@ -49,6 +49,8 @@ def get_result(task_id):
             output["result"] = {"success" : False, "error" : str(err) if err else "Task failed"}
     else: 
         output['result'] = None
+        if task.state == "PROGRESS" and isinstance(task.info, dict):
+            output["progress"] = task.info
 
     # return output
     return jsonify(output)

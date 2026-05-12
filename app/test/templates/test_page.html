@@ -242,7 +242,28 @@
                     // statusEl.classList.remove('d-none');
                     if (bk == true){
                         statusEl_BG.textContent = 'Quering remote database…';
-                        resultEl_BG.innerHTML = '<div class="alert alert-secondary small"> State: ' + data.state + '...'+loading+' </div>';
+                        // resultEl_BG.innerHTML = '<div class="alert alert-secondary small"> State: ' + data.state + '...'+loading+' </div>';
+
+                        var p = data.progress;
+                        if(p && p.table){
+                            var st = (p.status == "done") ? 'Done' : 'Processing';
+                            var line = st + ': <code>' + p.table + '</code>';
+                            if (p.index != null && p.total != null) {
+                                line += ' (' + p.index + ' / ' + p.total + ')';
+                            }
+                            if (p.status === 'done' && p.rows_copied != null) {
+                                line += ' — rows: ' + p.rows_copied;
+                            }
+                            resultEl_BG.innerHTML = '<div class="alert alert-info small mb-2">' + line + '</div>';
+                            
+                            // Show the table names once completed 
+                            if (p.completed && p.completed.length) {
+                                db_table_list.innerHTML = '<div class="small text-muted">Completed: <hr>' +
+                                    p.completed.map(function (n) {
+                                        return '<span class="badge bg-success me-1">' + n + '</span>';
+                                    }).join(' ') + '</div>';
+                            }
+                        }
                     }else{
                         statusEl.textContent = 'Polling…';
                         resultEl.innerHTML = '<div class="alert alert-secondary small"> State: ' + data.state + '...'+loading+' </div>';
