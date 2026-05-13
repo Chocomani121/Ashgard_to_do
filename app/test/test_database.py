@@ -11,20 +11,20 @@ from app.background_tasks import outbox_queue
 
 feature_db_backups = os.getenv("feature_db_backups")
 
-
+"""general testing page"""
 @test_bp.route('/testtask', methods=['GET', 'POST'])
 def test_task(): 
     local_url   =   current_app.config.get("SQLALCHEMY_DATABASE_URI")
     remote_url  =   current_app.config.get("REMOTE_DB_URL")
-    print(f"\n\nLocal: {local_url}")
-    print(f"\nRemote: {str(remote_url)}\n\n")
+    # print(f"\n\nLocal: {local_url}")
+    # print(f"\nRemote: {str(remote_url)}\n\n")
 
     return render_template('test_page.html', local_url=local_url, remote_url=remote_url)
 
 
 
-# FLAGs FEATURE---------------------------------------
-# 
+# ---------------------------------------
+"""FLAGs FEATURE testing"""
 if feature_db_backups == 'ON':
     @test_bp.route('/testtask2', methods=['GET', 'POST'])
     def test_task2():

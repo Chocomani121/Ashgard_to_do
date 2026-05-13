@@ -108,7 +108,7 @@ def create_app():
     flask_app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 
     # --- SESSION TIMEOUT (minutes). Set to 0 to disable. ---
-    timeout = 0
+    timeout = 30
     flask_app.config["SESSION_TIMEOUT_MINUTES"] = timeout
     flask_app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=timeout) if timeout else timedelta(days=31)
 
